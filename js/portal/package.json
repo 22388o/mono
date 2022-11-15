@@ -17,6 +17,7 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
+    "lightning": "^6.2.7",
     "uuid": "^9.0.0",
     "web3": "^1.8.0",
     "ws": "^8.10.0"
