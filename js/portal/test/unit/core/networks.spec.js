@@ -8,6 +8,7 @@ const Networks = require('../../../lib/core/networks')
 
 const SUPPORTED = [
   'goerli',
+  'lightning',
   'sepolia'
 ]
 
