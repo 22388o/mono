@@ -50,11 +50,11 @@ describe('Networks', function () {
 
           const network = networks[name]
 
-          expect(network).to.respondTo('deposit')
-          expect(() => network.deposit()).to.not.throw(/not implemented/)
+          expect(network).to.respondTo('open')
+          expect(() => network.open()).to.not.throw(/not implemented/)
 
-          expect(network).to.respondTo('withdraw')
-          expect(() => network.withdraw()).to.not.throw(/not implemented/)
+          expect(network).to.respondTo('commit')
+          expect(() => network.commit()).to.not.throw(/not implemented/)
         })
       }
     })

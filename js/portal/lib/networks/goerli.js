@@ -17,11 +17,11 @@ module.exports = class Goerli extends Network {
     })
   }
 
-  deposit () {
+  open (party) {
     throw new Error('yet to be implemented!')
   }
 
-  withdraw () {
+  commit (party) {
     throw new Error('yet to be implemented!')
   }
 }

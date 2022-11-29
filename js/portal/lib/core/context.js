@@ -14,7 +14,7 @@ const Swaps = require('./swaps')
  */
 const HttpContext = module.exports = {
   log: console,
-  store: new Store({ path: process.env.PORTAL_STORE_PATH })
+  store: new Store()
 }
 
 /**
@@ -22,6 +22,8 @@ const HttpContext = module.exports = {
  * @type {Networks}
  */
 HttpContext.networks = new Networks({
+  'goerli': process.env.PORTAL_URL_GOERLI,
+  'sepolia': process.env.PORTAL_URL_SEPOLIA
 }, HttpContext)
 
 /**
