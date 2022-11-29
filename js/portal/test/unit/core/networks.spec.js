@@ -15,7 +15,8 @@ const SUPPORTED = [
 describe('Networks', function () {
   const PROPS = {
     goerli: 'https://goerli.infura.io/v3/3f6691a33225484c8e1eebde034b274f',
-    sepolia: 'https://sepolia.infura.io/v3/3f6691a33225484c8e1eebde034b274f'
+    sepolia: 'https://sepolia.infura.io/v3/3f6691a33225484c8e1eebde034b274f',
+    lightning: ''
   }
 
   describe('Instantiation', function () {
