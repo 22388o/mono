@@ -22,8 +22,6 @@ const HttpContext = module.exports = {
  * @type {Networks}
  */
 HttpContext.networks = new Networks({
-  goerli: process.env.PORTAL_GOERLI_RPC_URL,
-  sepolia: process.env.PORTAL_SEPOLIA_RPC_URL
 }, HttpContext)
 
 /**

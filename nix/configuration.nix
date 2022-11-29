@@ -4,9 +4,9 @@ with lib;
 
 {
   imports = [
+    ./modules/bitcoind.nix
     ./modules/default.nix
     ./modules/devtools.nix
-    ./modules/geth.nix
     ./modules/nginx.nix
     ./modules/portal.nix
     ./modules/users.nix

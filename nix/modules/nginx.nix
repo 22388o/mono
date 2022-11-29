@@ -18,14 +18,7 @@ in
     hosts = mkOption {
       description = "A set of hosts being TLS-terminated, keyed by service";
       type = types.attrs;
-      default = {
-        goerli = {
-          locations."/".proxyPass = "http://localhost:${toString config.services.geth.goerli.http.port}/";
-        };
-        ropsten = {
-          locations."/".proxyPass = "http://localhost:${toString config.services.geth.ropsten.http.port}/";
-        };
-      };
+      default = {};
     };
   };
 
