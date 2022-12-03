@@ -2,17 +2,20 @@
   "name": "@portal/contracts",
   "version": "0.0.0",
   "description": "EVM contracts for Portal",
+  "main": "index.json",
   "scripts": {
     "build": "truffle build",
     "clean": "rm -rf build node_modules package-lock.json",
+    "deploy:goerli": "truffle deploy --network goerli",
+    "deploy:sepolia": "truffle deploy --network sepolia",
     "lint": "solhint contracts/*.sol",
     "lint-fix": "solhint --fix contracts/*.sol",
     "posttest": "npm run lint",
     "test": "truffle test"
   },
   "devDependencies": {
+    "@truffle/hdwallet-provider": "^2.1.2",
     "chai": "^4.3.6",
-    "ganache": "^7.4.3",
     "solhint": "^3.3.7",
     "truffle": "^5.5.31"
   }
