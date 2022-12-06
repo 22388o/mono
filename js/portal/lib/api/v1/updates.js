@@ -9,18 +9,19 @@
  * @returns {Void}
  */
 module.exports.UPGRADE = function (ws, ctx) {
-  // Using the websocket's address as the current clientId
-  // TODO: Figure out the right thing to do here
-  // const uid = ws.clientId
-  const uid = 'uid'
+  const uid = ws.user
   const onError = err => err != null && ctx.log.error(err)
-  const onOrder = order => order.uid === uid && ws.send(order, onError)
+  const onOrder = event => order => {
+    if (order.uid === uid) {
+      ws.send(order, onError)
+    }
+  }
 
   ctx.orderbooks
     .on('error', onError)
-    .on('created', onOrder)
-    .on('opened', onOrder)
-    .on('closed', onOrder)
+    .on('created', onOrder('created'))
+    .on('opened', onOrder('opened'))
+    .on('closed', onOrder('closed'))
     .on('match', (makerOrder, takerOrder) => {
       if (makerOrder.uid !== uid && takerOrder.uid !== uid) return
 

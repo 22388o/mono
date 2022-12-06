@@ -143,6 +143,14 @@ module.exports = class Server extends EventEmitter {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
 
+    // Parse the client identifier and stash it for later use
+    // The authorization header is "Basic <base-64 encoded username:password>"
+    // We split out the username and stash it on req.user
+    const auth = req.headers.authorization
+    const [algorithm, base64] = auth.split(' ')
+    const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+    req.user = user
+
     // Collect the incoming HTTP body
     const chunks = []
     req
@@ -205,6 +213,14 @@ module.exports = class Server extends EventEmitter {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
 
+    // Parse the client identifier and stash it for later use
+    // The authorization header is "Basic <base-64 encoded username:password>"
+    // We split out the username and stash it on req.user
+    const auth = req.headers.authorization
+    const [algorithm, base64] = auth.split(' ')
+    const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+    req.user = user
+
     // Route the request
     const { api, ctx, websocket } = INSTANCES.get(this)
 
@@ -226,8 +242,7 @@ module.exports = class Server extends EventEmitter {
     const handler = api[route]
     if (typeof handler.UPGRADE === 'function') {
       websocket.handleUpgrade(req, socket, head, ws => {
-        const address = ws._socket.address()
-        ws.clientId = `${address.address}:${address.port}`
+        ws.user = req.user
 
         // Override send to handle serialization and websocket nuances
         ws._send = ws.send
@@ -240,7 +255,7 @@ module.exports = class Server extends EventEmitter {
         }
 
         ws.toJSON = function () {
-          return { type: 'websocket', clientId: ws.clientId }
+          return { type: 'websocket', user: ws.user }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()

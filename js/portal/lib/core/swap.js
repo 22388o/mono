@@ -156,7 +156,9 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Object}
    */
   toJSON () {
-    return SWAP_INSTANCES.get(this)
+    return Object.assign({
+      '@type': this.constructor.name
+    }, SWAP_INSTANCES.get(this))
   }
 
   /**
@@ -174,7 +176,7 @@ module.exports = class Swap extends EventEmitter {
     const isNeither = !isHolder && !isSeeker
 
     if (status !== SWAP_STATUS[0] && status !== SWAP_STATUS[1]) {
-      throw new Error(`swap "${this.id}" is already "${status}"!`)
+      throw new Error(`swap "${this.id}" is not "${SWAP_STATUS[0]}" or "${SWAP_STATUS[1]}"!`)
     } else if (isBoth) {
       throw new Error('self-swapping is not allowed!')
     } else if (isNeither) {
@@ -207,7 +209,7 @@ module.exports = class Swap extends EventEmitter {
     const isNeither = !isHolder && !isSeeker
 
     if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
-      throw new Error(`swap "${this.id}" is already "${status}"!`)
+      throw new Error(`swap "${this.id}" is not "${SWAP_STATUS[2]}" or "${SWAP_STATUS[3]}"!`)
     } else if (isBoth) {
       throw new Error('self-swapping is not allowed!')
     } else if (isNeither) {

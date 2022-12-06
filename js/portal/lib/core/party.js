@@ -147,6 +147,7 @@ module.exports = class Party {
    */
   toJSON () {
     const obj = {
+      '@type': this.constructor.name,
       id: this.id,
       swapId: this.swap.id,
       state: this.state,

@@ -11,7 +11,7 @@ const { EventEmitter } = require('events')
  * @type {Array<Object>}
  */
 const PROPS = [
-  { baseAsset: 'ETH', quoteAsset: 'USDC', limitPrice: 100 }
+  { baseAsset: 'ETH', quoteAsset: 'USDC', limitSize: 100 }
 ]
 
 /**
@@ -24,11 +24,11 @@ module.exports = class Orderbooks extends EventEmitter {
 
     for (const obj of PROPS) {
       const orderbook = new Orderbook(obj)
-        .on('error', (...args) => this.emit('error', ...args, orderbook))
         .on('created', (...args) => this.emit('created', ...args, orderbook))
         .on('opened', (...args) => this.emit('opened', ...args, orderbook))
         .on('closed', (...args) => this.emit('closed', ...args, orderbook))
         .on('match', (...args) => this.emit('match', ...args, orderbook))
+        .on('error', (...args) => this.emit('error', ...args, orderbook))
 
       this[orderbook.assetPair] = orderbook
     }

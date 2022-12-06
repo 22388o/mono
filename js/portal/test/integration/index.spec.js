@@ -14,11 +14,11 @@ before('Initialize client/server', function () {
 
       // For basic client/server tests
       const server = instance
-      const client = new Client({ hostname, port })
+      const client = new Client({ id: 'client', hostname, port })
 
       // For advanced multi-client test suites
-      const alice = new Client({ hostname, port })
-      const bob = new Client({ hostname, port })
+      const alice = new Client({ id: 'alice', hostname, port })
+      const bob = new Client({ id: 'bob', hostname, port })
 
       Object.assign(this, { alice, bob, client, server })
 

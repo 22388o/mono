@@ -26,7 +26,7 @@ module.exports = class Orderbook extends EventEmitter {
       throw new Error('instantiated without baseAsset!')
     } else if (props.quoteAsset == null) {
       throw new Error('instantiated without quoteAsset!')
-    } else if (+props.limitSize <= 0) {
+    } else if (isNaN(+props.limitSize) || +props.limitSize <= 0) {
       throw new Error('instantiated with invalid limitSize!')
     }
 

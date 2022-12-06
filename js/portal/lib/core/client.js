@@ -12,14 +12,19 @@ const Websocket = require('ws')
  */
 module.exports = class Client extends EventEmitter {
   constructor (props = {}) {
+    if (props == null) {
+      throw Error('no properties specified for the client!')
+    } else if (props.id == null || typeof props.id !== 'string') {
+      throw Error('A client must be provided a unique identifier!')
+    }
+
     super()
 
+    this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
     this.pathname = props.pathname || '/api/v1/updates'
     this.websocket = null
-
-    this.clientId = 'uid' // TODO: formalize this!
 
     Object.seal(this)
   }
@@ -38,7 +43,8 @@ module.exports = class Client extends EventEmitter {
    */
   connect () {
     return new Promise((resolve, reject) => {
-      const url = `ws://${this.hostname}:${this.port}${this.pathname}`
+      const creds = `${this.id}:${this.id}`
+      const url = `ws://${creds}@${this.hostname}:${this.port}${this.pathname}`
       const ws = new Websocket(url)
 
       this.websocket = ws
@@ -69,8 +75,7 @@ module.exports = class Client extends EventEmitter {
       method: 'PUT',
       path: '/api/v1/orderbook/limit'
     }, {
-      uid: order.uid,
-      type: order.type,
+      uid: this.id,
       side: order.side,
       hash: order.hash,
       baseAsset: order.baseAsset,
@@ -134,31 +139,6 @@ module.exports = class Client extends EventEmitter {
     }, { swap })
   }
 
-  // /**
-  //  * Exchanges swap data with the counterparty through the server
-  //  * @param {Swap} swap The swap data to be exchanged with the counterparty
-  //  * @returns {Promise<Swap>} The swap data of the counterparty
-  //  */
-  // exchangeSwap (swap, state) {
-  //   return new Promise((resolve, reject) => {
-  //     swap.state = state
-  //     const args = { method: 'POST', path: '/api/v1/swap' }
-  //     const onTimeOut = () => reject(Error('timed out'))
-  //     const timer = setTimeout(onTimeOut, 30000)
-  //     const onMessage = msg => {
-  //       if (msg.id && msg.id === swap.id) {
-  //         this.off('message', onMessage)
-  //         clearTimeout(timer)
-  //         resolve(msg)
-  //       }
-  //     }
-  //
-  //     this
-  //       .on('message', onMessage)
-  //       ._request(args, swap)
-  //   })
-  // }
-
   /**
    * Performs an HTTP request and returns the response
    * @param {Object} args Arguments for the operation
@@ -174,6 +154,7 @@ module.exports = class Client extends EventEmitter {
         headers: Object.assign(args.headers || {}, {
           accept: 'application/json',
           'accept-encoding': 'application/json',
+          authorization: `Basic ${Buffer.from(`${this.id}:${this.id}`).toString('base64')}`,
           'content-type': 'application/json',
           'content-length': Buffer.byteLength(buf),
           'content-encoding': 'identity'
@@ -237,8 +218,10 @@ module.exports = class Client extends EventEmitter {
   _onMessage (data) {
     let event, arg
     try {
-      event = 'message'
       arg = JSON.parse(data)
+      event = (arg['@type'] != null && arg.status != null)
+        ? `${arg['@type'].toLowerCase()}.${arg.status}`
+        : 'message'
     } catch (err) {
       event = 'error'
       arg = err

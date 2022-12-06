@@ -5,7 +5,7 @@
 const HTTP_METHODS = module.exports
 
 /**
- * Creates a swap based on an order match
+ * Opens a swap in progress
  * @param {HttpRequest} req The incoming HTTP request
  * @param {HttpResponse} res The outgoing HTTP response
  * @param {HttpContext} ctx The HTTP request context
@@ -13,7 +13,7 @@ const HTTP_METHODS = module.exports
  */
 HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
   const swap = req.json.swap
-  const party = Object.assign(req.json.party, { id: req.uid })
+  const party = Object.assign({}, req.json.party, { id: req.user })
 
   ctx.swaps.open(swap, party)
     .then(swap => res.send(swap))
@@ -28,9 +28,10 @@ HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
  * @returns {Void}
  */
 HTTP_METHODS.POST = function swapCommit (req, res, ctx) {
-  const party = Object.assign(req.json.party, { id: req.uid })
+  const swap = req.json.swap
+  const party = Object.assign({}, req.json.party, { id: req.user })
 
-  ctx.swaps.commit(party)
+  ctx.swaps.commit(swap, party)
     .then(swap => res.send(swap))
     .catch(err => res.send(err))
 }

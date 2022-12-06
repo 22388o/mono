@@ -2,7 +2,7 @@
  * @file Defines an order
  */
 
-const uuid = require('uuid')
+const { uuid } = require('../helpers')
 
 /**
  * A list of supported assets
@@ -86,7 +86,7 @@ module.exports = class Order {
     }
 
     Object.seal(Object.assign(this, {
-      id: props.id || uuid.v4(),
+      id: props.id || uuid(),
       ts: props.ts || Date.now(),
       uid: props.uid,
       type: props.type,
@@ -190,6 +190,7 @@ module.exports = class Order {
    */
   toJSON () {
     const obj = {
+      '@type': this.constructor.name,
       id: this.id,
       ts: this.ts,
       uid: this.uid,
