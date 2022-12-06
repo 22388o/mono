@@ -56,28 +56,15 @@ module.exports = class Network extends EventEmitter {
     return this.assets.has(asset)
   }
 
-  /**
-   * Virtual method to be overridden
-   * @returns {Object}
-   */
-  deposit () {
+  open (party) {
     throw new Error('not implemented!')
   }
 
-  /**
-   * Virtual method to be overridden
-   * @returns {Object}
-   */
-  withdraw () {
+  commit (party) {
     throw new Error('not implemented!')
   }
 
-  open(party) {
-    throw new Error('not implemented!')
-  }
-
-
-  commit(party) {
+  abort (party) {
     throw new Error('not implemented!')
   }
 }

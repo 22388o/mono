@@ -1,5 +1,5 @@
 /**
- * @file Defines an instance of an Atomic Swap
+ * @file Defines an instance of an atomic swap
  */
 
 const Party = require('./party')
@@ -50,15 +50,16 @@ module.exports = class Swap extends EventEmitter {
 
     SWAP_INSTANCES.set(this, {
       id: props.id || uuid(),
-      secretHash: props.secretHash, // hexString
+      secretHash: props.secretHash,
       secretHolder: props.secretHolder,
       secretSeeker: props.secretSeeker,
       status: SWAP_STATUS[0]
     })
 
-    SWAP_INSTANCES.get(this).secretHolder.swap = this
-    SWAP_INSTANCES.get(this).secretSeeker.swap = this
+    this.secretHolder.swap = this
+    this.secretSeeker.swap = this
 
+    // TODO: freeze here?
     Object.seal(this)
   }
 
@@ -94,8 +95,44 @@ module.exports = class Swap extends EventEmitter {
     return SWAP_INSTANCES.get(this).secretSeeker
   }
 
-  getCounterpartyInfo (party) {
-    return party.isSecretHolder ? this.secretSeeker.publicInfo: this.secretHolder.publicInfo
+  /**
+   * Returns whether or not the swap is in the `created` state
+   * @returns {Boolean}
+   */
+  get isCreated () {
+    return this.status === SWAP_STATUS[0]
+  }
+
+  /**
+   * Returns whether or not the swap is in the `opening` state
+   * @returns {Boolean}
+   */
+  get isOpening () {
+    return this.status === SWAP_STATUS[1]
+  }
+
+  /**
+   * Returns whether or not the swap is in the `opened` state
+   * @returns {Boolean}
+   */
+  get isOpened () {
+    return this.status === SWAP_STATUS[2]
+  }
+
+  /**
+   * Returns whether or not the swap is in the `committing` state
+   * @returns {Boolean}
+   */
+  get isCommitting () {
+    return this.status === SWAP_STATUS[3]
+  }
+
+  /**
+   * Returns whether or not the swap is in the `committed` state
+   * @returns {Boolean}
+   */
+  get isCommitted () {
+    return this.status === SWAP_STATUS[4]
   }
 
   /**
@@ -105,23 +142,6 @@ module.exports = class Swap extends EventEmitter {
   get status () {
     return SWAP_INSTANCES.get(this).status
   }
-
-  get isOpening () {
-    return this.status === SWAP_STATUS[1]
-  }
-
-  get isOpened () {
-    return this.status === SWAP_STATUS[2]
-  }
-
-  get isCommitting () {
-    return this.status === SWAP_STATUS[3]
-  }
-
-  get isCommitted () {
-    return this.status === SWAP_STATUS[4]
-  }
-
 
   /**
    * Returns the current state of the server as a JSON string
@@ -140,18 +160,8 @@ module.exports = class Swap extends EventEmitter {
   }
 
   /**
-   * Returns whether the specified user is a party to the swap
-   * @param {Object|User|Party} user The user to validate
-   * @param {String} user.id The unique identifier of the user
-   * @returns {Boolean}
-   */
-  isParty (user) {
-    return user.id === this.secretHolder.id || user.id === this.secretSeeker.id
-  }
-
-  /**
    * Handles opening of the swap by one of its parties
-   * @param {Party} party The party that is opening the swap
+   * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {*} party.state Data that may be not be shared with the other party
    * @returns {Promise<Party>}
@@ -170,11 +180,10 @@ module.exports = class Swap extends EventEmitter {
     } else if (isNeither) {
       throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
     }
-    console.log(`in swap.open()`)
+
     const { state } = party
     party = isHolder ? secretHolder : secretSeeker
     party.state = Object.freeze(Object.assign({}, party.state, state))
-
 
     party = await party.open()
     SWAP_INSTANCES.get(this).status = this.isOpening
@@ -186,34 +195,32 @@ module.exports = class Swap extends EventEmitter {
 
   /**
    * Handles committing to the swap by one of its parties
-   * @param {Party} party The party that is opening the swap
+   * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @returns {Promise<Party>}
    */
   async commit (party) {
-      const { secretHolder, secretSeeker, status } = this
-      const isHolder = party.id === secretHolder.id
-      const isSeeker = party.id === secretSeeker.id
-      const isBoth = isHolder && isSeeker
-      const isNeither = !isHolder && !isSeeker
+    const { secretHolder, secretSeeker, status } = this
+    const isHolder = party.id === secretHolder.id
+    const isSeeker = party.id === secretSeeker.id
+    const isBoth = isHolder && isSeeker
+    const isNeither = !isHolder && !isSeeker
 
-      if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
-        throw new Error(`swap "${this.id}" is already "${status}"!`)
-      } else if (isBoth) {
-        throw new Error('self-swapping is not allowed!')
-      } else if (isNeither) {
-        throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
-      }
+    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
+      throw new Error(`swap "${this.id}" is already "${status}"!`)
+    } else if (isBoth) {
+      throw new Error('self-swapping is not allowed!')
+    } else if (isNeither) {
+      throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
+    }
 
-      party = isHolder ? secretHolder : secretSeeker
-      console.log(`about to call party.commit`)
-      party = await party.commit()
-
-      console.log(`in then after party commit`)
+    party = isHolder ? secretHolder : secretSeeker
+    party = await party.commit()
     SWAP_INSTANCES.get(this).status = this.isCommitting
-        ? SWAP_STATUS[4]
-        : SWAP_STATUS[3]
-      return party
+      ? SWAP_STATUS[4]
+      : SWAP_STATUS[3]
+
+    return party
   }
 
   /**
@@ -227,9 +234,7 @@ module.exports = class Swap extends EventEmitter {
     const id = hash(makerOrder.id, takerOrder.id)
     const secretHash = makerOrder.hash
     const secretHolder = Party.fromOrder(makerOrder, ctx)
-    console.log(`makerOrder.side: ${makerOrder.side}`)
     const secretSeeker = Party.fromOrder(takerOrder, ctx)
-    console.log(`takerOrder.side: ${takerOrder.side}`)
 
     return new Swap({ id, secretHash, secretHolder, secretSeeker })
   }

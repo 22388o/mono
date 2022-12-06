@@ -1,16 +1,19 @@
 /**
- * @file Defines an instance of an Atomic Swap
+ * @file Defines a party to an atomic swap
  */
 
 /**
  * Defines a party to a swap
+ * @type {Party}
  */
 module.exports = class Party {
   /**
    * Creates a new instance of a party to a swap
    * @param {Object} props Properties of the instance
    * @param {String} props.id The unique identifier of the party
+   * @param {Asset} props.asset The asset which the party wants to trade
    * @param {Network} props.network The network on which the party holds assets
+   * @param {Number} props.quantity The quantity of the asset being traded
    */
   constructor (props) {
     if (props == null) {
@@ -23,11 +26,26 @@ module.exports = class Party {
     this.asset = props.asset
     this.network = props.network
     this.quantity = props.quantity
+
     this.swap = null // assigned by the swap constructor
     this.state = null // populated by the user/client over http/rpc
     this.publicInfo = { left: {}, right: {} }
 
     Object.seal(this)
+  }
+
+  /**
+   * Returns the counterparty to the swap
+   * @returns {Party}
+   */
+  get counterparty () {
+    if (this.isSecretHolder) {
+      return this.swap.secretSeeker
+    } else if (this.isSecretSeeker) {
+      return this.swap.secretHolder
+    } else {
+      throw Error('cannot use .counterparty in multi-party swap!')
+    }
   }
 
   /**
@@ -46,37 +64,55 @@ module.exports = class Party {
     return this.swap.secretSeeker === this
   }
 
-  get swapHash () {
-    return this.swap.secretHash
-  }
-
   /**
-   * Overridable step one function of the two-step swap
+   * Opens a swap for a single party
+   *
+   * The secret holder is expected to open first, followed by the secret seeker.
+   * All other cases will error out.
+   *
    * @returns {Promise<Party>}
    */
-  async open () {
-    // console.log(`party: ${JSON.stringify(this)}`)
-    await this.network.open(this)
-    return Promise.resolve(this)
+  open () {
+    if ((this.swap.isCreated && this.isSecretHolder) ||
+        (this.swap.isOpening && this.isSecretSeeker)) {
+      return this.network.open(this)
+    }
+
+    if ((this.swap.isCreated && this.isSecretSeeker)) {
+      return Promise.reject(Error('waiting for secret holder to open!'))
+    } else if ((this.swap.isOpening && this.isSecretHolder)) {
+      return Promise.reject(Error('swap already opened!'))
+    } else {
+      return Promise.reject(Error('undefined behavior!'))
+    }
   }
 
   /**
-   * Overridable step two function of the two-step swap
+   * Commits to a swap for a single party
    * @returns {Promise<Party>}
    */
-  async commit () {
-    // console.log(`party: ${JSON.stringify(this)}`)
-    await this.network.commit(this)
-    console.log("party.commit - after network.commit")
-    return Promise.resolve(this)
+  commit () {
+    if ((this.swap.isOpened && this.isSecretHolder) ||
+        (this.swap.isCommitting && this.isSecretSeeker)) {
+      // NOTE: this time around we commit to the counterparty's network
+      return this.counterparty.network.commit(this)
+    }
+
+    if ((this.swap.isOpened && this.isSecretSeeker)) {
+      return Promise.reject(Error('waiting for secret holder to commit!'))
+    } else if ((this.swap.isCommitting && this.isSecretHolder)) {
+      return Promise.reject(Error('swap already committed!'))
+    } else {
+      return Promise.reject(Error('undefined behavior!'))
+    }
   }
 
   /**
-   * Overridable step two function of the two-step swap
+   * Gracefully aborts a swap for a single party
    * @returns {Promise<Party>}
    */
   abort () {
-    return Promise.resolve(this)
+    return Promise.reject(Error('not implemented yet!'))
   }
 
   /**
@@ -85,15 +121,10 @@ module.exports = class Party {
    * @returns {Party}
    */
   static fromOrder (order, ctx) {
-    console.log(`order.side: ${order.side}`)
     const asset = order.isAsk ? order.baseAsset : order.quoteAsset
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
     const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-    console.log(`network: ${network}`)
-    console.log(`ctx: ${ctx}`)
-    console.log(`ctx.networks: ${ctx.networks}`)
-    console.log(`asset: ${asset}`)
-    console.log(`ctx.assets: ${ctx.assets}`)
+
     return new Party({
       id: order.uid,
       asset: ctx.assets[asset],

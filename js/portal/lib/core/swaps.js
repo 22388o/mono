@@ -54,15 +54,13 @@ module.exports = class Swaps extends EventEmitter {
    * @param {*} party.private.state Data that may not be shared with the other party
    * @returns {Promise<Party>}
    */
-  async open (swap, party) {
+  open (swap, party) {
     if (swap == null || swap.id == null) {
       return Promise.reject(Error('unknown swap!'))
     } else if (!this.swaps.has(swap.id)) {
       return Promise.reject(Error(`unknown swap "${swap.id}"!`))
     } else {
-      console.log("before swaps get")
-      const returnedParty = await this.swaps.get(swap.id).open(party)
-      return returnedParty
+      return this.swaps.get(swap.id).open(party)
     }
   }
 
@@ -74,18 +72,13 @@ module.exports = class Swaps extends EventEmitter {
    * @param {String} party.id The unique identifier of the party
    * @returns {Promise<Void>}
    */
-  async commit (swap, party) {
+  commit (swap, party) {
     if (swap == null || swap.id == null) {
-      throw new Error('unknown swap!')
+      return Promise.reject(Error('unknown swap!'))
     } else if (!this.swaps.has(swap.id)) {
-      throw new Error(`unknown swap "${swap.id}"!`)
+      return Promise.reject(Error(`unknown swap "${swap.id}"!`))
     } else {
-      console.log(`swap.id: ${swap.id}`)
-      const swapObject = this.swaps.get(swap.id)
-      console.log(`swapObject: ${swapObject}`)
-      const returnedParty = await swapObject.commit(party)
-      console.log("swaps.commit after swap.commit")
-      return returnedParty
+      return this.swaps.get(swap.id).commit(party)
     }
   }
 
