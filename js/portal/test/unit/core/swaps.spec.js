@@ -9,7 +9,7 @@ const Party = require('../../../lib/core/party')
 const Swap = require('../../../lib/core/swap')
 const Swaps = require('../../../lib/core/swaps')
 
-describe('Swaps', function () {
+describe.skip('Swaps', function () {
   /**
    * Tests instantiation behavior
    */

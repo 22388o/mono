@@ -11,7 +11,7 @@ const Swaps = require('../../../lib/core/swaps')
 const { createHash, randomBytes } = require('crypto')
 const ctx = require('../../../lib/core/context')
 
-describe('Swaps', function () {
+describe.skip('Swaps', function () {
   const randomSecret = () => randomBytes(32)
   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex')
   const swapSecret = randomSecret()
