@@ -1,22 +1,27 @@
 /**
- * @fle Behavioral specification for interface to supported blockchain networks
+ * @file Behavioral specification for interface to supported blockchain networks
  */
 
 const { expect } = require('chai')
 const Network = require('../../../lib/core/network')
 const Networks = require('../../../lib/core/networks')
+const Contracts = require('../../../../contracts/index.json')
 
 const SUPPORTED = [
+  'evm',
   'goerli',
   'lightning',
   'sepolia'
 ]
 
 describe('Networks', function () {
+  // For testing, we only consider the local EVM
   const PROPS = {
-    goerli: 'https://goerli.infura.io/v3/3f6691a33225484c8e1eebde034b274f',
-    sepolia: 'https://sepolia.infura.io/v3/3f6691a33225484c8e1eebde034b274f',
-    lightning: ''
+    evm: {
+      abi: Contracts.development.abi,
+      address: Contracts.development.address,
+      url: 'http://localhost:8545'
+    }
   }
 
   describe('Instantiation', function () {

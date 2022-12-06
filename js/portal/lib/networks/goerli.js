@@ -11,10 +11,11 @@ const Web3 = require('web3')
  */
 module.exports = class Goerli extends Network {
   constructor (props) {
-    super({
-      assets: ['ETH', 'USDC'],
-      client: new Web3(props)
-    })
+    const assets = ['ETH', 'USDC']
+    const client = new Web3(props.url)
+    const contract = new client.eth.Contract(props.abi, props.address)
+
+    super({ assets, client, contract })
   }
 
   open (party) {

@@ -1,15 +1,15 @@
 /**
- * @file The Sepolia blockchain network
+ * @file The EVM blockchain network
  */
 
 const Network = require('../core/network')
 const Web3 = require('web3')
 
 /**
- * Exports a Web3 interface to the Sepolia blockchain network
- * @type {Sepolia}
+ * The EVM blockchain network
+ * @type {EVM}
  */
-module.exports = class Sepolia extends Network {
+module.exports = class EVM extends Network {
   constructor (props) {
     const assets = ['ETH', 'USDC']
     const client = new Web3(props.url)
@@ -23,6 +23,10 @@ module.exports = class Sepolia extends Network {
   }
 
   commit (party) {
+    throw new Error('yet to be implemented!')
+  }
+
+  abort (party) {
     throw new Error('yet to be implemented!')
   }
 }
