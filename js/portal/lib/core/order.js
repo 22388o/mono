@@ -14,7 +14,7 @@ const ASSETS = require('./assets')
  * A list of supported networks
  * @type {Array}
  */
-const NETWORKS = ['goerli', 'sepolia', 'lightning']  // to be switched back to require('./networks.js')
+const NETWORKS = ['goerli', 'sepolia', 'lightning'] // to be switched back to require('./networks.js')
 
 /**
  * The side of the orderbook to put the order into

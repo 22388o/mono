@@ -12,12 +12,10 @@ const { createHash, randomBytes } = require('crypto')
 const ctx = require('../../../lib/core/context')
 
 describe('Swaps', function () {
-
   const randomSecret = () => randomBytes(32)
   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex')
   const swapSecret = randomSecret()
   const swapHash = sha256(swapSecret)
-
 
   /**
    * Tests instantiation behavior
@@ -110,8 +108,6 @@ describe('Swaps', function () {
       expect(swap.secretSeeker.isSecretHolder).to.be.a('boolean').that.equals(false)
       expect(swap.secretSeeker.isSecretSeeker).to.be.a('boolean').that.equals(true)
     })
-
-
 
     /**
      * It must open the atomic swap for the secret seeker
@@ -262,12 +258,10 @@ describe('Swaps', function () {
       expect(party1.isSecretSeeker).to.be.a('boolean').that.equals(false)
     })
 
-    it('must commit the swap for both', async function (){
+    it('must commit the swap for both', async function () {
       await swaps.commit(swap, party2)
-      console.log(`between swap commits`)
+      console.log('between swap commits')
       await swaps.commit(swap, party1)
     }).timeout(100000)
-
-
   })
 })
