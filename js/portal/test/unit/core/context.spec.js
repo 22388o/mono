@@ -13,7 +13,7 @@ describe('HttpContext', function () {
   })
 
   it('must expose an interface to all supported assets', function () {
-    expect(ctx.assets).to.be.an.instanceof(Map)
+    expect(ctx.assets).to.be.an('object')
   })
 
   it('must expose an interface to all supported orderbooks', function () {

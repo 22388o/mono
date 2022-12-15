@@ -69,7 +69,7 @@ module.exports = class Order {
       throw new Error('no hash specified!')
     }
 
-    if (!ASSETS.has(props.baseAsset)) {
+    if (ASSETS[props.baseAsset] == null) {
       throw new Error(`"${props.baseAsset}" is not a supported base asset!`)
     } else if (!NETWORKS.includes(props.baseNetwork)) {
       throw new Error(`"${props.baseNetwork}" is not a supported blockchain!`)
@@ -77,7 +77,7 @@ module.exports = class Order {
       throw new Error(`"${props.baseQuantity}" is not a valid quantity!`)
     }
 
-    if (!ASSETS.has(props.quoteAsset)) {
+    if (ASSETS[props.quoteAsset] == null) {
       throw new Error(`"${props.quoteAsset}" is not a supported quote asset!`)
     } else if (!NETWORKS.includes(props.quoteNetwork)) {
       throw new Error(`"${props.quoteNetwork}" is not a supported blockchain!`)

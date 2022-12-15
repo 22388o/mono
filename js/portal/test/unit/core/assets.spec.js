@@ -17,8 +17,8 @@ describe('Assets', function () {
       it(`must support the ${assetName} asset`, function () {
         expect(Assets).to.have.any.keys(assetName)
 
-        const asset = Assets.get(assetName)
-        expect(asset).to.be.an.instanceof(Asset)
+        const asset = Assets[assetName]
+        expect(asset).to.be.an('object')
       })
     }
   })
