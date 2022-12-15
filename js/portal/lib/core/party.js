@@ -51,7 +51,7 @@ module.exports = class Party {
    * @returns {Boolean}
    */
   get isSecretHolder () {
-    return this.swap.secretHolder === this
+    return this.swap && this.swap.secretHolder === this
   }
 
   /**
@@ -59,7 +59,7 @@ module.exports = class Party {
    * @returns {Boolean}
    */
   get isSecretSeeker () {
-    return this.swap.secretSeeker === this
+    return this.swap && this.swap.secretSeeker === this
   }
 
   /**
@@ -129,7 +129,7 @@ module.exports = class Party {
     const obj = {
       '@type': this.constructor.name,
       id: this.id,
-      swapId: this.swap.id,
+      swapId: this.swap && this.swap.id,
       asset: this.asset,
       network: this.network,
       quantity: this.quantity,
@@ -154,7 +154,7 @@ module.exports = class Party {
 
     return new Party({
       id: order.uid,
-      asset: ctx.assets.get(asset),
+      asset: ctx.assets[asset],
       network: ctx.networks[network],
       quantity
     })
