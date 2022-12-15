@@ -4,26 +4,10 @@
 
 const { expect } = require('chai')
 const { createHash, randomBytes } = require('crypto')
-const Party = require('../../../../../lib/core/party')
-const Swap = require('../../../../../lib/core/swap')
 
-function createMessageHandler (client, done) {
-  return function onMessage (order) {
-    expect(order).to.be.an('object')
-    expect(order.id).to.be.a('string').with.lengthOf(32)
-    // expect the timestamp to be within 100ms; hopefully this is sufficient for
-    // all test runs, including the slowest CI system
-    expect(order.ts).to.be.a('number').closeTo(Date.now(), 100)
-    expect(order.type).to.be.a('string').that.equals('limit')
-    expect(order.uid).to.be.a('string').that.equals(client.id)
-
-    if (order.status === 'opened') {
-      client.off('message', onMessage)
-      done()
-    }
-  }
-}
-
+/**
+ * This is a simple test case wherein,
+ */
 describe.only('Swaps - EVM/EVM', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
@@ -38,6 +22,15 @@ describe.only('Swaps - EVM/EVM', function () {
   let swapAlice = null
   let swapBob = null
 
+  /**
+   * Sets up listeners for incoming messages from the server
+   *
+   * Over the course of this test, the server will send updates to the clients
+   * at certain points, such as when the orders are matched and a swap is
+   * created.
+   *
+   * We record these events for both Alice and Bob and use them later.
+   */
   before(function () {
     const { alice, bob } = this.test.ctx
 
@@ -48,32 +41,28 @@ describe.only('Swaps - EVM/EVM', function () {
       .on('swap.created', swap => { swapBob = swap })
   })
 
+  /**
+   * Alice places an order using the secret hash. The test waits for the order
+   * to be opened on the orderbook.
+   */
   it('must allow alice to place an order', function (done) {
-    const order = Object.assign({}, ORDER_PROPS, {
-      hash: SECRET_HASH,
-      side: 'ask'
-    })
-    const alice = this.test.ctx.alice
-
-    alice
+    this.test.ctx.alice
       .once('order.opened', order => done())
-      .once('message', msg => done(Error(`unexpected message "${msg}"`)))
       .once('error', done)
-      .submitLimitOrder(order)
+      .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
+        hash: SECRET_HASH,
+        side: 'ask'
+      }))
   })
 
   it('must allow bob to place an order', function (done) {
-    const order = Object.assign({}, ORDER_PROPS, {
-      hash: 'ignored',
-      side: 'bid'
-    })
-    const bob = this.test.ctx.bob
-
-    bob
+    this.test.ctx.bob
       .once('order.opened', order => done())
-      .once('message', msg => done(Error(`unexpected message "${msg}"`)))
       .once('error', done)
-      .submitLimitOrder(order)
+      .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
+        hash: 'ignored',
+        side: 'bid'
+      }))
   })
 
   it('must match orders from alice and bob', function () {
@@ -82,21 +71,32 @@ describe.only('Swaps - EVM/EVM', function () {
     expect(swapAlice).to.be.an('object')
     expect(swapBob).to.be.an('object')
     expect(swapAlice).to.deep.equal(swapBob)
+
+    const swap = swapAlice
+    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('created')
+
+    expect(swap.secretHolder).to.be.an('object')
+    expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
+
+    expect(swap.secretSeeker).to.be.an('object')
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
+  })
+
+  it('must allow bob to open the swap', function () {
+    return this.test.ctx.bob.swapOpen(swapBob)
   })
 
   it('must allow alice to open the swap', function () {
     return this.test.ctx.alice.swapOpen(swapAlice)
   })
 
-  it('must allow bob to open the swap', function () {
-    return this.test.ctx.bob.swapOpen(swapAlice)
+  it.skip('must allow bob to commit the swap', function () {
+    return this.test.ctx.bob.swapCommit(swapBob)
   })
 
-  it('must allow alice to commit the swap', function () {
+  it.skip('must allow alice to commit the swap', function () {
     return this.test.ctx.alice.swapCommit(swapAlice)
-  })
-
-  it('must allow bob to commit the swap', function () {
-    return this.test.ctx.bob.swapCommit(swapAlice)
   })
 })

@@ -32,11 +32,17 @@ module.exports = class Sepolia extends Network {
   }
 
   async open (party) {
-    console.log('network.open', this.constructor.name, party)
-    if (party.asset.symbol === 'ETH') {
-      party.state.invoice = await this._createInvoiceEth(party.quantity)
+    console.log(`creating invoice on ${this.constructor.name} for`, party)
+    if (party.counterparty.asset.symbol === 'ETH') {
+      party.state.invoice = await this._createInvoiceEth(
+        party.counterparty.quantity
+      )
     } else {
-      party.state.invoice = await this._createInvoice(party.quantity)
+      party.state.invoice = await this._createInvoice(
+        party.counterparty.asset.contractAddress,
+        party.counterparty.quantity,
+        party.counterparty.network.contract._web3.chainId
+      )
     }
     return party
   }
@@ -45,11 +51,11 @@ module.exports = class Sepolia extends Network {
     throw new Error('yet to be implemented1!')
   }
 
-  async _createInvoice (tokenAddress, tokenAmount, tokenNetwork) {
+  async _createInvoice (tokenAddress, tokenAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
-        [tokenAddress, tokenAmount, this.client.chainId],
+        [tokenAddress, tokenAmount, '0'],
         (err, res) => { if (err) { reject(err) } else { resolve(res) } }
       )
     })
@@ -73,7 +79,6 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
   const contract = web3Contract
 
   function contractTx (contract, data, cb, ethValue) {
-    console.log('foooo', contract._web3)
     callSolidityFunction(
       contract._web3,
       contract.address,
@@ -92,7 +97,6 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
   }
 
   const func = web3Contract[funcName]
-  console.log(web3Contract, funcName)
   const getData = func.getData
 
   const paramsArray = funcParams
@@ -118,6 +122,8 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
     console.log('ESTIMATED GAS', estimatedGas.toFixed())
 
     web3.eth.getGasPrice((err, price) => {
+      if (err) { console.log(err) }
+
       const adjPrice = price.add(5000000000) // add 5gwei for safe measure
       // price = price.mul(2);
       console.log('NETWORK GAS PRICE', price)
@@ -145,6 +151,8 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
 
 function callSolidityFunction (web3, address, data, public_key, private_key, cb, ethValue, wait_receipt = true, noop = false) {
   function send_tx (err, nonce) {
+    if (err) { console.log(err) }
+
     prev_nonce = nonce
 
     console.log('TX COUNT', nonce)
@@ -158,8 +166,6 @@ function callSolidityFunction (web3, address, data, public_key, private_key, cb,
       return
     }
 
-    console.log('foobar here', web3)
-    console.log('foobar here', web3.networkId, web3.clientId)
     const customCommon = Common.forCustomChain(
       'mainnet',
       {

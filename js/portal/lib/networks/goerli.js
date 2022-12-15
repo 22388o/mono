@@ -14,6 +14,7 @@ const Common = require('ethereumjs-common').default
 module.exports = class Goerli extends Network {
   constructor (props) {
     const assets = ['ETH']
+
     const client = new Web3(new Web3.providers.HttpProvider(props.url))
     client.chainId = props.chainId
     client.networkId = props.chainId
@@ -31,10 +32,17 @@ module.exports = class Goerli extends Network {
   }
 
   async open (party) {
-    if (party.asset.symbol === 'ETH') {
-      party.state.invoice = await this._createInvoiceEth(party.quantity)
+    console.log(`creating invoice on ${this.constructor.name} for`, party)
+    if (party.counterparty.asset.symbol === 'ETH') {
+      party.state.invoice = await this._createInvoiceEth(
+        party.counterparty.quantity
+      )
     } else {
-      party.state.invoice = await this._createInvoice(party.quantity)
+      party.state.invoice = await this._createInvoice(
+        party.counterparty.asset.contractAddress,
+        party.counterparty.quantity,
+        party.counterparty.network.contract._web3.chainId
+      )
     }
     return party
   }
@@ -43,17 +51,17 @@ module.exports = class Goerli extends Network {
     throw new Error('yet to be implemented1!')
   }
 
-  _createInvoice (tokenAddress, tokenAmount, tokenNetwork) {
+  async _createInvoice (tokenAddress, tokenAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
-        [tokenAddress, tokenAmount, this.client.chainId],
+        [tokenAddress, tokenAmount, '0'],
         (err, res) => { if (err) { reject(err) } else { resolve(res) } }
       )
     })
   }
 
-  _createInvoiceEth (ethAmount) {
+  async _createInvoiceEth (ethAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
@@ -114,11 +122,20 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
     console.log('ESTIMATED GAS', estimatedGas.toFixed())
 
     web3.eth.getGasPrice((err, price) => {
+      if (err) { console.log(err) }
+
       const adjPrice = price.add(5000000000) // add 5gwei for safe measure
       // price = price.mul(2);
       console.log('NETWORK GAS PRICE', price)
 
-      web3._gasPrice = adjPrice
+      web3._gasPrice = adjPrice // new bn('3000000000')
+      // web3.
+
+      /* let gasPrice = web3Contract._web3._gasPrice;
+        let gasPayment = gasPrice.mul(estimatedGas);
+        console.log("GAS PAYMENT", gasPayment.div(1e18).toFixed(), "(MAX:", maxGasPayment ? maxGasPayment.div(1e18).toFixed() : '', ")");
+        if( maxGasPayment && maxGasPayment.lt(gasPayment) ){ cb("GAS ESTIMATION ABOVE CUTOFF", null); return; } */
+
       callSolidityFunction(
         contract._web3,
         contract.address,
@@ -134,6 +151,8 @@ function callSolidityFunctionByName (web3Contract, funcName, funcParams, cb, eth
 
 function callSolidityFunction (web3, address, data, public_key, private_key, cb, ethValue, wait_receipt = true, noop = false) {
   function send_tx (err, nonce) {
+    if (err) { console.log(err) }
+
     prev_nonce = nonce
 
     console.log('TX COUNT', nonce)

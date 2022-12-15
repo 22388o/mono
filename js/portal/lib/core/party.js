@@ -73,7 +73,7 @@ module.exports = class Party {
   open () {
     if ((this.swap.isCreated && this.isSecretSeeker) ||
         (this.swap.isOpening && this.isSecretHolder)) {
-      return this.network.open(this)
+      return this.counterparty.network.open(this)
     }
 
     if ((this.swap.isCreated && this.isSecretHolder)) {
