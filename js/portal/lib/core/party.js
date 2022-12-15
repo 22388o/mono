@@ -30,8 +30,6 @@ module.exports = class Party {
     this.swap = null // assigned by the swap constructor
     this.state = null // populated by the user/client over http/rpc
     this.publicInfo = { left: {}, right: {} }
-
-    Object.seal(this)
   }
 
   /**
@@ -73,14 +71,14 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   open () {
-    if ((this.swap.isCreated && this.isSecretHolder) ||
-        (this.swap.isOpening && this.isSecretSeeker)) {
+    if ((this.swap.isCreated && this.isSecretSeeker) ||
+        (this.swap.isOpening && this.isSecretHolder)) {
       return this.network.open(this)
     }
 
-    if ((this.swap.isCreated && this.isSecretSeeker)) {
-      return Promise.reject(Error('waiting for secret holder to open!'))
-    } else if ((this.swap.isOpening && this.isSecretHolder)) {
+    if ((this.swap.isCreated && this.isSecretHolder)) {
+      return Promise.reject(Error('waiting for secret seeker to open!'))
+    } else if ((this.swap.isOpening && this.isSecretSeeker)) {
       return Promise.reject(Error('swap already opened!'))
     } else {
       return Promise.reject(Error('undefined behavior!'))
@@ -116,24 +114,6 @@ module.exports = class Party {
   }
 
   /**
-   * Creates a secret-holding party from the an order from the matching engine
-   * @param {Order} order An order (maker or taker) returned by order matching
-   * @returns {Party}
-   */
-  static fromOrder (order, ctx) {
-    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
-    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-
-    return new Party({
-      id: order.uid,
-      asset: ctx.assets[asset],
-      network: ctx.networks[network],
-      quantity
-    })
-  }
-
-  /**
    * Returns the current state of the instance
    * @type {String}
    */
@@ -150,6 +130,9 @@ module.exports = class Party {
       '@type': this.constructor.name,
       id: this.id,
       swapId: this.swap.id,
+      asset: this.asset,
+      network: this.network,
+      quantity: this.quantity,
       state: this.state,
       publicInfo: this.publicInfo,
       isSecretSeeker: this.isSecretSeeker,
@@ -157,5 +140,23 @@ module.exports = class Party {
     }
 
     return obj
+  }
+
+  /**
+   * Creates a secret-holding party from the an order from the matching engine
+   * @param {Order} order An order (maker or taker) returned by order matching
+   * @returns {Party}
+   */
+  static fromOrder (order, ctx) {
+    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
+    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+
+    return new Party({
+      id: order.uid,
+      asset: ctx.assets.get(asset),
+      network: ctx.networks[network],
+      quantity
+    })
   }
 }

@@ -13,9 +13,9 @@ before('Initialize client/server', function () {
       const { hostname, port } = instance
 
       this.server = instance
-      this.alice = new Client({ hostname, port })
-      this.bob = new Client({ hostname, port })
-      this.client = new Client({ hostname, port })
+      this.alice = new Client({ id: 'alice', hostname, port })
+      this.bob = new Client({ id: 'bob', hostname, port })
+      this.client = new Client({ id: 'client', hostname, port })
 
       return this.client.connect()
     })

@@ -18,8 +18,10 @@ pkgs.mkShell {
 
   shellHook = ''
     ## Environment
-    export PORTAL_URL_GOERLI="https://goerli.infura.io/v3/3f6691a33225484c8e1eebde034b274f"
-    export PORTAL_URL_SEPOLIA="https://sepoloa.infura.io/v3/3f6691a33225484c8e1eebde034b274f"
+    export PORTAL_GOERLI_URL="https://goerli.infura.io/v3/3f6691a33225484c8e1eebde034b274f"
+    export PORTAL_GOERLI_CONTRACT_ADDRESS="0xa28c9f7754291f69c8ad76b16639eb2b2089f18d"
+    export PORTAL_SEPOLIA_URL="https://sepolia.infura.io/v3/3f6691a33225484c8e1eebde034b274f"
+    export PORTAL_SEPOLIA_CONTRACT_ADDRESS="0xc856db6c2d0c9f247918e565a5d2b80bcf44e10b"
 
     ## Aliases
     alias ls='ls --color'

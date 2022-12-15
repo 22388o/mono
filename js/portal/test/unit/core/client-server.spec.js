@@ -41,7 +41,7 @@ describe('Client/Server', function () {
     it('must instantiate a client with reasonable defaults', function () {
       let client = null
 
-      expect(() => { client = new Client() }).to.not.throw()
+      expect(() => { client = new Client({ id: 'client' }) }).to.not.throw()
 
       expect(client).to.be.an.instanceof(Client)
       expect(client.hostname).to.be.a('string').that.equals('localhost')
@@ -62,7 +62,12 @@ describe('Client/Server', function () {
         .then(instance => {
           const { hostname, port } = instance
           server = instance
-          client = new Client({ hostname, port, pathname: '/fixtures' })
+          client = new Client({
+            id: 'client',
+            hostname,
+            port,
+            pathname: '/fixtures'
+          })
           return client.connect()
         })
     })

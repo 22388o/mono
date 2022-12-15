@@ -7,6 +7,7 @@ const Networks = require('./networks')
 const Orderbooks = require('./orderbooks')
 const Store = require('./store')
 const Swaps = require('./swaps')
+const Contracts = require('../../contracts/index.json')
 
 /**
  * Export the request context
@@ -22,8 +23,18 @@ const HttpContext = module.exports = {
  * @type {Networks}
  */
 HttpContext.networks = new Networks({
-  'goerli': process.env.PORTAL_URL_GOERLI,
-  'sepolia': process.env.PORTAL_URL_SEPOLIA
+  goerli: {
+    abi: Contracts.abi,
+    address: process.env.PORTAL_GOERLI_CONTRACT_ADDRESS,
+    chainId: 5,
+    url: process.env.PORTAL_GOERLI_URL
+  },
+  sepolia: {
+    abi: Contracts.abi,
+    address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
+    chainId: 11155111,
+    url: process.env.PORTAL_SEPOLIA_URL
+  }
 }, HttpContext)
 
 /**

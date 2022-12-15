@@ -6,8 +6,6 @@ const { expect } = require('chai')
 
 describe('Orderbook - Limit', function () {
   const PROPS = Object.freeze({
-    uid: 'uid',
-    type: 'limit',
     side: 'bid',
     hash: 'myhash',
     baseAsset: 'ETH',
@@ -30,8 +28,8 @@ describe('Orderbook - Limit', function () {
           expect(o).to.be.an('object')
           expect(o.id).to.be.a('string')
           expect(o.ts).to.be.a('number')
-          expect(o.uid).to.be.a('string').that.equals(O.uid)
-          expect(o.type).to.be.a('string').that.equals(O.type)
+          expect(o.uid).to.be.a('string').that.equals('client')
+          expect(o.type).to.be.a('string').that.equals('limit')
           expect(o.side).to.be.a('string').that.equals(O.side)
           expect(o.hash).to.be.a('string').that.equals(O.hash)
           expect(o.baseAsset).to.be.a('string').that.equals(O.baseAsset)
@@ -54,8 +52,8 @@ describe('Orderbook - Limit', function () {
           expect(o).to.be.an('object')
           expect(o.id).to.be.a('string')
           expect(o.ts).to.be.a('number')
-          expect(o.uid).to.be.a('string').that.equals(O.uid)
-          expect(o.type).to.be.a('string').that.equals(O.type)
+          expect(o.uid).to.be.a('string').that.equals('client')
+          expect(o.type).to.be.a('string').that.equals('limit')
           expect(o.side).to.be.a('string').that.equals(O.side)
           expect(o.hash).to.be.a('string').that.equals(O.hash)
           expect(o.baseAsset).to.be.a('string').that.equals(O.baseAsset)
@@ -77,8 +75,8 @@ describe('Orderbook - Limit', function () {
         expect(o).to.be.an('object')
         expect(o.id).to.be.a('string')
         expect(o.ts).to.be.a('number')
-        expect(o.uid).to.be.a('string').that.equals(O.uid)
-        expect(o.type).to.be.a('string').that.equals(O.type)
+        expect(o.uid).to.be.a('string').that.equals('client')
+        expect(o.type).to.be.a('string').that.equals('limit')
         expect(o.side).to.be.a('string').that.equals(O.side)
         expect(o.hash).to.be.a('string').that.equals(O.hash)
         expect(o.baseAsset).to.be.a('string').that.equals(O.baseAsset)
@@ -87,18 +85,18 @@ describe('Orderbook - Limit', function () {
         expect(o.quoteAsset).to.be.a('string').that.equals(O.quoteAsset)
         expect(o.quoteNetwork).to.be.a('string').that.equals(O.quoteNetwork)
         expect(o.quoteQuantity).to.be.a('number').that.equals(O.quoteQuantity)
+        expect(o.reason).to.equal(null)
       }
 
       client
-        .on('message', function onMessage (o) {
+        .once('order.created', function onOrderCreated (o) {
           validateOrder(o)
-          expect(o.reason).to.equal(null)
-
-          if (o.status === 'opened') {
-            expect(o.reason).to.equal(null)
-            client.off('message', onMessage)
-            done()
-          }
+          expect(o.status).to.be.a('string').that.equals('created')
+        })
+        .once('order.opened', function onOrderOpened (o) {
+          validateOrder(o)
+          expect(o.status).to.be.a('string').that.equals('opened')
+          done()
         })
         .submitLimitOrder(O)
         .then(o => {

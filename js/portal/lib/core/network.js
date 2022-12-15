@@ -12,7 +12,6 @@ module.exports = class Network extends EventEmitter {
   /**
    * Creates a new instance of a Network
    * @param {Object} props Properties of the instance
-   * @param {Object} props.client The blockchain network client
    * @param {String[]} props.assets Assets supported by the blockchain network
    */
   constructor (props) {
@@ -23,10 +22,7 @@ module.exports = class Network extends EventEmitter {
     }
 
     this.name = this.constructor.name.toLowerCase()
-    this.client = props.client
     this.assets = new Set(props.assets)
-
-    Object.seal(this)
   }
 
   /**

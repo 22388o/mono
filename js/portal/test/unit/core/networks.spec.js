@@ -5,21 +5,18 @@
 const { expect } = require('chai')
 const Network = require('../../../lib/core/network')
 const Networks = require('../../../lib/core/networks')
-const Contracts = require('../../../../contracts/index.json')
 
 const SUPPORTED = [
-  'evm',
   'goerli',
   'lightning',
   'sepolia'
 ]
 
 describe('Networks', function () {
-  // For testing, we only consider the local EVM
   const PROPS = {
-    evm: {
-      abi: Contracts.development.abi,
-      address: Contracts.development.address,
+    goerli: {
+      abi: ['dummy_abi'],
+      address: '0xfakeaddress',
       url: 'http://localhost:8545'
     }
   }

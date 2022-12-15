@@ -185,7 +185,7 @@ module.exports = class Swap extends EventEmitter {
 
     const { state } = party
     party = isHolder ? secretHolder : secretSeeker
-    party.state = Object.freeze(Object.assign({}, party.state, state))
+    party.state = Object.assign({}, party.state, state)
 
     party = await party.open()
     SWAP_INSTANCES.get(this).status = this.isOpening
