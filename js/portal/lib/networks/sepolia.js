@@ -32,23 +32,42 @@ module.exports = class Sepolia extends Network {
   }
 
   async open (party) {
-    console.log(`creating invoice on ${this.constructor.name} for`, party)
-    if (party.counterparty.asset.symbol === 'ETH') {
-      party.state.invoice = await this._createInvoiceEth(
-        party.counterparty.quantity
-      )
+    if (party.isSecretHolder) {
+      // Save the invoice in the counterparty's state
+      const invoice = party.counterparty.asset.symbol === 'ETH'
+        ? await this._createInvoiceEth(party.counterparty.quantity)
+        : await this._createInvoice(
+          party.counterparty.asset.contractAddress,
+          party.counterparty.quantity,
+          party.counterparty.network.contract._web3.chainId
+        )
+      const invoiceId = this._parseInvoiceId(invoice)
+      party.counterparty.state.sepolia = { invoice: invoiceId }
+
+      return party
+    } else if (party.isSecretSeeker) {
+      throw Error('not implemented yet!')
     } else {
-      party.state.invoice = await this._createInvoice(
-        party.counterparty.asset.contractAddress,
-        party.counterparty.quantity,
-        party.counterparty.network.contract._web3.chainId
-      )
+      throw Error('multi-party swaps are not supported yet!')
     }
+  }
+
+  async commit (party) {
+    console.log(`creating invoice on ${this.constructor.name} for`, party)
+    party.state.invoice = party.counterparty.asset.symbol === 'ETH'
+      ? await this._payInvoiceEth(
+
+      )
+      : await this._payInvoice(
+
+      )
     return party
   }
 
-  commit (party) {
-    throw new Error('yet to be implemented1!')
+  _parseInvoiceId (invoice) {
+    const hex = invoice.logs[0].data.substr(2, 64)
+    const dec = parseInt(hex, 16)
+    return dec.toString()
   }
 
   async _createInvoice (tokenAddress, tokenAmount) {
@@ -67,6 +86,27 @@ module.exports = class Sepolia extends Network {
         this.contract, 'createInvoice',
         ['0x0000000000000000000000000000000000000000', ethAmount, '0'],
         (err, res) => { if (err) { reject(err) } else { resolve(res) } }
+      )
+    })
+  }
+
+  async _payInvoice (invoiceId, hashOfSecret) {
+    return new Promise((resolve, reject) => {
+      callSolidityFunctionByName(
+        this.contract, 'payInvoice',
+        [invoiceId, hashOfSecret],
+        (err, res) => { if (err) { reject(err) } else { resolve(res) } }
+      )
+    })
+  }
+
+  async _payInvoiceEth (invoiceId, hashOfSecret, ethAmount) {
+    return new Promise((resolve, reject) => {
+      callSolidityFunctionByName(
+        this.contract, 'payInvoice',
+        [invoiceId, hashOfSecret],
+        (err, res) => { if (err) { reject(err) } else { resolve(res) } },
+        ethAmount
       )
     })
   }

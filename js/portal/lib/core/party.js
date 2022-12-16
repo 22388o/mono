@@ -28,7 +28,7 @@ module.exports = class Party {
     this.quantity = props.quantity
 
     this.swap = null // assigned by the swap constructor
-    this.state = null // populated by the user/client over http/rpc
+    this.state = {} // populated by the user/client over http/rpc
     this.publicInfo = { left: {}, right: {} }
   }
 

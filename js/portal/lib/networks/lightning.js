@@ -11,57 +11,28 @@ const ln = require('lightning')
  */
 module.exports = class Lightning extends Network {
   constructor (props) {
-    super({
-      assets: ['BTC'],
-      client: ln
-    })
+    super({ assets: ['BTC'] })
   }
 
   getCounterpartyInfo (party) {
     return party.swap.getCounterpartyInfo(party)
   }
 
-  async init (party) {
-    const leftClientInfo = party.state.left.clientInfo
-    const rightClientInfo = party.state.right.clientInfo
-
-    party.state.left.lnd.admin = ln.authenticatedLndGrpc({
-      cert: leftClientInfo.cert,
-      macaroon: leftClientInfo.adminMacaroon,
-      socket: leftClientInfo.socket
-    })
-    party.state.left.lnd.invoice = ln.authenticatedLndGrpc({
-      cert: leftClientInfo.cert,
-      macaroon: leftClientInfo.invoiceMacaroon,
-      socket: leftClientInfo.socket
-    })
-    party.state.right.lnd.admin = ln.authenticatedLndGrpc({
-      cert: rightClientInfo.cert,
-      macaroon: rightClientInfo.adminMacaroon,
-      socket: rightClientInfo.socket
-    })
-    party.state.right.lnd.invoice = ln.authenticatedLndGrpc({
-      cert: rightClientInfo.cert,
-      macaroon: rightClientInfo.invoiceMacaroon,
-      socket: rightClientInfo.socket
-    })
-    console.log(`state.left: ${JSON.stringify(party.state.left)}`)
-    console.log(`state.left.lnd.admin: ${party.state.right.lnd.admin}`)
-    console.log(`state.left.lnd.invoice: ${party.state.right.lnd.invoice}`)
-    console.log(`state.right.lnd.admin: ${party.state.right.lnd.admin}`)
-    console.log(`state.right.lnd.invoice: ${party.state.right.lnd.invoice}`)
-  }
-
   async open (party) {
-    await this.init(party)
-
     if (party.isSecretSeeker) {
-      const aliceInvoice1 = party.state.left.lnd.invoice
-      aliceInvoice1.id = party.swapHash
-      aliceInvoice1.tokens = party.quantity
-      const request1 = (await ln.createHodlInvoice(aliceInvoice1)).request
-      console.log(`request1: ${request1}`)
-      party.publicInfo.left.request = request1
+      const { admin, socket } = party.state.lightning
+      // TODO: Fix cert issue
+      const grpcArgs = { cert: '', macaroon: admin, socket }
+      const grpc = ln.authenticatedLndGrpc(grpcArgs)
+      grpc.id = party.swap.secretHash
+      // TODO: Fix this to be in satoshi from the client!
+      grpc.tokens = party.counterparty.quantity * 10e8
+
+      // Save the invoice in the counterparty's state
+      const invoice = await ln.createHodlInvoice(grpc)
+      party.counterparty.state.lightning = { invoice: invoice.request }
+
+      return party
     } else if (party.isSecretHolder) {
       const carolInvoice2 = party.state.right.lnd.invoice
       const swapHash = party.swapHash
@@ -92,6 +63,7 @@ module.exports = class Lightning extends Network {
         await ln.settleHodlInvoice(carolInvoice2)
         console.log('Carol has performed paymentStep2 on invoice2')
       })
+
       console.log(`in commit for carol: request2: ${request2}`)
       party.publicInfo.right.request = request2
       party.state.right.lnd.subscription = subscription

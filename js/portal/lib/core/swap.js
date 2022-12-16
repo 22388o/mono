@@ -162,6 +162,16 @@ module.exports = class Swap extends EventEmitter {
   }
 
   /**
+   * Returns whether or not the specified user is a party to the swap
+   * @param {Party|Object} party.id The unique identifier of the party
+   * @returns {Boolean}
+   */
+  isParty (party) {
+    return this.secretHolder.id === party.id ||
+           this.secretSeeker.id === party.id
+  }
+
+  /**
    * Handles opening of the swap by one of its parties
    * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
@@ -183,6 +193,7 @@ module.exports = class Swap extends EventEmitter {
       throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
     }
 
+    // NOTE: Mutation!!
     const { state } = party
     party = isHolder ? secretHolder : secretSeeker
     party.state = Object.assign({}, party.state, state)
@@ -191,6 +202,7 @@ module.exports = class Swap extends EventEmitter {
     SWAP_INSTANCES.get(this).status = this.isOpening
       ? SWAP_STATUS[2]
       : SWAP_STATUS[1]
+    this.emit(this.status, this)
 
     return party
   }
@@ -221,6 +233,7 @@ module.exports = class Swap extends EventEmitter {
     SWAP_INSTANCES.get(this).status = this.isCommitting
       ? SWAP_STATUS[4]
       : SWAP_STATUS[3]
+    this.emit(this.status, this)
 
     return party
   }

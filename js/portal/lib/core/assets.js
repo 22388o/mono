@@ -3,6 +3,10 @@
  */
 
 module.exports = {
+  BTC: {
+    name: 'Bitcoin',
+    symbol: 'BTC'
+  },
   BTC1: {
     name: 'Bitcoin Regtest 1',
     symbol: 'BTC1'

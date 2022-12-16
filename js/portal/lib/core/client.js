@@ -11,7 +11,16 @@ const Websocket = require('ws')
  * @type {Client}
  */
 module.exports = class Client extends EventEmitter {
-  constructor (props = {}) {
+  /**
+   * Creates a new instance of Client
+   * @param {Object} props Properties of the client
+   * @param {String} props.id The unique name of the client
+   * @param {String} [props.hostname='localhost'] The hostname of the Portal server
+   * @param {Number} [props.port=80] The port of the Portal server
+   * @param {String} [props.pathname='/api/v1/updates'] The path to the updates channel
+   * @param {Object} [props.state] Optional state maintained by the client
+   */
+  constructor (props) {
     if (props == null) {
       throw Error('no properties specified for the client!')
     } else if (props.id == null || typeof props.id !== 'string') {
@@ -24,6 +33,7 @@ module.exports = class Client extends EventEmitter {
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
     this.pathname = props.pathname || '/api/v1/updates'
+    this.state = props.state
     this.websocket = null
 
     Object.seal(this)
@@ -35,6 +45,29 @@ module.exports = class Client extends EventEmitter {
    */
   get isConnected () {
     return (this.websocket != null) && (this.websocket.readyState === 1)
+  }
+
+  /**
+   * Returns the current state of the instance
+   * @type {String}
+   */
+  [Symbol.for('nodejs.util.inspect.custom')] () {
+    return this.toJSON()
+  }
+
+  /**
+   * Returns the JSON representation of this instance
+   * @returns {Object}
+   */
+  toJSON () {
+    return {
+      '@type': this.constructor.name,
+      id: this.id,
+      hostname: this.hostname,
+      port: this.port,
+      pathname: this.pathname,
+      state: this.state
+    }
   }
 
   /**

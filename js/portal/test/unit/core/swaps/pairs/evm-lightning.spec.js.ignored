@@ -1,0 +1,163 @@
+/**
+ * @file Behavioral specification for interface to in-progress atomic swaps
+ */
+
+const { expect } = require('chai')
+const { createHash, randomBytes } = require('crypto')
+const Order = require('../../../../../lib/core/order')
+const Party = require('../../../../../lib/core/party')
+const Swap = require('../../../../../lib/core/swap')
+
+describe.skip('Swaps - EVM/Lightning', function () {
+  const SECRET = randomBytes(32)
+  const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
+  const BASE_ORDER = {
+    type: 'limit',
+    baseAsset: 'BTC',
+    baseNetwork: 'lightning',
+    baseQuantity: 1,
+    quoteAsset: 'ETH',
+    quoteNetwork: 'goerli',
+    quoteQuantity: 1000
+  }
+  const MAKER_ORDER_PROPS = Object.assign({
+    uid: 'uid0',
+    hash: SECRET_HASH,
+    side: 'ask'
+  }, BASE_ORDER)
+  const TAKER_ORDER_PROPS = Object.assign({
+    uid: 'uid1',
+    hash: 'ignored',
+    side: 'bid'
+  }, BASE_ORDER)
+  const MAKER_ORDER = new Order(MAKER_ORDER_PROPS)
+  const TAKER_ORDER = new Order(TAKER_ORDER_PROPS)
+
+  let swap
+
+  /**
+   * Create a Swap from a pair of matched orders
+   */
+  it('must create a swap for an matched order pair', async function () {
+    const swaps = this.test.ctx.swaps
+
+    swap = await swaps.fromOrders(MAKER_ORDER, TAKER_ORDER)
+    expect(swaps.swaps).to.have.lengthOf(1)
+    expect(swaps.swaps.get(swap.id)).to.equal(swap)
+
+    expect(swap).to.be.an.instanceof(Swap)
+    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('created')
+
+    expect(swap.secretHolder).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretHolder).to.be.sealed
+    expect(swap.secretHolder.id).to.be.a('string').that.equals('uid0')
+    expect(swap.secretHolder.swap).to.be.an.instanceof(Swap).that.equals(swap)
+    expect(swap.secretHolder.state).to.equal(null)
+    expect(swap.secretHolder.isSecretHolder).to.be.a('boolean').that.equals(true)
+    expect(swap.secretHolder.isSecretSeeker).to.be.a('boolean').that.equals(false)
+
+    expect(swap.secretSeeker).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretSeeker).to.be.sealed
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals('uid1')
+    expect(swap.secretSeeker.swap).to.be.an.instanceof(Swap)
+    expect(swap.secretSeeker.state).to.equal(null)
+    expect(swap.secretSeeker.isSecretHolder).to.be.a('boolean').that.equals(false)
+    expect(swap.secretSeeker.isSecretSeeker).to.be.a('boolean').that.equals(true)
+  })
+
+  /**
+   * It must open the atomic swap for the secret holder
+   */
+  it('must open a swap for the secret holder', async function () {
+    const party = await this.test.ctx.swaps.open({ id: swap.id }, {
+      id: swap.secretHolder.id,
+      state: {}
+    })
+
+    expect(swap).to.be.an.instanceof(Swap)
+    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('opening')
+
+    expect(swap.secretHolder).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretHolder).to.be.sealed
+    expect(swap.secretHolder.id).to.be.a('string').that.equals('uid0')
+    expect(swap.secretHolder.swap).to.be.an.instanceof(Swap).that.equals(swap)
+    expect(swap.secretHolder.state).to.be.an('object').that.deep.equals(STATE)
+    expect(swap.secretHolder.isSecretHolder).to.be.a('boolean').that.equals(true)
+    expect(swap.secretHolder.isSecretSeeker).to.be.a('boolean').that.equals(false)
+
+    expect(swap.secretSeeker).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretSeeker).to.be.sealed
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals('uid1')
+    expect(swap.secretSeeker.swap).to.be.an.instanceof(Swap)
+    expect(swap.secretSeeker.state).to.equal(null)
+    expect(swap.secretSeeker.isSecretHolder).to.be.a('boolean').that.equals(false)
+    expect(swap.secretSeeker.isSecretSeeker).to.be.a('boolean').that.equals(true)
+
+    expect(party).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(party).to.be.sealed
+    expect(party.id).to.be.a('string').that.equals('uid0')
+    expect(party.swap).to.be.an.instanceof(Swap).that.equals(swap)
+    expect(party.state).to.be.an('object').that.deep.equals(STATE)
+    expect(party.isSecretHolder).to.be.a('boolean').that.equals(true)
+    expect(party.isSecretSeeker).to.be.a('boolean').that.equals(false)
+  })
+
+  /**
+   * It must open the atomic swap for the secret seeker
+   */
+  it('must open a swap for the secret seeker', async function () {
+    const party = await this.test.ctx.swaps.open({ id: swap.id }, {
+      id: swap.secretSeeker.id,
+      state: {}
+    })
+
+    expect(swap).to.be.an.instanceof(Swap)
+    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('opened')
+
+    expect(swap.secretHolder).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretHolder).to.be.sealed
+    expect(swap.secretHolder.id).to.be.a('string').that.equals('uid0')
+    expect(swap.secretHolder.swap).to.be.an.instanceof(Swap).that.equals(swap)
+    expect(swap.secretHolder.state).to.be.an('object').that.deep.equals({ foo: 'bar' })
+    expect(swap.secretHolder.isSecretHolder).to.be.a('boolean').that.equals(true)
+    expect(swap.secretHolder.isSecretSeeker).to.be.a('boolean').that.equals(false)
+
+    expect(swap.secretSeeker).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(swap.secretSeeker).to.be.sealed
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals('uid1')
+    expect(swap.secretSeeker.swap).to.be.an.instanceof(Swap)
+    expect(swap.secretSeeker.state).to.be.an('object').that.deep.equals(STATE)
+    expect(swap.secretSeeker.isSecretHolder).to.be.a('boolean').that.equals(false)
+    expect(swap.secretSeeker.isSecretSeeker).to.be.a('boolean').that.equals(true)
+
+    expect(party).to.be.an.instanceof(Party)
+    /* eslint-disable-next-line no-unused-expressions */
+    expect(party).to.be.sealed
+    expect(party.id).to.be.a('string').that.equals('uid1')
+    expect(party.swap).to.be.an.instanceof(Swap).that.equals(swap)
+    expect(party.state).to.be.an('object').that.deep.equals(STATE)
+    expect(party.isSecretHolder).to.be.a('boolean').that.equals(false)
+    expect(party.isSecretSeeker).to.be.a('boolean').that.equals(true)
+  })
+
+  it('must commit the swap for the secret holder', async function () {
+
+  })
+
+  it('must commit the swap for the secret seeker', async function () {
+
+  })
+})

@@ -3,6 +3,7 @@ result*
 
 # Node.js
 coverage
+dist
 node_modules
 
 # Terraform

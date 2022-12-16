@@ -31,9 +31,11 @@ module.exports = class Swaps extends EventEmitter {
 
       try {
         swap = Swap.fromOrders(maker, taker, this.ctx)
-          .once('open', () => this.emit('open', swap))
-          .once('abort', () => this.emit('abort', swap))
-          .once('commit', () => this.emit('commit', swap))
+          .once('created', (...args) => this.emit('created', ...args))
+          .once('opening', (...args) => this.emit('opening', ...args))
+          .once('opened', (...args) => this.emit('opened', ...args))
+          .once('committing', (...args) => this.emit('committing', ...args))
+          .once('committed', (...args) => this.emit('committed', ...args))
 
         this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
       } catch (err) {

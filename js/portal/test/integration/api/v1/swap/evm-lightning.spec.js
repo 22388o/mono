@@ -8,16 +8,16 @@ const { createHash, randomBytes } = require('crypto')
 /**
  * This is a simple test case wherein,
  */
-describe('Swaps - EVM/EVM', function () {
+describe.only('Swaps - EVM/Lightning', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
-    baseAsset: 'ETH',
-    baseNetwork: 'sepolia',
-    baseQuantity: 1,
-    quoteAsset: 'USDC',
+    baseAsset: 'BTC',
+    baseNetwork: 'lightning',
+    baseQuantity: 0.00001,
+    quoteAsset: 'ETH',
     quoteNetwork: 'goerli',
-    quoteQuantity: 1000
+    quoteQuantity: 1
   }
   let swapAlice = null
   let swapBob = null
@@ -31,14 +31,16 @@ describe('Swaps - EVM/EVM', function () {
    *
    * We record these events for both Alice and Bob and use them later.
    */
-  before(function () {
+  before('Watch for updates for the server', function () {
     const { alice, bob } = this.test.ctx
 
     alice
       .on('swap.created', swap => { swapAlice = swap })
+      .on('swap.opened', swap => { swapAlice = swap })
 
     bob
       .on('swap.created', swap => { swapBob = swap })
+      .on('swap.opened', swap => { swapBob = swap })
   })
 
   /**
@@ -48,11 +50,11 @@ describe('Swaps - EVM/EVM', function () {
   it('must allow alice to place an order', function (done) {
     this.test.ctx.alice
       .once('order.opened', order => done())
-      .once('error', done)
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
         hash: SECRET_HASH,
         side: 'ask'
       }))
+      .catch(done)
   })
 
   /**
@@ -62,11 +64,11 @@ describe('Swaps - EVM/EVM', function () {
   it('must allow bob to place an order', function (done) {
     this.test.ctx.bob
       .once('order.opened', order => done())
-      .once('error', done)
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
         hash: 'ignored',
         side: 'bid'
       }))
+      .catch(done)
   })
 
   /**
@@ -99,7 +101,9 @@ describe('Swaps - EVM/EVM', function () {
    * Once the swap is created, Bob (the secret seeker) opens the swap.
    */
   it('must allow bob to open the swap', function () {
-    return this.test.ctx.bob.swapOpen(swapBob)
+    const { bob } = this.test.ctx
+    const { lightning } = bob.state
+    return bob.swapOpen(swapBob, { lightning })
   })
 
   /**
@@ -108,6 +112,31 @@ describe('Swaps - EVM/EVM', function () {
    */
   it('must allow alice to open the swap', function () {
     return this.test.ctx.alice.swapOpen(swapAlice)
+  })
+
+  it('must broadcast the opened swap to alice and bob', function () {
+    const { alice, bob } = this.test.ctx
+
+    expect(swapAlice).to.be.an('object')
+    expect(swapBob).to.be.an('object')
+    expect(swapAlice).to.deep.equal(swapBob)
+
+    const swap = swapAlice
+    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('opened')
+
+    expect(swap.secretHolder).to.be.an('object')
+    expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
+    expect(swap.secretHolder.state).to.be.an('object')
+    expect(swap.secretHolder.state.lightning).to.be.an('object')
+    expect(swap.secretHolder.state.lightning.invoice).to.be.a('string')
+
+    expect(swap.secretSeeker).to.be.an('object')
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
+    expect(swap.secretSeeker.state).to.be.an('object')
+    expect(swap.secretSeeker.state.goerli).to.be.an('object')
+    expect(swap.secretSeeker.state.goerli.invoice).to.be.a('string')
   })
 
   /**

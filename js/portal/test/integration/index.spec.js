@@ -17,8 +17,12 @@ before('Initialize client/server', function () {
       const client = new Client({ id: 'client', hostname, port })
 
       // For advanced multi-client test suites
-      const alice = new Client({ id: 'alice', hostname, port })
-      const bob = new Client({ id: 'bob', hostname, port })
+      const create = id => {
+        const state = require(`./${id}.json`)
+        return new Client({ id, hostname, port, state })
+      }
+      const alice = create('alice')
+      const bob = create('bob')
 
       Object.assign(this, { alice, bob, client, server })
 

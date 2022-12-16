@@ -11,6 +11,7 @@ const { EventEmitter } = require('events')
  * @type {Array<Object>}
  */
 const PROPS = [
+  { baseAsset: 'BTC', quoteAsset: 'ETH', limitSize: 100000 },
   { baseAsset: 'ETH', quoteAsset: 'USDC', limitSize: 100 }
 ]
 
