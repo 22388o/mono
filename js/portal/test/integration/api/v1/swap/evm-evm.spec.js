@@ -55,6 +55,10 @@ describe.only('Swaps - EVM/EVM', function () {
       }))
   })
 
+  /**
+   * Bob places the counter-order that would match with Alice's order, and waits
+   * for the order to be opened on the orderbook.
+   */
   it('must allow bob to place an order', function (done) {
     this.test.ctx.bob
       .once('order.opened', order => done())
@@ -65,6 +69,13 @@ describe.only('Swaps - EVM/EVM', function () {
       }))
   })
 
+  /**
+   * Bob's order being opened on the orderbook triggers the creation of a swap
+   * based on the two orders to be matched. The swap is sent down the open
+   * updates channel for the two parties. This test verifies that the swap is
+   * received by both alice and bob, and that the fields are as expected, esp.
+   * the secret hash.
+   */
   it('must match orders from alice and bob', function () {
     const { alice, bob } = this.test.ctx
 
@@ -84,18 +95,32 @@ describe.only('Swaps - EVM/EVM', function () {
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
   })
 
+  /**
+   * Once the swap is created, Bob (the secret seeker) opens the swap.
+   */
   it('must allow bob to open the swap', function () {
     return this.test.ctx.bob.swapOpen(swapBob)
   })
 
+  /**
+   * Once Bob has opened the swap, Alice (the secret-holder) proceeds to open
+   * the swap.
+   */
   it('must allow alice to open the swap', function () {
     return this.test.ctx.alice.swapOpen(swapAlice)
   })
 
+  /**
+   * Once the swap is opened, Bob commits to the swap.
+   */
   it.skip('must allow bob to commit the swap', function () {
     return this.test.ctx.bob.swapCommit(swapBob)
   })
 
+  /**
+   * Lastly, Alice commits to the swap, and this should trigger the exchange of
+   * assets on both chains.
+   */
   it.skip('must allow alice to commit the swap', function () {
     return this.test.ctx.alice.swapCommit(swapAlice)
   })
