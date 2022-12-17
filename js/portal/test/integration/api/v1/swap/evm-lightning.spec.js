@@ -78,7 +78,7 @@ describe.only('Swaps - EVM/Lightning', function () {
    * received by both alice and bob, and that the fields are as expected, esp.
    * the secret hash.
    */
-  it('must match orders from alice and bob', function () {
+  it('must broadcast the created swap to alice and bob', function () {
     const { alice, bob } = this.test.ctx
 
     expect(swapAlice).to.be.an('object')
@@ -130,19 +130,19 @@ describe.only('Swaps - EVM/Lightning', function () {
     expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
     expect(swap.secretHolder.state).to.be.an('object')
     expect(swap.secretHolder.state.lightning).to.be.an('object')
-    expect(swap.secretHolder.state.lightning.invoice).to.be.a('string')
+    expect(swap.secretHolder.state.lightning.invoice).to.be.an('object')
 
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
     expect(swap.secretSeeker.state).to.be.an('object')
     expect(swap.secretSeeker.state.goerli).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli.invoice).to.be.a('string')
+    expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
   })
 
   /**
    * Once the swap is opened, Bob commits to the swap.
    */
-  it.skip('must allow bob to commit the swap', function () {
+  it('must allow bob to commit the swap', function () {
     return this.test.ctx.bob.swapCommit(swapBob)
   })
 
@@ -150,7 +150,15 @@ describe.only('Swaps - EVM/Lightning', function () {
    * Lastly, Alice commits to the swap, and this should trigger the exchange of
    * assets on both chains.
    */
-  it.skip('must allow alice to commit the swap', function () {
+  it('must allow alice to commit the swap', function () {
     return this.test.ctx.alice.swapCommit(swapAlice)
+  })
+
+  it.skip('must broadcast the opened swap to alice and bob', function () {
+
+  })
+
+  it.skip('must validate account balances for alice and bob', function () {
+
   })
 })

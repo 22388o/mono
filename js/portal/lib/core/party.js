@@ -90,14 +90,16 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   commit () {
-    if ((this.swap.isOpened && this.isSecretHolder) ||
-        (this.swap.isCommitting && this.isSecretSeeker)) {
-      // NOTE: this time around we commit to the counterparty's network
-      return this.counterparty.network.commit(this)
+    if (this.swap.isOpened && this.isSecretSeeker) {
+      this.counterparty.network.commit(this)
+      return this
+    } else if (this.swap.isCommitting && this.isSecretHolder) {
+      this.network.commit(this)
+      return this
     }
 
-    if ((this.swap.isOpened && this.isSecretSeeker)) {
-      return Promise.reject(Error('waiting for secret holder to commit!'))
+    if ((this.swap.isOpened && this.isSecretHolder)) {
+      return Promise.reject(Error('waiting for secret seeker to commit!'))
     } else if ((this.swap.isCommitting && this.isSecretHolder)) {
       return Promise.reject(Error('swap already committed!'))
     } else {

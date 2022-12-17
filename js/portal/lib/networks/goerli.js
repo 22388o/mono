@@ -32,7 +32,9 @@ module.exports = class Goerli extends Network {
   }
 
   async open (party) {
-    if (party.isSecretHolder) {
+    if (party.isSecretSeeker) {
+      throw Error('not implemented yet!')
+    } else if (party.isSecretHolder) {
       // Save the invoice in the counterparty's state
       const invoice = party.counterparty.asset.symbol === 'ETH'
         ? await this._createInvoiceEth(party.counterparty.quantity)
@@ -41,27 +43,31 @@ module.exports = class Goerli extends Network {
           party.counterparty.quantity,
           party.counterparty.network.contract._web3.chainId
         )
-      const invoiceId = this._parseInvoiceId(invoice)
-      party.counterparty.state.goerli = { invoice: invoiceId }
+      invoice.id = this._parseInvoiceId(invoice)
+      party.counterparty.state.goerli = { invoice }
 
       return party
-    } else if (party.isSecretSeeker) {
-      throw Error('not implemented yet!')
     } else {
       throw Error('multi-party swaps are not supported yet!')
     }
   }
 
   async commit (party) {
-    console.log(`creating invoice on ${this.constructor.name} for`, party)
-    party.state.invoice = party.counterparty.asset.symbol === 'ETH'
-      ? await this._payInvoiceEth(
+    if (party.isSecretSeeker) {
+      throw Error('not implemented yet!')
+    } else if (party.isSecretHolder) {
+      party.state.invoice = party.counterparty.asset.symbol === 'ETH'
+        ? await this._payInvoiceEth(
 
-      )
-      : await this._payInvoice(
+        )
+        : await this._payInvoice(
 
-      )
-    return party
+        )
+
+      return party
+    } else {
+      throw Error('multi-party swaps are not supported yet!')
+    }
   }
 
   _parseInvoiceId (invoice) {

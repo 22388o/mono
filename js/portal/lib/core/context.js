@@ -29,6 +29,7 @@ HttpContext.networks = new Networks({
     chainId: 5,
     url: process.env.PORTAL_GOERLI_URL
   },
+  lightning: {},
   sepolia: {
     abi: Contracts.abi,
     address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
