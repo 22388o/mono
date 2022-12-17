@@ -18,19 +18,19 @@ module.exports = class Lightning extends Network {
     return party.swap.getCounterpartyInfo(party)
   }
 
-  async open (party) {
+  async open (party, opts) {
     if (party.isSecretSeeker) {
-      const { admin, socket } = party.state.lightning
+      const { cert, invoice, socket } = opts.lightning
       // TODO: Fix cert issue
-      const grpcArgs = { cert: '', macaroon: admin, socket }
+      const grpcArgs = { cert, macaroon: invoice, socket }
       const grpc = ln.authenticatedLndGrpc(grpcArgs)
       grpc.id = party.swap.secretHash
       // TODO: Fix this to be in satoshi from the client!
       grpc.tokens = party.counterparty.quantity * 10e8
 
       // Save the invoice in the counterparty's state
-      const invoice = await ln.createHodlInvoice(grpc)
-      party.counterparty.state.lightning = { invoice }
+      const receipt = await ln.createHodlInvoice(grpc)
+      party.counterparty.state.lightning = { invoice: receipt }
 
       return party
 
@@ -83,21 +83,21 @@ module.exports = class Lightning extends Network {
     }
   }
 
-  async commit (party) {
+  async commit (party, opts) {
+    console.log('lightning.commit for', party)
+
     if (party.isSecretSeeker) {
-      const { admin, socket } = party.state.lightning
-      // TODO: Fix cert issue
-      const grpcArgs = { cert: '', macaroon: admin, socket }
+      const { cert, invoice, socket } = opts.lightning
+      const grpcArgs = { cert, macaroon: invoice, socket }
       const grpc = ln.authenticatedLndGrpc(grpcArgs)
       grpc.id = party.counterparty.state.lightning.invoice.id
 
       const subscription = await ln.subscribeToInvoice(grpc)
-      subscription.on('invoice_updated', invoice => {
+      await subscription.on('invoice_updated', invoice => {
         console.log('bob invoice updated', invoice)
       })
 
       return party
-      // const holderInvoice = party.state[party.network.name].invoice
       // const aliceInvoice1 = party.state.left.lnd.invoice
       // const alice2 = party.state.right.lnd.admin
       //
@@ -136,7 +136,25 @@ module.exports = class Lightning extends Network {
       // })
       // console.log('subscription set up')
     } else if (party.isSecretHolder) {
-      console.log('lightning.commit for', party)
+      const { cert, admin, socket } = opts.lightning
+      const grpcArgs = { cert, macaroon: admin, socket }
+      const grpc = ln.authenticatedLndGrpc(grpcArgs)
+      const seekerInvoice = party.state[party.network.name].invoice
+      grpc.request = seekerInvoice.request
+
+      const holderPaymentRequest = await ln.decodePaymentRequest(grpc)
+      if (holderPaymentRequest.id !== party.swap.secretHash) {
+        throw Error('unexpected swap hash!')
+      }
+      console.log('payment request to', party.id, holderPaymentRequest)
+
+      grpc.request = seekerInvoice.request
+      console.log('here 1234', grpc)
+      const holderPaymentConfirmation = await ln.payViaPaymentRequest(grpc)
+        .catch(err => console.log('error making payment', err))
+      console.log('payment confirmation by', party.id, holderPaymentConfirmation)
+      console.log('here 5678')
+
       // console.log('in commit for SecretHolder')
       // console.log(`party.swap.status: ${party.swap.status}`)
       // if (!party.swap.isCommitting) {

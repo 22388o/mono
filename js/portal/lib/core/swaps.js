@@ -50,46 +50,50 @@ module.exports = class Swaps extends EventEmitter {
    * Handles the opening of a swap by a user that is a party to the swap
    * @param {Swap} swap The swap to open
    * @param {String} swap.id The unique identifier of the swap to be opened
-   * @param {Party} party The party that is opening the swap
+   * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
-   * @param {*} party.public.state Data that may be shared with the other party
-   * @param {*} party.private.state Data that may not be shared with the other party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  open (swap, party) {
+  open (swap, party, opts) {
     if (swap == null || swap.id == null) {
       return Promise.reject(Error('unknown swap!'))
     } else if (!this.swaps.has(swap.id)) {
       return Promise.reject(Error(`unknown swap "${swap.id}"!`))
     } else {
-      return this.swaps.get(swap.id).open(party)
+      return this.swaps.get(swap.id).open(party, opts)
     }
   }
 
   /**
    * Handles commiting to a swap by a user that is a party to id
    * @param {Swap} swap The swap being committed
-   * @param {String} swap.id The unique identifier of the swap to be opened
-   * @param {Party} party The party that is opening the swap
+   * @param {String} swap.id The unique identifier of the swap to be committed
+   * @param {Party} party The party that is committing the swap
    * @param {String} party.id The unique identifier of the party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Void>}
    */
-  commit (swap, party) {
+  commit (swap, party, opts) {
     if (swap == null || swap.id == null) {
       return Promise.reject(Error('unknown swap!'))
     } else if (!this.swaps.has(swap.id)) {
       return Promise.reject(Error(`unknown swap "${swap.id}"!`))
     } else {
-      return this.swaps.get(swap.id).commit(party)
+      return this.swaps.get(swap.id).commit(party, opts)
     }
   }
 
   /**
    * Aborts a swap gracefully
    * @param {Swap} swap The swap to be aborted
+   * @param {String} swap.id The unique identifier of the swap to be aborted
+   * @param {Party} party The party that is aborting the swap
+   * @param {String} party.id The unique identifier of the party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Void>}
    */
-  abort (swap, party) {
+  abort (swap, party, opts) {
     return new Promise((resolve, reject) => {
       reject(Error('not implemented yet!'))
     })

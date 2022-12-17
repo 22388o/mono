@@ -175,10 +175,10 @@ module.exports = class Swap extends EventEmitter {
    * Handles opening of the swap by one of its parties
    * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
-   * @param {*} party.state Data that may be not be shared with the other party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  async open (party) {
+  async open (party, opts) {
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
@@ -198,7 +198,7 @@ module.exports = class Swap extends EventEmitter {
     party = isHolder ? secretHolder : secretSeeker
     party.state = Object.assign({}, party.state, state)
 
-    party = await party.open()
+    party = await party.open(opts)
     SWAP_INSTANCES.get(this).status = this.isOpening
       ? SWAP_STATUS[2]
       : SWAP_STATUS[1]
@@ -211,9 +211,10 @@ module.exports = class Swap extends EventEmitter {
    * Handles committing to the swap by one of its parties
    * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  async commit (party) {
+  async commit (party, opts) {
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
@@ -229,7 +230,7 @@ module.exports = class Swap extends EventEmitter {
     }
 
     party = isHolder ? secretHolder : secretSeeker
-    party = await party.commit()
+    party = await party.commit(opts)
     SWAP_INSTANCES.get(this).status = this.isCommitting
       ? SWAP_STATUS[4]
       : SWAP_STATUS[3]

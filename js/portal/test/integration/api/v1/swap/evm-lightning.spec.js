@@ -102,7 +102,7 @@ describe.only('Swaps - EVM/Lightning', function () {
    */
   it('must allow bob to open the swap', function () {
     const { bob } = this.test.ctx
-    const { lightning } = bob.state
+    const { lightning } = bob.state // TODO: unfortunate name here! Fix this
     return bob.swapOpen(swapBob, { lightning })
   })
 
@@ -151,7 +151,9 @@ describe.only('Swaps - EVM/Lightning', function () {
    * assets on both chains.
    */
   it('must allow alice to commit the swap', function () {
-    return this.test.ctx.alice.swapCommit(swapAlice)
+    const { alice } = this.test.ctx
+    const { lightning } = alice.state // TODO: unfortunate name here! Fix this
+    return alice.swapCommit(swapAlice, { lightning })
   })
 
   it.skip('must broadcast the opened swap to alice and bob', function () {

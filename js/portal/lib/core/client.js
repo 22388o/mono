@@ -138,38 +138,40 @@ module.exports = class Client extends EventEmitter {
   /**
    * Create the required state for an atomic swap
    * @param {Swap|Object} swap The swap to open
-   * @param {Object} state Any state required to open the swap
+   * @param {Object} opts Options for the operation
    * @returns {Swap}
    */
-  swapOpen (swap, state) {
+  swapOpen (swap, opts) {
     return this._request({
       method: 'PUT',
       path: '/api/v1/swap'
-    }, { swap, party: { state } })
+    }, { swap, opts })
   }
 
   /**
    * Completes the atomic swap
    * @param {Swap|Object} swap The swap to commit
+   * @param {Object} opts Options for the operation
    * @returns {Promise<Void>}
    */
-  swapCommit (swap) {
+  swapCommit (swap, opts) {
     return this._request({
       method: 'POST',
       path: '/api/v1/swap'
-    }, { swap })
+    }, { swap, opts })
   }
 
   /**
    * Abort the atomic swap optimistically and returns funds to owners
    * @param {Swap|Object} swap The swap to abort
+   * @param {Object} opts Options for the operation
    * @returns {Promise<Void>}
    */
-  swapAbort (swap) {
+  swapAbort (swap, opts) {
     return this._request({
       method: 'DELETE',
       path: '/api/v1/swap'
-    }, { swap })
+    }, { swap, opts })
   }
 
   /**

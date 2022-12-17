@@ -68,12 +68,13 @@ module.exports = class Party {
    * The secret holder is expected to open first, followed by the secret seeker.
    * All other cases will error out.
    *
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  open () {
+  open (opts) {
     if ((this.swap.isCreated && this.isSecretSeeker) ||
         (this.swap.isOpening && this.isSecretHolder)) {
-      return this.counterparty.network.open(this)
+      return this.counterparty.network.open(this, opts)
     }
 
     if ((this.swap.isCreated && this.isSecretHolder)) {
@@ -87,14 +88,15 @@ module.exports = class Party {
 
   /**
    * Commits to a swap for a single party
+   * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  commit () {
+  commit (opts) {
     if (this.swap.isOpened && this.isSecretSeeker) {
-      this.counterparty.network.commit(this)
+      this.counterparty.network.commit(this, opts)
       return this
     } else if (this.swap.isCommitting && this.isSecretHolder) {
-      this.network.commit(this)
+      this.network.commit(this, opts)
       return this
     }
 

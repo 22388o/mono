@@ -31,7 +31,7 @@ module.exports = class Goerli extends Network {
     Object.seal(this)
   }
 
-  async open (party) {
+  async open (party, opts) {
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
@@ -52,7 +52,7 @@ module.exports = class Goerli extends Network {
     }
   }
 
-  async commit (party) {
+  async commit (party, opts) {
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
