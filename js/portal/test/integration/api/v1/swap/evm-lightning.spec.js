@@ -19,8 +19,8 @@ describe.only('Swaps - EVM/Lightning', function () {
     quoteNetwork: 'goerli',
     quoteQuantity: 1
   }
-  let swapAlice = null
-  let swapBob = null
+  let aliceSwapCreated, aliceSwapOpened, aliceSwapClosed
+  let bobSwapCreated, bobSwapOpened, bobSwapClosed
 
   /**
    * Sets up listeners for incoming messages from the server
@@ -35,12 +35,14 @@ describe.only('Swaps - EVM/Lightning', function () {
     const { alice, bob } = this.test.ctx
 
     alice
-      .on('swap.created', swap => { swapAlice = swap })
-      .on('swap.opened', swap => { swapAlice = swap })
+      .once('swap.created', swap => { aliceSwapCreated = swap })
+      .once('swap.opened', swap => { aliceSwapOpened = swap })
+      .once('swap.closed', swap => { aliceSwapClosed = swap })
 
     bob
-      .on('swap.created', swap => { swapBob = swap })
-      .on('swap.opened', swap => { swapBob = swap })
+      .once('swap.created', swap => { bobSwapCreated = swap })
+      .once('swap.opened', swap => { bobSwapOpened = swap })
+      .once('swap.closed', swap => { bobSwapClosed = swap })
   })
 
   /**
@@ -81,11 +83,11 @@ describe.only('Swaps - EVM/Lightning', function () {
   it('must broadcast the created swap to alice and bob', function () {
     const { alice, bob } = this.test.ctx
 
-    expect(swapAlice).to.be.an('object')
-    expect(swapBob).to.be.an('object')
-    expect(swapAlice).to.deep.equal(swapBob)
+    expect(aliceSwapCreated).to.be.an('object')
+    expect(bobSwapCreated).to.be.an('object')
+    expect(aliceSwapCreated).to.deep.equal(bobSwapCreated)
 
-    const swap = swapAlice
+    const swap = aliceSwapCreated
     expect(swap.id).to.be.a('string').with.lengthOf(64)
     expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
     expect(swap.status).to.be.a('string').that.equals('created')
@@ -103,7 +105,7 @@ describe.only('Swaps - EVM/Lightning', function () {
   it('must allow bob to open the swap', function () {
     const { bob } = this.test.ctx
     const { lightning } = bob.state // TODO: unfortunate name here! Fix this
-    return bob.swapOpen(swapBob, { lightning })
+    return bob.swapOpen(bobSwapCreated, { lightning })
   })
 
   /**
@@ -111,18 +113,18 @@ describe.only('Swaps - EVM/Lightning', function () {
    * the swap.
    */
   it('must allow alice to open the swap', function () {
-    return this.test.ctx.alice.swapOpen(swapAlice)
+    return this.test.ctx.alice.swapOpen(aliceSwapCreated)
   })
 
   it('must broadcast the opened swap to alice and bob', function () {
     const { alice, bob } = this.test.ctx
 
-    expect(swapAlice).to.be.an('object')
-    expect(swapBob).to.be.an('object')
-    expect(swapAlice).to.deep.equal(swapBob)
+    expect(aliceSwapOpened).to.be.an('object')
+    expect(bobSwapOpened).to.be.an('object')
+    expect(aliceSwapOpened).to.deep.equal(bobSwapOpened)
 
-    const swap = swapAlice
-    expect(swap.id).to.be.a('string').with.lengthOf(64)
+    const swap = aliceSwapOpened
+    expect(swap.id).to.be.a('string').that.equals(aliceSwapCreated.id)
     expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
     expect(swap.status).to.be.a('string').that.equals('opened')
 
@@ -145,7 +147,7 @@ describe.only('Swaps - EVM/Lightning', function () {
   it('must allow bob to commit the swap', function () {
     const { bob } = this.test.ctx
     const { lightning } = bob.state // TODO: unfortunate name here! Fix this
-    return bob.swapCommit(swapBob, { lightning })
+    return bob.swapCommit(bobSwapOpened, { lightning })
   })
 
   /**
@@ -155,12 +157,32 @@ describe.only('Swaps - EVM/Lightning', function () {
   it('must allow alice to commit the swap', function () {
     const { alice } = this.test.ctx
     const { lightning } = alice.state // TODO: unfortunate name here! Fix this
-    return alice.swapCommit(swapAlice, { lightning })
-      .then(obj => console.log('foobar', obj))
+    return alice.swapCommit(aliceSwapOpened, { lightning })
   })
 
-  it.skip('must broadcast the opened swap to alice and bob', function () {
+  it.skip('must broadcast the closed swap to alice and bob', function () {
+    const { alice, bob } = this.test.ctx
 
+    expect(aliceSwapClosed).to.be.an('object')
+    expect(bobSwapClosed).to.be.an('object')
+    expect(aliceSwapClosed).to.deep.equal(bobSwapClosed)
+
+    const swap = aliceSwapClosed
+    expect(swap.id).to.be.a('string').that.equals(aliceSwapCreated.id)
+    expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
+    expect(swap.status).to.be.a('string').that.equals('closed')
+
+    expect(swap.secretHolder).to.be.an('object')
+    expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
+    expect(swap.secretHolder.state).to.be.an('object')
+    expect(swap.secretHolder.state.lightning).to.be.an('object')
+    expect(swap.secretHolder.state.lightning.invoice).to.be.an('object')
+
+    expect(swap.secretSeeker).to.be.an('object')
+    expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
+    expect(swap.secretSeeker.state).to.be.an('object')
+    expect(swap.secretSeeker.state.goerli).to.be.an('object')
+    expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
   })
 
   it.skip('must validate account balances for alice and bob', function () {
