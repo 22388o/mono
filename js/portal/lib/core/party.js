@@ -72,6 +72,8 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   open (opts) {
+    console.log('party.open', this, opts)
+
     if ((this.swap.isCreated && this.isSecretSeeker) ||
         (this.swap.isOpening && this.isSecretHolder)) {
       return this.counterparty.network.open(this, opts)
@@ -92,12 +94,14 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   commit (opts) {
-    if (this.swap.isOpened && this.isSecretSeeker) {
-      this.counterparty.network.commit(this, opts)
-      return this
-    } else if (this.swap.isCommitting && this.isSecretHolder) {
-      this.network.commit(this, opts)
-      return this
+    console.log('party.commit', this, opts)
+
+    if (this.isSecretSeeker && this.swap.isOpened) {
+      return this.counterparty.network.commit(this, opts)
+    } else if (this.isSecretSeeker && this.swap.isCommitting) {
+      return this.network.commit(this, opts)
+    } else if (this.isSecretHolder && this.swap.isCommitting) {
+      return this.network.commit(this, opts)
     }
 
     if ((this.swap.isOpened && this.isSecretHolder)) {

@@ -13,25 +13,26 @@ const Common = require('ethereumjs-common').default
  */
 module.exports = class Goerli extends Network {
   constructor (props) {
-    const assets = ['ETH']
+    super({ assets: ['ETH'] })
 
-    const client = new Web3(new Web3.providers.HttpProvider(props.url))
-    client.chainId = props.chainId
-    client.networkId = props.chainId
-    client._keypair = props.keypair || {
+    this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
+    this.web3.chainId = props.chainId
+    this.web3.networkId = props.chainId
+    // TODO: FIX THIS!
+    this.web3._keypair = props.keypair || {
       public: '0x67390a659D6CF99Ed2d58334CCA16a3f4857Bf63',
       private: 'f555a6db15824f6a6fc0b9dac93ad0e5bb38dee58256b026af73d94f0cfb9ff6'
     }
 
-    super({ assets, client })
-
-    this.contract = client.eth.contract(props.abi).at(props.address)
-    this.contract._web3 = client
+    this.contract = this.web3.eth.contract(props.abi).at(props.address)
+    this.contract._web3 = this.web3
 
     Object.seal(this)
   }
 
   async open (party, opts) {
+    console.log('goerli.open', party, opts)
+
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
@@ -53,18 +54,25 @@ module.exports = class Goerli extends Network {
   }
 
   async commit (party, opts) {
-    if (party.isSecretSeeker) {
-      throw Error('not implemented yet!')
-    } else if (party.isSecretHolder) {
-      party.state.invoice = party.counterparty.asset.symbol === 'ETH'
-        ? await this._payInvoiceEth(
+    console.log('goerli.commit', party, opts)
 
+    if (party.isSecretSeeker) {
+      const receipt = party.asset.symbol === 'ETH'
+        ? await this._payInvoiceEth(
+          party.state.goerli.invoice.id,
+          party.swap.secretHash,
+          party.quantity
         )
         : await this._payInvoice(
-
+          party.state.goerli.invoice.id,
+          party.swap.secretHash
         )
+      console.log('goerli.commit paid invoice', receipt)
 
       return party
+    } else if (party.isSecretHolder) {
+      // Alice needs to call .claim() to reveal the secret
+      throw Error('not implemented yet!')
     } else {
       throw Error('multi-party swaps are not supported yet!')
     }

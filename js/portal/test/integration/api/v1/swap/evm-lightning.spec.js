@@ -143,7 +143,9 @@ describe.only('Swaps - EVM/Lightning', function () {
    * Once the swap is opened, Bob commits to the swap.
    */
   it('must allow bob to commit the swap', function () {
-    return this.test.ctx.bob.swapCommit(swapBob)
+    const { bob } = this.test.ctx
+    const { lightning } = bob.state // TODO: unfortunate name here! Fix this
+    return bob.swapCommit(swapBob, { lightning })
   })
 
   /**
@@ -154,6 +156,7 @@ describe.only('Swaps - EVM/Lightning', function () {
     const { alice } = this.test.ctx
     const { lightning } = alice.state // TODO: unfortunate name here! Fix this
     return alice.swapCommit(swapAlice, { lightning })
+      .then(obj => console.log('foobar', obj))
   })
 
   it.skip('must broadcast the opened swap to alice and bob', function () {

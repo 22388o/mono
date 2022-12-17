@@ -19,9 +19,10 @@ module.exports = class Lightning extends Network {
   }
 
   async open (party, opts) {
+    console.log('lightning.open', party, opts)
+
     if (party.isSecretSeeker) {
       const { cert, invoice, socket } = opts.lightning
-      // TODO: Fix cert issue
       const grpcArgs = { cert, macaroon: invoice, socket }
       const grpc = ln.authenticatedLndGrpc(grpcArgs)
       grpc.id = party.swap.secretHash
@@ -84,7 +85,7 @@ module.exports = class Lightning extends Network {
   }
 
   async commit (party, opts) {
-    console.log('lightning.commit for', party)
+    console.log('lightning.commit', party, opts)
 
     if (party.isSecretSeeker) {
       const { cert, invoice, socket } = opts.lightning
@@ -93,7 +94,11 @@ module.exports = class Lightning extends Network {
       grpc.id = party.counterparty.state.lightning.invoice.id
 
       const subscription = await ln.subscribeToInvoice(grpc)
-      await subscription.on('invoice_updated', invoice => {
+      await subscription.on('invoice_updated', async invoice => {
+        if (invoice.is_held) {
+          await party.commit(opts)
+        }
+
         console.log('bob invoice updated', invoice)
       })
 
@@ -143,17 +148,21 @@ module.exports = class Lightning extends Network {
       grpc.request = seekerInvoice.request
 
       const holderPaymentRequest = await ln.decodePaymentRequest(grpc)
+        .catch(err => console.log('error decoding payment', err))
       if (holderPaymentRequest.id !== party.swap.secretHash) {
+        console.log('here we are! this is where we fucked up!')
         throw Error('unexpected swap hash!')
       }
       console.log('payment request to', party.id, holderPaymentRequest)
 
       grpc.request = seekerInvoice.request
-      console.log('here 1234', grpc)
+      console.log('here 1234')
+
       const holderPaymentConfirmation = await ln.payViaPaymentRequest(grpc)
         .catch(err => console.log('error making payment', err))
       console.log('payment confirmation by', party.id, holderPaymentConfirmation)
       console.log('here 5678')
+      return party
 
       // console.log('in commit for SecretHolder')
       // console.log(`party.swap.status: ${party.swap.status}`)
