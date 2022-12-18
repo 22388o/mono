@@ -30,6 +30,13 @@ module.exports = class Goerli extends Network {
     Object.seal(this)
   }
 
+  /**
+   * Opens the swap on behalf of one of the parties
+   * @param {Party} party The party that is opening the swap
+   * @param {Object} [opts] Options for the operation
+   * @param {String} [opts.secret] The secret used by the SecretHolder
+   * @returns {Promise<Party>}
+   */
   async open (party, opts) {
     console.log('\n\n\ngoerli.open', party)
 
@@ -53,6 +60,12 @@ module.exports = class Goerli extends Network {
     return party
   }
 
+  /**
+   * Commits a swap on behalf of one of the parties
+   * @param {Party} party The party that is committing the swap
+   * @param {Object} [opts] Options for the operation
+   * @returns {Promise<Party>}
+   */
   async commit (party, opts) {
     console.log('\n\n\ngoerli.commit', party)
 
@@ -67,7 +80,6 @@ module.exports = class Goerli extends Network {
           party.state.goerli.invoice.id,
           party.swap.secretHash
         )
-      console.log('goerli.commit paid invoice', receipt)
       party.counterparty.state.goerli = { receipt }
     } else if (party.isSecretHolder) {
       // Alice needs to call .claim() to reveal the secret

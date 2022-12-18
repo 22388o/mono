@@ -29,7 +29,6 @@ module.exports = class Party {
 
     this.swap = null // assigned by the swap constructor
     this.state = {} // populated by the user/client over http/rpc
-    this.publicInfo = { left: {}, right: {} }
   }
 
   /**
@@ -101,8 +100,6 @@ module.exports = class Party {
 
     if (this.isSecretSeeker && this.swap.isOpened) {
       return this.counterparty.network.commit(this, opts)
-    } else if (this.isSecretSeeker && this.swap.isCommitting) {
-      return this.network.commit(this, opts)
     } else if (this.isSecretHolder && this.swap.isCommitting) {
       return this.network.commit(this, opts)
     }
