@@ -65,17 +65,20 @@ module.exports = class Party {
   /**
    * Opens a swap for a single party
    *
-   * The secret holder is expected to open first, followed by the secret seeker.
-   * All other cases will error out.
+   * Opening a swap essentially means creating an invoice on the counterparty's
+   * network. It should not matter which party goes first, as there is no money
+   * changing hands yet, but for now, we expect the SecretSeeker to move first,
+   * followed by the SecretHolder.
    *
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
   open (opts) {
-    console.log('party.open', this, opts)
+    console.log('\n\n\nparty.open', this)
 
     if ((this.swap.isCreated && this.isSecretSeeker) ||
         (this.swap.isOpening && this.isSecretHolder)) {
+      // Create an invoice on the counterparty's network
       return this.counterparty.network.open(this, opts)
     }
 
@@ -94,7 +97,7 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   commit (opts) {
-    console.log('party.commit', this, opts)
+    console.log('\n\n\nparty.commit', this)
 
     if (this.isSecretSeeker && this.swap.isOpened) {
       return this.counterparty.network.commit(this, opts)

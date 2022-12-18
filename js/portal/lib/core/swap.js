@@ -173,13 +173,13 @@ module.exports = class Swap extends EventEmitter {
 
   /**
    * Handles opening of the swap by one of its parties
-   * @param {Party|Object} party The party that is opening the swap
+   * @param {Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    console.log('swap.open', this, party, opts)
+    console.log('\n\n\nswap.open', this, party)
 
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
@@ -188,11 +188,11 @@ module.exports = class Swap extends EventEmitter {
     const isNeither = !isHolder && !isSeeker
 
     if (status !== SWAP_STATUS[0] && status !== SWAP_STATUS[1]) {
-      throw new Error(`swap "${this.id}" is not "${SWAP_STATUS[0]}" or "${SWAP_STATUS[1]}"!`)
+      throw Error(`cannot open swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
-      throw new Error('self-swapping is not allowed!')
+      throw Error('self-swapping is not allowed!')
     } else if (isNeither) {
-      throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
+      throw Error(`"${party.id}" not a party to swap "${this.id}"!`)
     }
 
     // NOTE: Mutation!!
@@ -211,13 +211,13 @@ module.exports = class Swap extends EventEmitter {
 
   /**
    * Handles committing to the swap by one of its parties
-   * @param {Party|Object} party The party that is opening the swap
+   * @param {Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    console.log('swap.commit', this, party, opts)
+    console.log('\n\n\nswap.commit', this, party)
 
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
@@ -226,11 +226,11 @@ module.exports = class Swap extends EventEmitter {
     const isNeither = !isHolder && !isSeeker
 
     if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
-      throw new Error(`swap "${this.id}" is not "${SWAP_STATUS[2]}" or "${SWAP_STATUS[3]}"!`)
+      throw Error(`cannot commit swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
-      throw new Error('self-swapping is not allowed!')
+      throw Error('self-swapping is not allowed!')
     } else if (isNeither) {
-      throw new Error(`"${party.id}" not a party to swap "${this.id}"!`)
+      throw Error(`"${party.id}" not a party to swap "${this.id}"!`)
     }
 
     party = isHolder ? secretHolder : secretSeeker

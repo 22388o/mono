@@ -31,7 +31,7 @@ module.exports = class Goerli extends Network {
   }
 
   async open (party, opts) {
-    console.log('goerli.open', party, opts)
+    console.log('\n\n\ngoerli.open', party)
 
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
@@ -46,15 +46,15 @@ module.exports = class Goerli extends Network {
         )
       invoice.id = this._parseInvoiceId(invoice)
       party.counterparty.state.goerli = { invoice }
-
-      return party
     } else {
       throw Error('multi-party swaps are not supported yet!')
     }
+
+    return party
   }
 
   async commit (party, opts) {
-    console.log('goerli.commit', party, opts)
+    console.log('\n\n\ngoerli.commit', party)
 
     if (party.isSecretSeeker) {
       const receipt = party.asset.symbol === 'ETH'
@@ -68,14 +68,15 @@ module.exports = class Goerli extends Network {
           party.swap.secretHash
         )
       console.log('goerli.commit paid invoice', receipt)
-
-      return party
+      party.counterparty.state.goerli = { receipt }
     } else if (party.isSecretHolder) {
       // Alice needs to call .claim() to reveal the secret
       throw Error('not implemented yet!')
     } else {
       throw Error('multi-party swaps are not supported yet!')
     }
+
+    return party
   }
 
   _parseInvoiceId (invoice) {
