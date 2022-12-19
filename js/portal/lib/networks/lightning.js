@@ -45,7 +45,7 @@ module.exports = class Lightning extends Network {
     // Invoices are for the quantity of tokens specified by the counterparty
     const args = Object.assign(grpc, {
       id: party.swap.secretHash,
-      tokens: party.counterparty.quantity * 10e8 // TODO: Fix this on client!
+      tokens: party.counterparty.quantity
     })
 
     // Newly created invoices are saved into the Counterparty's state-bag

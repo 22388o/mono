@@ -14,10 +14,10 @@ describe.only('Swaps - EVM/Lightning', function () {
   const ORDER_PROPS = {
     baseAsset: 'BTC',
     baseNetwork: 'lightning.btc',
-    baseQuantity: 0.00001,
+    baseQuantity: 10000,
     quoteAsset: 'ETH',
     quoteNetwork: 'goerli',
-    quoteQuantity: 1
+    quoteQuantity: 10000
   }
   let aliceSwapCreated, aliceSwapOpened, aliceSwapClosed
   let bobSwapCreated, bobSwapOpened, bobSwapClosed

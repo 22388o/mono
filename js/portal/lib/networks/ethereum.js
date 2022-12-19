@@ -158,7 +158,7 @@ module.exports = class Ethereum extends Network {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
-        [tokenAddress, tokenAmount, '0'],
+        [tokenAddress, tokenAmount, '0'], // TODO: convert to hex
         (err, res) => { if (err) { reject(err) } else { resolve(res) } }
       )
     })
@@ -168,7 +168,7 @@ module.exports = class Ethereum extends Network {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
-        ['0x0000000000000000000000000000000000000000', ethAmount, '0'],
+        ['0x0000000000000000000000000000000000000000', ethAmount, '0'], // TODO: convert to hex
         (err, res) => { if (err) { reject(err) } else { resolve(res) } }
       )
     })
@@ -190,7 +190,7 @@ module.exports = class Ethereum extends Network {
         this.contract, 'payInvoice',
         [invoiceId, hashOfSecret],
         (err, res) => { if (err) { reject(err) } else { resolve(res) } },
-        ethAmount
+        ethAmount // TODO: convert to hex
       )
     })
   }
