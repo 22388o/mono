@@ -7,16 +7,17 @@ const Network = require('../../../lib/core/network')
 const Networks = require('../../../lib/core/networks')
 
 const SUPPORTED = [
-  'goerli',
-  'lightning',
-  'sepolia'
+  'ethereum',
+  'lightning'
 ]
 
 describe('Networks', function () {
   const PROPS = {
     goerli: {
+      '@type': 'ethereum',
       abi: ['dummy_abi'],
       address: '0xfakeaddress',
+      assets: ['ETH'],
       url: 'http://localhost:8545'
     }
   }
@@ -78,8 +79,8 @@ describe('Networks', function () {
 
     describe('.isSupported', function () {
       it('must correctly identify supported networks', function () {
-        expect(networks.isSupported('goerli')).to.equal(true)
-        expect(networks.isSupported('sepolia')).to.equal(true)
+        expect(networks.isSupported('ethereum')).to.equal(true)
+        expect(networks.isSupported('lightning')).to.equal(true)
       })
 
       it('must correctly identify unsupported networks', function () {

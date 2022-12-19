@@ -11,7 +11,7 @@ const ln = require('lightning')
  */
 module.exports = class Lightning extends Network {
   constructor (props) {
-    super({ assets: ['BTC'] })
+    super({ name: props.name, assets: props.assets })
   }
 
   /**

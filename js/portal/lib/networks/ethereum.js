@@ -1,5 +1,5 @@
 /**
- * @file The Sepolia blockchain network
+ * @file The Ethereum blockchain network
  */
 
 const Network = require('../core/network')
@@ -8,31 +8,49 @@ const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 
 /**
- * Exports a Web3 interface to the Sepolia blockchain network
- * @type {Sepolia}
+ * Exports a Web3 interface to the Ethereum blockchain network
+ * @type {Ethereum}
  */
-module.exports = class Sepolia extends Network {
+module.exports = class Ethereum extends Network {
   constructor (props) {
-    const assets = ['ETH']
+    super({ name: props.name, assets: props.assets })
 
-    const client = new Web3(new Web3.providers.HttpProvider(props.url))
-    client.chainId = props.chainId
-    client.networkId = props.chainId
-    client._keypair = props.keypair || {
+    this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
+    this.web3.chainId = props.chainId
+    this.web3.networkId = props.chainId
+    // TODO: FIX THIS!
+    this.web3._keypair = props.keypair || {
       public: '0x67390a659D6CF99Ed2d58334CCA16a3f4857Bf63',
       private: 'f555a6db15824f6a6fc0b9dac93ad0e5bb38dee58256b026af73d94f0cfb9ff6'
     }
 
-    super({ assets, client })
+    this.contract = this.web3.eth.contract(props.abi).at(props.address)
+    this.contract._web3 = this.web3
 
-    this.contract = client.eth.contract(props.abi).at(props.address)
-    this.contract._web3 = client
+    // this.web3.eth
+    //   .filter({ from: 0, to: 'latest', address: props.address, topics: null })
+    //   .watch((...args) => console.log('\ngoerli.log', ...args))
+    // this.web3.eth.subscribe('logs', { address: props.address })
+    //   .on('connected', (...args) => console.log('\ngoerli.connected', ...args))
+    //   .on('data', (...args) => console.log('\ngoerli.data', ...args))
+    //   .on('error', (...args) => console.log('\ngoerli.error', ...args))
 
     Object.seal(this)
   }
 
-  async open (party) {
-    if (party.isSecretHolder) {
+  /**
+   * Opens the swap on behalf of one of the parties
+   * @param {Party} party The party that is opening the swap
+   * @param {Object} [opts] Options for the operation
+   * @param {String} [opts.secret] The secret used by the SecretHolder
+   * @returns {Promise<Party>}
+   */
+  async open (party, opts) {
+    console.log('\n\n\ngoerli.open', party)
+
+    if (party.isSecretSeeker) {
+      throw Error('not implemented yet!')
+    } else if (party.isSecretHolder) {
       // Save the invoice in the counterparty's state
       const invoice = party.counterparty.asset.symbol === 'ETH'
         ? await this._createInvoiceEth(party.counterparty.quantity)
@@ -41,26 +59,43 @@ module.exports = class Sepolia extends Network {
           party.counterparty.quantity,
           party.counterparty.network.contract._web3.chainId
         )
-      const invoiceId = this._parseInvoiceId(invoice)
-      party.counterparty.state.sepolia = { invoice: invoiceId }
+      invoice.id = this._parseInvoiceId(invoice)
+      party.counterparty.state.goerli = { invoice }
+    } else {
+      throw Error('multi-party swaps are not supported yet!')
+    }
 
-      return party
-    } else if (party.isSecretSeeker) {
+    return party
+  }
+
+  /**
+   * Commits a swap on behalf of one of the parties
+   * @param {Party} party The party that is committing the swap
+   * @param {Object} [opts] Options for the operation
+   * @returns {Promise<Party>}
+   */
+  async commit (party, opts) {
+    console.log('\n\n\ngoerli.commit', party)
+
+    if (party.isSecretSeeker) {
+      const receipt = party.asset.symbol === 'ETH'
+        ? await this._payInvoiceEth(
+          party.state.goerli.invoice.id,
+          party.swap.secretHash,
+          party.quantity
+        )
+        : await this._payInvoice(
+          party.state.goerli.invoice.id,
+          party.swap.secretHash
+        )
+      party.counterparty.state.goerli = { receipt }
+    } else if (party.isSecretHolder) {
+      // Alice needs to call .claim() to reveal the secret
       throw Error('not implemented yet!')
     } else {
       throw Error('multi-party swaps are not supported yet!')
     }
-  }
 
-  async commit (party) {
-    console.log(`creating invoice on ${this.constructor.name} for`, party)
-    party.state.invoice = party.counterparty.asset.symbol === 'ETH'
-      ? await this._payInvoiceEth(
-
-      )
-      : await this._payInvoice(
-
-      )
     return party
   }
 

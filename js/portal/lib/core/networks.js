@@ -44,14 +44,15 @@ module.exports = class Networks extends EventEmitter {
     this.byAssets = new Map()
 
     for (const name in props) {
-      if (!this.isSupported(name)) {
-        throw new Error(`unsupported network "${name}"!`)
+      const type = props[name]['@type']
+
+      if (!this.isSupported(type)) {
+        throw new Error(`unsupported network "${type}"!`)
       }
 
-      const Network = SUPPORTED.get(name)
-      const network = new Network(props[name])
-        .on('deposit', (...args) => this.emit('deposit', name, ...args))
-        .on('claim', (...args) => this.emit('claim', name, ...args))
+      const Network = SUPPORTED.get(type)
+      const networkProps = Object.assign(props[name], { name })
+      const network = new Network(networkProps)
 
       for (const asset of network.assets) {
         this.byAssets.has(asset) || this.byAssets.set(asset, new Map())

@@ -63,7 +63,11 @@ describe('Order', function () {
    * Regular operational behavior testing
    */
   describe('Operation', function () {
-    let order = new Order(PROPS)
+    let order = null
+
+    before(function () {
+      order = new Order(PROPS)
+    })
 
     /**
      * Tests creating a new order ensuring the state is valid
