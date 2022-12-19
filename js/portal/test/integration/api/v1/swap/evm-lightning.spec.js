@@ -16,7 +16,7 @@ describe.only('Swaps - EVM/Lightning', function () {
     baseNetwork: 'lightning.btc',
     baseQuantity: 0.00001,
     quoteAsset: 'ETH',
-    quoteNetwork: 'sepolia',
+    quoteNetwork: 'goerli',
     quoteQuantity: 1
   }
   let aliceSwapCreated, aliceSwapOpened, aliceSwapClosed
@@ -113,7 +113,10 @@ describe.only('Swaps - EVM/Lightning', function () {
    * the swap.
    */
   it('must allow alice to open the swap', function () {
-    return this.test.ctx.alice.swapOpen(aliceSwapCreated)
+    console.log('Using SECRET', SECRET, SECRET.toString('hex'))
+    return this.test.ctx.alice.swapOpen(aliceSwapCreated, {
+      secret: `0x${SECRET.toString('hex')}`
+    })
   })
 
   it('must broadcast the opened swap to alice and bob', function () {

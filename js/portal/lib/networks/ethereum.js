@@ -6,6 +6,7 @@ const Network = require('../core/network')
 const Web3 = require('web3')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
+const BigNumber = require('@ethersproject/bignumber')
 
 /**
  * Exports a Web3 interface to the Ethereum blockchain network
@@ -20,20 +21,36 @@ module.exports = class Ethereum extends Network {
     this.web3.networkId = props.chainId
     // TODO: FIX THIS!
     this.web3._keypair = props.keypair || {
-      public: '0x67390a659D6CF99Ed2d58334CCA16a3f4857Bf63',
-      private: 'f555a6db15824f6a6fc0b9dac93ad0e5bb38dee58256b026af73d94f0cfb9ff6'
+      public: '0xD38099E977f17E39EC84b6d7807A6E0e81885144',
+      private: 'c69bcf276bd8b53497150b793cf2661a078eb8ee3925ea534e943da27148f74f'
     }
 
+    const blockNum = this.web3.eth.blockNumber
+    const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
     this.contract = this.web3.eth.contract(props.abi).at(props.address)
     this.contract._web3 = this.web3
 
-    // this.web3.eth
-    //   .filter({ from: 0, to: 'latest', address: props.address, topics: null })
-    //   .watch((...args) => console.log('\n${this.name}.log', ...args))
-    // this.web3.eth.subscribe('logs', { address: props.address })
-    //   .on('connected', (...args) => console.log('\n${this.name}.connected', ...args))
-    //   .on('data', (...args) => console.log('\n${this.name}.data', ...args))
-    //   .on('error', (...args) => console.log('\n${this.name}.error', ...args))
+    this.eventDeposit = this.contract.Deposited({}, watchArgs)
+    this.eventDeposit.watch((err, deposit) => {
+      if (err) {
+        console.log(`\n${this.name}.onDeposit`, err)
+        return this.emit('error', err)
+      } else {
+        console.log(`\n${this.name}.onDeposit`, deposit)
+        this.emit('deposit', deposit)
+      }
+    })
+
+    this.eventClaim = this.contract.Claimed({}, watchArgs)
+    this.eventClaim.watch((err, claim) => {
+      if (err) {
+        console.log(`\n${this.name}.onClaim`, err)
+        return this.emit('error', err)
+      } else {
+        console.log(`\n${this.name}.onClaim`, claim)
+        this.emit('claim', claim)
+      }
+    })
 
     Object.seal(this)
   }
@@ -61,6 +78,16 @@ module.exports = class Ethereum extends Network {
         )
       invoice.id = this._parseInvoiceId(invoice)
       party.counterparty.state[this.name] = { invoice }
+
+      this.on('deposit', deposit => {
+        // TODO: ensure the deposit amount matches the invoice amount
+        console.log(`\n${this.name}.onDeposit`, party, deposit)
+
+        // Claim the deposited funds
+        console.log(`\n${this.name}.claim`, party, opts.secret)
+        this._claim(opts.secret)
+          .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
+      })
     } else {
       throw Error('multi-party swaps are not supported!')
     }
@@ -74,29 +101,51 @@ module.exports = class Ethereum extends Network {
    * @param {Object} [opts] Options for the operation
    * @returns {Promise<Party>}
    */
-  async commit (party, opts) {
-    console.log(`\n\n\n${this.name}.commit`, party)
+  commit (party, opts) {
+    return new Promise((resolve, reject) => {
+      console.log(`\n\n\n${this.name}.commit`, party)
 
-    if (party.isSecretSeeker) {
-      const receipt = party.asset.symbol === 'ETH'
-        ? await this._payInvoiceEth(
-          party.state[this.name].invoice.id,
-          party.swap.secretHash,
-          party.quantity
-        )
-        : await this._payInvoice(
-          party.state[this.name].invoice.id,
-          party.swap.secretHash
-        )
-      party.counterparty.state[this.name] = { receipt }
-    } else if (party.isSecretHolder) {
-      // Alice needs to call .claim() to reveal the secret
-      throw Error('not implemented yet!')
-    } else {
-      throw Error('multi-party swaps are not supported!')
-    }
+      if (party.isSecretSeeker) {
+        this.on('claim', claim => {
+          try {
+            const claimSecret = claim.args.secret.toFixed()
+            console.log(`\n${this.name}.BigNumber()`, party, claimSecret)
+            const bnSecret = BigNumber.BigNumber.from(claimSecret)
+            console.log(`\n${this.name}.BigNumber()`, party, claimSecret, bnSecret)
+            const secret = bnSecret.toHexString()
+            console.log(`\n${this.name}.BigNumber()`, party, claimSecret, bnSecret, secret)
+            resolve(secret.substr(2))
+          } catch (err) {
+            console.log(err)
+          }
+        })
 
-    return party
+        const invoiceId = party.state[this.name].invoice.id
+        const secretHashHex = `0x${party.swap.secretHash}`
+        const onPaid = receipt => {
+          console.log(`\n${this.name}.onPaid`, party, receipt)
+          party.counterparty.state[this.name] = { receipt }
+        }
+
+        if (party.asset.symbol === 'ETH') {
+          // TODO: fix quantity to be in Hex
+          this._payInvoiceEth(invoiceId, secretHashHex, party.quantity)
+            .then(onPaid)
+            .catch(reject)
+        } else {
+          this._payInvoice(invoiceId, secretHashHex)
+            .then(onPaid)
+            .catch(reject)
+        }
+      } else if (party.isSecretHolder) {
+        // Alice needs to call .claim() to reveal the secret
+        throw Error('not implemented yet!')
+      } else {
+        throw Error('multi-party swaps are not supported!')
+      }
+
+      return party
+    })
   }
 
   _parseInvoiceId (invoice) {
@@ -142,6 +191,16 @@ module.exports = class Ethereum extends Network {
         [invoiceId, hashOfSecret],
         (err, res) => { if (err) { reject(err) } else { resolve(res) } },
         ethAmount
+      )
+    })
+  }
+
+  _claim (secret) {
+    return new Promise((resolve, reject) => {
+      callSolidityFunctionByName(
+        this.contract, 'claim',
+        [secret],
+        (err, res) => { if (err) { reject(err) } else { resolve(res) } }
       )
     })
   }

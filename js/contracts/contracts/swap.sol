@@ -1,5 +1,5 @@
 /// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.5.8;
+pragma solidity 0.7.6;
 
 
 /// ERC-20 Interface
@@ -23,38 +23,111 @@ interface IERC20 {
 
 
 /// A smart contract that implements one-half of a swap, enabling the transfer
-/// of any ERC-20 token on one EVM chain with any ERC-20 token on another EVM
-/// chain.
+/// of native ETH or any ERC-20 token on one EVM chain.
 contract Swap {
     mapping(uint => bool) public hashes;
     mapping(uint => bool) public claimed;
     mapping(uint => uint) public amounts;
-    mapping(uint => address) public tokenAddresses;
-    mapping(uint => address) public recipients;
     mapping(uint => uint) public secrets;
+    mapping(uint => address) public recipients;
+    mapping(uint => address) public tokenAddresses;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // deposit and claim
+    ////////////////////////////////////////////////////////////////////////////
     event Deposited(
         uint trade,
         address tokenDeposited,
         uint amountDeposited,
         address tokenDesired,
         uint amountDesired,
-        bytes32 hashOfSecret,
+        uint networkDesired,
+        bytes32 secretHash,
         address recipient
-    );
+        );
 
-    event Claimed(uint trade, uint secret);
+    event Claimed(
+        uint trade,
+        uint secret
+        );
 
-    function hashOfSecretNumber(uint secret) public pure returns (bytes32 hash) {
-        hash = keccak256(toBytes(secret));
+    function deposit(
+        address tokenDeposited,
+        uint amountDeposited,
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired,
+        bytes32 secretHash,
+        address recipient
+        ) public returns(uint orderId) {
+
+        orderId = uint(secretHash);
+
+        IERC20 erc20 = IERC20(tokenDeposited);
+        erc20.transferFrom(msg.sender, address(this), amountDeposited);
+
+        tokenAddresses[orderId] = tokenDeposited;
+        recipients[orderId] = recipient;
+        hashes[orderId] = true;
+        amounts[orderId] = amountDeposited;
+
+        emit Deposited(
+            orderId,
+            tokenDeposited,
+            amountDeposited,
+            tokenDesired,
+            amountDesired,
+            networkDesired,
+            secretHash,
+            recipient
+            );
+        return orderId;
     }
 
-    function idOfHashOfSecretNumber(uint hash) public pure returns (uint id) {
-        id = uint(hash);
+    function depositEth (
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired,
+        bytes32 secretHash,
+        address recipient
+        ) public payable returns(uint orderId) {
+
+        orderId = uint(secretHash);
+        tokenAddresses[orderId] = address(0x0);
+        recipients[orderId] = recipient;
+        hashes[orderId] = true;
+        amounts[orderId] = msg.value;
+
+        emit Deposited (
+            orderId,
+            address(0x0),
+            msg.value,
+            tokenDesired,
+            amountDesired,
+            networkDesired,
+            secretHash,
+            recipient);
+        return orderId;
     }
 
-    function idOfSecret(uint secret) public pure returns (uint id) {
-        id = uint(keccak256(toBytes(secret)));
+    function claim (uint secret) public returns (bool) {
+        bytes32 hash = toHash(secret);
+        uint orderId = uint(hash);
+
+        require(isClaimableOrder(orderId), "swap has already been claimed!");
+
+        secrets[orderId] = secret;
+        claimed[orderId] = true;
+
+        if (tokenAddresses[orderId] == address(0x0)) {
+            msg.sender.transfer(amounts[orderId]);
+        } else {
+            IERC20 erc20 = IERC20(tokenAddresses[orderId]);
+            erc20.transfer(msg.sender, amounts[orderId]);
+        }
+
+        emit Claimed(orderId, secret);
+        return true;
     }
 
     function isClaimableOrder(uint orderId) public view returns (bool) {
@@ -64,64 +137,86 @@ contract Swap {
             recipients[orderId] == msg.sender;
     }
 
-    function claim(uint secret) public returns (bool) {
-        bytes32 hash = keccak256(toBytes(secret));
-        uint orderId = uint(hash);
+    ////////////////////////////////////////////////////////////////////////////
+    // invoices
+    ////////////////////////////////////////////////////////////////////////////
+    uint public invoiceCount = 0;
+    mapping(uint => address) public invoiceCreators;
+    mapping(uint => uint) public invoiceAmounts;
+    mapping(uint => address) public invoiceTokens;
+    mapping(uint => uint) public invoiceNetworks;
+    mapping(uint => bytes32) public invoiceToHash;
+    mapping(uint => uint) public hashToInvoice;
 
-        require(isClaimableOrder(orderId), "Order is not claimable!");
+    event Invoiced (
+        uint invoiceId,
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired
+        );
 
-        IERC20 erc20 = IERC20(tokenAddresses[orderId]);
-        secrets[orderId] = secret;
-        claimed[orderId] = true;
+    event InvoicePaid (
+        uint invoice,
+        bytes32 secretHash
+        );
 
-        erc20.transfer(msg.sender, amounts[orderId]);
+    function createInvoice(
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired
+        ) public returns(uint) {
 
-        emit Claimed(orderId, secret);
+        invoiceCount++;
+        invoiceTokens[invoiceCount] = tokenDesired;
+        invoiceAmounts[invoiceCount] = amountDesired;
+        invoiceNetworks[invoiceCount] = networkDesired;
+        invoiceCreators[invoiceCount] = msg.sender;
+
+        emit Invoiced(invoiceCount, tokenDesired, amountDesired, networkDesired);
+        return invoiceCount;
+    }
+
+    function payInvoice(
+        uint invoiceId,
+        bytes32 secretHash
+        ) public payable returns (bool) {
+
+        //if it's native ETH call payable function, otherwise pull token funds
+        if (invoiceTokens[invoiceId] == address(0x0)) {
+            require(invoiceAmounts[invoiceId] == msg.value, "wrong eth amount");
+
+            //TODO: replace the ZERO placeholders with actual desired token info
+            depositEth(
+                address(0x0),
+                0, //TODO: put actual desired token data
+                0, //TODO: put actual desired token data
+                secretHash,
+                invoiceCreators[invoiceId]
+                );
+        } else {
+            //TODO: replace the ZERO placeholders with actual desired token info
+            deposit(
+                invoiceTokens[invoiceId],
+                invoiceAmounts[invoiceId],
+                address(0x0),
+                0, //TODO: put actual desired token data
+                0, //TODO: put actual desired token data
+                secretHash,
+                invoiceCreators[invoiceId]
+                );
+        }
+
+        invoiceToHash[invoiceId] = secretHash;
+        hashToInvoice[uint(secretHash)] = invoiceId;
+
+        emit InvoicePaid(invoiceId, secretHash);
         return true;
     }
 
-    function deposit(
-        address tokenDeposited,
-        uint amountDeposited,
-        address tokenDesired,
-        uint amountDesired,
-        bytes32 hashOfSecret,
-        address recipient
-    )
-        public
-        returns(uint orderId)
-    {
-
-        //bytes32 hashBytes32 = hashOfSecret;// bytesToBytes32(hashOfSecret, 0);
-        orderId = uint(hashOfSecret);
-
-        IERC20 erc20 = IERC20(tokenDeposited);
-
-        erc20.transferFrom(msg.sender, address(this), amountDeposited);
-
-        tokenAddresses[orderId] = tokenDeposited;
-        recipients[orderId] = recipient;
-        hashes[orderId] = true;
-        amounts[orderId] = amountDeposited;
-
-        emit Deposited(orderId, tokenDeposited, amountDeposited, tokenDesired, amountDesired, hashOfSecret, recipient);
-        return orderId;
-    }
-
-    function toBytes(uint256 x) internal pure returns (bytes memory b) {
-        b = new bytes(32);
-        // solhint-disable-next-line no-inline-assembly
-        assembly { mstore(add(b, 32), x) }
-        return b;
-    }
-
-    function bytesToBytes32(bytes memory b, uint offset) private pure returns (bytes32) {
-        bytes32 out;
-
-        for (uint i = 0; i < 32; i++) {
-            out |= bytes32(b[offset + i] & 0xFF) >> (i * 8);
-        }
-
-        return out;
+    ////////////////////////////////////////////////////////////////////////////
+    // helpers
+    ////////////////////////////////////////////////////////////////////////////
+    function toHash(uint secret) public pure returns (bytes32 hash) {
+        hash = sha256(abi.encodePacked(secret));
     }
 }

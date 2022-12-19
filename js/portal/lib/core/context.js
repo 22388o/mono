@@ -35,14 +35,14 @@ HttpContext.networks = new Networks({
     '@type': 'lightning',
     assets: ['BTC']
   },
-  sepolia: {
-    '@type': 'ethereum',
-    abi: Contracts.abi,
-    address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
-    assets: ['ETH'],
-    chainId: 11155111,
-    url: process.env.PORTAL_SEPOLIA_URL
-  }
+  // sepolia: {
+  //   '@type': 'ethereum',
+  //   abi: Contracts.abi,
+  //   address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
+  //   assets: ['ETH'],
+  //   chainId: 11155111,
+  //   url: process.env.PORTAL_SEPOLIA_URL
+  // }
 }, HttpContext)
 
 /**

@@ -1,6 +1,4 @@
-/// SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.7.6;
-
+pragma solidity ^0.7.6;
 
 interface IERC20 {
     function transfer(address to, uint256 value) external returns (bool);
@@ -38,10 +36,10 @@ contract Swaps {
                     address tokenDesired, uint amountDesired, uint networkDesired,
                     bytes32 hashOfSecret, address recipient);
 
-    event Claimed(uint trade, uint secret);
+    event Claimed(uint trade, uint secret, bytes32 hashOfSecret);
 
     function hashOfSecretNumber(uint secret) public pure returns (bytes32 hash) {
-        hash = keccak256(toBytes(secret));
+        hash = sha256(toBytes(secret));
     }
 
     function idOfHashOfSecretNumber(uint hash) public pure returns (uint id){
@@ -49,7 +47,7 @@ contract Swaps {
     }
 
     function idOfSecret(uint secret) public pure returns (uint id) {
-        id = uint(keccak256(toBytes(secret)));
+        id = uint(sha256(toBytes(secret)));
     }
 
     function isClaimableOrder(uint orderId) public view returns (bool) {
@@ -65,7 +63,7 @@ contract Swaps {
 
     function claim(uint secret) public returns (bool) {
 
-        bytes32 hash = keccak256(toBytes(secret));
+        bytes32 hash = sha256(toBytes(secret));
         uint orderId = uint(hash);
 
         require(isClaimableOrder(orderId));
@@ -81,7 +79,7 @@ contract Swaps {
         secrets[orderId] = secret;
         claimed[orderId] = true;
 
-        emit Claimed(orderId, secret);
+        emit Claimed(orderId, secret, hash);
 
         return true;
     }

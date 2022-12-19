@@ -106,7 +106,15 @@ module.exports = class Lightning extends Network {
       subscription
         .on('invoice_updated', async invoice => {
           if (invoice.is_held) {
-            await party.network.commit(party, opts)
+            const secret = await party.network.commit(party, opts)
+              .catch(err => console.log(`\n\n\n${this.name}.commit`, party, err))
+            const secretHex = secret.toString(16)
+            console.log(`\n${this.name}.onInvoiceHeld`, party, secret, secretHex)
+
+            ln.settleHodlInvoice(Object.assign({ secret: secretHex }, grpc))
+              .catch(err => {
+                console.log(`\n${this.name}.settleHodlInvoice`, party, err)
+              })
           }
         })
     } else if (party.isSecretHolder) {
