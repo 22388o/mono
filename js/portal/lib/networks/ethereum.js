@@ -29,11 +29,11 @@ module.exports = class Ethereum extends Network {
 
     // this.web3.eth
     //   .filter({ from: 0, to: 'latest', address: props.address, topics: null })
-    //   .watch((...args) => console.log('\ngoerli.log', ...args))
+    //   .watch((...args) => console.log('\n${this.name}.log', ...args))
     // this.web3.eth.subscribe('logs', { address: props.address })
-    //   .on('connected', (...args) => console.log('\ngoerli.connected', ...args))
-    //   .on('data', (...args) => console.log('\ngoerli.data', ...args))
-    //   .on('error', (...args) => console.log('\ngoerli.error', ...args))
+    //   .on('connected', (...args) => console.log('\n${this.name}.connected', ...args))
+    //   .on('data', (...args) => console.log('\n${this.name}.data', ...args))
+    //   .on('error', (...args) => console.log('\n${this.name}.error', ...args))
 
     Object.seal(this)
   }
@@ -46,7 +46,7 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    console.log('\n\n\ngoerli.open', party)
+    console.log(`\n\n\n${this.name}.open`, party)
 
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
@@ -60,9 +60,9 @@ module.exports = class Ethereum extends Network {
           party.counterparty.network.contract._web3.chainId
         )
       invoice.id = this._parseInvoiceId(invoice)
-      party.counterparty.state.goerli = { invoice }
+      party.counterparty.state[this.name] = { invoice }
     } else {
-      throw Error('multi-party swaps are not supported yet!')
+      throw Error('multi-party swaps are not supported!')
     }
 
     return party
@@ -75,25 +75,25 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    console.log('\n\n\ngoerli.commit', party)
+    console.log(`\n\n\n${this.name}.commit`, party)
 
     if (party.isSecretSeeker) {
       const receipt = party.asset.symbol === 'ETH'
         ? await this._payInvoiceEth(
-          party.state.goerli.invoice.id,
+          party.state[this.name].invoice.id,
           party.swap.secretHash,
           party.quantity
         )
         : await this._payInvoice(
-          party.state.goerli.invoice.id,
+          party.state[this.name].invoice.id,
           party.swap.secretHash
         )
-      party.counterparty.state.goerli = { receipt }
+      party.counterparty.state[this.name] = { receipt }
     } else if (party.isSecretHolder) {
       // Alice needs to call .claim() to reveal the secret
       throw Error('not implemented yet!')
     } else {
-      throw Error('multi-party swaps are not supported yet!')
+      throw Error('multi-party swaps are not supported!')
     }
 
     return party
@@ -105,7 +105,7 @@ module.exports = class Ethereum extends Network {
     return dec.toString()
   }
 
-  async _createInvoice (tokenAddress, tokenAmount) {
+  _createInvoice (tokenAddress, tokenAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
@@ -115,7 +115,7 @@ module.exports = class Ethereum extends Network {
     })
   }
 
-  async _createInvoiceEth (ethAmount) {
+  _createInvoiceEth (ethAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'createInvoice',
@@ -125,7 +125,7 @@ module.exports = class Ethereum extends Network {
     })
   }
 
-  async _payInvoice (invoiceId, hashOfSecret) {
+  _payInvoice (invoiceId, hashOfSecret) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'payInvoice',
@@ -135,7 +135,7 @@ module.exports = class Ethereum extends Network {
     })
   }
 
-  async _payInvoiceEth (invoiceId, hashOfSecret, ethAmount) {
+  _payInvoiceEth (invoiceId, hashOfSecret, ethAmount) {
     return new Promise((resolve, reject) => {
       callSolidityFunctionByName(
         this.contract, 'payInvoice',

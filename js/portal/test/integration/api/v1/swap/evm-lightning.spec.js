@@ -13,10 +13,10 @@ describe.only('Swaps - EVM/Lightning', function () {
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
     baseAsset: 'BTC',
-    baseNetwork: 'lightning',
+    baseNetwork: 'lightning.btc',
     baseQuantity: 0.00001,
     quoteAsset: 'ETH',
-    quoteNetwork: 'goerli',
+    quoteNetwork: 'sepolia',
     quoteQuantity: 1
   }
   let aliceSwapCreated, aliceSwapOpened, aliceSwapClosed
@@ -131,14 +131,14 @@ describe.only('Swaps - EVM/Lightning', function () {
     expect(swap.secretHolder).to.be.an('object')
     expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
     expect(swap.secretHolder.state).to.be.an('object')
-    expect(swap.secretHolder.state.lightning).to.be.an('object')
-    expect(swap.secretHolder.state.lightning.invoice).to.be.an('object')
+    expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork]).to.be.an('object')
+    expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork].invoice).to.be.an('object')
 
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
     expect(swap.secretSeeker.state).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
+    expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork]).to.be.an('object')
+    expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork].invoice).to.be.an('object')
   })
 
   /**

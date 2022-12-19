@@ -33,7 +33,7 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    console.log('\n\n\nlightning.open', party)
+    console.log(`\n\n\n${this.name}.open`, party)
 
     // Requests are made using the Invoice macaroon for both parties
     const grpc = ln.authenticatedLndGrpc({
@@ -50,10 +50,12 @@ module.exports = class Lightning extends Network {
 
     // Newly created invoices are saved into the Counterparty's state-bag
     const invoice = await ln.createHodlInvoice(args)
-    party.counterparty.state.lightning = { invoice }
+    party.counterparty.state[this.name] = { invoice }
 
-    // For the SecretHolder, setup subscription(s) to auto-settle the invoice
-    if (party.isSecretHolder) {
+    if (party.isSecretSeeker) {
+      // no-op
+    } else if (party.isSecretHolder) {
+      // For the SecretHolder, setup subscription(s) to auto-settle the invoice
       const subscription = await ln.subscribeToInvoice(args)
       subscription
         .on('invoice_updated', invoice => {
@@ -62,6 +64,8 @@ module.exports = class Lightning extends Network {
             ln.settleHodlInvoice(opts)
           }
         })
+    } else {
+      throw Error('multi-party swaps are not supported!')
     }
 
     return party
@@ -85,7 +89,7 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    console.log('\n\n\nlightning.commit', party)
+    console.log(`\n\n\n${this.name}.commit`, party)
 
     if (party.isSecretSeeker) {
       // This request is made through the SecretSeeker's LND node
@@ -95,7 +99,7 @@ module.exports = class Lightning extends Network {
         socket: opts.lightning.socket
       })
       const args = Object.assign(grpc, {
-        id: party.counterparty.state.lightning.invoice.id
+        id: party.counterparty.state[this.name].invoice.id
       })
 
       const subscription = await ln.subscribeToInvoice(args)
@@ -125,7 +129,7 @@ module.exports = class Lightning extends Network {
       const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
       console.log('payment confirmation by', party.id, holderPaymentConfirmation)
     } else {
-      throw new Error('Party must be either Alice or Carol')
+      throw Error('multi-party swaps are not supported!')
     }
 
     return party
