@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Container, Table } from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
-import { setRequest1, setRequest2 } from "../slices/swapSlice.js";
+import { setRequest1, setRequest2, setSwapState } from "../slices/swapSlice.js";
 import { SwapCreate } from './SwapCreate.jsx'
 import { SwapForm } from './SwapForm.jsx'
+import { useAppDispatch } from "../hooks.js";
 
-export const SwapDemo = ({ setRequest1, setRequest2 }) => {
+export const SwapDemo = () => {
+	const dispatch = useAppDispatch();
 	const amountBase = useAppSelector(state => state.swap.amountBase);
 	const amountQuote = useAppSelector(state => state.swap.amountQuote);
 	const swapState = useAppSelector(state => state.swap.swapState);
@@ -16,6 +18,8 @@ export const SwapDemo = ({ setRequest1, setRequest2 }) => {
 	const secret = useAppSelector(state => state.swap.secret);
 	const request1 = useAppSelector(state => state.swap.request1);
 	const request2 = useAppSelector(state => state.swap.request2);
+	const commit1 = useAppSelector(state => state.swap.commit1);
+	const commit2 = useAppSelector(state => state.swap.commit2);
 	const [alice, setAlice] = useState({
 		state: {
 			isSecretHolder: false,
@@ -87,15 +91,15 @@ export const SwapDemo = ({ setRequest1, setRequest2 }) => {
 				}
 		}
 	})
+console.log(commit1, commit2);
 	useEffect(() => {
-		if(swapHash) setSwapState(1)
-		if(request1!=request2 && (request1 | request2)) setSwapState(2)
-		if(request1 && request2) setSwapState(3)
-		// if() setSwapState(4)
-		// if() setSwapState(5)
+		if(!swapState && swapHash) dispatch(setSwapState(1));
+		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) dispatch(setSwapState(2));
+		if(swapState === 2 && request1 && request2) dispatch(setSwapState(3));
+		if(swapState === 3 && commit1 && !commit2) dispatch(setSwapState(4));
+		if(swapState === 4 && commit1 && commit2) dispatch(setSwapState(5));
 		// if() setSwapState(6)
-	}, [swapHash, request1, request2]);
-
+	}, [swapHash, request1, request2, commit1, commit2, swapState]);
 
 	return (
 		<>
@@ -167,15 +171,15 @@ export const SwapDemo = ({ setRequest1, setRequest2 }) => {
 					</Card.Group>    
 			}
 			{(swapId != null) 
-				? <Card.Group widths='equal'>
-						<Card fluid>
+				? <Card.Group widths='equal' className="flex-nowrap">
+						<Card className="user-swap">
 							<Card.Content>
-								<SwapForm swapId={swapId} swapHash={swapHash} participant={alice} id={secretSeekerId} setRequest={setRequest1} swapState={swapState}/>
+								<SwapForm firstParty={true} participant={alice} id={secretSeekerId} />
 							</Card.Content>
 						</Card>
-						<Card fluid>
+						<Card className="user-swap">
 							<Card.Content>
-								<SwapForm swapId={swapId} swapHash={swapHash} participant={carol} id={secretHolderId} setRequest={setRequest2} secret={secret} swapState={swapState}/>
+								<SwapForm firstParty={false} participant={carol} id={secretHolderId} />
 							</Card.Content>
 						</Card>
 					</Card.Group>

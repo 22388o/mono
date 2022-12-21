@@ -3,44 +3,16 @@ import 'semantic-ui-css/semantic.min.css';
 import { Button, Card, Form } from 'semantic-ui-react';
 import { setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setBase, setQuote } from "../slices/swapSlice";
 import { useAppDispatch } from "../hooks";
+import { fetchSwapCreate } from "../utils/apis";
 
-export const SwapCreate = ({ setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setBase, setQuote }) => {
+export const SwapCreate = () => {
 	const dispatch = useAppDispatch();
   const [baseQuantity, setBaseQuantity] = useState(10000)
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
   const [pressed, setPressed] = useState(false);
 
-  const onClick = () => {
-    fetch('/api/v1/swap/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        makerOrderProps: {
-          uid: 'uid1',
-          hash: null,
-          side: 'ask',
-          type: 'limit',
-          baseAsset: 'BTC1',
-          baseNetwork: 'lightning',
-          baseQuantity: baseQuantity,
-          quoteAsset: 'BTC2',
-          quoteNetwork: 'lightning',
-          quoteQuantity: quoteQuantity
-        },
-        takerOrderProps: {
-          uid: 'uid0',
-          hash: null,
-          side: 'bid',
-          type: 'limit',
-          baseAsset: 'BTC1',
-          baseNetwork: 'lightning',
-          baseQuantity: baseQuantity,
-          quoteAsset: 'BTC2',
-          quoteNetwork: 'lightning',
-          quoteQuantity: quoteQuantity
-        }
-      })
-    })
+  const onClick = async () => {
+    fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
       console.log(res);
       return res.json()
@@ -57,6 +29,7 @@ export const SwapCreate = ({ setSwapId, setSwapHash, setSecretSeekerId, setSecre
       dispatch(setSwapHash(data.swap.secretHash));
     })
     .catch(err => console.log(err))
+    
   }
 
   return (
