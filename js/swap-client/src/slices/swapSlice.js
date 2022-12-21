@@ -11,6 +11,8 @@ const initialState = {
 	secret: null,
 	request1: null,
 	request2: null,
+  commit1: false,
+  commit2: false,
 };
 
 export const swapSlice = createSlice({
@@ -27,10 +29,12 @@ export const swapSlice = createSlice({
       setSecret: (state, action) => { state.secret = action.payload; },
       setRequest1: (state, action) => { state.request1 = action.payload; },
       setRequest2: (state, action) => { state.request2 = action.payload; },
+      setCommit1: (state, action) => { state.commit1 = action.payload; },
+      setCommit2: (state, action) => { state.commit2 = action.payload; },
     }
   });
   
-  export const { setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2 } = swapSlice.actions;
+  export const { setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
   
   export default swapSlice.reducer;
   
