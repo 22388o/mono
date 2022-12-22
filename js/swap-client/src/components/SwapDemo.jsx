@@ -91,7 +91,7 @@ export const SwapDemo = () => {
 				}
 		}
 	})
-console.log(commit1, commit2);
+// console.log(commit1, commit2);
 	useEffect(() => {
 		if(!swapState && swapHash) dispatch(setSwapState(1));
 		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) dispatch(setSwapState(2));
@@ -113,56 +113,58 @@ console.log(commit1, commit2);
 								</Card.Header>
 								<Card.Description>
 									<Table style={{ border: "0px solid rgba(0,0,0,0)" }}>
-										<Table.Row>
-											<Table.Cell>
-												baseAmount: 
-											</Table.Cell>
-											<Table.Cell>
-												<Container style={{ wordWrap: "break-word" }}>
-													{amountBase}
-												</Container>
-											</Table.Cell>
-										</Table.Row>
-										<Table.Row>
-											<Table.Cell>
-												quoteAmount: 
-											</Table.Cell>
-											<Table.Cell>
-												<Container style={{ wordWrap: "break-word" }}>
-													{amountQuote}
-												</Container>
-											</Table.Cell>
-										</Table.Row>
-										<Table.Row>
-											<Table.Cell>
-												swapId: 
-											</Table.Cell>
-											<Table.Cell>
-												<Container style={{ wordWrap: "break-word" }}>
-													{swapId}
-												</Container>
-											</Table.Cell>
-										</Table.Row>
-										<Table.Row>
-											<Table.Cell>
-												invoice1: 
-											</Table.Cell>
-											<Table.Cell>
-												<Container style={{ wordWrap: "break-word" }}>
-													{request1}
-												</Container>
-											</Table.Cell>
-										</Table.Row>
-										<Table.Row>
-											<Table.Cell>
-												invoice2:
-											</Table.Cell>
-											<Table.Cell>
-												<Container style={{ wordWrap: "break-word" }}>
-													{request2}
-												</Container>
-											</Table.Cell>
-										</Table.Row>
+										<Table.Body>
+											<Table.Row>
+												<Table.Cell>
+													baseAmount: 
+												</Table.Cell>
+												<Table.Cell>
+													<Container style={{ wordWrap: "break-word" }}>
+														{amountBase}
+													</Container>
+												</Table.Cell>
+											</Table.Row>
+											<Table.Row>
+												<Table.Cell>
+													quoteAmount: 
+												</Table.Cell>
+												<Table.Cell>
+													<Container style={{ wordWrap: "break-word" }}>
+														{amountQuote}
+													</Container>
+												</Table.Cell>
+											</Table.Row>
+											<Table.Row>
+												<Table.Cell>
+													swapId: 
+												</Table.Cell>
+												<Table.Cell>
+													<Container style={{ wordWrap: "break-word" }}>
+														{swapId}
+													</Container>
+												</Table.Cell>
+											</Table.Row>
+											<Table.Row>
+												<Table.Cell>
+													invoice1: 
+												</Table.Cell>
+												<Table.Cell>
+													<Container style={{ wordWrap: "break-word" }}>
+														{request1}
+													</Container>
+												</Table.Cell>
+											</Table.Row>
+											<Table.Row>
+												<Table.Cell>
+													invoice2:
+												</Table.Cell>
+												<Table.Cell>
+													<Container style={{ wordWrap: "break-word" }}>
+														{request2}
+													</Container>
+												</Table.Cell>
+											</Table.Row>
+										</Table.Body>
 									</Table>
 									<Button onClick={()=>{window.location.reload()}}>Cancel Swap</Button>
 								</Card.Description>
