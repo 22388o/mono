@@ -56,26 +56,28 @@ export const SwapForm = ({firstParty, participant, id}) => {
 				</Card.Header>
 				<Card.Description>
 					<Table style={{ border: "0px solid rgba(0,0,0,0)" }}>
-						<Table.Row>
-							<Table.Cell>
-								swapHash: 
-							</Table.Cell>
-							<Table.Cell>
-								<Container style={{ wordWrap: "break-word" }}>
-									{swapHash}
-								</Container>
-							</Table.Cell>
-						</Table.Row>
-						<Table.Row>
-							<Table.Cell>
-								swapSecret:
-							</Table.Cell>
-							<Table.Cell>
-								<Container style={{ wordWrap: "break-word" }}>
-									{secret}
-								</Container>
-							</Table.Cell>
-						</Table.Row>
+						<Table.Body>
+							<Table.Row>
+								<Table.Cell>
+									swapHash: 
+								</Table.Cell>
+								<Table.Cell>
+									<Container style={{ wordWrap: "break-word" }}>
+										{swapHash}
+									</Container>
+								</Table.Cell>
+							</Table.Row>
+							<Table.Row>
+								<Table.Cell>
+									swapSecret:
+								</Table.Cell>
+								<Table.Cell>
+									<Container style={{ wordWrap: "break-word" }}>
+										{secret}
+									</Container>
+								</Table.Cell>
+							</Table.Row>
+						</Table.Body>
 					</Table>
 				</Card.Description>
 				{swapState < 3
