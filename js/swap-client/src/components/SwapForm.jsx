@@ -73,7 +73,7 @@ export const SwapForm = ({firstParty, participant, id}) => {
 								</Table.Cell>
 								<Table.Cell>
 									<Container style={{ wordWrap: "break-word" }}>
-										{secret}
+										{ (participant.state.isSecretHolder || swapState>=5) ? secret : ''}
 									</Container>
 								</Table.Cell>
 							</Table.Row>
