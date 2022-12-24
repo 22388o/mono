@@ -92,7 +92,7 @@ export const SwapForm = ({firstParty, participant, id}) => {
 							? firstParty
 								? <Button disabled>Waiting for second user to finalize & commit swap</Button>
 								: <Button onClick={onClickCommit}>Commit Swap</Button>
-							: <Button onClick={onClickCommit}>Done</Button>
+							: <Button onClick={()=>{window.location.reload()}}>Done</Button>
 				}
 			</Card.Content>
 		</Card>
