@@ -166,7 +166,8 @@ export const SwapDemo = () => {
 											</Table.Row>
 										</Table.Body>
 									</Table>
-									<Button onClick={()=>{window.location.reload()}}>Cancel Swap</Button>
+									<Button onClick={()=>{window.location.reload()}}>
+									{(swapState<5) ? "Cancel Swap" : "New Swap"}</Button>
 								</Card.Description>
 							</Card.Content>
 						</Card>
