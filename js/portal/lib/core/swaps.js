@@ -76,9 +76,9 @@ module.exports = class Swaps extends EventEmitter {
    */
   commit (swap, party, opts) {
     if (swap == null || swap.id == null) {
-      return Promise.reject(Error('unknown swap!'))
+      throw new Error('unknown swap!')
     } else if (!this.swaps.has(swap.id)) {
-      return Promise.reject(Error(`unknown swap "${swap.id}"!`))
+      throw new Error(`unknown swap "${swap.id}"!`)
     } else {
       return this.swaps.get(swap.id).commit(party, opts)
     }

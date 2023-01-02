@@ -68,4 +68,13 @@ module.exports = class Network extends EventEmitter {
   abort (party) {
     throw new Error('not implemented!')
   }
+
+  open(party) {
+    throw new Error('not implemented!')
+  }
+
+
+  commit(party) {
+    throw new Error('not implemented!')
+  }
 }

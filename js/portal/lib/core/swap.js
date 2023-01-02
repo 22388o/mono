@@ -50,14 +50,14 @@ module.exports = class Swap extends EventEmitter {
 
     SWAP_INSTANCES.set(this, {
       id: props.id || uuid(),
-      secretHash: props.secretHash,
+      secretHash: props.secretHash, // hexString
       secretHolder: props.secretHolder,
       secretSeeker: props.secretSeeker,
       status: SWAP_STATUS[0]
     })
 
-    this.secretHolder.swap = this
-    this.secretSeeker.swap = this
+    SWAP_INSTANCES.get(this).secretHolder.swap = this
+    SWAP_INSTANCES.get(this).secretSeeker.swap = this
 
     // TODO: freeze here?
     Object.seal(this)
@@ -93,6 +93,10 @@ module.exports = class Swap extends EventEmitter {
    */
   get secretSeeker () {
     return SWAP_INSTANCES.get(this).secretSeeker
+  }
+
+  getCounterpartyInfo (party) {
+    return party.isSecretHolder ? this.secretSeeker.publicInfo: this.secretHolder.publicInfo
   }
 
   /**
@@ -142,6 +146,23 @@ module.exports = class Swap extends EventEmitter {
   get status () {
     return SWAP_INSTANCES.get(this).status
   }
+
+  get isOpening () {
+    return this.status === SWAP_STATUS[1]
+  }
+
+  get isOpened () {
+    return this.status === SWAP_STATUS[2]
+  }
+
+  get isCommitting () {
+    return this.status === SWAP_STATUS[3]
+  }
+
+  get isCommitted () {
+    return this.status === SWAP_STATUS[4]
+  }
+
 
   /**
    * Returns the current state of the server as a JSON string
@@ -255,7 +276,6 @@ module.exports = class Swap extends EventEmitter {
     const secretHash = makerOrder.hash
     const secretHolder = Party.fromOrder(makerOrder, ctx)
     const secretSeeker = Party.fromOrder(takerOrder, ctx)
-
     return new Swap({ id, secretHash, secretHolder, secretSeeker })
   }
 }

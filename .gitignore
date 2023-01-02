@@ -5,6 +5,7 @@ result*
 coverage
 dist
 node_modules
+dist
 
 # Terraform
 .terraform
@@ -17,3 +18,8 @@ secure
 # IntelliJ
 .idea
 *.iml
+
+# Antora (docs)
+workspace
+docs/build
+docs/package-lock.json
