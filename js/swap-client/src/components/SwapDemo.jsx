@@ -5,6 +5,7 @@ import { setRequest1, setRequest2, setSwapState } from "../slices/swapSlice.js";
 import { SwapCreate } from './SwapCreate.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
+import { useCallback } from "react";
 
 export const SwapDemo = () => {
 	const dispatch = useAppDispatch();
@@ -91,7 +92,6 @@ export const SwapDemo = () => {
 				}
 		}
 	})
-// console.log(commit1, commit2);
 	useEffect(() => {
 		if(!swapState && swapHash) dispatch(setSwapState(1));
 		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) dispatch(setSwapState(2));
@@ -100,6 +100,10 @@ export const SwapDemo = () => {
 		if(swapState === 4 && commit1 && commit2) dispatch(setSwapState(5));
 		// if() setSwapState(6)
 	}, [swapHash, request1, request2, commit1, commit2, swapState]);
+
+	useEffect(() => {
+		if(swapState === 5) alert('Swap confirmed and secret hash revealed!');
+	}, [swapState])
 
 	return (
 		<>
