@@ -48,3 +48,12 @@
 .flex-nowrap {
   flex-wrap: nowrap !important;
 }
+
+table, tr, tbody {
+  display: block;
+}
+
+
+.sw-title {
+  width: 100px !important;
+}
