@@ -16,25 +16,24 @@ const initialState = {
 };
 
 export const swapSlice = createSlice({
-    name: 'swap',
-    initialState,
-    reducers: {
-      setBase: (state, action) => { state.amountBase = action.payload; },
-      setQuote: (state, action) => { state.amountQuote = action.payload; },
-      setSwapState: (state, action) => { state.swapState = action.payload; },
-      setSwapId: (state, action) => { state.swapId = action.payload; },
-      setSwapHash: (state, action) => { state.swapHash = action.payload; },
-      setSecretSeekerId: (state, action) => { state.secretSeekerId = action.payload; },
-      setSecretHolderId: (state, action) => { state.secretHolderId = action.payload; },
-      setSecret: (state, action) => { state.secret = action.payload; },
-      setRequest1: (state, action) => { state.request1 = action.payload; },
-      setRequest2: (state, action) => { state.request2 = action.payload; },
-      setCommit1: (state, action) => { state.commit1 = action.payload; },
-      setCommit2: (state, action) => { state.commit2 = action.payload; },
-    }
-  });
-  
-  export const { setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
-  
-  export default swapSlice.reducer;
-  
+  name: 'swap',
+  initialState,
+  reducers: {
+    setBase: (state, action) => { state.amountBase = action.payload; },
+    setQuote: (state, action) => { state.amountQuote = action.payload; },
+    setSwapState: (state, action) => { state.swapState = action.payload; },
+    setSwapId: (state, action) => { state.swapId = action.payload; },
+    setSwapHash: (state, action) => { state.swapHash = action.payload; },
+    setSecretSeekerId: (state, action) => { state.secretSeekerId = action.payload; },
+    setSecretHolderId: (state, action) => { state.secretHolderId = action.payload; },
+    setSecret: (state, action) => { state.secret = action.payload; },
+    setRequest1: (state, action) => { state.request1 = action.payload; },
+    setRequest2: (state, action) => { state.request2 = action.payload; },
+    setCommit1: (state, action) => { state.commit1 = action.payload; },
+    setCommit2: (state, action) => { state.commit2 = action.payload; },
+  }
+});
+
+export const { setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
+
+export default swapSlice.reducer;
