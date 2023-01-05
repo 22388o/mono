@@ -4,8 +4,10 @@ import { Button, Card, Form } from 'semantic-ui-react';
 import { setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setBase, setQuote } from "../slices/swapSlice";
 import { useAppDispatch } from "../hooks";
 import { fetchSwapCreate } from "../utils/apis";
+import { useNavigate } from "react-router-dom";
 
 export const SwapCreate = () => {
+  const navigate = useNavigate();
 	const dispatch = useAppDispatch();
   const [baseQuantity, setBaseQuantity] = useState(10000)
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
@@ -33,7 +35,7 @@ export const SwapCreate = () => {
   }
 
   const onViewHistory = () => {
-    alert(1);
+    navigate('/history');
   };
 
   return (
