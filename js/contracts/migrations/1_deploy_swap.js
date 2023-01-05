@@ -1,15 +1,10 @@
 /**
- * @file Deploys the Swap smart contract to the specified EVM network
+ * @file Behavioral specification for the swap
  */
 
-const { readFileSync, writeFileSync } = require('fs')
-const { dirname, join, resolve } = require('path')
-
-/**
- * The Swap contract artifact
- * @type {TruffleContract}
- */
 const Swap = artifacts.require('Swap')
+const { writeFileSync } = require('fs')
+const { dirname, join } = require('path')
 
 /**
  * Deploys the Swap smart contract
@@ -22,10 +17,10 @@ module.exports = function (deployer, network, accounts) {
   deployer.deploy(Swap)
     .then(contract => {
       const packageJson = require('../package.json')
-
       const pathPackageRoot = dirname(__dirname)
       const pathPackageMain = join(pathPackageRoot, packageJson.main)
       const packageExport = require(pathPackageMain)
+
       const { address, transactionHash, abi } = contract
       packageExport[network] = { address, transactionHash, abi }
 

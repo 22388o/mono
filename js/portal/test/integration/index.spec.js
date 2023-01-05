@@ -18,8 +18,8 @@ before('Initialize client/server', function () {
 
       // For advanced multi-client test suites
       const create = id => {
-        const state = require(`./${id}.json`)
-        return new Client({ id, hostname, port, state })
+        const credentials = require(`./${id}.json`)
+        return new Client({ id, hostname, port, credentials })
       }
       const alice = create('alice')
       const bob = create('bob')

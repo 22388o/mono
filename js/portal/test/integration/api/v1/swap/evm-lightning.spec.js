@@ -1,9 +1,17 @@
 /**
- * @file Behavioral specification for an EVM-to-EVM atomic swap
+ * @file Behavioral specification for an EVM/Lightning atomic swap
  */
 
 const { expect } = require('chai')
 const { createHash, randomBytes } = require('crypto')
+const { inspect } = require('util')
+
+/**
+ * Logs the full object, as opposed to [Object]
+ * @param {Object} obj The object to be logged
+ * @returns {Object}
+ */
+const log = obj => inspect(obj, { depth: null, colors: true })
 
 /**
  * This is a simple test case wherein,
@@ -14,13 +22,15 @@ describe.only('Swaps - EVM/Lightning', function () {
   const ORDER_PROPS = {
     baseAsset: 'BTC',
     baseNetwork: 'lightning.btc',
-    baseQuantity: 10000,
+    baseQuantity: 200000,
     quoteAsset: 'ETH',
     quoteNetwork: 'goerli',
-    quoteQuantity: 10000
+    quoteQuantity: 10e14
   }
-  let aliceSwapCreated, aliceSwapOpened, aliceSwapClosed
-  let bobSwapCreated, bobSwapOpened, bobSwapClosed
+
+  let aliceSwapCreated, bobSwapCreated
+  let aliceSwapOpened, bobSwapOpened
+  let aliceSwapCommitted, bobSwapCommitted
 
   /**
    * Sets up listeners for incoming messages from the server
@@ -37,21 +47,27 @@ describe.only('Swaps - EVM/Lightning', function () {
     alice
       .once('swap.created', swap => { aliceSwapCreated = swap })
       .once('swap.opened', swap => { aliceSwapOpened = swap })
-      .once('swap.closed', swap => { aliceSwapClosed = swap })
+      .once('swap.committed', swap => { aliceSwapCommitted = swap })
 
     bob
       .once('swap.created', swap => { bobSwapCreated = swap })
       .once('swap.opened', swap => { bobSwapOpened = swap })
-      .once('swap.closed', swap => { bobSwapClosed = swap })
+      .once('swap.committed', swap => { bobSwapCommitted = swap })
+
+    console.log(`        -  Secret      : ${SECRET.toString('hex')}`)
+    console.log(`        -  Secret Hash : ${SECRET_HASH}`)
   })
 
   /**
    * Alice places an order using the secret hash. The test waits for the order
    * to be opened on the orderbook.
    */
-  it('must allow alice to place an order', function (done) {
+  it('must allow Alice to place an order', function (done) {
     this.test.ctx.alice
-      .once('order.opened', order => done())
+      .once('order.opened', order => {
+        console.log('\n\nAlice placed order', log(order))
+        done()
+      })
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
         hash: SECRET_HASH,
         side: 'ask'
@@ -63,9 +79,12 @@ describe.only('Swaps - EVM/Lightning', function () {
    * Bob places the counter-order that would match with Alice's order, and waits
    * for the order to be opened on the orderbook.
    */
-  it('must allow bob to place an order', function (done) {
+  it('must allow Bob to place an order', function (done) {
     this.test.ctx.bob
-      .once('order.opened', order => done())
+      .once('order.opened', order => {
+        console.log('\n\nBob placed order', log(order))
+        done()
+      })
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
         hash: 'ignored',
         side: 'bid'
@@ -80,7 +99,7 @@ describe.only('Swaps - EVM/Lightning', function () {
    * received by both alice and bob, and that the fields are as expected, esp.
    * the secret hash.
    */
-  it('must broadcast the created swap to alice and bob', function () {
+  it('must broadcast match-trigged swap to Alice and Bob', function () {
     const { alice, bob } = this.test.ctx
 
     expect(aliceSwapCreated).to.be.an('object')
@@ -97,29 +116,33 @@ describe.only('Swaps - EVM/Lightning', function () {
 
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
+
+    console.log('\n\nSwap broadcast to Alice and Bob', log(swap))
   })
 
   /**
    * Once the swap is created, Bob (the secret seeker) opens the swap.
    */
-  it('must allow bob to open the swap', function () {
+  it('must allow Bob to open the swap', function () {
     const { bob } = this.test.ctx
-    const { lightning } = bob.state // TODO: unfortunate name here! Fix this
+    const { lightning } = bob.credentials
     return bob.swapOpen(bobSwapCreated, { lightning })
+      .then(swap => console.log('\n\nSwap opened by Bob', log(swap)))
   })
 
   /**
    * Once Bob has opened the swap, Alice (the secret-holder) proceeds to open
    * the swap.
    */
-  it('must allow alice to open the swap', function () {
-    console.log('Using SECRET', SECRET, SECRET.toString('hex'))
-    return this.test.ctx.alice.swapOpen(aliceSwapCreated, {
-      secret: `0x${SECRET.toString('hex')}`
-    })
+  it('must allow Alice to open the swap', function () {
+    const { alice } = this.test.ctx
+    const { ethereum } = alice.credentials
+    const secret = SECRET.toString('hex')
+    return alice.swapOpen(aliceSwapCreated, { ethereum, secret })
+      .then(swap => console.log('\n\nSwap opened by Alice', log(swap)))
   })
 
-  it('must broadcast the opened swap to alice and bob', function () {
+  it('must broadcast the opened swap to Alice and Bob', function () {
     const { alice, bob } = this.test.ctx
 
     expect(aliceSwapOpened).to.be.an('object')
@@ -142,53 +165,53 @@ describe.only('Swaps - EVM/Lightning', function () {
     expect(swap.secretSeeker.state).to.be.an('object')
     expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork]).to.be.an('object')
     expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork].invoice).to.be.an('object')
+
+    console.log('\n\nSwap broadcast to Alice and Bob', log(swap))
   })
 
   /**
    * Once the swap is opened, Bob commits to the swap.
    */
-  it('must allow bob to commit the swap', function () {
+  it('must allow Bob to commit the swap', function () {
     const { bob } = this.test.ctx
-    const { lightning } = bob.state // TODO: unfortunate name here! Fix this
-    return bob.swapCommit(bobSwapOpened, { lightning })
+    return bob.swapCommit(bobSwapOpened, bob.credentials)
+      .then(swap => console.log('\n\nSwap committed by Bob', log(swap)))
   })
 
   /**
    * Lastly, Alice commits to the swap, and this should trigger the exchange of
    * assets on both chains.
    */
-  it('must allow alice to commit the swap', function () {
+  it('must allow Alice to commit the swap', function () {
     const { alice } = this.test.ctx
-    const { lightning } = alice.state // TODO: unfortunate name here! Fix this
-    return alice.swapCommit(aliceSwapOpened, { lightning })
+    return alice.swapCommit(aliceSwapOpened, alice.credentials)
+      .then(swap => console.log('\n\nSwap committed by Alice', log(swap)))
   })
 
-  it.skip('must broadcast the closed swap to alice and bob', function () {
+  it('must broadcast the committed swap to Alice and Bob', function () {
     const { alice, bob } = this.test.ctx
 
-    expect(aliceSwapClosed).to.be.an('object')
-    expect(bobSwapClosed).to.be.an('object')
-    expect(aliceSwapClosed).to.deep.equal(bobSwapClosed)
+    expect(aliceSwapCommitted).to.be.an('object')
+    expect(bobSwapCommitted).to.be.an('object')
+    expect(aliceSwapCommitted).to.deep.equal(bobSwapCommitted)
 
-    const swap = aliceSwapClosed
+    const swap = aliceSwapCommitted
     expect(swap.id).to.be.a('string').that.equals(aliceSwapCreated.id)
     expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-    expect(swap.status).to.be.a('string').that.equals('closed')
+    expect(swap.status).to.be.a('string').that.equals('committed')
 
     expect(swap.secretHolder).to.be.an('object')
     expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
     expect(swap.secretHolder.state).to.be.an('object')
-    expect(swap.secretHolder.state.lightning).to.be.an('object')
-    expect(swap.secretHolder.state.lightning.invoice).to.be.an('object')
+    expect(swap.secretHolder.state['lightning.btc']).to.be.an('object')
+    expect(swap.secretHolder.state['lightning.btc'].invoice).to.be.an('object')
 
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
     expect(swap.secretSeeker.state).to.be.an('object')
     expect(swap.secretSeeker.state.goerli).to.be.an('object')
     expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
-  })
 
-  it.skip('must validate account balances for alice and bob', function () {
-
+    console.log('\n\nSwap broadcast to Alice and Bob', log(swap))
   })
 })

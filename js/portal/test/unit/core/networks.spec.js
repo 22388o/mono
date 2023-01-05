@@ -13,12 +13,9 @@ const SUPPORTED = [
 
 describe('Networks', function () {
   const PROPS = {
-    goerli: {
-      '@type': 'ethereum',
-      abi: ['dummy_abi'],
-      address: '0xfakeaddress',
-      assets: ['ETH'],
-      url: 'http://localhost:8545'
+    lightning: {
+      '@type': 'lightning',
+      assets: ['BTC']
     }
   }
 

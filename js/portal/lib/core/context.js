@@ -25,9 +25,9 @@ const HttpContext = module.exports = {
 HttpContext.networks = new Networks({
   goerli: {
     '@type': 'ethereum',
+    assets: ['ETH'],
     abi: Contracts.abi,
     address: process.env.PORTAL_GOERLI_CONTRACT_ADDRESS,
-    assets: ['ETH'],
     chainId: 5,
     url: process.env.PORTAL_GOERLI_URL
   },
@@ -35,14 +35,14 @@ HttpContext.networks = new Networks({
     '@type': 'lightning',
     assets: ['BTC']
   },
-  // sepolia: {
-  //   '@type': 'ethereum',
-  //   abi: Contracts.abi,
-  //   address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
-  //   assets: ['ETH'],
-  //   chainId: 11155111,
-  //   url: process.env.PORTAL_SEPOLIA_URL
-  // }
+  sepolia: {
+    '@type': 'ethereum',
+    assets: ['ETH'],
+    abi: Contracts.abi,
+    address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
+    chainId: 11155111,
+    url: process.env.PORTAL_SEPOLIA_URL
+  }
 }, HttpContext)
 
 /**

@@ -18,7 +18,7 @@ module.exports = class Client extends EventEmitter {
    * @param {String} [props.hostname='localhost'] The hostname of the Portal server
    * @param {Number} [props.port=80] The port of the Portal server
    * @param {String} [props.pathname='/api/v1/updates'] The path to the updates channel
-   * @param {Object} [props.state] Optional state maintained by the client
+   * @param {Object} [props.credentials] Credentials maintained by the client
    */
   constructor (props) {
     if (props == null) {
@@ -33,7 +33,7 @@ module.exports = class Client extends EventEmitter {
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
     this.pathname = props.pathname || '/api/v1/updates'
-    this.state = props.state
+    this.credentials = props.credentials
     this.websocket = null
 
     Object.seal(this)
@@ -66,7 +66,7 @@ module.exports = class Client extends EventEmitter {
       hostname: this.hostname,
       port: this.port,
       pathname: this.pathname,
-      state: this.state
+      credentials: this.credentials
     }
   }
 

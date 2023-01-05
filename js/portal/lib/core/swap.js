@@ -197,11 +197,9 @@ module.exports = class Swap extends EventEmitter {
    * @param {Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
-   * @returns {Promise<Party>}
+   * @returns {Promise<Swap>}
    */
   async open (party, opts) {
-    console.log('\n\n\nswap.open', this, party)
-
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
@@ -227,7 +225,7 @@ module.exports = class Swap extends EventEmitter {
       : SWAP_STATUS[1]
     this.emit(this.status, this)
 
-    return party
+    return this
   }
 
   /**
@@ -235,11 +233,9 @@ module.exports = class Swap extends EventEmitter {
    * @param {Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
-   * @returns {Promise<Party>}
+   * @returns {Promise<Swap>}
    */
   async commit (party, opts) {
-    console.log('\n\n\nswap.commit', this, party)
-
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
@@ -261,7 +257,7 @@ module.exports = class Swap extends EventEmitter {
       : SWAP_STATUS[3]
     this.emit(this.status, this)
 
-    return party
+    return this
   }
 
   /**

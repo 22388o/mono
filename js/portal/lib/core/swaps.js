@@ -53,7 +53,7 @@ module.exports = class Swaps extends EventEmitter {
    * @param {Party|Object} party The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
-   * @returns {Promise<Party>}
+   * @returns {Promise<Swap>}
    */
   open (swap, party, opts) {
     if (swap == null || swap.id == null) {
@@ -72,7 +72,7 @@ module.exports = class Swaps extends EventEmitter {
    * @param {Party} party The party that is committing the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
-   * @returns {Promise<Void>}
+   * @returns {Promise<Swap>}
    */
   commit (swap, party, opts) {
     if (swap == null || swap.id == null) {

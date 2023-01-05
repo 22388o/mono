@@ -77,8 +77,6 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   open (opts) {
-    console.log('\n\n\nparty.open', this)
-
     if ((this.swap.isCreated && this.isSecretSeeker) ||
         (this.swap.isOpening && this.isSecretHolder)) {
       // Create an invoice on the counterparty's network
@@ -100,8 +98,6 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   commit (opts) {
-    console.log('\n\n\nparty.commit', this)
-
     if (this.isSecretSeeker && this.swap.isOpened) {
       return this.counterparty.network.commit(this, opts)
     } else if (this.isSecretHolder && this.swap.isCommitting) {
@@ -141,12 +137,11 @@ module.exports = class Party {
     const obj = {
       '@type': this.constructor.name,
       id: this.id,
-      swapId: this.swap && this.swap.id,
+      swap: this.swap && { id: this.swap.id },
       asset: this.asset,
       network: this.network,
       quantity: this.quantity,
       state: this.state,
-      publicInfo: this.publicInfo,
       isSecretSeeker: this.isSecretSeeker,
       isSecretHolder: this.isSecretHolder
     }

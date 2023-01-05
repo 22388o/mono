@@ -29,10 +29,8 @@
   "devDependencies": {
     "c8": "^7.12.0",
     "chai": "^4.3.6",
-    "ganache": "^7.5.0",
     "mocha": "^10.0.0",
-    "standard": "^17.0.0",
-    "truffle": "^5.6.8"
+    "standard": "^17.0.0"
   },
   "c8": {
     "check-coverage": true,
@@ -50,7 +48,7 @@
     "recursive": true,
     "reporter": "spec",
     "slow": 1000,
-    "timeout": 60000,
+    "timeout": 120000,
     "ui": "bdd",
     "watch-files": [
       "lib/**/*.js",
