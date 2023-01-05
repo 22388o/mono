@@ -11,7 +11,7 @@ export const SwapCreate = () => {
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
   const [pressed, setPressed] = useState(false);
 
-  const onClick = async () => {
+  const onCreateSwap = async () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
       console.log(res);
@@ -32,6 +32,10 @@ export const SwapCreate = () => {
     
   }
 
+  const onViewHistory = () => {
+    alert(1);
+  };
+
   return (
     <Card centered>
       <Card.Content>
@@ -49,7 +53,8 @@ export const SwapCreate = () => {
             <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/></label>
           </Form.Field>
         </Form.Group>
-        <p><Button primary onClick={onClick}>Create Swap</Button></p>
+        <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
+        <p><Button primary onClick={onViewHistory}>Swap History</Button></p>
         </Form>
       </Card.Content>
     </Card>

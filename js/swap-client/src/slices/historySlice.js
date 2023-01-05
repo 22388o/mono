@@ -8,9 +8,12 @@ export const historySlice = createSlice({
     name: 'history',
     initialState,
     reducers: {
+      addSwapItem: (state, action) => {
+        state.history.push(action.payload);
+      },
     }
   });
   
-export const {} = historySlice.actions;
+export const { addSwapItem } = historySlice.actions;
   
 export default historySlice.reducer;
