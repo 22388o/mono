@@ -1,7 +1,6 @@
 /**
  * @file HTTP handler used to manage atomic swaps
  */
-const Order = require("../../../core/order");
 
 const HTTP_METHODS = module.exports
 

@@ -4,8 +4,6 @@
 
 const Network = require('../core/network')
 const ln = require('lightning')
-const { createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
-
 
 /**
  * Exports an interface to the Lightning blockchain network

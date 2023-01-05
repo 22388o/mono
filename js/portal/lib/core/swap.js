@@ -95,10 +95,6 @@ module.exports = class Swap extends EventEmitter {
     return SWAP_INSTANCES.get(this).secretSeeker
   }
 
-  getCounterpartyInfo (party) {
-    return party.isSecretHolder ? this.secretSeeker.publicInfo: this.secretHolder.publicInfo
-  }
-
   /**
    * Returns whether or not the swap is in the `created` state
    * @returns {Boolean}
@@ -146,23 +142,6 @@ module.exports = class Swap extends EventEmitter {
   get status () {
     return SWAP_INSTANCES.get(this).status
   }
-
-  get isOpening () {
-    return this.status === SWAP_STATUS[1]
-  }
-
-  get isOpened () {
-    return this.status === SWAP_STATUS[2]
-  }
-
-  get isCommitting () {
-    return this.status === SWAP_STATUS[3]
-  }
-
-  get isCommitted () {
-    return this.status === SWAP_STATUS[4]
-  }
-
 
   /**
    * Returns the current state of the server as a JSON string

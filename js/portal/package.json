@@ -13,8 +13,7 @@
     "posttest": "npm run lint",
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
-    "test:integration:swap": "mocha test/integration/api/v1/swap",
-    "test:swap": "mocha test/unit/core/swaps-lndToLnd.spec.js",
+    "test:integration": "mocha test/integration",
     "watch": "npm test -- --watch"
   },
   "dependencies": {
