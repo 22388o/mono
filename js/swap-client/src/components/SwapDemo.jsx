@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Container, Table } from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
-import { setRequest1, setRequest2, setSwapState } from "../slices/swapSlice.js";
+import { clearSwapInfo, setRequest1, setRequest2, setSwapState } from "../slices/swapSlice.js";
 import { SwapCreate } from './SwapCreate.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
 import { useCallback } from "react";
+import { addSwapItem } from "../slices/historySlice.js";
 
 export const SwapDemo = () => {
 	const dispatch = useAppDispatch();
+	const swapHistory = useAppSelector(state => state.history.history);
 	const amountBase = useAppSelector(state => state.swap.amountBase);
 	const amountQuote = useAppSelector(state => state.swap.amountQuote);
 	const swapState = useAppSelector(state => state.swap.swapState);
@@ -21,6 +23,7 @@ export const SwapDemo = () => {
 	const request2 = useAppSelector(state => state.swap.request2);
 	const commit1 = useAppSelector(state => state.swap.commit1);
 	const commit2 = useAppSelector(state => state.swap.commit2);
+	console.log(swapHistory);
 	const [alice, setAlice] = useState({
 		state: {
 			isSecretHolder: false,
@@ -97,13 +100,28 @@ export const SwapDemo = () => {
 		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) dispatch(setSwapState(2));
 		if(swapState === 2 && request1 && request2) dispatch(setSwapState(3));
 		if(swapState === 3 && commit1 && !commit2) dispatch(setSwapState(4));
-		if(swapState === 4 && commit1 && commit2) dispatch(setSwapState(5));
+		if(swapState === 4 && commit1 && commit2){
+			dispatch(addSwapItem({
+				amountBase,
+				amountQuote,
+				swapId,
+				swapHash,
+				secretSeekerId,
+				secretHolderId,
+				secret,
+			}));
+			dispatch(setSwapState(5));
+		}
 		// if() setSwapState(6)
 	}, [swapHash, request1, request2, commit1, commit2, swapState]);
 
 	useEffect(() => {
 		if(swapState === 5) alert('Swap confirmed and secret hash revealed!');
-	}, [swapState])
+	}, [swapState]);
+
+	const onClearSwap = () => {
+		dispatch(clearSwapInfo());
+	};
 
 	return (
 		<>
@@ -170,7 +188,7 @@ export const SwapDemo = () => {
 											</Table.Row>
 										</Table.Body>
 									</Table>
-									<Button onClick={()=>{window.location.reload()}}>
+									<Button onClick={onClearSwap}>
 									{(swapState<5) ? "Cancel Swap" : "New Swap"}</Button>
 								</Card.Description>
 							</Card.Content>

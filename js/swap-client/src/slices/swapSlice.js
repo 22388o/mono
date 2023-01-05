@@ -31,9 +31,23 @@ export const swapSlice = createSlice({
     setRequest2: (state, action) => { state.request2 = action.payload; },
     setCommit1: (state, action) => { state.commit1 = action.payload; },
     setCommit2: (state, action) => { state.commit2 = action.payload; },
+    clearSwapInfo: (state, action) => {
+      state.amountBase = null;
+      state.amountQuote = null;
+      state.swapState = null;
+      state.swapId = null;
+      state.swapHash = null;
+      state.secretSeekerId = null;
+      state.secretHolderId = null;
+      state.secret = null;
+      state.request1 = null;
+      state.request2 = null;
+      state.commit1 = false;
+      state.commit2 = false;
+    }
   }
 });
 
-export const { setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
+export const { clearSwapInfo, setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
 
 export default swapSlice.reducer;
