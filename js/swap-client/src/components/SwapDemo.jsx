@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Container, Table } from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
-import { clearSwapInfo, setRequest1, setRequest2, setSwapState } from "../slices/swapSlice.js";
+import { clearSwapInfo, setSwapState } from "../slices/swapSlice.js";
 import { SwapCreate } from './SwapCreate.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
-import { useCallback } from "react";
 import { addSwapItem } from "../slices/historySlice.js";
 
 export const SwapDemo = () => {
@@ -127,7 +126,7 @@ export const SwapDemo = () => {
 		<>
 			{(swapId == null) 
 				? <SwapCreate /> 
-				: <Card.Group centered>
+				: <Card.Group className="flex-nowrap" centered>
 						<Card fluid>
 							<Card.Content>
 								<Card.Header>

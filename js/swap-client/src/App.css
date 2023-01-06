@@ -1,5 +1,4 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -32,14 +31,6 @@
   }
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
 .user-swap {
   width: 50% !important;
   float: left !important;
@@ -48,11 +39,6 @@
 .flex-nowrap {
   flex-wrap: nowrap !important;
 }
-
-table, tr, tbody {
-  display: block;
-}
-
 
 .sw-title {
   width: 100px !important;
