@@ -6,7 +6,7 @@ export const SwapHistory = () => {
   const history = useAppSelector(state => state.history.history);
 
   return (
-    <Table collapsing celled>
+    <Table celled>
       <Table.Header>
         <Table.Row>
           <Table.HeaderCell singleLine>Base Amount</Table.HeaderCell>
@@ -22,7 +22,7 @@ export const SwapHistory = () => {
       <Table.Body>
         {
           history.map(row => 
-            <Table.Row>
+            <Table.Row key={row.swapId}>
               <Table.Cell>{row.amountBase}</Table.Cell>
               <Table.Cell>{row.amountQuote}</Table.Cell>
               <Table.Cell>{row.swapId}</Table.Cell>
