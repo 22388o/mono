@@ -43,3 +43,7 @@
 .sw-title {
   width: 100px !important;
 }
+
+td {
+  overflow-wrap: anywhere;
+}
