@@ -9,6 +9,7 @@ export const SwapHistory = () => {
     <Table celled>
       <Table.Header>
         <Table.Row>
+          <Table.HeaderCell singleLine>Status</Table.HeaderCell>
           <Table.HeaderCell singleLine>Base Amount</Table.HeaderCell>
           <Table.HeaderCell singleLine>Quote Amount</Table.HeaderCell>
           <Table.HeaderCell width='three'>Swap Id</Table.HeaderCell>
@@ -23,6 +24,7 @@ export const SwapHistory = () => {
         {
           history.map(row => 
             <Table.Row key={row.swapId}>
+              <Table.Cell>{row.status}</Table.Cell>
               <Table.Cell>{row.amountBase}</Table.Cell>
               <Table.Cell>{row.amountQuote}</Table.Cell>
               <Table.Cell>{row.swapId}</Table.Cell>

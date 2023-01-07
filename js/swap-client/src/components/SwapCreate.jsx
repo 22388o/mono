@@ -5,6 +5,7 @@ import { setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret
 import { useAppDispatch } from "../hooks";
 import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
+import { addSwapItem } from "../slices/historySlice";
 
 export const SwapCreate = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export const SwapCreate = () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
       console.log(res);
-      return res.json()
+      return res.json();
     })
     .then(data => {
       console.log(data.swap.id)
@@ -29,6 +30,15 @@ export const SwapCreate = () => {
       dispatch(setSecretHolderId(data.swap.secretHolder.id));
       dispatch(setSecret(data.swapSecret));
       dispatch(setSwapHash(data.swap.secretHash));
+      dispatch(addSwapItem({
+        amountBase: baseQuantity,
+        amountQuote: quoteQuantity,
+        swapId: data.swap.id,
+        swapHash: data.swap.secretHash,
+        secretSeekerId: data.swap.secretSeeker.id,
+        secretHolderId: data.swap.secretHolder.id,
+        secret: data.swapSecret
+      }));
     })
     .catch(err => console.log(err))
     
