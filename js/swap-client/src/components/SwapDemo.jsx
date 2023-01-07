@@ -5,7 +5,7 @@ import { clearSwapInfo, setSwapState } from "../slices/swapSlice.js";
 import { SwapCreate } from './SwapCreate.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
-import { addSwapItem } from "../slices/historySlice.js";
+import { addSwapItem, updateLatestSwapStatus } from "../slices/historySlice.js";
 
 export const SwapDemo = () => {
 	const dispatch = useAppDispatch();
@@ -95,21 +95,25 @@ export const SwapDemo = () => {
 		}
 	})
 	useEffect(() => {
-		if(!swapState && swapHash) dispatch(setSwapState(1));
-		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) dispatch(setSwapState(2));
-		if(swapState === 2 && request1 && request2) dispatch(setSwapState(3));
-		if(swapState === 3 && commit1 && !commit2) dispatch(setSwapState(4));
+		if(!swapState && swapHash) {
+			dispatch(setSwapState(1));
+			dispatch(updateLatestSwapStatus('Created'));
+		}
+		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) {
+			dispatch(setSwapState(2));
+			dispatch(updateLatestSwapStatus('Opening'));
+		}
+		if(swapState === 2 && request1 && request2){
+			dispatch(setSwapState(3));
+			dispatch(updateLatestSwapStatus('Opened'));
+		}
+		if(swapState === 3 && commit1 && !commit2){
+			dispatch(setSwapState(4));
+			dispatch(updateLatestSwapStatus('Committing'));
+		}
 		if(swapState === 4 && commit1 && commit2){
-			dispatch(addSwapItem({
-				amountBase,
-				amountQuote,
-				swapId,
-				swapHash,
-				secretSeekerId,
-				secretHolderId,
-				secret,
-			}));
 			dispatch(setSwapState(5));
+			dispatch(updateLatestSwapStatus('Completed'));
 		}
 		// if() setSwapState(6)
 	}, [swapHash, request1, request2, commit1, commit2, swapState]);
