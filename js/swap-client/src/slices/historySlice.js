@@ -20,10 +20,13 @@ export const historySlice = createSlice({
           ...state.history[len - 1],
           status: action.payload
         };
+      },
+      removeLatestSwap: (state, action) => {
+        state.history.pop();;
       }
     }
   });
   
-export const { addSwapItem, updateLatestSwapStatus } = historySlice.actions;
+export const { addSwapItem, updateLatestSwapStatus, removeLatestSwap } = historySlice.actions;
   
 export default historySlice.reducer;

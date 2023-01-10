@@ -1,4 +1,5 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { Header, Image } from 'semantic-ui-react'
 import { SwapDemo } from './SwapDemo'
 
@@ -17,7 +18,8 @@ export const Swap = () => {
         </Header>
         <br />
       </div>
-      <SwapDemo />
+      <Outlet />
+      {/* <SwapDemo /> */}
     </div>
   );
 }

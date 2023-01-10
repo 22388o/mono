@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Button, Card, Container, Table } from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
 import { clearSwapInfo, setSwapState } from "../slices/swapSlice.js";
-import { SwapCreate } from './SwapCreate.jsx'
+import { SwapManage } from './SwapManage.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
-import { addSwapItem, updateLatestSwapStatus } from "../slices/historySlice.js";
+import { addSwapItem, removeLatestSwap, updateLatestSwapStatus } from "../slices/historySlice.js";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const SwapDemo = () => {
+	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
 	const swapHistory = useAppSelector(state => state.history.history);
 	const amountBase = useAppSelector(state => state.swap.amountBase);
@@ -22,7 +24,7 @@ export const SwapDemo = () => {
 	const request2 = useAppSelector(state => state.swap.request2);
 	const commit1 = useAppSelector(state => state.swap.commit1);
 	const commit2 = useAppSelector(state => state.swap.commit2);
-	console.log(swapHistory);
+
 	const [alice, setAlice] = useState({
 		state: {
 			isSecretHolder: false,
@@ -124,95 +126,99 @@ export const SwapDemo = () => {
 
 	const onClearSwap = () => {
 		dispatch(clearSwapInfo());
+		if(swapState !== 5) dispatch(removeLatestSwap());
+		navigate('/');
 	};
+
+	const onBackToHome = () => {
+		navigate('/');
+	};
+
+	useEffect(() => {
+		if(!swapId) navigate('/');
+	}, [swapId]);
 
 	return (
 		<>
-			{(swapId == null) 
-				? <SwapCreate /> 
-				: <Card.Group className="flex-nowrap" centered>
-						<Card fluid>
-							<Card.Content>
-								<Card.Header>
-									Swap Info
-								</Card.Header>
-								<Card.Description>
-									<Table style={{ border: "0px solid rgba(0,0,0,0)" }}>
-										<Table.Body>
-											<Table.Row>
-												<Table.Cell>
-													baseAmount: 
-												</Table.Cell>
-												<Table.Cell>
-													<Container style={{ wordWrap: "break-word" }}>
-														{amountBase}
-													</Container>
-												</Table.Cell>
-											</Table.Row>
-											<Table.Row>
-												<Table.Cell>
-													quoteAmount: 
-												</Table.Cell>
-												<Table.Cell>
-													<Container style={{ wordWrap: "break-word" }}>
-														{amountQuote}
-													</Container>
-												</Table.Cell>
-											</Table.Row>
-											<Table.Row>
-												<Table.Cell>
-													swapId: 
-												</Table.Cell>
-												<Table.Cell>
-													<Container style={{ wordWrap: "break-word" }}>
-														{swapId}
-													</Container>
-												</Table.Cell>
-											</Table.Row>
-											<Table.Row>
-												<Table.Cell>
-													invoice1: 
-												</Table.Cell>
-												<Table.Cell>
-													<Container style={{ wordWrap: "break-word" }}>
-														{request1}
-													</Container>
-												</Table.Cell>
-											</Table.Row>
-											<Table.Row>
-												<Table.Cell>
-													invoice2:
-												</Table.Cell>
-												<Table.Cell>
-													<Container style={{ wordWrap: "break-word" }}>
-														{request2}
-													</Container>
-												</Table.Cell>
-											</Table.Row>
-										</Table.Body>
-									</Table>
-									<Button onClick={onClearSwap}>
-									{(swapState<5) ? "Cancel Swap" : "New Swap"}</Button>
-								</Card.Description>
-							</Card.Content>
-						</Card>
-					</Card.Group>    
-			}
-			{(swapId != null) 
-				? <Card.Group widths='equal' className="flex-nowrap">
-						<Card className="user-swap">
-							<Card.Content>
-								<SwapForm firstParty={true} participant={alice} id={secretSeekerId} />
-							</Card.Content>
-						</Card>
-						<Card className="user-swap">
-							<Card.Content>
-								<SwapForm firstParty={false} participant={carol} id={secretHolderId} />
-							</Card.Content>
-						</Card>
-					</Card.Group>
-				: (<br/>)
-			}
+			<Card.Group className="flex-nowrap" centered>
+				<Card fluid>
+					<Card.Content>
+						<Card.Header>
+							Swap Info
+						</Card.Header>
+						<Card.Description>
+							<Table style={{ border: "0px solid rgba(0,0,0,0)" }}>
+								<Table.Body>
+									<Table.Row>
+										<Table.Cell>
+											baseAmount: 
+										</Table.Cell>
+										<Table.Cell>
+											<Container style={{ wordWrap: "break-word" }}>
+												{amountBase}
+											</Container>
+										</Table.Cell>
+									</Table.Row>
+									<Table.Row>
+										<Table.Cell>
+											quoteAmount: 
+										</Table.Cell>
+										<Table.Cell>
+											<Container style={{ wordWrap: "break-word" }}>
+												{amountQuote}
+											</Container>
+										</Table.Cell>
+									</Table.Row>
+									<Table.Row>
+										<Table.Cell>
+											swapId: 
+										</Table.Cell>
+										<Table.Cell>
+											<Container style={{ wordWrap: "break-word" }}>
+												{swapId}
+											</Container>
+										</Table.Cell>
+									</Table.Row>
+									<Table.Row>
+										<Table.Cell>
+											invoice1: 
+										</Table.Cell>
+										<Table.Cell>
+											<Container style={{ wordWrap: "break-word" }}>
+												{request1}
+											</Container>
+										</Table.Cell>
+									</Table.Row>
+									<Table.Row>
+										<Table.Cell>
+											invoice2:
+										</Table.Cell>
+										<Table.Cell>
+											<Container style={{ wordWrap: "break-word" }}>
+												{request2}
+											</Container>
+										</Table.Cell>
+									</Table.Row>
+								</Table.Body>
+							</Table>
+							<Button onClick={onClearSwap}>{ swapState !== 5 ? 'Cancel Swap' : 'Renew Swap' }</Button> 
+							{ swapState !== 5 && <Button onClick={onBackToHome}>Back to Home</Button> }
+						</Card.Description>
+					</Card.Content>
+				</Card>
+			</Card.Group>    
+			<Card.Group widths='equal' className="flex-nowrap">
+				<Card className="user-swap">
+					<Card.Content>
+						<SwapForm firstParty={true} participant={alice} id={secretSeekerId} />
+					</Card.Content>
+				</Card>
+				<Card className="user-swap">
+					<Card.Content>
+						<SwapForm firstParty={false} participant={carol} id={secretHolderId} />
+					</Card.Content>
+				</Card>
+			</Card.Group>
 		</>
 	);
 }
