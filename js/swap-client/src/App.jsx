@@ -4,7 +4,9 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css'
 import { Swap } from './components/Swap';
+import { SwapDemo } from './components/SwapDemo';
 import { SwapHistory } from './components/SwapHistory';
+import { SwapManage } from './components/SwapManage';
 import { store } from './store';
 
 function App() {
@@ -14,7 +16,10 @@ function App() {
     <Provider store={store}>
       <Router>
         <Routes>
-          <Route path='' element={<Swap />} />
+          <Route path='' element={<Swap />}>
+            <Route path='' element={<SwapManage />} />
+            <Route path='/swap' element={<SwapDemo />} />
+          </Route>
           <Route path='/history' element={<SwapHistory />} />
         </Routes>
       </Router>

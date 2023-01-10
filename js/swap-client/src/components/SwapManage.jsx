@@ -2,18 +2,18 @@ import { useState } from "react";
 import 'semantic-ui-css/semantic.min.css';
 import { Button, Card, Form } from 'semantic-ui-react';
 import { setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setBase, setQuote } from "../slices/swapSlice";
-import { useAppDispatch } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
 
-export const SwapCreate = () => {
+export const SwapManage = () => {
   const navigate = useNavigate();
 	const dispatch = useAppDispatch();
   const [baseQuantity, setBaseQuantity] = useState(10000)
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
   const [pressed, setPressed] = useState(false);
-
+  const latestHistory = useAppSelector(state => state.history.history[state.history.history.length - 1]);
   const onCreateSwap = async () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
@@ -39,10 +39,15 @@ export const SwapCreate = () => {
         secretHolderId: data.swap.secretHolder.id,
         secret: data.swapSecret
       }));
+      navigate('/swap');
     })
     .catch(err => console.log(err))
     
   }
+
+  const onContinueSwap = () => {
+
+  };
 
   const onViewHistory = () => {
     navigate('/history');
@@ -65,7 +70,10 @@ export const SwapCreate = () => {
             <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/></label>
           </Form.Field>
         </Form.Group>
-        <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
+        { (latestHistory?.status === 'Completed' || latestHistory?.status === undefined)
+            ? <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
+            : <p><Button primary onClick={onContinueSwap}>Continue Swap</Button></p>
+        }
         <p><Button primary onClick={onViewHistory}>Swap History</Button></p>
         </Form>
       </Card.Content>
