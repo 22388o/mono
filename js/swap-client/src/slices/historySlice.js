@@ -11,14 +11,13 @@ export const historySlice = createSlice({
       addSwapItem: (state, action) => {
         state.history.push({
           ...action.payload,
-          status: 'PENDING'
+          status: 1
         });
       },
-      updateLatestSwapStatus: (state, action) => {
-        let len = state.history.length;
-        state.history[len - 1] = {
-          ...state.history[len - 1],
-          status: action.payload
+      updateSwapStatus: (state, action) => {
+        state.history[action.payload.index] = {
+          ...state.history[action.payload.index],
+          status: action.payload.status
         };
       },
       removeLatestSwap: (state, action) => {
@@ -27,6 +26,6 @@ export const historySlice = createSlice({
     }
   });
   
-export const { addSwapItem, updateLatestSwapStatus, removeLatestSwap } = historySlice.actions;
+export const { addSwapItem, updateSwapStatus, removeLatestSwap } = historySlice.actions;
   
 export default historySlice.reducer;

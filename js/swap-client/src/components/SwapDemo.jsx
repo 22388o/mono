@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Container, Table } from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
-import { clearSwapInfo, setSwapState } from "../slices/swapSlice.js";
+import { clearSwapInfo, setSwapStatus } from "../slices/swapSlice.js";
 import { SwapManage } from './SwapManage.jsx'
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
-import { addSwapItem, removeLatestSwap, updateLatestSwapStatus } from "../slices/historySlice.js";
+import { addSwapItem, removeLatestSwap, updateSwapStatus } from "../slices/historySlice.js";
 import { Navigate, useNavigate } from "react-router-dom";
 
 export const SwapDemo = () => {
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
 	const swapHistory = useAppSelector(state => state.history.history);
+	const swapIndex = useAppSelector(state => state.swap.index);
 	const amountBase = useAppSelector(state => state.swap.amountBase);
 	const amountQuote = useAppSelector(state => state.swap.amountQuote);
 	const swapState = useAppSelector(state => state.swap.swapState);
@@ -98,26 +99,26 @@ export const SwapDemo = () => {
 	})
 	useEffect(() => {
 		if(!swapState && swapHash) {
-			dispatch(setSwapState(1));
-			dispatch(updateLatestSwapStatus('Created'));
+			dispatch(setSwapStatus(1));
+			dispatch(updateSwapStatus({index: swapIndex, status: 1}));
 		}
 		if(swapState === 1 && ((request1 && !request2) || (!request1 && request2))) {
-			dispatch(setSwapState(2));
-			dispatch(updateLatestSwapStatus('Opening'));
+			dispatch(setSwapStatus(2));
+			dispatch(updateSwapStatus({index: swapIndex, status: 2}));
 		}
 		if(swapState === 2 && request1 && request2){
-			dispatch(setSwapState(3));
-			dispatch(updateLatestSwapStatus('Opened'));
+			dispatch(setSwapStatus(3));
+			dispatch(updateSwapStatus({index: swapIndex, status: 3}));
 		}
 		if(swapState === 3 && commit1 && !commit2){
-			dispatch(setSwapState(4));
-			dispatch(updateLatestSwapStatus('Committing'));
+			dispatch(setSwapStatus(4));
+			dispatch(updateSwapStatus({index: swapIndex, status: 4}));
 		}
 		if(swapState === 4 && commit1 && commit2){
-			dispatch(setSwapState(5));
-			dispatch(updateLatestSwapStatus('Completed'));
+			dispatch(setSwapStatus(5));
+			dispatch(updateSwapStatus({index: swapIndex, status: 5}));
 		}
-		// if() setSwapState(6)
+		// if() setSwapStatus(6)
 	}, [swapHash, request1, request2, commit1, commit2, swapState]);
 
 	useEffect(() => {
