@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  index: 0,
   amountBase: null,
 	amountQuote: null,
 	swapState: null,
@@ -19,9 +20,10 @@ export const swapSlice = createSlice({
   name: 'swap',
   initialState,
   reducers: {
+    setIndex: (state, action) => {state.index = action.payload},
     setBase: (state, action) => { state.amountBase = action.payload; },
     setQuote: (state, action) => { state.amountQuote = action.payload; },
-    setSwapState: (state, action) => { state.swapState = action.payload; },
+    setSwapStatus: (state, action) => { state.swapState = action.payload; },
     setSwapId: (state, action) => { state.swapId = action.payload; },
     setSwapHash: (state, action) => { state.swapHash = action.payload; },
     setSecretSeekerId: (state, action) => { state.secretSeekerId = action.payload; },
@@ -32,6 +34,7 @@ export const swapSlice = createSlice({
     setCommit1: (state, action) => { state.commit1 = action.payload; },
     setCommit2: (state, action) => { state.commit2 = action.payload; },
     clearSwapInfo: (state, action) => {
+      state.index = 0;
       state.amountBase = null;
       state.amountQuote = null;
       state.swapState = null;
@@ -48,6 +51,6 @@ export const swapSlice = createSlice({
   }
 });
 
-export const { clearSwapInfo, setBase, setQuote, setSwapState, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
+export const { setIndex, clearSwapInfo, setBase, setQuote, setSwapStatus, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
 
 export default swapSlice.reducer;

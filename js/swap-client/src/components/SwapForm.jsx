@@ -11,6 +11,8 @@ export const SwapForm = ({firstParty, participant, id}) => {
 	const swapState = useAppSelector(state => state.swap.swapState);
 	const secret = useAppSelector(state => state.swap.secret);
 
+	console.log(swapState);
+
 	const [openedSwap, setOpenedSwap] = useState(null)
 	const [committedSwap, setCommittedSwap] = useState(null)
 	const [data, setData] = useState({
@@ -76,20 +78,23 @@ export const SwapForm = ({firstParty, participant, id}) => {
 						</Table.Body>
 					</Table>
 				</Card.Description>
-				{swapState < 3
-					? openedSwap == null
-						? <Button onClick={onClickOpen}>Open Swap</Button>
-						: <Button disabled>Waiting for counter party</Button>
-					: swapState === 3
-						? firstParty 
+				{ swapState === 1 && 
+						(firstParty 
+							? <Button onClick={onClickOpen}>Open Swap</Button> 
+							: <Button disabled>Waiting for counter party</Button>) }
+				{ swapState === 2 && 
+						(!firstParty 
+							? <Button onClick={onClickOpen}>Open Swap</Button> 
+							: <Button disabled>Waiting for counter party</Button>) }
+				{ swapState === 3 &&
+						(firstParty 
 							? <Button onClick={onClickCommit}>Commit Swap</Button>
-							: <Button disabled>Waiting for first user to commit swap</Button>
-						: swapState === 4
-							? firstParty
-								? <Button disabled>Waiting for second user to finalize & commit swap</Button>
-								: <Button onClick={onClickCommit}>Commit Swap</Button>
-							: <Button onClick={()=>{window.location.reload()}}>Done</Button>
-				}
+							: <Button disabled>Waiting for first user to commit swap</Button>) }
+				{ swapState === 4 &&
+						(firstParty
+							? <Button disabled>Waiting for second user to finalize & commit swap</Button>
+							: <Button onClick={onClickCommit}>Commit Swap</Button>) }
+				{ swapState === 5 && <Button onClick={()=>{window.location.reload()}}>Done</Button> }
 			</Card.Content>
 		</Card>
 	);

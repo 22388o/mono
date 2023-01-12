@@ -19,8 +19,8 @@ function App() {
           <Route path='' element={<Swap />}>
             <Route path='' element={<SwapManage />} />
             <Route path='/swap' element={<SwapDemo />} />
+            <Route path='/history' element={<SwapHistory />} />
           </Route>
-          <Route path='/history' element={<SwapHistory />} />
         </Routes>
       </Router>
     </Provider>
