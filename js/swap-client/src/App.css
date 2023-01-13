@@ -4,6 +4,15 @@
   text-align: center;
 }
 
+#root, body, .App  {
+  background-color: #1A1A1A;
+}
+
+.card, .cards, .content {
+  border-radius: 16px;
+  color: #EAEAEA;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -14,6 +23,27 @@
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.ui.button {
+  /* bw/EA */
+  background: #EAEAEA;
+  /* bw/EA */
+  border: 1px solid #EAEAEA;
+  border-radius: 16px;
+
+}
+
+.ui.primary.button {
+  /* util/brand-gradient */
+  background: radial-gradient(100% 181.89% at 0% 100%, #748AFE 7.29%, #A64EFF 100%) /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */;
+  border-radius: 16px;
+}
+
+.ui.inline.dropdown {
+  padding-top:0.3em;
+  font-size: 1.5em;
+  color: #000;
 }
 
 @keyframes logo-spin {
@@ -47,3 +77,4 @@
 td {
   overflow-wrap: anywhere;
 }
+

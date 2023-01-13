@@ -1,8 +1,29 @@
 import React, { useState } from "react";
 import 'semantic-ui-css/semantic.min.css';
-import { Button, Card, Form, Modal, Select } from 'semantic-ui-react';
-import { setIndex, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setBase, setQuote, setSwapStatus, setRequest1, setRequest2 } from "../slices/swapSlice";
-import { useAppDispatch, useAppSelector } from "../hooks";
+import { 
+  Button, 
+  Card, 
+  Form, 
+  Modal, 
+  Select 
+} from 'semantic-ui-react';
+import { 
+  setIndex, 
+  setSwapId, 
+  setSwapHash, 
+  setSecretSeekerId, 
+  setSecretHolderId, 
+  setSecret, 
+  setBase, 
+  setQuote, 
+  setSwapStatus, 
+  setRequest1, 
+  setRequest2 
+} from "../slices/swapSlice";
+import { 
+  useAppDispatch, 
+  useAppSelector 
+} from "../hooks";
 import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
@@ -51,33 +72,6 @@ export const SwapManage = () => {
     
   }
 
-  const [modalOpen, setModalOpen] = React.useState(false)
-
-  const onContinueSwap = () => {
-    const options = [];
-    for(let i = 0; i < history.length; i ++) if(history[i].status !== 5) {
-      options.push({
-        key: i, value: i, text: i + 1
-      });
-    }
-    dispatch(setSwapStatus(latestSwap.status));
-    dispatch(setIndex(history.length - 1));
-    dispatch(setBase(latestSwap.amountBase));
-    dispatch(setQuote(latestSwap.amountQuote));
-    dispatch(setSwapId(latestSwap.swapId));
-    dispatch(setSecretSeekerId(latestSwap.secretSeekerId));
-    dispatch(setSecretHolderId(latestSwap.secretHolderId));
-    dispatch(setSecret(latestSwap.secret));
-    dispatch(setSwapHash(latestSwap.swapHash));
-    if(options.length === 1) {
-      navigate('/swap');
-      setIndex(options[0].key);
-    } else {
-      setModalOpen(true);
-      setPendingSwapOptions(options);
-    }
-  };
-
   const onViewHistory = () => {
     navigate('/history');
   };
@@ -86,48 +80,67 @@ export const SwapManage = () => {
     <Card centered>
       <Card.Content>
         <Card.Header>
-          Initate New Swap
+          Swap
         </Card.Header><br />
         <Form>
         <Form.Group  widths='equal'>
           <Form.Field>
-            <label>Base Quantity: 
-            <input type='number' value={baseQuantity} onChange={(evt) => setBaseQuantity(evt.target.value)}/></label>
+            <input type='number' value={baseQuantity} onChange={(evt) => setBaseQuantity(evt.target.value)}/>
           </Form.Field>
           <Form.Field>
-            <label>Quote Quantity: 
-            <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/></label>
+            <div class="ui inline dropdown">
+              <div class="text">
+                {/* <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" /> */}
+                ABC
+              </div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                <div class="item">
+                  <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" />
+                  ABC
+                </div>
+                <div class="item">
+                  <img class="ui avatar image" src="/images/avatar/small/elliot.jpg" />
+                  DEF
+                </div>
+              </div>
+            </div>
+          </Form.Field>
+        </Form.Group>
+
+        <Form.Group widths='equal'>
+          <Form.Field>
+            <i class="arrow down"></i>
+          </Form.Field>
+        </Form.Group>
+        <Form.Group  widths='equal'>
+          <Form.Field>
+            <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/>
+          </Form.Field>
+          <Form.Field>
+            <div class="ui inline dropdown">
+              <div class="text">
+                {/* <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" /> */}
+                DEF
+              </div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                <div class="item">
+                  <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" />
+                  ABC
+                </div>
+                <div class="item">
+                  <img class="ui avatar image" src="/images/avatar/small/elliot.jpg" />
+                  DEF
+                </div>
+              </div>
+            </div>
           </Form.Field>
         </Form.Group>
         <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
-        { (latestSwap?.status !== 5 && latestSwap?.status !== undefined) && <p><Button primary onClick={onContinueSwap}>Continue Swap</Button></p> }
-        <p><Button primary onClick={onViewHistory}>Swap History</Button></p>
+        { (history.length>0) && <p><Button primary onClick={onViewHistory}>Swap History</Button></p> }
         </Form>
       </Card.Content>
-      <Modal
-        onClose={() => setModalOpen(false)}
-        onOpen={() => setModalOpen(true)}
-        open={modalOpen}
-      >
-        <Modal.Header>Select which swap to continue</Modal.Header>
-        <Modal.Content>
-          <Modal.Description>
-            <Select placeholder='Select Swap Id to continue' options={pendingSwapOptions} />
-          </Modal.Description>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button color='black' onClick={() => setModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            content="Continue"
-            labelPosition='right'
-            icon='checkmark'
-            onClick={() => setModalOpen(false)}
-            positive
-          />
-        </Modal.Actions>
-      </Modal>
     </Card>
   );
 }

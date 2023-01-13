@@ -1,8 +1,24 @@
 import { useState } from "react";
-import { Button, Card, Container, Table, TableRow } from "semantic-ui-react";
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { commitSwap, openSwap } from "../utils/apis";
-import { setRequest1, setRequest2, setCommit1, setCommit2 } from "../slices/swapSlice";
+import { 
+	Button, 
+	Card, 
+	Container, 
+	Table 
+} from "semantic-ui-react";
+import { 
+	useAppDispatch, 
+	useAppSelector 
+} from "../hooks";
+import { 
+	commitSwap, 
+	openSwap 
+} from "../utils/apis";
+import { 
+	setRequest1, 
+	setRequest2, 
+	setCommit1, 
+	setCommit2 
+} from "../slices/swapSlice";
 
 export const SwapForm = ({firstParty, participant, id}) => {
 	const dispatch = useAppDispatch();
@@ -10,17 +26,8 @@ export const SwapForm = ({firstParty, participant, id}) => {
 	const swapHash = useAppSelector(state => state.swap.swapHash);
 	const swapState = useAppSelector(state => state.swap.swapState);
 	const secret = useAppSelector(state => state.swap.secret);
-
-	console.log(swapState);
-
-	const [openedSwap, setOpenedSwap] = useState(null)
-	const [committedSwap, setCommittedSwap] = useState(null)
-	const [data, setData] = useState({
-		data: {
-			uid: swapId,
-			state: participant.state
-		}
-	});
+	
+	const [openedSwap, setOpenedSwap] = useState(null);
 
 	const onClickOpen = async () => {
 		openSwap({participant, swapId, id, secret})
@@ -28,8 +35,8 @@ export const SwapForm = ({firstParty, participant, id}) => {
 			return res.json()
 		})
 		.then(data => {
-			console.log(JSON.stringify(data))
-			console.log(`request: ${data.publicInfo.request}`)
+			//console.log(JSON.stringify(data))
+			//console.log(`request: ${data.publicInfo.request}`)
 			setOpenedSwap(true)
 			if(firstParty) 	dispatch(setRequest1(data.publicInfo.request));
 			else						dispatch(setRequest2(data.publicInfo.request));
