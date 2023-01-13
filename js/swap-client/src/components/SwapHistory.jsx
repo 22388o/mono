@@ -5,7 +5,7 @@ import {
   Table,
   Icon
 } from 'semantic-ui-react'
-import { 
+import {
   setIndex, 
   setSwapId, 
   setSwapHash, 
@@ -44,8 +44,10 @@ export const SwapHistory = () => {
 
   return (
     <div>
-      <Button style={{position:'absolute',left:'100px',top:'100px'}} primary onClick={e => navigate('/')}>Back to Home</Button>
-      <Table celled color='grey' inverted>
+      <Button color='google plus' style={{position:'absolute',left:'100px',top:'100px'}} onClick={e => navigate('/')}>
+        <Icon name='hand point left' /> Back to Home
+      </Button>
+      <Table celled color='black' inverted>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell width={1} singleLine>Status</Table.HeaderCell>
@@ -75,8 +77,12 @@ export const SwapHistory = () => {
                 <Table.Cell>{row.secretHolderId}</Table.Cell>
                 <Table.Cell>{row.secret}</Table.Cell>
                 <Table.Cell singleLine>
-                  { row.status !== 5 && <Button primary onClick={e => onContinueSwap(index)}>Modify</Button> }<br />
-                  { row.status !== 5 && <Button primary onClick={e => onCancelSwap(index)}>Cancel</Button> }
+                  { row.status !== 5 && 
+                    <Button.Group vertical>
+                      <Button color='facebook' onClick={e => onContinueSwap(index)}>Modify</Button>
+                      <Button color='facebook' onClick={e => onCancelSwap(index)}>Cancel</Button>
+                    </Button.Group>
+                  }
                 </Table.Cell>
               </Table.Row>
             )

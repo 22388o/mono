@@ -4,8 +4,6 @@ import {
   Button, 
   Card, 
   Form, 
-  Modal, 
-  Select 
 } from 'semantic-ui-react';
 import { 
   setIndex, 
@@ -33,9 +31,7 @@ export const SwapManage = () => {
 	const dispatch = useAppDispatch();
   const [baseQuantity, setBaseQuantity] = useState(10000)
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
-  const latestSwap = useAppSelector(state => state.history.history[state.history.history.length - 1]);
   const history = useAppSelector(state => state.history.history);
-  const [pendingSwapOptions, setPendingSwapOptions] = useState([]);
   
   const onCreateSwap = async () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
