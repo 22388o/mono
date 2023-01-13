@@ -51,6 +51,21 @@ export const swapSlice = createSlice({
   }
 });
 
-export const { setIndex, clearSwapInfo, setBase, setQuote, setSwapStatus, setSwapId, setSwapHash, setSecretSeekerId, setSecretHolderId, setSecret, setRequest1, setRequest2, setCommit1, setCommit2 } = swapSlice.actions;
+export const { 
+  setIndex, 
+  clearSwapInfo, 
+  setBase, 
+  setQuote, 
+  setSwapStatus, 
+  setSwapId, 
+  setSwapHash, 
+  setSecretSeekerId, 
+  setSecretHolderId, 
+  setSecret, 
+  setRequest1, 
+  setRequest2, 
+  setCommit1, 
+  setCommit2 
+} = swapSlice.actions;
 
 export default swapSlice.reducer;

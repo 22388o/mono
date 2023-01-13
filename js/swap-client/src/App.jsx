@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Provider } from 'react-redux';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { 
+  Route, 
+  BrowserRouter as Router, 
+  Routes } from 'react-router-dom';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css'
 import { Swap } from './components/Swap';

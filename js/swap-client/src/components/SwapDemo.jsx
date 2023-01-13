@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Container, Table } from "semantic-ui-react";
+import { 
+	Button, 
+	Card, 
+	Container, 
+	Table 
+} from "semantic-ui-react";
 import { useAppSelector } from "../hooks.js";
-import { clearSwapInfo, setSwapStatus } from "../slices/swapSlice.js";
-import { SwapManage } from './SwapManage.jsx'
+import { 
+	clearSwapInfo, 
+	setSwapStatus 
+} from "../slices/swapSlice.js";
 import { SwapForm } from './SwapForm.jsx'
 import { useAppDispatch } from "../hooks.js";
-import { addSwapItem, removeLatestSwap, updateSwapStatus } from "../slices/historySlice.js";
-import { Navigate, useNavigate } from "react-router-dom";
+import { 
+	removeLatestSwap, 
+	updateSwapStatus 
+} from "../slices/historySlice.js";
+import { useNavigate } from "react-router-dom";
 
 export const SwapDemo = () => {
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
-	const swapHistory = useAppSelector(state => state.history.history);
 	const swapIndex = useAppSelector(state => state.swap.index);
 	const amountBase = useAppSelector(state => state.swap.amountBase);
 	const amountQuote = useAppSelector(state => state.swap.amountQuote);
@@ -202,7 +211,7 @@ export const SwapDemo = () => {
 									</Table.Row>
 								</Table.Body>
 							</Table>
-							<Button onClick={onClearSwap}>{ swapState !== 5 ? 'Cancel Swap' : 'Renew Swap' }</Button> 
+							<Button onClick={onClearSwap}>{ swapState !== 5 ? 'Cancel Swap' : 'New Swap' }</Button> 
 							{ swapState !== 5 && <Button onClick={onBackToHome}>Back to Home</Button> }
 						</Card.Description>
 					</Card.Content>
