@@ -14,6 +14,7 @@ const initialState = {
 	request2: null,
   commit1: false,
   commit2: false,
+  createdDate: null
 };
 
 export const swapSlice = createSlice({
@@ -33,6 +34,7 @@ export const swapSlice = createSlice({
     setRequest2: (state, action) => { state.request2 = action.payload; },
     setCommit1: (state, action) => { state.commit1 = action.payload; },
     setCommit2: (state, action) => { state.commit2 = action.payload; },
+    setCreatedDate: (state, action) => { state.createdDate = action.payload; },
     clearSwapInfo: (state, action) => {
       state.index = 0;
       state.amountBase = null;
@@ -47,6 +49,7 @@ export const swapSlice = createSlice({
       state.request2 = null;
       state.commit1 = false;
       state.commit2 = false;
+      state.createdDate = null;
     }
   }
 });
@@ -65,7 +68,8 @@ export const {
   setRequest1, 
   setRequest2, 
   setCommit1, 
-  setCommit2 
+  setCommit2,
+  setCreatedDate
 } = swapSlice.actions;
 
 export default swapSlice.reducer;

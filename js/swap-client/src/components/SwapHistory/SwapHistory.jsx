@@ -1,28 +1,21 @@
 import React from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import { 
   Button, 
   Table,
-  Icon
+  Icon,
+  Container,
+  Header,
+  Grid,
+  Divider
 } from 'semantic-ui-react'
-import {
-  setIndex, 
-  setSwapId, 
-  setSwapHash, 
-  setSecretSeekerId, 
-  setSecretHolderId, 
-  setSecret, 
-  setBase, 
-  setQuote, 
-  setSwapStatus, 
-} from "../slices/swapSlice";
-import { cancelSwap } from '../slices/historySlice';
 import { useNavigate } from 'react-router-dom';
+import styles from '../styles/SwapHistory.module.css';
+import { HistoryItem } from './HistoryItem';
 
 export const SwapHistory = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const SWAP_STATUS = ['', 'PENDING', 'Order Matched', 'Claimed', 'Committing', 'Completed'];
   const history = useAppSelector(state => state.history.history);
 
   const onContinueSwap = (index) => {
@@ -41,13 +34,22 @@ export const SwapHistory = () => {
   const onCancelSwap = (index) => {
     dispatch(cancelSwap(index));
   }
-
+  console.log(history);
   return (
     <div>
       <Button color='google plus' style={{position:'absolute',left:'100px',top:'100px'}} onClick={e => navigate('/')}>
         <Icon name='hand point left' /> Back to Home
       </Button>
-      <Table celled color='black' inverted>
+      <Grid className={styles.historyContainer}>
+        <Grid.Row className={styles.historyHeader}>
+          <h3>History</h3>
+          <Button circular secondary icon='setting' />
+        </Grid.Row>
+        { 
+          history.map((row, index) => <><Divider /><HistoryItem history={row} index/></>)
+        }
+      </Grid>
+      {/* <Table celled color='black' inverted>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell width={1} singleLine>Status</Table.HeaderCell>
@@ -88,7 +90,8 @@ export const SwapHistory = () => {
             )
           }
         </Table.Body>
-      </Table>
+      </Table> */ }
+
     </div>
   );
 }

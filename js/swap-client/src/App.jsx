@@ -8,7 +8,7 @@ import 'semantic-ui-css/semantic.min.css';
 import './App.css'
 import { Swap } from './components/Swap';
 import { SwapDemo } from './components/SwapDemo';
-import { SwapHistory } from './components/SwapHistory';
+import { SwapHistory } from './components/SwapHistory/SwapHistory';
 import { SwapManage } from './components/SwapManage';
 import { store } from './store';
 
