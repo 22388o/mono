@@ -1,0 +1,25 @@
+.swapManageContainer {
+  background-color: #1a1a1a !important;
+}
+
+.swapCreateForm {
+  background-color: black !important;
+  padding: 1rem !important;
+  border-radius: 1rem;
+  border: 1px solid grey;
+}
+
+.swapGroup {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.swapInput {
+  display: flex !important;
+  padding: 0.2rem;
+  border: 1px solid grey !important;
+}
+
+.swapInput label { width: 120px; }
+
+.swapInput input { padding-top: 0.2rem !important; padding-bottom: 0.2rem !important; }

@@ -1,0 +1,11 @@
+.historyContainer {
+  background-color: black !important;
+  padding: 1rem 2rem 1rem 2rem !important;
+  border-radius: 2rem;
+  width: 500px !important;
+}
+.historyHeader {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center;
+}
