@@ -1,7 +1,16 @@
+import {Buffer} from 'buffer';
+
 export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
 	return await fetch('/api/v1/swap/create', {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json'},
+		headers: { 
+			accept: 'application/json',
+			'accept-encoding': 'application/json',
+			// authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			'content-type': 'application/json',
+			// 'content-length': Buffer.byteLength(buf),
+			'content-encoding': 'identity'
+		},
 		body: JSON.stringify({
 			makerOrderProps: {
 				uid: 'uid1',
@@ -32,9 +41,17 @@ export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
 };
 
 export const openSwap = async ({participant, swapId, id, secret}) => {
+	// const buf = (data && JSON.stringify(data)) || ''
 	return await fetch('/api/v1/swap', {
 		method: 'PUT',
-		headers: { 'Content-Type': 'application/json'},
+		headers: { 
+			accept: 'application/json',
+			'accept-encoding': 'application/json',
+			authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			'content-type': 'application/json',
+			// 'content-length': Buffer.byteLength(buf),
+			'content-encoding': 'identity'
+		},
 		body: JSON.stringify({
 			swap: { id: swapId },
 			party: {
@@ -46,9 +63,17 @@ export const openSwap = async ({participant, swapId, id, secret}) => {
 };
 
 export const commitSwap = async ({swapId, id, participant}) => {
+	// const buf = (data && JSON.stringify(data)) || ''
 	return await fetch('/api/v1/swap', {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json'},
+		headers: { 
+			accept: 'application/json',
+			'accept-encoding': 'application/json',
+			authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			'content-type': 'application/json',
+			// 'content-length': Buffer.byteLength(buf),
+			'content-encoding': 'identity'
+		},
 		body: JSON.stringify({
 			swap: { id: swapId },
 			party: {
