@@ -45,6 +45,12 @@ export const SwapManage = () => {
       return res.json();
     })
     .then(data => {
+      const curDate = new Date();
+      const date = {
+        year: curDate.getFullYear(),
+        month: curDate.getMonth(),
+        day: curDate.getDate()
+      };
       console.log(data.swap.id);
       console.log(`${JSON.stringify(data)}`);
       dispatch(setIndex(history.length));
@@ -58,6 +64,7 @@ export const SwapManage = () => {
       dispatch(setSecret(data.swapSecret));
       dispatch(setSwapHash(data.swap.secretHash));
       dispatch(setSwapStatus(1));
+      dispatch(setCreatedDate(curDate));
       dispatch(addSwapItem({
         amountBase: baseQuantity,
         amountQuote: quoteQuantity,
@@ -65,7 +72,8 @@ export const SwapManage = () => {
         swapHash: data.swap.secretHash,
         secretSeekerId: data.swap.secretSeeker.id,
         secretHolderId: data.swap.secretHolder.id,
-        secret: data.swapSecret
+        secret: data.swapSecret,
+        createdDate: curDate
       }));
       navigate('/swap');
     })
