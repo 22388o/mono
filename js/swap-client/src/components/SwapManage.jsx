@@ -99,18 +99,18 @@ export const SwapManage = () => {
           <Form.Field>
             <div class="ui inline dropdown">
               <div class="text">
-                {/* <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" /> */}
-                ABC
+                <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+                BTC
               </div>
-              <i class="dropdown icon"></i>
+              {/* <i class="dropdown icon"></i> */}
               <div class="menu">
                 <div class="item">
-                  <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" />
-                  ABC
+                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+                  BTC
                 </div>
                 <div class="item">
-                  <img class="ui avatar image" src="/images/avatar/small/elliot.jpg" />
-                  DEF
+                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+                  ETH
                 </div>
               </div>
             </div>
@@ -129,18 +129,18 @@ export const SwapManage = () => {
           <Form.Field>
             <div class="ui inline dropdown">
               <div class="text">
-                {/* <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" /> */}
-                DEF
+                <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+                ETH
               </div>
-              <i class="dropdown icon"></i>
+              {/* <i class="dropdown icon"></i> */}
               <div class="menu">
                 <div class="item">
-                  <img class="ui avatar image" src="/images/avatar/small/jenny.jpg" />
-                  ABC
+                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+                  ETH
                 </div>
                 <div class="item">
-                  <img class="ui avatar image" src="/images/avatar/small/elliot.jpg" />
-                  DEF
+                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+                  BTC
                 </div>
               </div>
             </div>

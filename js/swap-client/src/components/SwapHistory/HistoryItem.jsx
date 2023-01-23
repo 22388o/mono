@@ -18,11 +18,11 @@ import {
 import { cancelSwap } from '../../slices/historySlice';
 import { useNavigate } from 'react-router-dom';
 
-export const HistoryItem = ({history, index}) => {
+export const HistoryItem = ({ history, index, onShowDetails }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
-  const onContinueSwap = () => {
+  const onContinueSwap = (e) => {
     dispatch(setSwapStatus(history.status));
     dispatch(setBase(history.amountBase));
     dispatch(setQuote(history.amountQuote));
@@ -36,12 +36,13 @@ export const HistoryItem = ({history, index}) => {
     navigate('/swap');
   };
 
-  const onCancelSwap = () => {
+  const onCancelSwap = (e) => {
+    e.stopPropagation();
     dispatch(cancelSwap(index));
   }
   
   return (
-    <Grid.Row className='left'>
+    <Grid.Row className={styles.itemContainer} onClick={e => onShowDetails(index)}>
       <Grid.Column width={1}>
         <Icon name="random" />
       </Grid.Column>
@@ -60,7 +61,7 @@ export const HistoryItem = ({history, index}) => {
         <Grid.Row>
           { history.amountBase }
         </Grid.Row>
-        <Grid.Row>        
+        <Grid.Row>
           <Button secondary onClick={onContinueSwap}>
             <Icon className={styles.icon} name='edit' />
           </Button>
