@@ -17,21 +17,21 @@ export const SwapHistory = () => {
   const navigate = useNavigate();
   const history = useAppSelector(state => state.history.history);
   const [open, setOpen] = useState(false);
-  const [showIndex, setShowIndex] = useState(0);
+  const [showIndex, setShowIndex] = useState(-1);
 
   const onShowDetails = (index) => {
     setShowIndex(index);
     setOpen(true);
-    console.log("this is history: ");
+    console.log("this is history item : " + showIndex);
     console.log(history[0]);
     console.log(showIndex);
   };
   
   return (
     <div>
-      <Button color='google plus' style={{}} onClick={e => navigate('/')}>
-        <Icon name='hand point left' /> Back to Home
-      </Button>
+      { /*<Button color='google plus' style={{}} onClick={e => navigate('/')}>
+        <Icon name='hand point align-left' /> Back to Home
+      </Button>*/ }
       <Grid className={styles.historyContainer}>
         <Grid.Row className={styles.historyHeader}>
           <h3>History</h3>
@@ -45,7 +45,7 @@ export const SwapHistory = () => {
             </>)
         }
       </Grid>
-      <Modal
+      {showIndex!=-1 && <Modal
         dimmer={'blurring'}
         open={open}
         onClose={() => setOpen(false)}
@@ -80,7 +80,7 @@ export const SwapHistory = () => {
             </Button>
           </Button.Group>
         </Modal.Actions>
-      </Modal>
+      </Modal>}
     </div>
   );
 }

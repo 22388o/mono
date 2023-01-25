@@ -79,7 +79,7 @@ label, .header { color: white !important; }
 
 button { padding: 0.5rem !important }
 
-.card { background-color: black !important; }
+.card { background-color: #101010 !important; }
 .card * { color: white; }
 
 h3 {
@@ -89,5 +89,7 @@ h3 {
 
 .divider { margin: 0 !important; }
 
-.left { text-align: left !important; }
-.right { text-align: right !important; }
+.align-left { text-align: left !important; }
+.align-right { text-align: right !important; }
+
+.align-center { text-align: center !important;}

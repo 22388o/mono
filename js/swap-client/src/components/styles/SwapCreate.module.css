@@ -1,9 +1,9 @@
-.swapManageContainer {
+.SwapCreateContainer {
   background-color: #1a1a1a !important;
 }
 
 .swapCreateForm {
-  background-color: black !important;
+  background-color: #101010 !important;
   padding: 1rem !important;
   border-radius: 1rem;
   border: 1px solid grey;

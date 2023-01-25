@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Container, Grid, Icon } from 'semantic-ui-react';
 import { useAppDispatch } from '../../hooks';
 import { getStringFromDate, SWAP_STATUS } from '../../utils/helpers';
-import styles from '../styles/HistoryItem.module.css'
+import styles from '../styles/orders/OrderItem.module.css'
 import {
   setIndex, 
   setSwapId, 
@@ -18,7 +18,7 @@ import {
 import { cancelSwap } from '../../slices/historySlice';
 import { useNavigate } from 'react-router-dom';
 
-export const HistoryItem = ({ history, index, onShowDetails }) => {
+export const OrderItem = ({ history, index, onShowDetails }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
@@ -57,7 +57,7 @@ export const HistoryItem = ({ history, index, onShowDetails }) => {
           { history.amountBase + ' > ' + history.amountQuote }
         </Grid.Row>
       </Grid.Column>
-      <Grid.Column width={6} className='right'>
+      <Grid.Column width={5} className='right'>
         <Grid.Row>
           { history.amountBase }
         </Grid.Row>
