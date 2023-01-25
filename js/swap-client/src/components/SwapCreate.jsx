@@ -29,7 +29,7 @@ import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
 
-export const SwapManage = () => {
+export const SwapCreate = () => {
   const navigate = useNavigate();
 	const dispatch = useAppDispatch();
   const [baseQuantity, setBaseQuantity] = useState(10000)
@@ -97,19 +97,19 @@ export const SwapManage = () => {
             <input type='number' value={baseQuantity} onChange={(evt) => setBaseQuantity(evt.target.value)}/>
           </Form.Field>
           <Form.Field>
-            <div class="ui inline dropdown">
-              <div class="text">
-                <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+            <div className="ui inline dropdown">
+              <div className="text">
+                <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
                 BTC
               </div>
-              {/* <i class="dropdown icon"></i> */}
-              <div class="menu">
-                <div class="item">
-                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+              {/* <i className="dropdown icon"></i> */}
+              <div className="menu">
+                <div className="item">
+                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
                   BTC
                 </div>
-                <div class="item">
-                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+                <div className="item">
+                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
                   ETH
                 </div>
               </div>
@@ -119,7 +119,7 @@ export const SwapManage = () => {
 
         <Form.Group widths='equal'>
           <Form.Field>
-            <i class="arrow down"></i>
+            <i className="arrow down"></i>
           </Form.Field>
         </Form.Group>
         <Form.Group  widths='equal'>
@@ -127,19 +127,19 @@ export const SwapManage = () => {
             <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/>
           </Form.Field>
           <Form.Field>
-            <div class="ui inline dropdown">
-              <div class="text">
-                <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+            <div className="ui inline dropdown">
+              <div className="text">
+                <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
                 ETH
               </div>
-              {/* <i class="dropdown icon"></i> */}
-              <div class="menu">
-                <div class="item">
-                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
+              {/* <i className="dropdown icon"></i> */}
+              <div className="menu">
+                <div className="item">
+                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
                   ETH
                 </div>
-                <div class="item">
-                  <img class="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
+                <div className="item">
+                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
                   BTC
                 </div>
               </div>
@@ -147,7 +147,7 @@ export const SwapManage = () => {
           </Form.Field>
         </Form.Group>
         <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
-        { (history.length>0) && <p><Button primary onClick={onViewHistory}>Swap History</Button></p> }
+        {/* { (history.length>0) && <p><Button primary onClick={onViewHistory}>Swap History</Button></p> } */}
         </Form>
       </Card.Content>
     </Card>
