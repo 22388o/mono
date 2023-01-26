@@ -2,7 +2,6 @@ import React from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { 
   Button, 
-  Icon,
   Grid,
   Divider, 
   Modal
@@ -12,9 +11,23 @@ import { HistoryItem } from './HistoryItem';
 import { useState } from 'react';
 import styles from '../styles/SwapHistory.module.css';
 import { SWAP_STATUS } from '../../utils/helpers';
+import {
+  setIndex, 
+  setSwapId, 
+  setSwapHash, 
+  setSecretSeekerId, 
+  setSecretHolderId, 
+  setSecret, 
+  setBase, 
+  setQuote, 
+  setSwapStatus,
+  setCreatedDate, 
+} from "../../slices/swapSlice";
+import { cancelSwap } from '../../slices/historySlice';
 
 export const SwapHistory = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const history = useAppSelector(state => state.history.history);
   const [open, setOpen] = useState(false);
   const [showIndex, setShowIndex] = useState(-1);
@@ -27,8 +40,27 @@ export const SwapHistory = () => {
     console.log(showIndex);
   };
   
+  const onContinueSwap = (index) => {
+    dispatch(setSwapStatus(history[index].status));
+    dispatch(setBase(history[index].amountBase));
+    dispatch(setQuote(history[index].amountQuote));
+    dispatch(setSwapId(history[index].swapId));
+    dispatch(setSecretSeekerId(history[index].secretSeekerId));
+    dispatch(setSecretHolderId(history[index].secretHolderId));
+    dispatch(setSecret(history[index].secret));
+    dispatch(setSwapHash(history[index].swapHash));
+    dispatch(setIndex(index));
+    dispatch(setCreatedDate(history[index].createdDate));
+    navigate('/swap');
+  };
+
+  const onCancelSwap = (index) => {
+    setShowIndex(-1);
+    dispatch(cancelSwap(index));
+  }
+  
   return (
-    <div>
+    <>
       { /*<Button color='google plus' style={{}} onClick={e => navigate('/')}>
         <Icon name='hand point align-left' /> Back to Home
       </Button>*/ }
@@ -70,8 +102,8 @@ export const SwapHistory = () => {
         <Modal.Actions>
           { history[showIndex].status !== 5 && 
             <Button.Group horizontal>
-              <Button color='facebook' onClick={e => onContinueSwap(index)}>Modify</Button>
-              <Button color='facebook' onClick={e => onCancelSwap(index)}>Cancel</Button>
+              <Button color='facebook' onClick={e => onContinueSwap(showIndex)}>Modify</Button>
+              <Button color='facebook' onClick={e => onCancelSwap(showIndex)}>Cancel</Button>
             </Button.Group>
           }
           <Button.Group horizontal>
@@ -81,6 +113,6 @@ export const SwapHistory = () => {
           </Button.Group>
         </Modal.Actions>
       </Modal>}
-    </div>
+    </>
   );
 }

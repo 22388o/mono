@@ -10,7 +10,7 @@ export const SwapHome = () => {
   return (
     <Grid className={styles.homeContainer} centered>
       <Grid.Column width={7} stretched>
-        <Grid.Row className={styles.marginBottom} centered>
+        <Grid.Row centered>
           <WalletComponent />
         </Grid.Row>
         <Grid.Row>
