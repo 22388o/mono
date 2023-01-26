@@ -1,5 +1,9 @@
 .SwapCreateContainer {
-  background-color: #1a1a1a !important;
+  background-color: #101010 !important;
+  padding: 1rem 2rem 1rem 2rem !important;
+  border-radius: 2rem;
+  /* width: 500px !important; */
+  margin-bottom: 3em !important;
 }
 
 .swapCreateForm {
@@ -23,3 +27,21 @@
 .swapInput label { width: 120px; }
 
 .swapInput input { padding-top: 0.2rem !important; padding-bottom: 0.2rem !important; }
+
+
+
+
+/** copied from SwapHistory */
+.SwapHeader {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center;
+}
+
+.SwapCreateContainer .text {
+  color: white !important;
+}
+
+.SwapFormText {
+  color: white !important;
+}

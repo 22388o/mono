@@ -21,9 +21,9 @@ export const SwapHome = () => {
         <Grid.Row>
           <SwapCreate />
         </Grid.Row>
-        <Grid.Row>
+        {/* <Grid.Row>
           <OrdersList />
-        </Grid.Row>
+        </Grid.Row> */}
       </Grid.Column>
     </Grid>
   )
