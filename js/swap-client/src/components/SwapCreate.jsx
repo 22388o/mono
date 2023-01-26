@@ -3,7 +3,9 @@ import 'semantic-ui-css/semantic.min.css';
 import { 
   Button, 
   Card, 
+  Divider,
   Form, 
+  Grid,
   Modal, 
   Select 
 } from 'semantic-ui-react';
@@ -28,6 +30,7 @@ import {
 import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
+import styles from './styles/SwapCreate.module.css';
 
 export const SwapCreate = () => {
   const navigate = useNavigate();
@@ -86,11 +89,11 @@ export const SwapCreate = () => {
   };
 
   return (
-    <Card centered>
-      <Card.Content>
-        <Card.Header>
-          Swap
-        </Card.Header><br />
+    <Grid centered className={styles.SwapCreateContainer}>
+      <Grid.Row className={styles.SwapHeader}>
+        <h3>Swap</h3>
+      </Grid.Row>
+      <Grid.Row>
         <Form>
         <Form.Group  widths='equal'>
           <Form.Field>
@@ -98,7 +101,7 @@ export const SwapCreate = () => {
           </Form.Field>
           <Form.Field>
             <div className="ui inline dropdown">
-              <div className="text">
+              <div className={styles.SwapFormText}>
                 <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
                 BTC
               </div>
@@ -128,7 +131,7 @@ export const SwapCreate = () => {
           </Form.Field>
           <Form.Field>
             <div className="ui inline dropdown">
-              <div className="text">
+              <div className={styles.SwapFormText}>
                 <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
                 ETH
               </div>
@@ -149,7 +152,7 @@ export const SwapCreate = () => {
         <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
         {/* { (history.length>0) && <p><Button primary onClick={onViewHistory}>Swap History</Button></p> } */}
         </Form>
-      </Card.Content>
-    </Card>
+      </Grid.Row>
+    </Grid>
   );
 }
