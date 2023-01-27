@@ -28,8 +28,7 @@
 
 .swapInput input { padding-top: 0.2rem !important; padding-bottom: 0.2rem !important; }
 
-
-
+.borderless { border: none !important; }
 
 /** copied from SwapHistory */
 .SwapHeader {

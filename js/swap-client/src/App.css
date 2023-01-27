@@ -25,7 +25,7 @@
   /* bw/EA */
   background: #EAEAEA;
   /* bw/EA */
-  border: 1px solid #EAEAEA !important;
+  border: 1px solid #EAEAEA;
   border-radius: 16px;
 
 }
@@ -93,3 +93,5 @@ h3 {
 .align-right { text-align: right !important; }
 
 .align-center { text-align: center !important;}
+
+div, h1, h2, h3, h4, h5, h6 { font-family: 'Noto Sans' !important; }

@@ -67,10 +67,9 @@ export const SwapHistory = () => {
       <Grid className={styles.historyContainer}>
         <Grid.Row className={styles.historyHeader}>
           <h3>History</h3>
-          <Button circular secondary icon='setting' />
         </Grid.Row>
         { 
-          history.map((row, index) => 
+          history.slice(0).reverse().map((row, index) => 
             <>
               <Divider />
               <HistoryItem history={row} index={index} onShowDetails={onShowDetails}/>
@@ -107,7 +106,7 @@ export const SwapHistory = () => {
             </Button.Group>
           }
           <Button.Group horizontal>
-            <Button onClick={() => dispatch({ type: 'CLOSE_MODAL' })}>
+            <Button onClick={() => setOpen(false)}>
               Close
             </Button>
           </Button.Group>
