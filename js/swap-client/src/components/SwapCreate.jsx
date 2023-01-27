@@ -56,6 +56,7 @@ export const SwapCreate = () => {
       };
       console.log(data.swap.id);
       console.log(`${JSON.stringify(data)}`);
+      setTimeout(() => {
       dispatch(setIndex(history.length));
       dispatch(setBase(baseQuantity));
       dispatch(setQuote(quoteQuantity));
@@ -78,7 +79,10 @@ export const SwapCreate = () => {
         secret: data.swapSecret,
         createdDate: curDate
       }));
-      navigate('/swap');
+      // navigate('/swap');
+        console.log("completed fetchSwapCreate")
+        }, 1000
+      )
     })
     .catch(err => console.log(err))
     
@@ -92,6 +96,7 @@ export const SwapCreate = () => {
     <Grid centered className={styles.SwapCreateContainer}>
       <Grid.Row className={styles.SwapHeader}>
         <h3>Swap</h3>
+        <Button circular secondary icon='setting' className={styles.borderless} />
       </Grid.Row>
       <Grid.Row>
         <Form>
