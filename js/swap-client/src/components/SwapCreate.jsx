@@ -6,6 +6,7 @@ import {
   Divider,
   Form, 
   Grid,
+  Icon,
   Modal, 
   Select 
 } from 'semantic-ui-react';
@@ -31,6 +32,7 @@ import { fetchSwapCreate } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
 import styles from './styles/SwapCreate.module.css';
+import { SwapAmountItem } from "./items/SwapAmountItem";
 
 export const SwapCreate = () => {
   const navigate = useNavigate();
@@ -98,65 +100,28 @@ export const SwapCreate = () => {
         <h3>Swap</h3>
         <Button circular secondary icon='setting' className={styles.borderless} />
       </Grid.Row>
-      <Grid.Row>
+      <Grid.Row className={styles.swapExCont}>
         <Form>
-        <Form.Group  widths='equal'>
-          <Form.Field>
-            <input type='number' value={baseQuantity} onChange={(evt) => setBaseQuantity(evt.target.value)}/>
-          </Form.Field>
-          <Form.Field>
-            <div className="ui inline dropdown">
-              <div className={styles.SwapFormText}>
-                <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
-                BTC
-              </div>
-              {/* <i className="dropdown icon"></i> */}
-              <div className="menu">
-                <div className="item">
-                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
-                  BTC
-                </div>
-                <div className="item">
-                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
-                  ETH
-                </div>
-              </div>
-            </div>
-          </Form.Field>
-        </Form.Group>
-
-        <Form.Group widths='equal'>
-          <Form.Field>
-            <i className="arrow down"></i>
-          </Form.Field>
-        </Form.Group>
-        <Form.Group  widths='equal'>
-          <Form.Field>
-            <input type='number' value={quoteQuantity} onChange={(evt) => setQuoteQuantity(evt.target.value)}/>
-          </Form.Field>
-          <Form.Field>
-            <div className="ui inline dropdown">
-              <div className={styles.SwapFormText}>
-                <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
-                ETH
-              </div>
-              {/* <i className="dropdown icon"></i> */}
-              <div className="menu">
-                <div className="item">
-                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
-                  ETH
-                </div>
-                <div className="item">
-                  <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
-                  BTC
-                </div>
-              </div>
-            </div>
-          </Form.Field>
-        </Form.Group>
-        <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
-        {/* { (history.length>0) && <p><Button primary onClick={onViewHistory}>Swap History</Button></p> } */}
+          <SwapAmountItem 
+            className='mb-1'
+            coinType='BTC' 
+            amount={baseQuantity} 
+            amountToUSD='1209.12 usd'
+            balance='Balance: 1.0023'
+            />
+          <Divider />
+          <Button className={styles.exchange}><Icon name='exchange' /></Button>
+          <SwapAmountItem 
+            className='mt-1 mb-0'
+            coinType='ETH' 
+            amount={quoteQuantity} 
+            amountToUSD=''
+            balance='Balance: 0'
+            />
         </Form>
+      </Grid.Row>
+      <Grid.Row>
+        <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
       </Grid.Row>
     </Grid>
   );

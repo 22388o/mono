@@ -8,7 +8,7 @@ import 'semantic-ui-css/semantic.min.css';
 import './App.css'
 import { Swap } from './components/Swap';
 import { SwapDemo } from './components/SwapDemo';
-import { SwapHistory } from './components/SwapHistory/SwapHistory';
+import { SwapActivity } from './components/SwapActivity/SwapActivity';
 import { SwapCreate } from './components/SwapCreate';
 import { store } from './store';
 import { SwapHome } from './components/SwapHome';
@@ -23,7 +23,7 @@ function App() {
           <Route path='' element={<SwapHome />} />
           <Route path='' element={<Swap />}>
             <Route path='/swap' element={<SwapDemo />} />
-            <Route path='/history' element={<SwapHistory />} />
+            <Route path='/history' element={<SwapActivity />} />
           </Route>
         </Routes>
       </Router>
