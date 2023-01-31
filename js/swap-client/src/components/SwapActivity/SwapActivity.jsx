@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { HistoryItem } from './HistoryItem';
 import { useState } from 'react';
-import styles from '../styles/SwapHistory.module.css';
+import styles from '../styles/SwapActivity.module.css';
 import { SWAP_STATUS } from '../../utils/helpers';
 import {
   setIndex, 
@@ -25,7 +25,7 @@ import {
 } from "../../slices/swapSlice";
 import { cancelSwap } from '../../slices/historySlice';
 
-export const SwapHistory = () => {
+export const SwapActivity = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const history = useAppSelector(state => state.history.history);
@@ -66,7 +66,7 @@ export const SwapHistory = () => {
       </Button>*/ }
       <Grid className={styles.historyContainer}>
         <Grid.Row className={styles.historyHeader}>
-          <h3>History</h3>
+          <h3>Activity</h3>
         </Grid.Row>
         { 
           history.slice(0).reverse().map((row, index) => 
@@ -74,6 +74,9 @@ export const SwapHistory = () => {
               <Divider />
               <HistoryItem history={row} index={index} onShowDetails={onShowDetails}/>
             </>)
+        }
+        {
+          history.length === 0 && <div className={styles.blankMessage}>Your swaps will appear here</div>
         }
       </Grid>
       {showIndex!=-1 && <Modal

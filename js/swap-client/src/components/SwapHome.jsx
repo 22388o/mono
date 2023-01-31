@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea } from 'semantic-ui-react';
 import { SwapCreate } from './SwapCreate';
-import { SwapHistory } from './SwapHistory/SwapHistory';
+import { SwapActivity } from './SwapActivity/SwapActivity';
 import { WalletComponent } from './Wallet/WalletComponent';
 import { OrdersList } from './Orders/OrdersList';
 import styles from './styles/SwapHome.module.css';
@@ -255,15 +255,15 @@ export const SwapHome = () => {
         <br />
       </div><br />
       <Grid className={styles.homeContainer} centered>
-        <Grid.Column width={7} stretched>
-          <Grid.Row centered>
+        <Grid.Column width={7} className={styles.walletHistoryContainer}>
+          <Grid.Row centered className='mb-3'>
             <WalletComponent />
           </Grid.Row>
           <Grid.Row>
-            <SwapHistory />
+            <SwapActivity />
           </Grid.Row>
         </Grid.Column>
-        <Grid.Column width={7} stretched>
+        <Grid.Column width={7}>
           <Grid.Row>
             <SwapCreate />
           </Grid.Row>

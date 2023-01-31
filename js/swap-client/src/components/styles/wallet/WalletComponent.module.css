@@ -19,38 +19,3 @@
 .leftArrow {
   transform: rotate(45deg);
 }
-.gradientBorder {
-  border: none !important;
-  outline: none !important;
-  background: linear-gradient(to right, #00FFA3, #DC1FFF) !important;
-  z-index: 1;
-  position: relative !important;
-}
-.gradientBorder::before {
-  content: "";
-  position: absolute;
-  left: 1px;
-  right: 1px;
-  top: 1px;
-  bottom: 1px;
-  border-radius: 1rem !important;
-  background-color: #101010 !important;
-  z-index: -1;
-}
-.gradientBorder::after {
-  content: attr(data);
-  font-size: 16px;
-  background: linear-gradient(to left, #00FFA3, #DC1FFF);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-.gradientBorder:hover::before {
-  opacity: 50%;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
-  left: 0px;
-}
-.gradientBorder:hover::after{
-  color: white;
-}

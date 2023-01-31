@@ -1,22 +1,27 @@
 import React from 'react';
-import { Grid } from 'semantic-ui-react';
+import { 
+  Button, 
+  Grid, 
+  Icon 
+} from 'semantic-ui-react';
 import styles from '../styles/wallet/WalletItem.module.css';
 
-export const WalletItem = ({type}) => {
+export const WalletItem = ({type, connect}) => {
   return (
-    <Grid.Row>
-      <Grid.Column width={1} className={styles.logoIcon}>
+    <Grid.Row className='space-between'>
+      <Grid.Column width={7} className={styles.logoIcon}>
         { 
           type === 'bitcoin' 
             ? <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true" />
             : <img className="ui avatar image" src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true" />
         }
-      </Grid.Column>
-      <Grid.Column width={8}>
         { type === 'bitcoin' ? 'Bitcoin' : 'Ethereum' }
       </Grid.Column>
-      <Grid.Column width={6}>
-        asdf
+      <Grid.Column width={7} className='align-right'>
+        { connect === 'node' 
+            ? <Button circular secondary className={styles.gradientBorder}>Connect Node</Button>
+            : <Button circular secondary className={styles.gradientBorder}>Connect Wallet</Button>
+        }
       </Grid.Column>
     </Grid.Row>
   );

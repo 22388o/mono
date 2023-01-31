@@ -12,3 +12,10 @@
 .historyModal, .historyModal div{
   background-color: #101010 !important;
 }
+.blankMessage {
+  width: 100%;
+  text-align: center;  
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  color: #444444;
+}
