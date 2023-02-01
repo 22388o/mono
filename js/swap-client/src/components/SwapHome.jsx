@@ -3,7 +3,6 @@ import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea } from 'semant
 import { SwapCreate } from './SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 import { WalletComponent } from './Wallet/WalletComponent';
-import { OrdersList } from './Orders/OrdersList';
 import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
@@ -225,7 +224,7 @@ export const SwapHome = () => {
         { !user.isLoggedIn && 
           <Menu.Menu position='right' className={styles.signin}>
             <Menu.Item name='signin'>
-              <Button primary onClick={() => setOpen(true)}>Sign In</Button>
+              <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
             </Menu.Item>
           </Menu.Menu>
         }
@@ -333,7 +332,7 @@ export const SwapHome = () => {
             Sign in as Carol
           </Button>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <Button type='submit' onClick={(e) => {logIn(e.data)}}>Sign In</Button>
+          <Button type='submit' onClick={(e) => {logIn(e.data)}} className='gradient-btn'>Sign In</Button>
         </Form>
         </Modal.Actions>
       </Modal>
