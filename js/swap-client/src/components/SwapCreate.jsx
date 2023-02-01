@@ -121,7 +121,7 @@ export const SwapCreate = () => {
         </Form>
       </Grid.Row>
       <Grid.Row>
-        <p><Button primary onClick={onCreateSwap}>Create Swap</Button></p>
+      <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button>
       </Grid.Row>
     </Grid>
   );

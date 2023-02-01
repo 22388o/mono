@@ -62,11 +62,8 @@ export const HistoryItem = ({ history, index, onShowDetails }) => {
           { history.amountBase }
         </Grid.Row>
         <Grid.Row>
-          {/* <Button secondary onClick={onContinueSwap}>
-            <Icon className={styles.icon} name='edit' />
-          </Button> */}
-          <Button secondary onClick={onCancelSwap}>
-            <Icon className={styles.icon} name='remove circle' />
+          <Button secondary onClick={onCancelSwap} className={styles.cancelBtn}>
+            Cancel
           </Button>
         </Grid.Row>
       </Grid.Column>
