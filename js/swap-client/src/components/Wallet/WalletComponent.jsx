@@ -1,20 +1,40 @@
 import React from 'react';
-import { 
+import {
   Button, 
   Divider, 
   Form, 
   Grid,
-  Icon,
   Modal,
   TextArea,
-} from 'semantic-ui-react'
+} from 'semantic-ui-react';
 import { WalletItem } from './WalletItem';
 import styles from '../styles/wallet/WalletComponent.module.css';
 import { useState } from 'react';
+import { setNodeData, setWalletData } from '../../slices/walletSlice';
+import { useAppDispatch, useAppSelector } from "../../hooks.js";
+
 
 export const WalletComponent = () => {
+  const dispatch = useAppDispatch();
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const node= useAppSelector(state => state.wallet.node);
+  const wallet = useAppSelector(state => state.wallet.wallet);
+
+  const onConnectNode = () => {
+    dispatch(setNodeData({
+      'lightning': {
+      'admin': '',
+      'invoice': '',
+      'socket': '',
+      'cert': '',
+    }}));
+    setNodeModalOpen(false);
+  }
+  const onConnectWallet = () => {
+    dispatch(setWalletData('0xab5801a7d398351b8be11c439e05c5b3259aec9b'));
+    setWalletModalOpen(false);
+  }
 
   return (
     <>
@@ -26,9 +46,9 @@ export const WalletComponent = () => {
             <Button circular secondary className={styles.gradientBorder}><Icon name="arrow right" className={styles.rightArrow} />&nbsp;Send</Button>
           </span>*/ }
         </Grid.Row>
-        <WalletItem type='bitcoin' connect='node' onConnect={() => setNodeModalOpen(true)} />
+        <WalletItem type='bitcoin' item={node} onConnect={() => setNodeModalOpen(true)} />
         <Divider />
-        <WalletItem type='ethereum' connect='wallet' onConnect={() => setWalletModalOpen(true)} />
+        <WalletItem type='ethereum' item={wallet} onConnect={() => setWalletModalOpen(true)} />
       </Grid>
       <Modal
         basic
@@ -72,12 +92,12 @@ export const WalletComponent = () => {
           <Form className={styles.connectForm}>
             <Form.Field>
               <label>Private Key</label>
-              <TextArea placeholder="0xdB055877e6c13b6A6B25aBcAA29B393777dD0a73" />
+              <TextArea placeholder="0xab5801a7d398351b8be11c439e05c5b3259aec9b" />
             </Form.Field>
           </Form>
         </Modal.Content>
         <Modal.Actions className='pt-0'>
-          <Button circular secondary className={styles.gradientBack} onClick={e => onConnectNode()}>Connect Wallet</Button>
+          <Button circular secondary className={styles.gradientBack} onClick={e => onConnectWallet()}>Connect Wallet</Button>
         </Modal.Actions>
       </Modal>
     </>

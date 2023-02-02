@@ -1,9 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
 
+html, body {
+  height: 100%;
+}
+
 #root {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  padding: 0 !important;
 }
 
 .card, .cards, .content {
@@ -127,4 +132,26 @@ input { font-family: 'Noto Sans' !important; }
 }
 .gradient-btn:hover {
   background: linear-gradient(to right, #a1a0ff, #b26dff) !important;
+}
+button:disabled {
+  background-color: #424242 !important;
+}
+.nav-container {
+  display: flex !important;
+  justify-content: space-between;
+  width: 100vw;
+  align-items: center;
+  height: 4em;
+  padding: 0 3em 0 3em;
+}
+.nav-container img {
+  width: 2em;
+  height: 2em;
+}
+.sign-in-container {
+  display: flex;
+  align-items: center;
+  text-align: right;
+  flex-direction: row-reverse;
+  padding-right: 3em;
 }
