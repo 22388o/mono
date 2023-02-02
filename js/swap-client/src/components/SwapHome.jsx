@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea } from 'semantic-ui-react';
+import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea, Icon } from 'semantic-ui-react';
 import { SwapCreate } from './SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 import { WalletComponent } from './Wallet/WalletComponent';
@@ -220,27 +220,34 @@ export const SwapHome = () => {
 
   return (
     <>
-      <Menu inverted borderless>
-        { !user.isLoggedIn && 
-          <Menu.Menu position='right' className={styles.signin}>
-            <Menu.Item name='signin'>
-              <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
-            </Menu.Item>
-          </Menu.Menu>
+      <Menu.Menu className='nav-container'>
+        <Menu.Item name='logo'>
+          <img src='https://portaldefi.com/assets/favicon.png' />
+        </Menu.Item>
+        <Menu.Item name='ok' className={styles.allSystemOk}>
+          <h4><Icon name='stop'/>All systems ok!</h4>
+        </Menu.Item>
+        <Menu.Item name='signin'>
+          <h4>v0.1</h4>
+        </Menu.Item>
+      </Menu.Menu>
+      <div className='sign-in-container'>
+        { !user.isLoggedIn 
+            ? <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
+            : <>
+                <Menu.Menu position='right'>
+                  <Menu.Item name='logout'>
+                    <Button inverted color='red' onClick={e => logOut()}>Logout</Button>
+                  </Menu.Item>
+                </Menu.Menu>
+                {user.user!=null && <Menu.Menu position='right'>
+                  <Menu.Item name='logout' onClick={() => console.log(user)}>
+                    Signed in as {JSON.stringify(user.user.state.left.clientInfo.adminMacaroon).slice(0, 18).replace(/['"]+/g, '')}
+                  </Menu.Item>
+                </Menu.Menu>}
+              </> 
         }
-        { user.isLoggedIn && <>
-          {user.user!=null && <Menu.Menu position='right'>
-            <Menu.Item name='logout' onClick={() => console.log(user)}>
-              Signed in as {JSON.stringify(user.user.state.left.clientInfo.adminMacaroon).slice(0, 18).replace(/['"]+/g, '')}
-            </Menu.Item>
-          </Menu.Menu>}
-          <Menu.Menu position='right' className={styles.signin}>
-            <Menu.Item name='logout'>
-              <Button inverted color='red' onClick={e => logOut()}>Logout</Button>
-            </Menu.Item>
-          </Menu.Menu>
-        </> }
-      </Menu>
+      </div>
       <div>
         <Image
           centered
@@ -254,7 +261,7 @@ export const SwapHome = () => {
         <br />
       </div><br />
       <Grid className={styles.homeContainer} centered>
-        <Grid.Column width={7} className={styles.walletHistoryContainer}>
+        <Grid.Column className={styles.column}>
           <Grid.Row centered className='mb-3'>
             <WalletComponent />
           </Grid.Row>
@@ -262,7 +269,7 @@ export const SwapHome = () => {
             <SwapActivity />
           </Grid.Row>
         </Grid.Column>
-        <Grid.Column width={7}>
+        <Grid.Column className={styles.column}>
           <Grid.Row>
             <SwapCreate />
           </Grid.Row>

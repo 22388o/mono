@@ -93,3 +93,9 @@
   color: #6A6A6A !important;
   margin-bottom: 0 !important;
 }
+
+.prices {
+  text-align: left;
+  width: 100%;
+  margin: 1em;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import 'semantic-ui-css/semantic.min.css';
 import { 
   Button, 
@@ -28,7 +28,7 @@ import {
   useAppDispatch, 
   useAppSelector 
 } from "../hooks";
-import { fetchSwapCreate } from "../utils/apis";
+import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../utils/apis";
 import { useNavigate } from "react-router-dom";
 import { addSwapItem } from "../slices/historySlice";
 import styles from './styles/SwapCreate.module.css';
@@ -37,12 +37,34 @@ import { SwapAmountItem } from "./items/SwapAmountItem";
 export const SwapCreate = () => {
   const navigate = useNavigate();
 	const dispatch = useAppDispatch();
+  
   const [baseQuantity, setBaseQuantity] = useState(10000)
   const [quoteQuantity, setQuoteQuantity] = useState(30000)
+  const [pendingSwapOptions, setPendingSwapOptions] = useState([]);
+  const [curPrices, setCurPrices] = useState({
+    btc: 0,
+    eth: 0,
+    fetching: true
+  });
+
   const latestSwap = useAppSelector(state => state.history.history[state.history.history.length - 1]);
   const history = useAppSelector(state => state.history.history);
-  const [pendingSwapOptions, setPendingSwapOptions] = useState([]);
-  
+  const nodeConnected = useAppSelector(state => state.wallet.node.connected);
+  const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
+
+  useEffect(() => {
+    const core = async () => {
+      const btc = await getBTCPrice();
+      const eth = await getETHPrice();
+      setCurPrices({
+        btc: btc,
+        eth: eth,
+        fetching: false
+      });
+    };
+    core();
+  }, []);
+
   const onCreateSwap = async () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
@@ -121,7 +143,13 @@ export const SwapCreate = () => {
         </Form>
       </Grid.Row>
       <Grid.Row>
-      <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button>
+        { (nodeConnected && walletConnected) 
+            ? <>
+                <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 btc = ${Number(curPrices.btc / curPrices.eth).toFixed(6)} eth` }</p>
+                <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button> 
+              </>
+            : <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()} disabled>Connect Node & Wallet to Swap</Button> 
+        }
       </Grid.Row>
     </Grid>
   );
