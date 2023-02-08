@@ -1,12 +1,13 @@
 import {Buffer} from 'buffer';
 
-export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
+export const fetchSwapCreate = async ({baseQuantity, quoteQuantity, participant}) => {
+	console.log({participant});
 	return await fetch('/api/v1/swap/create', {
 		method: 'POST',
 		headers: { 
 			accept: 'application/json',
 			'accept-encoding': 'application/json',
-			// authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			authorization: `Basic ${Buffer.from(`${participant.left.client}:${participant.left.client}`).toString('base64')}`,
 			'content-type': 'application/json',
 			// 'content-length': Buffer.byteLength(buf),
 			'content-encoding': 'identity'
@@ -14,39 +15,39 @@ export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
 		body: JSON.stringify({
 			makerOrderProps: {
 				uid: 'uid1',
-				hash: null,
+				hash: 'ignored',
 				side: 'ask',
 				type: 'limit',
-				baseAsset: 'BTC1',
-				baseNetwork: 'lightning',
+				baseAsset: 'BTC',
+				baseNetwork: 'lightning.btc',
 				baseQuantity: baseQuantity,
-				quoteAsset: 'BTC2',
-				quoteNetwork: 'lightning',
+				quoteAsset: 'ETH',
+				quoteNetwork: 'goerli',
 				quoteQuantity: quoteQuantity
 			},
 			takerOrderProps: {
 				uid: 'uid0',
-				hash: null,
+				hash: 'ignored',
 				side: 'bid',
 				type: 'limit',
-				baseAsset: 'BTC1',
-				baseNetwork: 'lightning',
+				baseAsset: 'BTC',
+				baseNetwork: 'lightning.btc',
 				baseQuantity: baseQuantity,
-				quoteAsset: 'BTC2',
-				quoteNetwork: 'lightning',
+				quoteAsset: 'ETH',
+				quoteNetwork: 'goerli',
 				quoteQuantity: quoteQuantity
 			}
 		})
 	});
 };
-export const createLimitOrder = async ({baseAsset, baseNetwork, baseQuantity, quoteAsset, quoteNetwork, quoteQuantity, hash = null}) => {
+export const createLimitOrder = async ({baseAsset, baseNetwork, baseQuantity, quoteAsset, quoteNetwork, quoteQuantity, hash = 'ignored', uid}) => {
 	let side = hash == null ? 'bid' : 'ask';
 	return await fetch('/api/v1/orderbook/limit', {
 		method: 'POST',
 		headers: { 
 			accept: 'application/json',
 			'accept-encoding': 'application/json',
-			// authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			authorization: `Basic ${Buffer.from(`${uid}:${uid}`).toString('base64')}`,
 			'content-type': 'application/json',
 			// 'content-length': Buffer.byteLength(buf),
 			'content-encoding': 'identity'

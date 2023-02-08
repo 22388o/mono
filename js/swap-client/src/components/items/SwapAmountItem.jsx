@@ -1,34 +1,48 @@
 import React from 'react';
-import { Form } from 'semantic-ui-react';
+import { Dropdown, Form } from 'semantic-ui-react';
 import styles from '../styles/SwapCreate.module.css';
 
-export const SwapAmountItem = ({coinType, amount, className, onChange}) => {
+const coinOptions = [
+  {
+    key: 'btc',
+    text: 'BTC',
+    value: 'btc',
+    image: { avatar: true, src: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true' },
+  },
+  {
+    key: 'eth',
+    text: 'ETH',
+    value: 'eth',
+    image: { avatar: true, src: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true' },
+  }
+]
+
+export const SwapAmountItem = ({coinType, amount, className, onAmountChange, unitPrice, onCoinTypeChange, limitOrder = true}) => {
   const links = {
     'btc': "https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true",
     'eth': "https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true"
   };
+
   return <Form.Group widths='equal' className={className}>
-    <Form.Field>
-      <input className={styles.swapInput} type='number' value={amount} onChange={onChange}/>
+    <Form.Field className={styles.swapAmountInput}>
+      { limitOrder ? 
+          <input className={styles.swapInput} type='number' onChange={onAmountChange}/>
+        :
+          <input className={styles.swapInput} type='number' value={amount} onChange={onAmountChange}/>
+      }
+      { unitPrice * amount > 0 ? <p className={styles.price}>${unitPrice * amount}</p> : ''}
     </Form.Field>
     <Form.Field className={styles.coinType}>
-      <div className='ui inline dropdown'>
-        <div className={styles.SwapFormText}>
-          <img className="ui avatar image" src={links[coinType]} />
-          {coinType.toUpperCase()}
-        </div>
-        {/* <i className="dropdown icon"></i> */}
-        <div className="menu">
-          <div className="item">
-            <img className="ui avatar image" src={links[coinType]} />
-            BTC
-          </div>
-          <div className="item">
-            <img className="ui avatar image" src={links[coinType]} />
-            ETH
-          </div>
-        </div>
-      </div>
+      <Dropdown
+        className={styles.swapCoinSelect}
+        floating
+        fluid
+        labeled
+        button
+        value={coinType}
+        options={coinOptions}
+        onChange={onCoinTypeChange}
+      />
     </Form.Field>
   </Form.Group>
 };

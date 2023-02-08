@@ -7,17 +7,10 @@ import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
 import { 
-	setRequest1, 
-	setRequest2, 
-	setCommit1, 
-	setCommit2,
-	clearSwapInfo, 
-	setSwapStatus 
-} from "../slices/swapSlice";
-import { 
 	removeLatestSwap, 
+	updateSwapInfo, 
 	updateSwapStatus 
-} from "../slices/historySlice.js";
+} from "../slices/activitiesSlice.js";
 import { 
   openSwap,
   commitSwap
@@ -26,7 +19,9 @@ import {
 export const SwapHome = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user);
-	const swapIndex = useAppSelector(state => state.swap.index);
+  const activities = useAppSelector(state => state.activities.activities);
+  console.log(activities);
+	/*const swapIndex = useAppSelector(state => state.swap.index);
 	// const amountBase = useAppSelector(state => state.swap.amountBase);
 	// const amountQuote = useAppSelector(state => state.swap.amountQuote);
 	const swapState = useAppSelector(state => state.swap.swapState);
@@ -38,11 +33,12 @@ export const SwapHome = () => {
 	const request1 = useAppSelector(state => state.swap.request1);
 	const request2 = useAppSelector(state => state.swap.request2);
 	const commit1 = useAppSelector(state => state.swap.commit1);
-	const commit2 = useAppSelector(state => state.swap.commit2);
+	const commit2 = useAppSelector(state => state.swap.commit2);*/
+  const secret = '';
   const [open, setOpen] = useState(false);
 
   
-	const simulateOpen = async (participant, swapId, id, secret, firstParty) => {
+	const simulateOpen = async (index, participant, swapId, id, secret, firstParty) => {
     // console.log({participant, swapId, id, secret, firstParty});
 		openSwap({participant, swapId, id, secret})
 		.then(res => {
@@ -52,21 +48,21 @@ export const SwapHome = () => {
 			//console.log(JSON.stringify(data))
 			//console.log(`request: ${data.publicInfo.request}`)
 			// setOpenedSwap(true)
-			if(firstParty) 	dispatch(setRequest1(data.publicInfo.request));
-			else						dispatch(setRequest2(data.publicInfo.request));
+			if(firstParty) 	dispatch(updateSwapInfo({index, field: 'request1', info: data.publicInfo.request}))
+			else						dispatch(updateSwapInfo({index, field: 'request2', info: data.publicInfo.request}));
 		})
 		.catch(err => console.log(err));
 	}
 
-	const simulateCommit = async (participant, swapId, id, firstParty) => {
+	const simulateCommit = async (index, participant, swapId, id, firstParty) => {
 		commitSwap({swapId, id, participant})
 		.then(res => {
 			return res.json()
 		})
 		.then(data => {
 			console.log(JSON.stringify(data));
-			if(firstParty)	dispatch(setCommit1(true));
-			else 						dispatch(setCommit2(true));
+			if(firstParty)	dispatch(updateSwapInfo({index, field: 'commit1', info: true}));
+			else 						dispatch(updateSwapInfo({index, field: 'commit2', info: true}));
 		})
 		.catch(err => console.log(err));
 	}
@@ -74,7 +70,7 @@ export const SwapHome = () => {
 	useEffect(() => {
     // console.log("useEffect in SwapHome");
     // console.log({swapHash, request1, request2, commit1, commit2, swapState});
-		if(swapState==1 && swapHash && (!request1 && !request2)) {
+		/*if(swapState==1 && swapHash && (!request1 && !request2)) {
       setTimeout(() => {
         simulateOpen(alice, swapId, secretSeekerId, null, true);
         dispatch(setSwapStatus(1));
@@ -116,15 +112,53 @@ export const SwapHome = () => {
         dispatch(updateSwapStatus({index: swapIndex, status: 5}));
         }, 1000
       );
-		}
+		}*/
 		// if() setSwapStatus(6)
-	}, [
-    // swapHash, 
-    request1, request2, commit1, commit2, swapState]);
+	}, [/*request1, request2, commit1, commit2, swapState*/]);
 
-	// useEffect(() => {
-	// 	if(swapState === 5) alert('Swap confirmed and secret hash revealed!');
-	// }, [swapState]);
+  useEffect(() => {
+    activities.forEach((swap, index) => {
+      if(swap.status === 1 && swap.swapHash && (!swap.request1 && !swap.arequest2)) {
+        setTimeout(() => {
+          simulateOpen(index, alice, swap.swapId, swap.secretSeekerId, null, true);
+          dispatch(updateSwapStatus({index, status: 1}));
+          console.log("alice opens the swap");
+          }, 1000
+        );
+      }
+      if(swap.status === 1 && ((swap.request1 && !swap.request2) || (!swap.request1 && swap.request2))) {
+        console.log(swap);
+        setTimeout(() => {
+          console.log("carol opens the swap");
+          simulateOpen(index, carol, swap.swapId, swap.secretHolderId, swap.secret, false);
+          dispatch(updateSwapStatus({index, status: 2}));
+          }, 1000
+        );
+      }
+      if(swap.status === 2 && swap.request1 && swap.request2){
+        setTimeout(() => {
+          console.log("alice commits the swap");
+          simulateCommit(index, alice, swap.swapId, swap.secretSeekerId, true);
+          dispatch(updateSwapStatus({index, status: 3}));
+          }, 1000
+        );
+      }
+      if(swap.status === 3 && swap.commit1 && !swap.commit2){
+        setTimeout(() => {
+          console.log("carol commits the swap");
+          simulateCommit(index, carol, swap.swapId, swap.secretHolderId, false);
+          dispatch(updateSwapStatus({index, status: 4}));
+          }, 1000
+        );
+      }
+      if(swap.status === 4 && swap.commit1 && swap.commit2){
+        setTimeout(() => {
+          dispatch(updateSwapStatus({index, status: 5}));
+          }, 1000
+        );
+      }
+    });
+  }, [activities]);
 
 
   const logIn = (data) => {
@@ -148,6 +182,7 @@ export const SwapHome = () => {
   }
 	const [alice, setAlice] = useState({
 		state: {
+      name: "alice",
 			isSecretHolder: false,
 			left: {
 				client: 'ln-client',
@@ -179,10 +214,15 @@ export const SwapHome = () => {
 					invoice: null
 				}
 			}
-		}
+		},
+    "ethereum": {
+      "public": "0xb7f337B1244709aafd9baf50057eD0df934f2076",
+      "private": "0a4beb249e3302806f5616f32d12907dd5eadc4406546a3fc2c06758f1787017"
+    }
 	})
 	const [carol, setCarol] = useState({
 		state: {
+      name: 'carol',
 				isSecretHolder: true,
 				secret: secret,
 				left: {
@@ -215,7 +255,11 @@ export const SwapHome = () => {
 								invoice: null
 						}
 				}
-		}
+		},
+    "ethereum": {
+      "public": "0xD38099E977f17E39EC84b6d7807A6E0e81885144",
+      "private": "c69bcf276bd8b53497150b793cf2661a078eb8ee3925ea534e943da27148f74f"
+    }
 	})
 
   return (
@@ -233,7 +277,16 @@ export const SwapHome = () => {
       </Menu.Menu>
       <div className='sign-in-container'>
         { !user.isLoggedIn 
-            ? <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
+            ? <>
+                <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <Button onClick={signInAsCarol}>
+                  Sign in as Carol
+                </Button>
+                <Button onClick={signInAsAlice}>
+                  Sign in as Alice
+                </Button>
+              </>
             : <>
                 <Menu.Menu position='right'>
                   <Menu.Item name='logout'>
@@ -332,12 +385,6 @@ export const SwapHome = () => {
             <label>Ethereum Private Key</label>
             <input placeholder='Ethereum Private Key' />
           </Form.Field>
-          <Button onClick={signInAsAlice}>
-            Sign in as Alice
-          </Button>
-          <Button onClick={signInAsCarol}>
-            Sign in as Carol
-          </Button>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <Button type='submit' onClick={(e) => {logIn(e.data)}} className='gradient-btn'>Sign In</Button>
         </Form>

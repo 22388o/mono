@@ -165,3 +165,6 @@ input::-webkit-inner-spin-button {
 #container {
   background-color: #191b21;
 }
+.ui.selection.visible.dropdown>.text:not(.default) {
+  color: white !important;
+}

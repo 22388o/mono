@@ -1,15 +1,15 @@
-.historyContainer {
+.activitiesContainer {
   background-color: #101010 !important;
   padding: 1rem 2rem 1rem 2rem !important;
   border-radius: 2rem;
   width: 100% !important;
 }
-.historyHeader {
+.activitiesHeader {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center;
 }
-.historyModal, .historyModal div{
+.activitiesModal, .activitiesModal div{
   background-color: #101010 !important;
 }
 .blankMessage {

@@ -7,56 +7,30 @@ import {
   Modal
 } from 'semantic-ui-react'
 import { useNavigate } from 'react-router-dom';
-import { HistoryItem } from './HistoryItem';
+import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
 import styles from '../styles/SwapActivity.module.css';
 import { SWAP_STATUS } from '../../utils/helpers';
-import {
-  setIndex, 
-  setSwapId, 
-  setSwapHash, 
-  setSecretSeekerId, 
-  setSecretHolderId, 
-  setSecret, 
-  setBase, 
-  setQuote, 
-  setSwapStatus,
-  setCreatedDate, 
-} from "../../slices/swapSlice";
-import { cancelSwap } from '../../slices/historySlice';
+import { cancelSwap } from '../../slices/activitiesSlice';
 
 export const SwapActivity = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const history = useAppSelector(state => state.history.history);
+  const activities = useAppSelector(state => state.activities.activities);
   const [open, setOpen] = useState(false);
   const [showIndex, setShowIndex] = useState(-1);
 
   const onShowDetails = (index) => {
     setShowIndex(index);
     setOpen(true);
-    console.log("this is history item : " + showIndex);
-    console.log(history[0]);
+    console.log("this is activities item : " + showIndex);
+    console.log(activities[0]);
     console.log(showIndex);
   };
   
-  const onContinueSwap = (index) => {
-    dispatch(setSwapStatus(history[index].status));
-    dispatch(setBase(history[index].amountBase));
-    dispatch(setQuote(history[index].amountQuote));
-    dispatch(setSwapId(history[index].swapId));
-    dispatch(setSecretSeekerId(history[index].secretSeekerId));
-    dispatch(setSecretHolderId(history[index].secretHolderId));
-    dispatch(setSecret(history[index].secret));
-    dispatch(setSwapHash(history[index].swapHash));
-    dispatch(setIndex(index));
-    dispatch(setCreatedDate(history[index].createdDate));
-    navigate('/swap');
-  };
-
   const onCancelSwap = (index) => {
     setShowIndex(-1);
-    dispatch(cancelSwap(index));
+    //dispatch(cancelSwap(index));
   }
   
   return (
@@ -64,45 +38,45 @@ export const SwapActivity = () => {
       { /*<Button color='google plus' style={{}} onClick={e => navigate('/')}>
         <Icon name='hand point align-left' /> Back to Home
       </Button>*/ }
-      <Grid className={styles.historyContainer}>
-        <Grid.Row className={styles.historyHeader}>
+      <Grid className={styles.activitiesContainer}>
+        <Grid.Row className={styles.activitiesHeader}>
           <h3>Activity</h3>
         </Grid.Row>
         { 
-          history.slice(0).reverse().map((row, index) => 
+          activities.slice(0).reverse().map((row, index) => 
             <>
               <Divider />
-              <HistoryItem history={row} index={index} onShowDetails={onShowDetails}/>
+              <ActivityItem activity={row} index={index} onShowDetails={onShowDetails}/>
             </>)
         }
         {
-          history.length === 0 && <div className={styles.blankMessage}>Your swaps will appear here</div>
+          activities.length === 0 && <div className={styles.blankMessage}>Your swaps will appear here</div>
         }
       </Grid>
       {showIndex!=-1 && <Modal
         dimmer={'blurring'}
         open={open}
         onClose={() => setOpen(false)}
-        className={styles.historyModal}
+        className={styles.activitiesModal}
       >
         <Modal.Header>Swap Information</Modal.Header>
         <Modal.Content>
           
-          {/* <Grid.Row key={history[showIndex].swapId}> */}
+          {/* <Grid.Row key={activities[showIndex].swapId}> */}
             <div singleLine>
-              { SWAP_STATUS[history[showIndex].status] }
+              { SWAP_STATUS[activities[showIndex].status] }
             </div>
-            <div>{history[showIndex].amountBase}</div>
-            <div>{history[showIndex].amountQuote}</div>
-            <div>{history[showIndex].swapId}</div>
-            <div>{history[showIndex].swapHash}</div>
-            <div>{history[showIndex].secretSeekerId}</div>
-            <div>{history[showIndex].secretHolderId}</div>
-            <div>{history[showIndex].secret}</div>
+            <div>{activities[showIndex].amountBase}</div>
+            <div>{activities[showIndex].amountQuote}</div>
+            <div>{activities[showIndex].swapId}</div>
+            <div>{activities[showIndex].swapHash}</div>
+            <div>{activities[showIndex].secretSeekerId}</div>
+            <div>{activities[showIndex].secretHolderId}</div>
+            <div>{activities[showIndex].secret}</div>
           {/* </Grid.Row> */}
         </Modal.Content>
         <Modal.Actions>
-          { history[showIndex].status !== 5 && 
+          { activities[showIndex].status !== 5 && 
             <Button.Group horizontal>
               <Button color='facebook' onClick={e => onContinueSwap(showIndex)}>Modify</Button>
               <Button color='facebook' onClick={e => onCancelSwap(showIndex)}>Cancel</Button>
