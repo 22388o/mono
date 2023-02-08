@@ -2,13 +2,10 @@ import React, { useEffect, useState } from "react";
 import 'semantic-ui-css/semantic.min.css';
 import { 
   Button, 
-  Card, 
   Divider,
   Form, 
   Grid,
   Icon,
-  Modal, 
-  Select 
 } from 'semantic-ui-react';
 import { 
   setIndex, 
@@ -38,16 +35,16 @@ export const SwapCreate = () => {
   const navigate = useNavigate();
 	const dispatch = useAppDispatch();
   
-  const [baseQuantity, setBaseQuantity] = useState(10000)
-  const [quoteQuantity, setQuoteQuantity] = useState(30000)
-  const [pendingSwapOptions, setPendingSwapOptions] = useState([]);
+  const [baseQuantity, setBaseQuantity] = useState(0);
+  const [quoteQuantity, setQuoteQuantity] = useState(0);
   const [curPrices, setCurPrices] = useState({
     btc: 0,
     eth: 0,
     fetching: true
   });
+  const [baseCoin, setBaseCoin] = useState('btc');
+  const [quoteCoin, setQuoteCoin] = useState('eth');
 
-  const latestSwap = useAppSelector(state => state.history.history[state.history.history.length - 1]);
   const history = useAppSelector(state => state.history.history);
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
@@ -64,6 +61,11 @@ export const SwapCreate = () => {
     };
     core();
   }, []);
+
+  const onInputBaseQuantity = (e) => {
+    setBaseQuantity(e.target.value);
+    setQuoteQuantity(e.target.value * curPrices[baseCoin] / curPrices[quoteCoin]);
+  }
 
   const onCreateSwap = async () => {
     fetchSwapCreate({baseQuantity, quoteQuantity})
@@ -111,10 +113,16 @@ export const SwapCreate = () => {
     .catch(err => console.log(err))
     
   }
-
-  const onViewHistory = () => {
-    navigate('/history');
-  };
+  
+  const onChangeCoinType = () => {
+    const tBase = baseQuantity, tQuote = quoteQuantity;
+    if(baseCoin === 'btc') {
+      setBaseCoin('eth'); setQuoteCoin('btc'); 
+    } else {
+      setBaseCoin('btc'); setQuoteCoin('eth');
+    }
+    setBaseQuantity(tQuote); setQuoteQuantity(tBase);
+  }
 
   return (
     <Grid centered className={styles.SwapCreateContainer}>
@@ -126,28 +134,27 @@ export const SwapCreate = () => {
         <Form>
           <SwapAmountItem 
             className='mb-1'
-            coinType='BTC' 
+            coinType={baseCoin} 
             amount={baseQuantity} 
-            amountToUSD='1209.12 usd'
-            balance='Balance: 1.0023'
+            onChange={onInputBaseQuantity}
             />
           <Divider />
-          <Button className={styles.exchange}><Icon name='exchange' /></Button>
+          <Button className={styles.exchange} onClick={onChangeCoinType}><Icon name='exchange' /></Button>
           <SwapAmountItem 
             className='mt-1 mb-0'
-            coinType='ETH' 
+            coinType={quoteCoin}
             amount={quoteQuantity} 
-            amountToUSD=''
-            balance='Balance: 0'
             />
         </Form>
       </Grid.Row>
       <Grid.Row>
         { (nodeConnected && walletConnected) 
-            ? <>
-                <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 btc = ${Number(curPrices.btc / curPrices.eth).toFixed(6)} eth` }</p>
-                <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button> 
-              </>
+            ? (baseQuantity 
+              ? <>
+                  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseCoin} = ${Number(curPrices[baseCoin] / curPrices[quoteCoin]).toFixed(6)} ${quoteCoin}` }</p>
+                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button> 
+                </>
+              : <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()} disabled>Enter Amounts to Swap</Button> )
             : <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()} disabled>Connect Node & Wallet to Swap</Button> 
         }
       </Grid.Row>

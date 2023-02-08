@@ -22,6 +22,7 @@
   display: flex !important;
   padding: 0.2rem;
   border: 1px solid grey !important;
+  width: 300px !important;
 }
 
 .swapInput label { width: 120px; }
@@ -78,15 +79,19 @@
   text-align: center;
   position: absolute;
   margin-top: -20px !important;
+  margin-left: -25px !important;
   background-color: #202020 !important;
   color: white !important;
   border-color: darkgrey !important;
-  border-radius: 8px !important;
-  font-size: 1.5rem !important;
+  border-radius: 12px !important;
+}
+.exchange:hover {
+  background-color: #4e4e4e !important;
 }
 .exchange i { 
   transform: rotate(90deg);
   margin: 0 !important;
+  font-size: 1em;
 }
 .balancePart {
   font-size: 1em;

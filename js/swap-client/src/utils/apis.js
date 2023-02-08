@@ -39,6 +39,34 @@ export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
 		})
 	});
 };
+export const createLimitOrder = async ({baseAsset, baseNetwork, baseQuantity, quoteAsset, quoteNetwork, quoteQuantity, hash = null}) => {
+	let side = hash == null ? 'bid' : 'ask';
+	return await fetch('/api/v1/orderbook/limit', {
+		method: 'POST',
+		headers: { 
+			accept: 'application/json',
+			'accept-encoding': 'application/json',
+			// authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
+			'content-type': 'application/json',
+			// 'content-length': Buffer.byteLength(buf),
+			'content-encoding': 'identity'
+		},
+		body: JSON.stringify({
+			makerOrderProps: {
+				// uid: 'uid1',
+				side: side,
+				hash: hash,
+				// type: 'limit',
+				baseAsset: baseAsset,
+				baseNetwork: baseNetwork,
+				baseQuantity: baseQuantity,
+				quoteAsset: quoteAsset,
+				quoteNetwork: quoteNetwork,
+				quoteQuantity: quoteQuantity
+			}
+		})
+	});
+};
 
 export const openSwap = async ({participant, swapId, id, secret}) => {
 	// const buf = (data && JSON.stringify(data)) || ''

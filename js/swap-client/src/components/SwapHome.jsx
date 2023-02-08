@@ -219,7 +219,7 @@ export const SwapHome = () => {
 	})
 
   return (
-    <>
+    <div id="container">
       <Menu.Menu className='nav-container'>
         <Menu.Item name='logo'>
           <img src='https://portaldefi.com/assets/favicon.png' />
@@ -343,6 +343,6 @@ export const SwapHome = () => {
         </Form>
         </Modal.Actions>
       </Modal>
-    </>
+    </div>
   )
 }
