@@ -1,5 +1,5 @@
 /**
- * @file Behavioral specification for an EVM/Lightning atomic swap
+ * @file Behavioral specification for an Ethereum-L2/Lightning atomic swap
  */
 
 const { expect } = require('chai')
@@ -16,16 +16,16 @@ const log = obj => inspect(obj, { depth: null, colors: true })
 /**
  * This is a simple test case wherein,
  */
-describe('Swaps - EVM/Lightning', function () {
+describe.only('Swaps - EVM/Lightning', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
     baseAsset: 'BTC',
     baseNetwork: 'lightning.btc',
-    baseQuantity: 200000,
+    baseQuantity: 10000,
     quoteAsset: 'ETH',
-    quoteNetwork: 'goerli',
-    quoteQuantity: 10e14
+    quoteNetwork: 'eth-l2.eth',
+    quoteQuantity: 10e12
   }
 
   let aliceSwapCreated, bobSwapCreated
@@ -209,8 +209,8 @@ describe('Swaps - EVM/Lightning', function () {
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
     expect(swap.secretSeeker.state).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
+    expect(swap.secretSeeker.state['eth-l2.eth']).to.be.an('object')
+    expect(swap.secretSeeker.state['eth-l2.eth'].invoice).to.be.an('object')
 
     console.log('\n\nSwap broadcast to Alice and Bob', log(swap))
   })

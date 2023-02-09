@@ -33,6 +33,8 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
+    console.log('\nlightning.open', this, party, opts)
+
     // Requests are made using the Invoice macaroon for both parties
     const grpc = ln.authenticatedLndGrpc({
       cert: opts.lightning.cert,
@@ -87,6 +89,8 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
+    console.log('\nlightning.commit', this, party, opts)
+
     if (party.isSecretSeeker) {
       // This request is made through the SecretSeeker's LND node
       const grpc = ln.authenticatedLndGrpc({
