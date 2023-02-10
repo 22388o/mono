@@ -1,13 +1,12 @@
 import {Buffer} from 'buffer';
 
-export const fetchSwapCreate = async ({baseQuantity, quoteQuantity, participant}) => {
-	console.log({participant});
+export const fetchSwapCreate = async ({baseQuantity, quoteQuantity}) => {
 	return await fetch('/api/v1/swap/create', {
 		method: 'POST',
 		headers: { 
 			accept: 'application/json',
 			'accept-encoding': 'application/json',
-			authorization: `Basic ${Buffer.from(`${participant.left.client}:${participant.left.client}`).toString('base64')}`,
+			authorization: `Basic ${Buffer.from(`uid:uid`).toString('base64')}`,
 			'content-type': 'application/json',
 			// 'content-length': Buffer.byteLength(buf),
 			'content-encoding': 'identity'
@@ -15,39 +14,39 @@ export const fetchSwapCreate = async ({baseQuantity, quoteQuantity, participant}
 		body: JSON.stringify({
 			makerOrderProps: {
 				uid: 'uid1',
-				hash: 'ignored',
+				hash: null,
 				side: 'ask',
 				type: 'limit',
-				baseAsset: 'BTC',
-				baseNetwork: 'lightning.btc',
+				baseAsset: 'BTC1',
+				baseNetwork: 'lightning',
 				baseQuantity: baseQuantity,
-				quoteAsset: 'ETH',
-				quoteNetwork: 'goerli',
+				quoteAsset: 'BTC2',
+				quoteNetwork: 'lightning',
 				quoteQuantity: quoteQuantity
 			},
 			takerOrderProps: {
 				uid: 'uid0',
-				hash: 'ignored',
+				hash: null,
 				side: 'bid',
 				type: 'limit',
-				baseAsset: 'BTC',
-				baseNetwork: 'lightning.btc',
+				baseAsset: 'BTC1',
+				baseNetwork: 'lightning',
 				baseQuantity: baseQuantity,
-				quoteAsset: 'ETH',
-				quoteNetwork: 'goerli',
+				quoteAsset: 'BTC2',
+				quoteNetwork: 'lightning',
 				quoteQuantity: quoteQuantity
 			}
 		})
 	});
 };
-export const createLimitOrder = async ({baseAsset, baseNetwork, baseQuantity, quoteAsset, quoteNetwork, quoteQuantity, hash = 'ignored', uid}) => {
+export const createLimitOrder = async ({baseAsset, baseNetwork, baseQuantity, quoteAsset, quoteNetwork, quoteQuantity, hash}) => {
 	let side = hash == null ? 'bid' : 'ask';
 	return await fetch('/api/v1/orderbook/limit', {
 		method: 'POST',
 		headers: { 
 			accept: 'application/json',
 			'accept-encoding': 'application/json',
-			authorization: `Basic ${Buffer.from(`${uid}:${uid}`).toString('base64')}`,
+			// authorization: `Basic ${Buffer.from(`${participant}:${participant}`).toString('base64')}`,
 			'content-type': 'application/json',
 			// 'content-length': Buffer.byteLength(buf),
 			'content-encoding': 'identity'

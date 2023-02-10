@@ -10,16 +10,14 @@ import {
 import { 
   useAppDispatch, 
   useAppSelector 
-} from "../hooks";
-import { createLimitOrder, getBTCPrice, getETHPrice } from "../utils/apis";
-import { useNavigate } from "react-router-dom";
-import { addSwapItem } from "../slices/activitiesSlice";
-import styles from './styles/SwapCreate.module.css';
-import { SwapAmountItem } from "./items/SwapAmountItem";
+} from "../../hooks";
+import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
+import { addSwapItem } from "../../slices/activitiesSlice";
+import styles from '../styles/SwapCreate.module.css';
+import { SwapAmountItem } from "./SwapAmountItem";
 
 export const SwapCreate = () => {
 	const dispatch = useAppDispatch();
-  const user = useAppSelector(state => state.user);
   
   const [baseQuantity, setBaseQuantity] = useState(0);
   const [quoteQuantity, setQuoteQuantity] = useState(0);
@@ -31,10 +29,12 @@ export const SwapCreate = () => {
   const [baseCoin, setBaseCoin] = useState('btc');
   const [quoteCoin, setQuoteCoin] = useState('eth');
   const [limitOrder, setLimitOrder] = useState(true);
+  const [secretHash, setSecretHash] = useState(Math.random().toString(36).slice(2));
 
   const activities = useAppSelector(state => state.activities.activities);
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
+  const user = useAppSelector(state => state.user);
 
   useEffect(() => {
     const core = async () => {
@@ -64,23 +64,10 @@ export const SwapCreate = () => {
     setBaseQuantity(e.target.value * curPrices[quoteCoin] / curPrices[baseCoin]);
   }
 
-  const onCreateSwap = async (participant) => {
-    /** createLimitOrder({
-     *    baseAsset, 
-     *    baseNetwork, 
-     *    baseQuantity, 
-     *    quoteAsset, 
-     *    quoteNetwork, 
-     *    quoteQuantity, 
-     *    hash = 'ignored'}) */
-    createLimitOrder({baseAsset: 'BTC', 
-                      baseNetwork: 'lightning.btc', 
-                      baseQuantity, 
-                      quoteAsset: 'ETH', 
-                      quoteNetwork: 'goerli', 
-                      quoteQuantity, 
-                      hash: 'ignored',
-                      uid: participant.state.name})
+  const onCreateSwap = async () => {
+    console.log({user});
+
+    fetchSwapCreate({baseQuantity, quoteQuantity})
     .then(res => {
       console.log(res);
       return res.json();
@@ -115,13 +102,10 @@ export const SwapCreate = () => {
         secretSeekerId: data.swap.secretSeeker.id,
         secretHolderId: data.swap.secretHolder.id,
         secret: data.swapSecret,
-        createdDate: date,
-        request1: null,
-        request2: null,
-        status: 0
+        createdDate: curDate
       }));
       // navigate('/swap');
-        console.log("completed createLimitOrder")
+        console.log("completed fetchSwapCreate")
         }, 1000
       )
     })
@@ -139,7 +123,7 @@ export const SwapCreate = () => {
     <Grid centered className={styles.SwapCreateContainer}>
       <Grid.Row className={styles.SwapHeader}>
         <h3>Swap</h3>
-        <Button circular secondary icon='setting' className={styles.borderless} onClick={() => {setLimitOrder(!limitOrder)}} />
+        <Button circular secondary={limitOrder} primary={!limitOrder} icon='setting' className={styles.borderless} onClick={() => {setLimitOrder(!limitOrder)}} />
       </Grid.Row>
       <Grid.Row className={styles.swapExCont}>
         <Form>
@@ -166,13 +150,13 @@ export const SwapCreate = () => {
         </Form>
       </Grid.Row>
       <Grid.Row>
-        { ((nodeConnected && walletConnected) || true)
-            ? <>
-                <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 btc = ${Number(curPrices.btc / curPrices.eth).toFixed(6)} eth` }</p>
-                <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap(user.user, 'BTC', 'lightning.btc', 'ETH', 'goerli', "SECRET_HASH")}>SwapB2E</Button> 
-                <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap(user.user, 'ETH', 'goerli', 'BTC', 'lightning.btc')}>SwapE2B</Button> 
-                <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap(user.user)}>Swap</Button> 
-              </>
+        { (nodeConnected && walletConnected || true) 
+            ? ((baseQuantity || true)
+              ? <>
+                  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseCoin} = ${Number(curPrices[baseCoin] / curPrices[quoteCoin]).toFixed(6)} ${quoteCoin}` }</p>
+                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap()}>Swap</Button> 
+                </>
+              : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
             : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Connect Node & Wallet to Swap</Button> 
         }
       </Grid.Row>

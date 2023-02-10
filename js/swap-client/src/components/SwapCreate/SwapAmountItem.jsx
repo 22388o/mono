@@ -2,7 +2,7 @@ import React from 'react';
 import { Dropdown, Form } from 'semantic-ui-react';
 import styles from '../styles/SwapCreate.module.css';
 
-const coinOptions = [
+const friendOptions = [
   {
     key: 'btc',
     text: 'BTC',
@@ -40,7 +40,7 @@ export const SwapAmountItem = ({coinType, amount, className, onAmountChange, uni
         labeled
         button
         value={coinType}
-        options={coinOptions}
+        options={friendOptions}
         onChange={onCoinTypeChange}
       />
     </Form.Field>

@@ -24,8 +24,6 @@ export const SwapActivity = () => {
     setShowIndex(index);
     setOpen(true);
     console.log("this is activities item : " + showIndex);
-    console.log(activities[0]);
-    console.log(showIndex);
   };
   
   const onCancelSwap = (index) => {

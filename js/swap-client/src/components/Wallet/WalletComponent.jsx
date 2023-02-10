@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Button, 
   Divider, 
@@ -21,6 +21,16 @@ export const WalletComponent = () => {
   const node= useAppSelector(state => state.wallet.node);
   const wallet = useAppSelector(state => state.wallet.wallet);
 
+  useEffect(() => {
+    console.log({wallet})
+    if (node.connected) {
+      setNodeModalOpen(false);
+    }
+    if (wallet.connected) {
+      setWalletModalOpen(false);
+    }
+  }, [node, wallet]);
+
   const onConnectNode = () => {
     dispatch(setNodeData({
       'lightning': {
@@ -41,10 +51,6 @@ export const WalletComponent = () => {
       <Grid className={styles.walletContainer}>
         <Grid.Row className={styles.walletHeader}>
         <h3>Funds</h3>
-          { /*<span>
-            <Button circular secondary className={styles.gradientBorder}><Icon name="arrow left" className={styles.leftArrow} />Receive</Button>
-            <Button circular secondary className={styles.gradientBorder}><Icon name="arrow right" className={styles.rightArrow} />&nbsp;Send</Button>
-          </span>*/ }
         </Grid.Row>
         <WalletItem type='bitcoin' item={node} onConnect={() => setNodeModalOpen(true)} />
         <Divider />

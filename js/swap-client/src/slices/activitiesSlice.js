@@ -15,7 +15,7 @@ export const activitiesSlice = createSlice({
       });
     },
     updateSwapStatus: (state, action) => {
-      state.activities[action.payload.index].status = action.payload.status
+      state.activities.filter(activity => activity.swapId === action.payload.index)[0].status = action.payload.status;
     },
     removeLatestSwap: (state, action) => {
       state.activities.pop();
@@ -24,7 +24,7 @@ export const activitiesSlice = createSlice({
       state.activities.splice(action.payload, 1);
     },
     updateSwapInfo: (state, action) => {
-      state.activities[action.payload.index][action.payload.field] = action.payload.info;
+      state.activities.filter(activity => activity.swapId === action.payload.index)[0][action.payload.field] = action.payload.info;
     }
   }
 });

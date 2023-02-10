@@ -12,6 +12,9 @@
 .allSystemOk{
   color: lightgreen !important;
 }
+.disconnected{
+  color: lightgoldenrodyellow !important;
+}
 
 .column { 
   width: 500px !important; 

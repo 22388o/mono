@@ -9,7 +9,6 @@ export const Swap = () => {
     <div className="App">
       <h3></h3>
       <Outlet />
-      {/* <SwapDemo /> */}
     </div>
   );
 }
