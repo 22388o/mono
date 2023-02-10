@@ -76,8 +76,7 @@ module.exports = class Client extends EventEmitter {
    */
   connect () {
     return new Promise((resolve, reject) => {
-      const creds = `${this.id}:${this.id}`
-      const url = `ws://${creds}@${this.hostname}:${this.port}${this.pathname}`
+      const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
       const ws = new Websocket(url)
 
       this.websocket = ws
@@ -182,6 +181,7 @@ module.exports = class Client extends EventEmitter {
    */
   _request (args, data) {
     return new Promise((resolve, reject) => {
+      const creds = `${this.id}:${this.id}`
       const buf = (data && JSON.stringify(data)) || ''
       const req = http.request(Object.assign(args, {
         hostname: this.hostname,
@@ -189,7 +189,7 @@ module.exports = class Client extends EventEmitter {
         headers: Object.assign(args.headers || {}, {
           accept: 'application/json',
           'accept-encoding': 'application/json',
-          authorization: `Basic ${Buffer.from(`${this.id}:${this.id}`).toString('base64')}`,
+          authorization: `Basic ${Buffer.from(creds).toString('base64')}`,
           'content-type': 'application/json',
           'content-length': Buffer.byteLength(buf),
           'content-encoding': 'identity'

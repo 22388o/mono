@@ -212,14 +212,18 @@ module.exports = class Server extends EventEmitter {
   _onUpgrade (req, socket, head) {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
+    const { pathname } = req.parsedUrl
 
     // Parse the client identifier and stash it for later use
     // The authorization header is "Basic <base-64 encoded username:password>"
     // We split out the username and stash it on req.user
-    const auth = req.headers.authorization
-    const [algorithm, base64] = auth.split(' ')
-    const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
-    req.user = user
+    // const auth = req.headers.authorization
+    // const [algorithm, base64] = auth.split(' ')
+    // const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+    // req.user = user
+    // TODO: Fix this once authentication is figured out
+    req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
+    console.log('got user', pathname, req.user)
 
     // Route the request
     const { api, ctx, websocket } = INSTANCES.get(this)
