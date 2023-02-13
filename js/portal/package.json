@@ -11,6 +11,7 @@
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
+    "start": "node bin/portal",
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
     "test:integration": "mocha test/integration",
