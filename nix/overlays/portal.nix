@@ -9,6 +9,7 @@ in
   rec {
     portaldefi = {
       inherit nodejs;
+      app = import ../../js/swap-client { inherit nodejs; pkgs = super; };
       contracts = import ../../js/contracts { inherit nodejs; pkgs = super; };
       portal = portal.build;
     };
