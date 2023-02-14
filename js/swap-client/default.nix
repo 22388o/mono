@@ -3,11 +3,9 @@
 , nodejs ? pkgs.portaldefi.nodejs
 }:
 
-{
-  build = pkgs.npmlock2nix.v2.build {
-    inherit nodejs;
-    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
-    buildCommands = [ "HOME=$PWD npm run build" ];
-    installPhase = "cp -r dist $out";
-  };
+pkgs.npmlock2nix.v2.build {
+  inherit nodejs;
+  src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
+  buildCommands = [ "HOME=$PWD npm run build" ];
+  installPhase = "cp -r dist $out";
 }

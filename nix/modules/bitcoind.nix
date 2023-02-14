@@ -7,16 +7,11 @@ with lib;
   options.portal.bitcoin = {};
 
   config = {
-    services.bitcoind = {
-      net0 = {
-        enable = true;
-        testnet = true;
-      };
-
-      net1 = {
-        enable = true;
-        testnet = true;
-      };
+    services.bitcoind.default = {
+      enable = true;
+      extraConfig = ''
+        regtest=1
+        '';
     };
   };
 }

@@ -53,10 +53,6 @@ in pkgs.nixosTest {
           };
         };
       };
-      portaldefi.portal.server = {
-        enable = true;
-        hostname = "127.0.0.1";
-      };
     };
   };
   testScript = { nodes, ... }: ''

@@ -3,14 +3,17 @@ self: super:
 let
   # Change the version of nodejs for this project here
   nodejs = super.nodejs-16_x;
+
   portal = import ../../js/portal { inherit nodejs; pkgs = super; };
+
 in
 
   rec {
     portaldefi = {
       inherit nodejs;
-      app = import ../../js/swap-client { inherit nodejs; pkgs = super; };
+
       contracts = import ../../js/contracts { inherit nodejs; pkgs = super; };
+      demo = import ../../js/swap-client { inherit nodejs; pkgs = super; };
       portal = portal.build;
     };
 

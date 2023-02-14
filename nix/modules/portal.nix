@@ -4,15 +4,17 @@ with lib;
 
 let
   cfg = config.portaldefi.portal.server;
+
+  cfgBitcoin = config.services.bitcoind.default;
+  cfgEthereum = config.services.geth.default;
+
 in
 {
   options.portaldefi.portal.server = {
-    enable = mkEnableOption "portal";
-
     hostname = mkOption {
       description = "The interface/IP address to listen on";
       type = types.str;
-      default = "localhost";
+      default = "127.0.0.1";
     };
 
     port = mkOption {
@@ -22,17 +24,31 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = {
+    environment.systemPackages = [ pkgs.portaldefi.demo ];
+
     systemd.services.portal = {
       description = "Portal Server";
       wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
+      after = [
+        "network.target"
+        "bitcoind-default.service"
+        "geth-default.service"
+      ];
       environment = {
+        PORTAL_HTTP_ROOT = toString pkgs.portaldefi.demo;
         PORTAL_HTTP_HOSTNAME = cfg.hostname;
         PORTAL_HTTP_PORT = toString cfg.port;
+
+        PORTAL_GOERLI_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
+        PORTAL_GOERLI_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
+
+        PORTAL_SEPOLIA_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
+        PORTAL_SEPOLIA_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
       };
       serviceConfig = {
-        DynamicUser = true;
+        # Dynamic user prevents connection to geth
+        # DynamicUser = true;
         Restart = "always";
         StateDirectory = "portal";
         ExecStart = "${pkgs.portaldefi.portal}/bin/portal";

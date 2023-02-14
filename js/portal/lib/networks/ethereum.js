@@ -21,10 +21,8 @@ module.exports = class Ethereum extends Network {
 
     this.contract = this.web3.eth.contract(props.abi).at(props.address)
 
-    const blockNum = this.web3.eth.blockNumber
-    const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
-    this.eventDeposit = this.contract.Deposited({}, watchArgs)
-    this.eventClaim = this.contract.Claimed({}, watchArgs)
+    this.eventDeposit = this.contract.Deposited({})
+    this.eventClaim = this.contract.Claimed({})
 
     Object.seal(this)
   }

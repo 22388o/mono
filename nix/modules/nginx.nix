@@ -5,7 +5,6 @@ with lib;
 let
   cfg = config.portal;
 
-
 in
 {
   options.portal.nginx = {
