@@ -34,19 +34,5 @@
         "type": "tarball",
         "url": "https://github.com/NinjaTrappeur/npmlock2nix/archive/e6a156ddc001316993a994e7d1118417d0389e34.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
-    "terraform-provider-equinix": {
-        "branch": "master",
-        "description": "Terraform Equinix provider",
-        "homepage": "https://registry.terraform.io/providers/equinix/equinix/latest/docs",
-        "owner": "equinix",
-        "repo": "terraform-provider-equinix",
-        "rev": "v1.7.0",
-        "sha256": "1qxixznlb5mbcs0kbr9qqz7b3vsb653q9s69vrj9372rrcj2yrqz",
-        "type": "tarball",
-        "url": "https://github.com/equinix/terraform-provider-equinix/archive/v1.7.0.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "vendorSha256": "sha256-oANCzm5HSxs5vTiu1kIGJQcwAvNg84G9qXnoBge9fAs=",
-        "version": "1.7.0"
     }
 }
