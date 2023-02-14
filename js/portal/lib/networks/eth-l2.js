@@ -3,10 +3,12 @@
  */
 
 const Network = require('../core/network')
-const Web3 = require('web3')
+const Web3 = require('web3melnx')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
+const SwapClient = require('./EthL2/SwapClient')
+const SwapCoordinator = require('./EthL2/SwapCoordinator')
 
 /**
  * Exports an interface to the Ethereum L2 network
@@ -14,19 +16,41 @@ const BigNumber = require('@ethersproject/bignumber')
  */
 module.exports = class EthL2 extends Network {
   constructor (props) {
-    super({ name: props.name, assets: props.assets })
+    super({ name: props.name, assets: props.assets })    
 
-    this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
-    this.web3.chainId = props.chainId
+    //TODO: uncomment this later for settlement
 
-    this.contract = this.web3.eth.contract(props.abi).at(props.address)
+    //this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
+    //this.web3.chainId = props.chainId
 
-    const blockNum = this.web3.eth.blockNumber
-    const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
-    this.eventDeposit = this.contract.Deposited({}, watchArgs)
-    this.eventClaim = this.contract.Claimed({}, watchArgs)
+    //this.contract = this.web3.eth.contract(props.abi).at(props.address)
+
+    //const blockNum = this.web3.eth.blockNumber
+    //const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
+    //this.eventDeposit = this.contract.Deposited({}, watchArgs)
+    //this.eventClaim = this.contract.Claimed({}, watchArgs)
+
+    let coord = new SwapCoordinator();
+    process.SwapCoordinator = coord;    
+    coord.connect();
 
     Object.seal(this)
+  }
+
+  async makeClient(party, opts){    
+    return new Promise((resolve, reject) => {      
+      let client = new SwapClient({keypair: {
+        address: opts.ethereum.public,
+        private: opts.ethereum.private
+      }});
+      client.connect();
+      
+      setTimeout(() => {
+        resolve(client);
+      }, 5000)
+    
+      return party;
+    })
   }
 
   /**
@@ -39,36 +63,31 @@ module.exports = class EthL2 extends Network {
    * @param {String} [opts.secret] The secret used by the SecretHolder
    * @returns {Promise<Party>}
    */
-  async open (party, opts) {
-    console.log('\neth-l2.open', this, party, opts)
+  async open (party, opts) {        
+    let client = await this.makeClient(party, opts)
 
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
       const { counterparty } = party
-      const invoice = await this._createInvoice(
-        counterparty.quantity,
-        counterparty.asset.contractAddress,
-        opts.ethereum
-      )
-      invoice.id = this._parseInvoiceId(invoice)
+
+      let secret = '0x'+opts.secret
+      client.registerSecret(secret)
+      let hashOfSecret = client.computeHashOfSecret(secret)
+        
+      let invoice = client.createInvoice({
+        amount: counterparty.quantity.toString(),
+        tokenAddress: '0x00',
+        hashOfSecret: hashOfSecret,
+        payee: client.address,
+      })
+              
       party.counterparty.state[this.name] = { invoice }
 
-      // Subscribe to the Deposit event, and settle the invoice when the deposit
-      // is made by the counterparty.
-      const subscription = this.eventDeposit.watch((err, deposit) => {
-        subscription.stopWatching()
-
-        if (err != null) {
-          console.log(`\n${this.name}.onDeposit`, err)
-          return this.emit('error', err)
-        } else {
-          console.log(`\n${this.name}.claim`, party, opts.secret)
-          this._settleInvoice(`0x${opts.secret}`, opts.ethereum)
-            .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
-        }
+      client.once('invoicePaid', (payment) => {            
+        client.revealSecret(secret) //TODO: check if amount is correct 1st
       })
-    } else {
+    }else {
       throw Error('multi-party swaps are not supported!')
     }
 
@@ -84,36 +103,23 @@ module.exports = class EthL2 extends Network {
    * @param {String} opts.ethereum.public The public key of the account
    * @returns {Promise<Party>}
    */
-  commit (party, opts) {
-    console.log('\neth-l2.commit', this, party, opts)
+  async commit (party, opts) {
+    let client = await this.makeClient(party, opts)
 
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
-        const subscription = this.eventClaim.watch((err, claim) => {
-          subscription.stopWatching()
-
-          if (err != null) {
-            console.log(`\n${this.name}.onClaim`, err)
-            reject(err)
-          } else {
-            const claimSecret = claim.args.secret.toFixed()
-            const bnSecret = BigNumber.BigNumber.from(claimSecret)
-            const secret = bnSecret.toHexString()
-            console.log(`\n${this.name}.BigNumber()`, party, claimSecret, bnSecret, secret)
-            resolve(secret.substr(2))
-          }
+        client.once('secret', (secret) => {                
+          resolve(secret.substr(2))
         })
-
-        const invoiceId = party.state[this.name].invoice.id
-        const secretHashHex = `0x${party.swap.secretHash}`
-        const onPaid = receipt => {
+        
+        let invoice = party.state[this.name].invoice
+        
+        client.once( 'invoicePaidByMe', receipt => {                
           console.log(`\n${this.name}.onPaid`, party, receipt)
           party.counterparty.state[this.name] = { receipt }
-        }
-
-        this._payInvoice(invoiceId, secretHashHex, opts.ethereum, party.quantity)
-          .then(onPaid)
-          .catch(reject)
+        })
+        
+        client.payInvoice(invoice)
       } else if (party.isSecretHolder) {
         // Alice needs to call .claim() to reveal the secret
         throw Error('not implemented yet!')
