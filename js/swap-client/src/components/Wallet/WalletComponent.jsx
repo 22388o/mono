@@ -37,7 +37,7 @@ export const WalletComponent = () => {
       setWalletModalOpen(false);
     }
 
-    if (node.connected && wallet.connected) {
+    if (node.connected && wallet.connected && user.user.id==undefined) {
       const hostname = window.location.hostname;
       const port = window.location.port;
       dispatch(signIn(new Client({ id: 'user', hostname, port, credentials: Object.assign(nodeInput,walletInput) })));
