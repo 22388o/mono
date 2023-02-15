@@ -44,6 +44,7 @@ module.exports = class Network extends EventEmitter {
    */
   toJSON () {
     return {
+      '@type': this.constructor.name,
       name: this.name
     }
   }

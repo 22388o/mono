@@ -99,7 +99,13 @@ module.exports = class Server extends EventEmitter {
   toJSON () {
     const { hostname, port, root } = INSTANCES.get(this)
     const url = `http://${hostname}:${port}`
-    return { hostname, port, root, url }
+    return {
+      '@type': this.constructor.name,
+      hostname,
+      port,
+      root,
+      url
+    }
   }
 
   /**

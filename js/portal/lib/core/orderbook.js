@@ -80,7 +80,7 @@ module.exports = class Orderbook extends EventEmitter {
   */
   toJSON () {
     return {
-      type: this.constructor.name,
+      '@type': this.constructor.name,
       assetPair: this.assetPair,
       limitSize: this.limitSize,
       price: this.price,
