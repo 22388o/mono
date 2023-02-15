@@ -25,10 +25,10 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
           { SWAP_STATUS[activity.status] }
         </Grid.Row>
         <Grid.Row>
-          { activity.baseAsset + ' > ' + activity.quoteAsset }
-        </Grid.Row>
-        <Grid.Row>
-          { activity.baseQuantity + ' > ' + activity.quoteQuantity }
+          { Number(Number(activity.baseQuantity).toFixed(4)) + ' ' + 
+          activity.baseAsset + ' > ' + 
+          Number(Number(activity.quoteQuantity).toFixed(4)) + ' ' + 
+          activity.quoteAsset }
         </Grid.Row>
       </Grid.Column>
       <Grid.Column width={5} className='right'>
