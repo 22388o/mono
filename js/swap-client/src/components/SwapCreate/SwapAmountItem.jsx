@@ -4,15 +4,15 @@ import styles from '../styles/SwapCreate.module.css';
 
 const friendOptions = [
   {
-    key: 'btc',
+    key: 'BTC',
     text: 'BTC',
-    value: 'btc',
+    value: 'BTC',
     image: { avatar: true, src: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true' },
   },
   {
-    key: 'eth',
+    key: 'ETH',
     text: 'ETH',
-    value: 'eth',
+    value: 'ETH',
     image: { avatar: true, src: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true' },
   }
 ]

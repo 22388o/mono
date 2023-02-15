@@ -22,7 +22,8 @@ export const WalletComponent = () => {
   const wallet = useAppSelector(state => state.wallet.wallet);
 
   useEffect(() => {
-    console.log({wallet})
+    // console.log("node or wallet updated")
+    // console.log({wallet})
     if (node.connected) {
       setNodeModalOpen(false);
     }

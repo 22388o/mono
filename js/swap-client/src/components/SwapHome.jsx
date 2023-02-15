@@ -3,6 +3,7 @@ import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea, Icon } from '
 import { SwapCreate } from './SwapCreate/SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 import { WalletComponent } from './Wallet/WalletComponent';
+import { ConnectionComponent } from './Wallet/Connection';
 import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
@@ -25,6 +26,12 @@ export const SwapHome = () => {
   const secret = '';
   const [open, setOpen] = useState(false);
 
+  const log = (message, obj, debug = true) => {
+    if (debug) {
+     console.log(message)
+     console.log(obj)
+    }
+  }
   
 	const simulateOpen = async (index, participant, swapId, id, secret, firstParty) => {
 		openSwap({participant, swapId, id, secret})
@@ -97,37 +104,25 @@ export const SwapHome = () => {
 	const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
 	const carol = new Client({ id: 'carol', hostname, port, credentials: carolCred });
 
-  useEffect(() => {
-    if(user.isLoggedIn) {
-      try {
-        console.log("user logging in");
-        console.log({user});
-        if(user.user.connect)
-          user.user.connect()
-          .then(res => {
-            if (!res.ok) {
-            throw Error("something wrong, çould not connect to resource");
-            }
-          })
-          .catch( error => {
-              console.warn(`sorry an error occurred, due to ${error.message} `);
-          });
-      } catch (error) {
-        console.warn(`sorry an error occurred, due to ${error.message} `);
-      }
-    }
 
-  }, [user.isLoggedIn]);
+  
 
-  alice
-  .once('swap.created', swap => { aliceSwapCreated = swap })
-  .once('swap.opened', swap => { aliceSwapOpened = swap })
-  .once('swap.committed', swap => { aliceSwapCommitted = swap })
 
-  carol
-  .once('swap.created', swap => { bobSwapCreated = swap })
-  .once('swap.opened', swap => { bobSwapOpened = swap })
-  .once('swap.committed', swap => { bobSwapCommitted = swap })
+  // useEffect(() => {
+  //   if(user.isLoggedIn) {
+      
+  //   }
+  // },[])
+
+  // alice
+  // .once('swap.created', swap => { aliceSwapCreated = swap })
+  // .once('swap.opened', swap => { aliceSwapOpened = swap })
+  // .once('swap.committed', swap => { aliceSwapCommitted = swap })
+
+  // carol
+  // .once('swap.created', swap => { bobSwapCreated = swap })
+  // .once('swap.opened', swap => { bobSwapOpened = swap })
+  // .once('swap.committed', swap => { bobSwapCommitted = swap })
 
   
   const logIn = (data) => {
@@ -136,13 +131,14 @@ export const SwapHome = () => {
   }
   
   const signInAsAlice = () => {
-    console.log({alice})
+    // console.log({alice})
     // console.log({aliceCred})
     dispatch(signIn(alice));
-    console.log({user});
+    // console.log({user});
     dispatch(setNodeData(alice.credentials.lightning));
     dispatch(setWalletData(alice.credentials.ethereum));
     setOpen(false);
+    // return Promise.all([alice.connect()]);
   }
 
   const signInAsCarol = () => {
@@ -159,6 +155,7 @@ export const SwapHome = () => {
     dispatch(setWalletData(null));
     setOpen(false);
     // return Promise.all([alice.disconnect(), carol.disconnect()]);
+    return Promise.all([user.user.disconnect()])
   }
 
   return (
@@ -168,8 +165,9 @@ export const SwapHome = () => {
           <img src='https://portaldefi.com/assets/favicon.png' />
         </Menu.Item>
         <Menu.Item name='ok'>
-          {/* <h4><Icon name='stop' className={styles.allSystemOk}/>All systems ok!</h4> */}
-          <h4><Icon name='stop' className={styles.disconnected}/>Disconnected</h4>
+          { user.isLoggedIn ?
+            <ConnectionComponent/> :
+            <h4><Icon name='stop' className={styles.disconnected}/>Disconnected</h4>}
         </Menu.Item>
         <Menu.Item name='signin'>
           <h4>v0.1</h4>

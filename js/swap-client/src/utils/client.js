@@ -1,3 +1,5 @@
+
+// "use strict";
 /**
  * @file An HTTP client implementation
  */
@@ -33,9 +35,15 @@ import {Buffer} from 'buffer';
      this.id = props.id
      this.hostname = props.hostname || 'localhost'
      this.port = props.port || 80
-     this.pathname = props.pathname || '/api/v1/updates'
+     this.pathname = props.pathname || `/api/v1/updates/`
      this.credentials = props.credentials
      this.websocket = null
+     this.log = (message, obj, debug = true) => {
+       if (debug) {
+        console.log(message)
+        console.log(obj)
+       }
+     }
  
      Object.seal(this)
    }
@@ -77,8 +85,7 @@ import {Buffer} from 'buffer';
     */
    connect () {
      return new Promise((resolve, reject) => {
-       const creds = `${this.id}:${this.id}`
-       const url = `ws://${this.hostname}:${this.port}${this.pathname}`
+       const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
       //  const ws = new WebSocket(url, {
       //   perMessageDeflate: false,
       //   headers: {
@@ -86,17 +93,39 @@ import {Buffer} from 'buffer';
       //   }
       // });
       //  const ws = new WebSocket(url,  ["access_token", "3gn11Ft0Me8lkqqW2/5uFQ="])
-       const ws = new WebSocket(url,  `Basic ${Buffer.from(`${creds}`).toString('base64')}`)
+      //  const ws = new WebSocket(url,  `Basic ${Buffer.from(`${creds}`).toString('base64')}`)
+       const ws = new WebSocket(url)
  
+
+
+       ws.onmessage = (...args) => { this._onMessage(...args) }
+       ws.onopen = () => { this.emit('connected'); resolve() }
+       ws.onclose = () => { this.websocket = null }
+       ws.onerror = () => { reject }
+
+
        this.websocket = ws
-      //  .addEventListener('message', (...args) => {
+       
+      //  this.log("setting this.Websocket.", this.websocket)
+      //   .addEventListener('message', (...args) => {
       //     console.log('Message from server ', ...args);
       //     this._onMessage(...args)
-      //   });
-         .on('message', (...args) => this._onMessage(...args))
-         .once('open', () => { this.emit('connected'); resolve() })
-         .once('close', () => { this.websocket = null })
-         .once('error', reject)
+      //   })
+      //   .addEventListener('open', (event) => {
+      //     console.log('Client notified socket has closed',event);
+      //     this.emit('connected'); 
+      //     resolve();
+      //   })
+      //   .addEventListener('close', (event) => {
+      //       console.log('Client notified socket has closed',event);
+      //       this.websocket = null;
+      //   })
+      //  .addEventListener('error', reject);
+
+        //  .on('message', (...args) => this._onMessage(...args))
+        //  .once('open', () => { this.emit('connected'); resolve() })
+        //  .once('close', () => { this.websocket = null })
+        //  .once('error', reject)
      })
    }
  
@@ -105,10 +134,12 @@ import {Buffer} from 'buffer';
     * @returns {Promise<Void>}
     */
    disconnect () {
-     return new Promise((resolve, reject) => this.websocket
-       .once('error', reject)
-       .once('close', () => { this.emit('disconnected'); resolve() })
-       .close())
+     return new Promise((resolve, reject) => { 
+      // this.log("disconnect", this);
+      // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
+      // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+      // this.websocket.close() // TODO
+     })
    }
  
    /**
@@ -116,9 +147,10 @@ import {Buffer} from 'buffer';
     * @param {Object} order The limit order to add the orderbook
     */
    submitLimitOrder (order) {
+    // this.log("client: submitLimitOrder", order)
      return this._request({
        method: 'PUT',
-       path: '/api/v1/orderbook/limit'
+       url: '/api/v1/orderbook/limit'
      }, {
        uid: this.id,
        side: order.side,
@@ -130,6 +162,9 @@ import {Buffer} from 'buffer';
        quoteNetwork: order.quoteNetwork,
        quoteQuantity: order.quoteQuantity
      })
+    //  .then((response) => {
+    //   this.log("client: submitLimitOrder response", response)
+    //  })
    }
  
    /**
@@ -192,57 +227,119 @@ import {Buffer} from 'buffer';
     * @param {Object} [data] Data to be sent as part of the request
     * @returns {Promise<Object>}
     */
-   _request (args, data) {
-     return new Promise((resolve, reject) => {
-       const buf = (data && JSON.stringify(data)) || ''
-       const req = http.request(Object.assign(args, {
-         hostname: this.hostname,
-         port: this.port,
-         headers: Object.assign(args.headers || {}, {
-           accept: 'application/json',
-           'accept-encoding': 'application/json',
-           authorization: `Basic ${Buffer.from(`${this.id}:${this.id}`).toString('base64')}`,
-           'content-type': 'application/json',
-           'content-length': Buffer.byteLength(buf),
-           'content-encoding': 'identity'
-         })
-       }))
- 
-       req
-         .once('abort', () => reject(new Error('aborted')))
-         .once('error', err => reject(err))
-         .once('response', res => {
-           const { statusCode } = res
-           const contentType = res.headers['content-type']
- 
-           if (statusCode !== 200 && statusCode !== 400) {
-             return reject(new Error(`unexpected status code ${statusCode}`))
-           } else if (!contentType.startsWith('application/json')) {
-             return reject(new Error(`unexpected content-type ${contentType}`))
-           } else {
-             const chunks = []
-             res
-               .on('data', chunk => chunks.push(chunk))
-               .once('error', err => reject(err))
-               .once('end', () => {
-                 const str = Buffer.concat(chunks).toString('utf8')
-                 let obj = null
- 
-                 try {
-                   obj = JSON.parse(str)
-                 } catch (err) {
-                   return reject(new Error(`malformed JSON response "${str}"`))
-                 }
- 
-                 statusCode === 200
-                   ? resolve(obj)
-                   : reject(new Error(obj.message))
-               })
-           }
-         })
-         .end(buf)
-     })
-   }
+  _requestOld (args, data) {
+    return new Promise((resolve, reject) => {
+      const creds = `${this.id}:${this.id}`
+      const buf = (data && JSON.stringify(data)) || ''
+      const req = fetch(Object.assign(args, {
+        hostname: this.hostname,
+        port: this.port,
+        headers: Object.assign(args.headers || {}, {
+          accept: 'application/json',
+          'accept-encoding': 'application/json',
+          authorization: `Basic ${Buffer.from(creds).toString('base64')}`,
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(buf),
+          'content-encoding': 'identity'
+        }),
+        body: JSON.stringify(data),
+      }))
+
+      req
+      .then(async (res) => { await JSON.stringify(res.json())})
+        .then(async (res) => {
+          try {
+            const obj = await res.json();
+              this.log("_request, response: res ", res)
+            this.log("obj inside try block", obj)
+            
+            res.status === 200
+            ? resolve(obj)
+            : reject(new Error(obj.message))
+          } catch (e) {
+            reject(e);
+          }
+        })
+        // .then(obj => {
+        //   // const { status } = res
+        //   const contentType = res.headers['content-type'] // TODO get header from fetch response
+          
+        //   this.log("_request, response: req ", req)
+        //   this.log("_request, response: res ", res)
+
+        //   this.log("...res.json()", ...res.json())
+
+        //   if (status !== 200 && status !== 400) {
+        //     return reject(new Error(`unexpected status code ${status}`))
+        //   // } else if (!contentType.startsWith('application/json')) {
+        //   //   return reject(new Error(`unexpected content-type ${contentType}`))
+        //   } else {
+        //     const chunks = []
+        //     $(res).on('data', chunk => chunks.push(chunk))
+        //     $(res).on('error', err => reject(err))
+        //     $(res).on('end', () => {
+        //         const str = Buffer.concat(chunks).toString('utf8')
+        //         let obj = null
+
+        //         this.log("_request, response: str ", str)
+        //         try {
+        //           obj = JSON.parse(str)
+        //           this.log("_request, response: obj ", obj)
+        //         } catch (err) {
+        //           return reject(new Error(`malformed JSON response "${str}"`))
+        //         }
+
+        //         status === 200
+        //           ? resolve(obj)
+        //           : reject(new Error(obj.message))
+        //       })
+        //   }
+        // })
+        // $(req).on('abort', () => reject(new Error('aborted')))
+        // $(req).on('error', err => reject(err))
+        // $(req).end(buf)
+    })
+  }
+  _request (args, data) {
+    return new Promise((resolve, reject) => {
+      const creds = `${this.id}:${this.id}`
+      const buf = (data && JSON.stringify(data)) || ''
+      const req = fetch(args.url, Object.assign(args, {
+        headers: Object.assign(args.headers || {}, {
+          accept: 'application/json',
+          'accept-encoding': 'application/json',
+          authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(buf),
+          'content-encoding': 'identity'
+        }),
+        body: buf
+      }))
+
+      req
+        .then(res => {
+          const { status } = res
+          const contentType = res.headers.get('Content-Type')
+
+            // this.log("_request, response: req ", req)
+            // this.log("_request, response: res ", res)
+            // this.log("contentType", contentType)
+
+          if (status !== 200 && status !== 400) {
+            reject(new Error(`unexpected status code ${status}`))
+          } else if (!contentType.startsWith('application/json')) {
+            reject(new Error(`unexpected content-type ${contentType}`))
+          } else {
+            res.json()
+              .then(obj => status === 200
+                ? resolve(obj)
+                : reject(Error(obj.message)))
+              .catch(reject)
+          }
+        })
+        .catch(reject)
+    })
+  }
  
    /**
     * Send data to the server
@@ -265,7 +362,8 @@ import {Buffer} from 'buffer';
    _onMessage (data) {
      let event, arg
      try {
-       arg = JSON.parse(data)
+        // this.log("_onMessage, data: ", data)
+       arg = data
        event = (arg['@type'] != null && arg.status != null)
          ? `${arg['@type'].toLowerCase()}.${arg.status}`
          : 'message'

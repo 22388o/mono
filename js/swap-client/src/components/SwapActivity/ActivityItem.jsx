@@ -25,15 +25,15 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
           { SWAP_STATUS[activity.status] }
         </Grid.Row>
         <Grid.Row>
-          { getStringFromDate(activity.createdDate) }
+          { activity.baseAsset + ' > ' + activity.quoteAsset }
         </Grid.Row>
         <Grid.Row>
-          { activity.amountBase + ' > ' + activity.amountQuote }
+          { activity.baseQuantity + ' > ' + activity.quoteQuantity }
         </Grid.Row>
       </Grid.Column>
       <Grid.Column width={5} className='right'>
         <Grid.Row>
-          { activity.amountBase }
+          { getStringFromDate(activity.createdDate) }
         </Grid.Row>
         <Grid.Row>
           <Button secondary onClick={onCancelSwap} className={styles.cancelBtn}>

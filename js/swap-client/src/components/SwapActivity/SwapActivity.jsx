@@ -64,13 +64,21 @@ export const SwapActivity = () => {
             <div singleLine>
               { SWAP_STATUS[activities[showIndex].status] }
             </div>
-            <div>{activities[showIndex].amountBase}</div>
-            <div>{activities[showIndex].amountQuote}</div>
-            <div>{activities[showIndex].swapId}</div>
-            <div>{activities[showIndex].swapHash}</div>
-            <div>{activities[showIndex].secretSeekerId}</div>
-            <div>{activities[showIndex].secretHolderId}</div>
-            <div>{activities[showIndex].secret}</div>
+            <div>Swap id: {activities[showIndex].swapId}</div>
+            <div>ts: {activities[showIndex].ts}</div>
+            <div>uid:{activities[showIndex].uid}</div>
+            <div>type: {activities[showIndex].type}</div>
+            <div>side: {activities[showIndex].side}</div>
+            <div>hash: {activities[showIndex].hash}</div>
+            <div>Base Asset: {activities[showIndex].baseAsset}</div>
+            <div>Base Quantity: {activities[showIndex].baseQuantity}</div>
+            <div>Base Network: {activities[showIndex].baseNetwork}</div>
+            <div>Quote Asset: {activities[showIndex].quoteAsset}</div>
+            <div>Quote Quantity: {activities[showIndex].quoteQuantity}</div>
+            <div>Quote Network: {activities[showIndex].quoteNetwork}</div>
+            <div>Status: {activities[showIndex].status}</div>
+            {/* <div>{activities[showIndex].secretSeekerId}</div>
+            <div>{activities[showIndex].secretHolderId}</div> */}
           {/* </Grid.Row> */}
         </Modal.Content>
         <Modal.Actions>
