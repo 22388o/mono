@@ -47,21 +47,37 @@ module.exports = class Lightning extends Network {
     })
 
     // Newly created invoices are saved into the Counterparty's state-bag
-    const invoice = await ln.createHodlInvoice(args)
-    party.counterparty.state[this.name] = { invoice }
+    try {
+      const invoice = await ln.createHodlInvoice(args)
+      party.counterparty.state[this.name] = { invoice }
+    } catch (err) {
+      // ln errors are arrays with 3 elements
+      // 0: Numeric error code (HTTP status code)
+      // 1: String error code
+      // 2: JSON object with an `err` property
+      throw Error(err[2].err.details)
+    }
 
     if (party.isSecretSeeker) {
       // no-op
     } else if (party.isSecretHolder) {
       // For the SecretHolder, setup subscription(s) to auto-settle the invoice
-      const subscription = await ln.subscribeToInvoice(args)
-      subscription
-        .on('invoice_updated', invoice => {
-          if (invoice.is_held) {
-            invoice.secret = opts.secret
-            ln.settleHodlInvoice(opts)
-          }
-        })
+      try {
+        const subscription = await ln.subscribeToInvoice(args)
+        subscription
+          .on('invoice_updated', invoice => {
+            if (invoice.is_held) {
+              invoice.secret = opts.secret
+              ln.settleHodlInvoice(opts)
+            }
+          })
+      } catch (err) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      }
     } else {
       throw Error('multi-party swaps are not supported!')
     }
@@ -102,15 +118,21 @@ module.exports = class Lightning extends Network {
       subscription
         .on('invoice_updated', async invoice => {
           if (invoice.is_held) {
-            const secret = await party.network.commit(party, opts)
+            const secretString = await party.network.commit(party, opts)
               .catch(err => console.log(`\n\n\n${this.name}.commit`, party, err))
-            const secretHex = secret.toString(16)
-            console.log(`\n${this.name}.onInvoiceHeld`, party, secret, secretHex)
+            const secret = secretString.toString(16)
+            console.log(`\n${this.name}.onInvoiceHeld`, party, secretString, secret)
 
-            ln.settleHodlInvoice(Object.assign({ secret: secretHex }, grpc))
-              .catch(err => {
-                console.log(`\n${this.name}.settleHodlInvoice`, party, err)
-              })
+            try {
+              await ln.settleHodlInvoice(Object.assign({ secret: secret }, grpc))
+            } catch (err) {
+              console.log(`\n${this.name}.settleHodlInvoice`, party, err)
+              // ln errors are arrays with 3 elements
+              // 0: Numeric error code (HTTP status code)
+              // 1: String error code
+              // 2: JSON object with an `err` property
+              throw Error(err[2].err.details)
+            }
           }
         })
     } else if (party.isSecretHolder) {
@@ -124,14 +146,33 @@ module.exports = class Lightning extends Network {
       })
 
       // Validate the SecretSeeker's invoice
-      const holderPaymentRequest = await ln.decodePaymentRequest(args)
+      let holderPaymentRequest
+
+      try {
+        holderPaymentRequest = await ln.decodePaymentRequest(args)
+      } catch (err) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      }
+
       if (holderPaymentRequest.id !== party.swap.secretHash) {
         throw Error('unexpected swap hash!')
       }
 
       // Pay the SecretSeeker's invoice
-      const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
-      console.log('payment confirmation by', party.id, holderPaymentConfirmation)
+      try {
+        const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
+        console.log('payment confirmation by', party.id, holderPaymentConfirmation)
+      } catch (err) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      }
     } else {
       throw Error('multi-party swaps are not supported!')
     }
