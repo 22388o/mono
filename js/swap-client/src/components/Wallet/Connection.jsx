@@ -29,7 +29,7 @@ export const ConnectionComponent = () => {
   }
 
   useEffect(() => {
-    if(false && user.isLoggedIn) {
+    if(user.isLoggedIn) {
       try {
         // setLoggedInUser(user.user.connect())
         const connected = user.user.connect()
@@ -38,7 +38,7 @@ export const ConnectionComponent = () => {
         // connected.then((data)=>{log("connected",data)})
         // connected.finally((data)=>{log("finally",data)})
         user.user.websocket.onopen(data => {log("user.user.websocket.onopen", data)})
-        user.user.websocket.onmessage(...data => {log("user.user.websocket.onmessage", ...logdata)})
+        user.user.websocket.onmessage(data => {log("user.user.websocket.onmessage", data)})
         // connected.onmessage(event => {
         //   log("user.user.onmessage", event);
         // })
