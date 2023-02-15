@@ -35,7 +35,7 @@ import {Buffer} from 'buffer';
      this.id = props.id
      this.hostname = props.hostname || 'localhost'
      this.port = props.port || 80
-     this.pathname = props.pathname || `/api/v1/updates/`
+     this.pathname = props.pathname || '/api/v1/updates'
      this.credentials = props.credentials
      this.websocket = null
      this.log = (message, obj, debug = true) => {
