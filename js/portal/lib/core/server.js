@@ -235,7 +235,7 @@ module.exports = class Server extends EventEmitter {
         }
 
         ws.toJSON = function () {
-          return { type: 'websocket', user: ws.user }
+          return { type: 'websocket', user: ws.user, route }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()
@@ -283,6 +283,8 @@ module.exports = class Server extends EventEmitter {
             return
           }
         }
+
+        this.emit('log', 'info', req, res)
 
         const { ctx } = INSTANCES.get(this)
         req.handler(req, res, ctx)
@@ -399,7 +401,8 @@ class IncomingMessage extends http.IncomingMessage {
   */
   toJSON () {
     return {
-      type: this.constructor.name,
+      type: 'HttpRequest',
+      user: this.user,
       method: this.method,
       url: this.url,
       headers: this.headers
@@ -426,7 +429,7 @@ class ServerResponse extends http.ServerResponse {
   */
   toJSON () {
     return {
-      type: this.constructor.name,
+      type: 'HttpResponse',
       statusCode: this.statusCode,
       headers: this.headers
     }
