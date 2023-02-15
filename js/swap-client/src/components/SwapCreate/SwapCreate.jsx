@@ -111,10 +111,10 @@ export const SwapCreate = () => {
        uid: user.user.id,
        side: order.side,
        hash: secretHash,
-       baseAsset,
+       baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
        baseNetwork: order.baseNetwork,
        baseQuantity,
-       quoteAsset,
+       quoteAsset: quoteAsset!='BTC'? quoteAsset : baseAsset,
        quoteNetwork: order.quoteNetwork,
        quoteQuantity
       }
@@ -222,7 +222,7 @@ export const SwapCreate = () => {
             ? ((baseQuantity || true)
               ? <>
                   <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
-                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'bid' : 'ask')})}>Swap</Button> 
+                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'bid' : 'ask'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button> 
                   <>
                     <p>demo swap</p>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap 1BTC for 1ETH</Button> 
