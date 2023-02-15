@@ -7,7 +7,7 @@ import { ConnectionComponent } from './Wallet/Connection';
 import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
-import { setNodeData, setWalletData } from '../slices/walletSlice';
+import { setNodeData, setWalletData, clearNodeData, clearWalletData } from '../slices/walletSlice';
 import { 
 	updateSwapInfo, 
 	updateSwapStatus 
@@ -151,8 +151,8 @@ export const SwapHome = () => {
 
   const logOut = () => {
     dispatch(signOut());
-    dispatch(setNodeData(null));
-    dispatch(setWalletData(null));
+    dispatch(clearNodeData());
+    dispatch(clearWalletData());
     setOpen(false);
     // return Promise.all([alice.disconnect(), carol.disconnect()]);
     return Promise.all([user.user.disconnect()])

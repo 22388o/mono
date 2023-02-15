@@ -25,12 +25,22 @@ export const walletSlice = createSlice({
       state.wallet.connected = true;
       state.wallet.data = action.payload;
     },
+    clearNodeData: (state) => {
+      state.node.connected = false;
+      state.node.data = null;
+    },
+    clearWalletData: (state) => {
+      state.wallet.connected = false;
+      state.wallet.data = null;
+    }
   }
 });
 
 export const {
   setNodeData,
-  setWalletData
+  setWalletData,
+  clearNodeData,
+  clearWalletData
 } = walletSlice.actions;
 
 export default walletSlice.reducer;
