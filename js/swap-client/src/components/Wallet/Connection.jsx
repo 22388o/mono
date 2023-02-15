@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Button, 
-  Grid, 
-  Icon 
+import {
+  Button,
+  Grid,
+  Icon
 } from 'semantic-ui-react';
 import { useAppDispatch, useAppSelector } from "../../hooks.js";
 import { signIn, signOut } from '../../slices/userSlice.js';
@@ -19,7 +19,7 @@ export const ConnectionComponent = () => {
      console.log(obj)
     }
   }
-  
+
   const logOut = () => {
     dispatch(signOut());
     dispatch(clearNodeData());
@@ -33,16 +33,16 @@ export const ConnectionComponent = () => {
       try {
         // setLoggedInUser(user.user.connect())
         const connected = user.user.connect()
-        log("connected", connected)
-        log("user", user)
+        // log("connected", connected)
+        // log("user", user)
         // connected.then((data)=>{log("connected",data)})
         // connected.finally((data)=>{log("finally",data)})
-        user.user.websocket.onopen(data => {log("user.user.websocket.onopen", data)})
-        user.user.websocket.onmessage(data => {log("user.user.websocket.onmessage", data)})
+        // user.user.websocket.onopen(data => {log("user.user.websocket.onopen", data)})
+        // user.user.websocket.onmessage(data => {log("user.user.websocket.onmessage", data)})
         // connected.onmessage(event => {
         //   log("user.user.onmessage", event);
         // })
-      
+
       // if(loggedInUser!=null) {
       //   log("loggedInUser", loggedInUser);
       //   loggedInUser.onmessage((data)=> {
@@ -69,7 +69,7 @@ export const ConnectionComponent = () => {
     }
 
   }, []);
-  
+
   return (
     <Grid.Row className='space-between'>
       <Grid.Column >

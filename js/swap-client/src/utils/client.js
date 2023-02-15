@@ -83,10 +83,13 @@ export default class Client extends EventEmitter {
       const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
       const ws = new WebSocket(url)
 
-      ws.onmessage = (...args) => { this._onMessage(...args) }
-      ws.onopen = () => { this.emit('connected'); resolve() }
-      ws.onclose = () => { this.websocket = null }
       ws.onerror = () => { reject }
+      ws.onclose = () => { this.websocket = null }
+      ws.onopen = () => {
+        ws.onmessage = (...args) => { this._onMessage(...args) }
+        this.emit('connected')
+        resolve()
+      }
 
       this.websocket = ws
     })
@@ -109,10 +112,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
-    return this._request({
-      method: 'PUT',
-      url: '/api/v1/orderbook/limit'
-    }, {
+    return this._request('/api/v1/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -130,10 +130,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to delete the orderbook
     */
   cancelLimitOrder (order) {
-    return this._request({
-      method: 'DELETE',
-      path: '/api/v1/orderbook/limit'
-    }, {
+    return this._request('/api/v1/orderbook/limit', { method: 'DELETE' }, {
       id: order.id,
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
@@ -147,10 +144,7 @@ export default class Client extends EventEmitter {
     * @returns {Swap}
     */
   swapOpen (swap, opts) {
-    return this._request({
-      method: 'PUT',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this._request('/api/v1/swap', { method: 'PUT' }, { swap, opts })
   }
 
    /**
@@ -160,10 +154,7 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapCommit (swap, opts) {
-    return this._request({
-      method: 'POST',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this._request('/api/v1/swap', { method: 'POST' }, { swap, opts })
   }
 
    /**
@@ -173,66 +164,64 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
-    return this._request({
-      method: 'DELETE',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
   }
 
    /**
     * Performs an HTTP request and returns the response
+    * @param {String} url The URL path for the request
     * @param {Object} args Arguments for the operation
-    * @param {Object} [data] Data to be sent as part of the request
+    * @param {Object} [obj] Optional data to be sent as part of the request
     * @returns {Promise<Object>}
     */
-  _request (args, data) {
+  _request (url, args, obj) {
     return new Promise((resolve, reject) => {
+      const body = (obj && JSON.stringify(obj)) || ''
       const creds = `${this.id}:${this.id}`
       const headers = Object.assign(args.headers || {}, {
         accept: 'application/json',
         'accept-encoding': 'application/json',
         authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
         'content-type': 'application/json',
-        'content-length': Buffer.byteLength(buf),
+        'content-length': Buffer.byteLength(body),
         'content-encoding': 'identity'
       })
-      const body = (data && JSON.stringify(data)) || ''
 
+      this.emit('log', 'info', 'request', { url, headers, body: obj })
       args = Object.assign(args, { headers, body })
-      this.emit('log', 'info', '_request', args)
 
-      fetch(args.url, args)
+      fetch(url, args)
         .then(res => {
           const { status } = res
           const contentType = res.headers.get('Content-Type')
 
           if (status !== 200 && status !== 400) {
             const err = Error(`unexpected status code ${status}`)
-            thie.emit('log', 'error', '_response', err)
+            this.emit('log', 'error', 'response', err)
             reject(err)
           } else if (!contentType.startsWith('application/json')) {
             const err = Error(`unexpected content-type ${contentType}`)
-            thie.emit('log', 'error', '_response', err)
+            this.emit('log', 'error', 'response', err)
             reject(err)
           } else {
             res.json()
               .then(obj => {
                 if (status === 200) {
-                  this.emit('log', 'info', '_response', obj)
+                  this.emit('log', 'info', 'response', obj)
                   resolve(obj)
                 } else {
-                  this.emit('log', 'error', '_response', obj)
+                  this.emit('log', 'error', 'response', obj)
                   reject(Error(obj.message))
                 }
               })
               .catch(err => {
-                thie.emit('log', 'error', '_response', err)
+                this.emit('log', 'error', 'response', err)
                 reject(err)
               })
           }
         })
         .catch(err => {
-          thie.emit('log', 'error', '_response', err)
+          this.emit('log', 'error', 'response', err)
           reject(err)
         })
     })
@@ -248,12 +237,12 @@ export default class Client extends EventEmitter {
       const buf = Buffer.from(JSON.stringify(obj))
       const opts = { binary: false }
 
-      this.emit('log', 'info', '_send', obj)
+      this.emit('log', 'info', 'send', obj)
       this.websocket.send(buf, opts, err => {
         if (err == null) {
           resolve()
         } else {
-          this.emit('log', 'error', '_send', err)
+          this.emit('log', 'error', 'send', err)
           reject(err)
         }
       })
@@ -262,13 +251,14 @@ export default class Client extends EventEmitter {
 
    /**
     * Handles incoming websocket messages
-    * @param {Buffer|Object} data The data received over the websocket
+    * @param {Buffer|Object} msg The message received over the websocket
     * @returns {Void}
     */
-  _onMessage (data) {
+  _onMessage (msg) {
     let event, arg
+
     try {
-      arg = data
+      arg = JSON.parse(msg.data)
       event = (arg['@type'] != null && arg.status != null)
          ? `${arg['@type'].toLowerCase()}.${arg.status}`
          : 'message'
