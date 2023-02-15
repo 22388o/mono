@@ -36,12 +36,8 @@ export default class Client extends EventEmitter {
     this.pathname = props.pathname || '/api/v1/updates'
     this.credentials = props.credentials
     this.websocket = null
-    this.log = (message, obj, debug = true) => {
-      if (debug) {
-        console.log(message)
-        console.log(obj)
-      }
-    }
+
+    this.on('log', (level, ...args) => console[level](...args))
 
     Object.seal(this)
   }
@@ -73,6 +69,7 @@ export default class Client extends EventEmitter {
       hostname: this.hostname,
       port: this.port,
       pathname: this.pathname,
+      connected: this.isConnected,
       credentials: this.credentials
     }
   }
@@ -101,7 +98,6 @@ export default class Client extends EventEmitter {
     */
   disconnect () {
     return new Promise((resolve, reject) => {
-      // this.log("disconnect", this);
       // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
       // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
       // this.websocket.close() // TODO
@@ -113,7 +109,6 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
-    // this.log("client: submitLimitOrder", order)
     return this._request({
       method: 'PUT',
       url: '/api/v1/orderbook/limit'
@@ -193,41 +188,53 @@ export default class Client extends EventEmitter {
   _request (args, data) {
     return new Promise((resolve, reject) => {
       const creds = `${this.id}:${this.id}`
-      const buf = (data && JSON.stringify(data)) || ''
-      const req = fetch(args.url, Object.assign(args, {
-        headers: Object.assign(args.headers || {}, {
-          accept: 'application/json',
-          'accept-encoding': 'application/json',
-          authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
-          'content-type': 'application/json',
-          'content-length': Buffer.byteLength(buf),
-          'content-encoding': 'identity'
-        }),
-        body: buf
-      }))
+      const headers = Object.assign(args.headers || {}, {
+        accept: 'application/json',
+        'accept-encoding': 'application/json',
+        authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
+        'content-type': 'application/json',
+        'content-length': Buffer.byteLength(buf),
+        'content-encoding': 'identity'
+      })
+      const body = (data && JSON.stringify(data)) || ''
 
-      req
+      args = Object.assign(args, { headers, body })
+      this.emit('log', 'info', '_request', args)
+
+      fetch(args.url, args)
         .then(res => {
           const { status } = res
           const contentType = res.headers.get('Content-Type')
 
-            // this.log("_request, response: req ", req)
-            // this.log("_request, response: res ", res)
-            // this.log("contentType", contentType)
-
           if (status !== 200 && status !== 400) {
-            reject(new Error(`unexpected status code ${status}`))
+            const err = Error(`unexpected status code ${status}`)
+            thie.emit('log', 'error', '_response', err)
+            reject(err)
           } else if (!contentType.startsWith('application/json')) {
-            reject(new Error(`unexpected content-type ${contentType}`))
+            const err = Error(`unexpected content-type ${contentType}`)
+            thie.emit('log', 'error', '_response', err)
+            reject(err)
           } else {
             res.json()
-              .then(obj => status === 200
-                ? resolve(obj)
-                : reject(Error(obj.message)))
-              .catch(reject)
+              .then(obj => {
+                if (status === 200) {
+                  this.emit('log', 'info', '_response', obj)
+                  resolve(obj)
+                } else {
+                  this.emit('log', 'error', '_response', obj)
+                  reject(Error(obj.message))
+                }
+              })
+              .catch(err => {
+                thie.emit('log', 'error', '_response', err)
+                reject(err)
+              })
           }
         })
-        .catch(reject)
+        .catch(err => {
+          thie.emit('log', 'error', '_response', err)
+          reject(err)
+        })
     })
   }
 
@@ -240,7 +247,16 @@ export default class Client extends EventEmitter {
     return new Promise((resolve, reject) => {
       const buf = Buffer.from(JSON.stringify(obj))
       const opts = { binary: false }
-      this.websocket.send(buf, opts, err => err ? reject(err) : resolve())
+
+      this.emit('log', 'info', '_send', obj)
+      this.websocket.send(buf, opts, err => {
+        if (err == null) {
+          resolve()
+        } else {
+          this.emit('log', 'error', '_send', err)
+          reject(err)
+        }
+      })
     })
   }
 
@@ -260,6 +276,7 @@ export default class Client extends EventEmitter {
       event = 'error'
       arg = err
     } finally {
+      this.emit('log', 'info', event, arg)
       this.emit(event, arg)
     }
   }

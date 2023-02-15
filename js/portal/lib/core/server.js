@@ -219,7 +219,6 @@ module.exports = class Server extends EventEmitter {
     // req.user = user
     // TODO: Fix this once authentication is figured out
     req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
-    console.log('got user', pathname, req.user)
 
     // Route the request
     const { api, ctx, websocket } = INSTANCES.get(this)
