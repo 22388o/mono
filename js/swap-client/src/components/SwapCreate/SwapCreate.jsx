@@ -17,10 +17,12 @@ import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
 
 export const SwapCreate = () => {
+  const mock = true;
+
 	const dispatch = useAppDispatch();
   
-  const [baseQuantity, setBaseQuantity] = useState(0);
-  const [quoteQuantity, setQuoteQuantity] = useState(0);
+  const [baseQuantity, setBaseQuantity] = useState();
+  const [quoteQuantity, setQuoteQuantity] = useState();
   const [curPrices, setCurPrices] = useState({
     BTC: 0,
     ETH: 0,
@@ -76,9 +78,6 @@ export const SwapCreate = () => {
       console.log({swapOrder})
     }
 
-    //for mock purposes
-    setBaseQuantity(1);
-    setQuoteQuantity(1);
   }, [activities])
 
 
@@ -113,10 +112,10 @@ export const SwapCreate = () => {
        hash: secretHash,
        baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
        baseNetwork: order.baseNetwork,
-       baseQuantity,
-       quoteAsset: quoteAsset!='BTC'? quoteAsset : baseAsset,
+       baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
+       quoteAsset: baseAsset=='BTC'? quoteAsset : baseAsset,
        quoteNetwork: order.quoteNetwork,
-       quoteQuantity
+       quoteQuantity: order.quoteQuantity ? order.quoteQuantity : quoteQuantity,
       }
     ).then(data => {
       
@@ -154,12 +153,12 @@ export const SwapCreate = () => {
           type: data.type,
           side: data.side,
           hash: data.hash,
-          baseAsset,
-          baseQuantity,
+          baseAsset: data.side == 'bid' ? data.baseAsset : data.quoteAsset,
+          baseQuantity: data.baseQuantity,
           baseNetwork: order.baseNetwork,
-          quoteAsset,
+          quoteAsset: data.side != 'bid' ? data.baseAsset : data.quoteAsset,
           quoteNetwork: order.quoteNetwork,
-          quoteQuantity,
+          quoteQuantity: data.quoteQuantity,
           status: 1,
           // secretSeekerId: data.swap.secretSeeker.id,
           // secretHolderId: data.swap.secretHolder.id,
@@ -177,14 +176,15 @@ export const SwapCreate = () => {
   
   const onChangeCoinType = () => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
-    setBaseAsset(quoteAsset);setQuoteAsset(baseAsset);
+    const aBase = baseAsset, aQuote = quoteAsset;
+    setBaseAsset(aQuote);setQuoteAsset(aBase);
     setBaseQuantity(tQuote); setQuoteQuantity(tBase);
   }
 
   const mockSwap = (order) => {
-    setBaseQuantity(1);
-    setQuoteQuantity(1);
     onCreateSwap(order);
+    // setBaseQuantity(1);
+    // setQuoteQuantity(1);
   }
 
   return (
@@ -223,11 +223,11 @@ export const SwapCreate = () => {
               ? <>
                   <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
                   <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'bid' : 'ask'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button> 
-                  <>
+                  {mock && <>
                     <p>demo swap</p>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap 1BTC for 1ETH</Button> 
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap 1ETH for 1 BTC</Button> 
-                  </>
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1BTC for 1ETH</Button> 
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1ETH for 1 BTC</Button> 
+                  </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
             : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Connect Node & Wallet to Swap</Button> 
