@@ -17,6 +17,17 @@ const { WebSocketServer } = require('ws')
 const INSTANCES = new WeakMap()
 
 /**
+ * Forwards log events
+ * @param {*} args Arguments of the log event
+ * @returns {Void}
+ */
+function forwardLogEvent (self) {
+  return function (...args) {
+    self.emit('log', ...args)
+  }
+}
+
+/**
  * Exports an implementation of a server
  * @type {Server}
  */
@@ -34,6 +45,9 @@ module.exports = class Server extends EventEmitter {
     const ctx = require('./context')
     const server = http.createServer({ IncomingMessage, ServerResponse })
     const websocket = new WebSocketServer({ noServer: true })
+
+    ctx.orderbooks.on('log', forwardLogEvent(this))
+    ctx.swaps.on('log', forwardLogEvent(this))
 
     INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
   }
@@ -226,21 +240,24 @@ module.exports = class Server extends EventEmitter {
 
         // Override send to handle serialization and websocket nuances
         ws._send = ws.send
-        ws.send = function (obj) {
+        ws.send = obj => {
           return new Promise((resolve, reject) => {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
+
+            this.emit('log', 'info', ws, route, obj)
             return ws._send(buf, opts, err => err ? reject(err) : resolve())
           })
         }
 
         ws.toJSON = function () {
-          return { type: 'websocket', user: ws.user, route }
+          return { type: 'websocket', user: ws.user }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()
         }
 
+        this.emit('log', 'info', ws, route)
         handler.UPGRADE(ws, ctx)
       })
     } else {
@@ -405,7 +422,8 @@ class IncomingMessage extends http.IncomingMessage {
       user: this.user,
       method: this.method,
       url: this.url,
-      headers: this.headers
+      headers: this.headers,
+      json: this.json
     }
   }
 }
@@ -431,7 +449,8 @@ class ServerResponse extends http.ServerResponse {
     return {
       type: 'HttpResponse',
       statusCode: this.statusCode,
-      headers: this.headers
+      headers: this.headers,
+      json: this.json
     }
   }
 
@@ -441,12 +460,12 @@ class ServerResponse extends http.ServerResponse {
    * @returns {Void}
    */
   send (data) {
-    const buf = data instanceof Error
-      ? JSON.stringify({ message: data.message })
-      : JSON.stringify(data)
-
+    this.json = data instanceof Error
+      ? { message: data.message }
+      : data
     this.statusCode = data instanceof Error ? 400 : 200
 
+    const buf = JSON.stringify(this.json)
     this.setHeader('content-type', 'application/json')
     this.setHeader('content-length', Buffer.byteLength(buf))
     this.setHeader('content-encoding', 'identity')

@@ -6,6 +6,19 @@ const { EventEmitter } = require('events')
 const Swap = require('./swap')
 
 /**
+ * Forwards events to the specified EventEmitter instance
+ * @param {EventEmitter} self The EventEmitter instance that will fire the event
+ * @param {String} event The event being fired/handled
+ * @returns {[Void}
+ */
+function forwardEvent (self, event) {
+  return function (...args) {
+    self.emit('log', 'info', event, ...args)
+    self.emit(event, ...args)
+  }
+}
+
+/**
  * Exposes all in-progress atomic swaps
  * @type {Swaps}
  */
@@ -31,11 +44,11 @@ module.exports = class Swaps extends EventEmitter {
 
       try {
         swap = Swap.fromOrders(maker, taker, this.ctx)
-          .once('created', (...args) => this.emit('created', ...args))
-          .once('opening', (...args) => this.emit('opening', ...args))
-          .once('opened', (...args) => this.emit('opened', ...args))
-          .once('committing', (...args) => this.emit('committing', ...args))
-          .once('committed', (...args) => this.emit('committed', ...args))
+          .once('created', forwardEvent(this, 'created'))
+          .once('opening', forwardEvent(this, 'opening'))
+          .once('opened', forwardEvent(this, 'opened'))
+          .once('committing', forwardEvent(this, 'committing'))
+          .once('committed', forwardEvent(this, 'committed'))
 
         this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
       } catch (err) {

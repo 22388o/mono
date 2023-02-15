@@ -16,6 +16,20 @@ const PROPS = [
 ]
 
 /**
+ * Creates an event handler for the orderbook
+ * @param {EventEmitter} self The EventEmitter instance that will fire the event
+ * @param {Orderbook} orderbook The orderbook that is firing the event
+ * @param {String} event The event being fired by the orderbook
+ * @returns {[Void}
+ */
+function handleOrderbookEvent (self, orderbook, event) {
+  return function (...args) {
+    self.emit('log', 'info', orderbook, event, ...args)
+    self.emit(event, ...args, orderbook)
+  }
+}
+
+/**
  * Exposes all supported orderbooks under a single class
  * @type {Orderbooks}
  */
@@ -25,13 +39,12 @@ module.exports = class Orderbooks extends EventEmitter {
 
     for (const obj of PROPS) {
       const orderbook = new Orderbook(obj)
-        .on('created', (...args) => this.emit('created', ...args, orderbook))
-        .on('opened', (...args) => this.emit('opened', ...args, orderbook))
-        .on('closed', (...args) => this.emit('closed', ...args, orderbook))
-        .on('match', (...args) => this.emit('match', ...args, orderbook))
-        .on('error', (...args) => this.emit('error', ...args, orderbook))
-
       this[orderbook.assetPair] = orderbook
+        .on('created', handleOrderbookEvent(this, orderbook, 'created'))
+        .on('opened', handleOrderbookEvent(this, orderbook, 'opened'))
+        .on('closed', handleOrderbookEvent(this, orderbook, 'closed'))
+        .on('match', handleOrderbookEvent(this, orderbook, 'match'))
+        .on('error', handleOrderbookEvent(this, orderbook, 'error'))
     }
 
     Object.seal(this)

@@ -67,6 +67,36 @@ module.exports = class Orderbook extends EventEmitter {
   }
 
   /**
+   * Returns the current state of the instance
+   * @type {String}
+   */
+  [Symbol.for('nodejs.util.inspect.custom')] () {
+    return this.toJSON()
+  }
+
+  /**
+  * Returns the current state of the instance
+  * @returns {Object}
+  */
+  toJSON () {
+    return {
+      type: this.constructor.name,
+      assetPair: this.assetPair,
+      limitSize: this.limitSize,
+      price: this.price,
+      spread: this.spread,
+      orders: this.orders.size,
+      queues: {
+        cancel: this.queues.cancel.size,
+        limit: {
+          ask: this.queues.limit.ask.size,
+          bid: this.queues.limit.bid.size
+        }
+      }
+    }
+  }
+
+  /**
    * Adds a new order
    * @param {Object} order The order to be added
    * @returns {Promise<Void>}
