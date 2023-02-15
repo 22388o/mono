@@ -13,6 +13,7 @@ import {
 } from "../../hooks";
 import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
+import { addSecret } from "../../slices/secretSlice";
 import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
 
@@ -31,8 +32,20 @@ export const SwapCreate = () => {
   const [baseAsset, setBaseAsset] = useState('BTC');
   const [quoteAsset, setQuoteAsset] = useState('ETH');
   const [limitOrder, setLimitOrder] = useState(true);
-  const [secretHash, setSecretHash] = useState(Math.random().toString(36).slice(2));
 
+  const [secretHash, setSecretHash] = useState(Math.random().toString(36).slice(2));
+  const hashSecret = async function hash(string) {
+    const utf8 = new TextEncoder().encode(string);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((bytes) => bytes.toString(16).padStart(2, '0'))
+      .join('');
+    return hashHex;
+  }
+  const [secret, setSecret] = useState(hashSecret('SHA-256', secretHash));
+
+  const [swapOrders, setSwapOrders] = useState([]);
   const activities = useAppSelector(state => state.activities.activities);
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
@@ -42,7 +55,7 @@ export const SwapCreate = () => {
   let swapOrder;
   const log = (message, obj, debug = true) => {
     if (debug) {
-     console.log(message)
+      console.log("SwapCreate: ", message)
      console.log(obj)
     }
   }
@@ -68,7 +81,59 @@ export const SwapCreate = () => {
     //   // .once('swap.committed', swap => { swapOrder.userSwapCommitted = swap })
     //   user.user.websocket.onmessage(data => {log("data",data)})
     // }
+    setSecretHash(Math.random().toString(36).slice(2))
+    setSecret(hashSecret('SHA-256', secretHash))
+
   }, []);
+
+
+  useEffect(() => {
+    if(user.isLoggedIn) {
+      try {
+        // setLoggedInUser(user.user.connect())
+        log("user", user);
+        const connected = user.user.connect().then(
+          user.user.on("swap.created",swap => { 
+
+            // log("activities", swapActivities);
+            // log("secret", secret);
+            const swapFromActivities = swapOrders.find(order => order.swapId === swap.id);
+
+            log('swap.created!!!!!', swap)
+            if(user.user.id == swap.secretSeeker.id){
+              const network = swap.secretSeeker.network['@type'].toLowerCase();
+              const credentials = user.user.credentials;
+              user.user.swapOpen(swap, { [network]: credentials[network]});
+            }
+          })
+          .on("swap.opening",swap => { 
+            log('swap.opening!!!!!', swap)
+            if(user.user.id == swap.secretHolder.id){
+              const network = swap.secretHolder.network['@type'].toLowerCase();
+              const credentials = user.user.credentials;
+              user.user.swapOpen(swap, { [network]: credentials[network], secret: swapOrders.secret})
+            }
+          })
+          .on("swap.opened",swap => { 
+            log('swap.opened!!!!!', swap)
+            user.user.swapOpen(swap, 
+              user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
+              user.user.id == swap.secretHolder.id ? swap.secretHash : ''
+            )
+          })
+        )
+      } catch (error) {
+        console.warn(`sorry an error occurred, due to ${error.message} `);
+        logOut();
+      }
+    } 
+    // else {
+    //   return function cleanup() {
+    //     user.user.disconnect();
+    //   }
+    // }
+
+  }, [user]);
 
 
   useEffect(() => {
@@ -76,6 +141,18 @@ export const SwapCreate = () => {
     if(swapOrder != undefined){
       console.log("swapOrder changed");
       console.log({swapOrder})
+    }
+
+
+    if(swapOrders.length > 0) {
+      log("swapOrder",{swapOrders})
+      // swapOrders[swapOrders.length].then( data => {
+      //     log("data",data);
+      //     if(data.event.type == "swap.created"){
+      //       console.log("swap.created!!!");
+      //     }
+      //   }
+      // )
     }
 
   }, [activities])
@@ -105,7 +182,9 @@ export const SwapCreate = () => {
     //   return res.json();
     // })
     // .then(data => {
-    await user.user.submitLimitOrder(
+      log("{secret, secretHash}",{secret, secretHash})
+      dispatch(addSecret({secret, secretHash}));
+      setSwapOrders(swapOrders.concat(await user.user.submitLimitOrder(
       {
        uid: user.user.id,
        side: order.side,
@@ -118,7 +197,9 @@ export const SwapCreate = () => {
        quoteQuantity: order.quoteQuantity ? order.quoteQuantity : quoteQuantity,
       }
     ).then(data => {
-      
+
+      // log("this is data inside submitLimitOrder", data);
+
         const curDate = new Date();
         const date = {
           year: curDate.getFullYear(),
@@ -152,6 +233,8 @@ export const SwapCreate = () => {
           uid: data.uid,
           type: data.type,
           side: data.side,
+          secret,
+          secretHash,
           hash: data.hash,
           baseAsset: data.side == 'bid' ? data.baseAsset : data.quoteAsset,
           baseQuantity: data.baseQuantity,
@@ -171,6 +254,10 @@ export const SwapCreate = () => {
         // console.log(`SwapCreate: submitLimitOrder completed`)
         // console.log({swapOrder})
     })
+    // .on("swap.created", data => {
+    //   log("swap.created!!!!", data);
+    // })
+    ))
     
   }
   
