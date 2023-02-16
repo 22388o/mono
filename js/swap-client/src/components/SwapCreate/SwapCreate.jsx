@@ -77,6 +77,7 @@ export const SwapCreate = () => {
       });
     };
     core();
+    setOrderSecret(null)
 
   }, []);
 
@@ -85,7 +86,7 @@ export const SwapCreate = () => {
 
   useEffect(() => {
     log("{user, orderSecret", { user, orderSecret })
-    if(user.isLoggedIn) {
+    if(user.isLoggedIn && orderSecret!== null) {
       try {
         log("user", user);
         const connected = user.user.connect().then(
