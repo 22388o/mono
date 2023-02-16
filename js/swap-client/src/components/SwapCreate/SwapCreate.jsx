@@ -88,6 +88,7 @@ export const SwapCreate = () => {
         log("user", user);
         const connected = user.user.connect().then(
           user.user.on("swap.created",swap => {
+            dispatch(updateSwapStatus({ status: 2 }));
             // log('swap.created event received', swap)
             if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
               const network = swap.secretHolder.network['@type'].toLowerCase();
@@ -96,8 +97,9 @@ export const SwapCreate = () => {
             }
           })
           .on("swap.opening",swap => {
+            dispatch(updateSwapStatus({ status: 3 }));
             log('swap.opening event received', swap)
-            log("orderSecret in swap.opening",orderSecret)
+            // log("orderSecret in swap.opening",orderSecret)
             if(user.user.id == swap.secretHolder.id) { // TODO also add check if swapOpen already called on swap id
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
@@ -105,8 +107,9 @@ export const SwapCreate = () => {
             }
           })
           .on("swap.opened",swap => {
+            dispatch(updateSwapStatus({ status: 4 }));
             log('swap.opened event received', swap)
-            log("orderSecret in swap.opened",orderSecret)
+            // log("orderSecret in swap.opened",orderSecret)
             if(user.user.id == swap.secretSeeker.id){
               const network = swap.secretHolder.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
@@ -114,6 +117,7 @@ export const SwapCreate = () => {
             }
           })
           .on("swap.committing",swap => {
+            dispatch(updateSwapStatus({ status: 5 }));
             log('swap.committing event received', swap)
             log("orderSecret in swap.committing",orderSecret)
             if(user.user.id == swap.secretHolder.id){
@@ -189,7 +193,7 @@ export const SwapCreate = () => {
   const onCreateSwap = async (order) => {
     const secret = Math.random().toString(36).slice(2);
 
-    log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
+    // log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
     const secretHash = await hashSecret(secret);
     setOrderSecret(secretHash)
       

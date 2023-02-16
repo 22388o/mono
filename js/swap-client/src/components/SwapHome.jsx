@@ -51,48 +51,48 @@ export const SwapHome = () => {
 		.catch(err => console.log(err));
 	}
 
-  useEffect(() => {
-    activities.forEach((swap, index) => {
-      if(swap.status === 1 && swap.swapHash && (!swap.request1 && !swap.arequest2)) {
-        setTimeout(() => {
-          simulateOpen(swap.swapId, alice, swap.swapId, swap.secretSeekerId, null, true);
-          dispatch(updateSwapStatus({index: swap.swapId, status: 1}));
-          console.log("alice opens the swap");
-          }, 1000
-        );
-      }
-      if(swap.status === 1 && ((swap.request1 && !swap.request2) || (!swap.request1 && swap.request2))) {
-        setTimeout(() => {
-          console.log("bob opens the swap");
-          simulateOpen(swap.swapId, bob, swap.swapId, swap.secretHolderId, swap.secret, false);
-          dispatch(updateSwapStatus({index: swap.swapId, status: 2}));
-          }, 1000
-        );
-      }
-      if(swap.status === 2 && swap.request1 && swap.request2){
-        setTimeout(() => {
-          console.log("alice commits the swap");
-          simulateCommit(swap.swapId, alice, swap.swapId, swap.secretSeekerId, true);
-          dispatch(updateSwapStatus({index: swap.swapId, status: 3}));
-          }, 1000
-        );
-      }
-      if(swap.status === 3 && swap.commit1 && !swap.commit2){
-        setTimeout(() => {
-          console.log("bob commits the swap");
-          simulateCommit(swap.swapId, bob, swap.swapId, swap.secretHolderId, false);
-          dispatch(updateSwapStatus({index: swap.swapId, status: 4}));
-          }, 1000
-        );
-      }
-      if(swap.status === 4 && swap.commit1 && swap.commit2){
-        setTimeout(() => {
-          dispatch(updateSwapStatus({index: swap.swapId, status: 5}));
-          }, 1000
-        );
-      }
-    });
-  }, [activities]);
+  // useEffect(() => {
+  //   activities.forEach((swap, index) => {
+  //     if(swap.status === 1 && swap.swapHash && (!swap.request1 && !swap.arequest2)) {
+  //       setTimeout(() => {
+  //         simulateOpen(swap.swapId, alice, swap.swapId, swap.secretSeekerId, null, true);
+  //         dispatch(updateSwapStatus({index: swap.swapId, status: 1}));
+  //         console.log("alice opens the swap");
+  //         }, 1000
+  //       );
+  //     }
+  //     if(swap.status === 1 && ((swap.request1 && !swap.request2) || (!swap.request1 && swap.request2))) {
+  //       setTimeout(() => {
+  //         console.log("bob opens the swap");
+  //         simulateOpen(swap.swapId, bob, swap.swapId, swap.secretHolderId, swap.secret, false);
+  //         dispatch(updateSwapStatus({index: swap.swapId, status: 2}));
+  //         }, 1000
+  //       );
+  //     }
+  //     if(swap.status === 2 && swap.request1 && swap.request2){
+  //       setTimeout(() => {
+  //         console.log("alice commits the swap");
+  //         simulateCommit(swap.swapId, alice, swap.swapId, swap.secretSeekerId, true);
+  //         dispatch(updateSwapStatus({index: swap.swapId, status: 3}));
+  //         }, 1000
+  //       );
+  //     }
+  //     if(swap.status === 3 && swap.commit1 && !swap.commit2){
+  //       setTimeout(() => {
+  //         console.log("bob commits the swap");
+  //         simulateCommit(swap.swapId, bob, swap.swapId, swap.secretHolderId, false);
+  //         dispatch(updateSwapStatus({index: swap.swapId, status: 4}));
+  //         }, 1000
+  //       );
+  //     }
+  //     if(swap.status === 4 && swap.commit1 && swap.commit2){
+  //       setTimeout(() => {
+  //         dispatch(updateSwapStatus({index: swap.swapId, status: 5}));
+  //         }, 1000
+  //       );
+  //     }
+  //   });
+  // }, [activities]);
 
   // Client ws
   const hostname = window.location.hostname;
