@@ -174,6 +174,9 @@ export const SwapCreate = () => {
   }
 
   const onCreateSwap = async (order) => {
+    setSecret(Math.random().toString(36).slice(2));
+    setSecretHash(hashSecret('SHA-256', secret));
+
     // console.log("SwapCreate: onCreateSwap", order);
     // log("SwapCreate: onCreateSwap ", user)
     // fetchSwapCreate({baseQuantity, quoteQuantity})
@@ -183,13 +186,13 @@ export const SwapCreate = () => {
     // })
     // .then(data => {
       const secretHashReturned = secretHash.then(data => {return data})
-      log("{secret, secretHash}",{secret, secretHash: await secretHash.then(data => {return data})});
+      log("{secret, secretHash}",{secret, secretHash: await secretHash});
       // dispatch(addSecret({secret, secretHash}));
       await user.user.submitLimitOrder(
       {
        uid: user.user.id,
        side: order.side,
-       hash: await secretHash.then(data => {return data}),
+       hash: await secretHash,
        baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
        baseNetwork: order.baseNetwork,
        baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
