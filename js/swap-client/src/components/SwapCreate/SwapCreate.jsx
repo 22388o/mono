@@ -108,7 +108,9 @@ export const SwapCreate = () => {
             if(user.user.id == swap.secretHolder.id){
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
-              user.user.swapOpen(swap, { [network]: credentials[network], secret: swapOrder.secretHash})
+              log("JSON.stringify(swapOrder.secretHash)",JSON.stringify(swapOrder.secretHash))
+              log("swapOrder.secretHash",swapOrder.secretHash)
+              user.user.swapOpen(swap, { [network]: credentials[network], secret: JSON.stringify(swapOrder.secretHash)})
             }
           })
           .on("swap.opened",swap => {
@@ -180,14 +182,14 @@ export const SwapCreate = () => {
     //   return res.json();
     // })
     // .then(data => {
-      // log("{secret, secretHash}",{secret, secretHash})
+      const secretHashReturned = secretHash.then(data => {return data})
+      log("{secret, secretHash}",{secret, secretHash: await secretHash.then(data => {return data})});
       // dispatch(addSecret({secret, secretHash}));
-
       await user.user.submitLimitOrder(
       {
        uid: user.user.id,
        side: order.side,
-       hash: secretHash,
+       hash: await secretHash.then(data => {return data}),
        baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
        baseNetwork: order.baseNetwork,
        baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
@@ -252,7 +254,7 @@ export const SwapCreate = () => {
         // .catch(err => console.log(err))
         // console.log(`SwapCreate: submitLimitOrder completed`)
         // console.log({swapOrder})
-    })
+    });
     // .on("swap.created", data => {
     //   log("swap.created!!!!", data);
     // })
