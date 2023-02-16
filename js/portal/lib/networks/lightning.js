@@ -132,7 +132,7 @@ module.exports = class Lightning extends Network {
             console.log(`\n${this.name}.onInvoiceHeld`, party, secretString, secret)
 
             try {
-              await ln.settleHodlInvoice(Object.assign({ secret: secret }, grpc))
+              await ln.settleHodlInvoice(Object.assign({ secret }, grpc))
             } catch (err) {
               console.log(`\n${this.name}.settleHodlInvoice`, party, err)
               if (err instanceof Array) {
