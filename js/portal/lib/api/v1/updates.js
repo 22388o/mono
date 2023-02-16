@@ -32,6 +32,8 @@ module.exports.UPGRADE = function (ws, ctx) {
 
   ctx.swaps
     .on('error', onError)
+    .on('opening', swap => swap.isParty({ id: uid }) && ws.send(swap))
     .on('opened', swap => swap.isParty({ id: uid }) && ws.send(swap))
+    .on('committing', swap => swap.isParty({ id: uid }) && ws.send(swap))
     .on('committed', swap => swap.isParty({ id: uid }) && ws.send(swap))
 }
