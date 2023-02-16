@@ -148,7 +148,7 @@ export const SwapCreate = () => {
       abortController.abort();
     };
 
-  }, [user]);
+  }, [user, orderSecret]);
 
 
   useEffect(() => {
