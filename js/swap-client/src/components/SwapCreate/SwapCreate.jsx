@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import 'semantic-ui-css/semantic.min.css';
-import { 
-  Button, 
+import {
+  Button,
   Divider,
-  Form, 
+  Form,
   Grid,
   Icon,
 } from 'semantic-ui-react';
-import { 
-  useAppDispatch, 
-  useAppSelector 
+import {
+  useAppDispatch,
+  useAppSelector
 } from "../../hooks";
 import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
@@ -21,7 +21,7 @@ export const SwapCreate = () => {
   const mock = true;
 
 	const dispatch = useAppDispatch();
-  
+
   const [baseQuantity, setBaseQuantity] = useState();
   const [quoteQuantity, setQuoteQuantity] = useState();
   const [curPrices, setCurPrices] = useState({
@@ -93,7 +93,7 @@ export const SwapCreate = () => {
         // setLoggedInUser(user.user.connect())
         log("user", user);
         const connected = user.user.connect().then(
-          user.user.on("swap.created",swap => { 
+          user.user.on("swap.created",swap => {
 
             // log("activities", swapActivities);
             // log("secret", secret);
@@ -101,22 +101,22 @@ export const SwapCreate = () => {
 
             log('swap.created!!!!!', swap)
             if(user.user.id == swap.secretSeeker.id){
-              const network = swap.secretSeeker.network['@type'].toLowerCase();
+              const network = swap.secretHolder.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
               user.user.swapOpen(swap, { [network]: credentials[network]});
             }
           })
-          .on("swap.opening",swap => { 
+          .on("swap.opening",swap => {
             log('swap.opening!!!!!', swap)
             if(user.user.id == swap.secretHolder.id){
-              const network = swap.secretHolder.network['@type'].toLowerCase();
+              const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
               user.user.swapOpen(swap, { [network]: credentials[network], secret: swapOrders.secret})
             }
           })
-          .on("swap.opened",swap => { 
+          .on("swap.opened",swap => {
             log('swap.opened!!!!!', swap)
-            user.user.swapOpen(swap, 
+            user.user.swapOpen(swap,
               user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
               user.user.id == swap.secretHolder.id ? swap.secretHash : ''
             )
@@ -126,7 +126,7 @@ export const SwapCreate = () => {
         console.warn(`sorry an error occurred, due to ${error.message} `);
         logOut();
       }
-    } 
+    }
     // else {
     //   return function cleanup() {
     //     user.user.disconnect();
@@ -258,9 +258,9 @@ export const SwapCreate = () => {
     //   log("swap.created!!!!", data);
     // })
     ))
-    
+
   }
-  
+
   const onChangeCoinType = () => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
     const aBase = baseAsset, aQuote = quoteAsset;
@@ -282,22 +282,22 @@ export const SwapCreate = () => {
       </Grid.Row>
       <Grid.Row className={styles.swapExCont}>
         <Form>
-          <SwapAmountItem 
+          <SwapAmountItem
             className='mb-1'
             coinType={baseAsset}
             unitPrice={curPrices[baseAsset]}
-            amount={baseQuantity} 
+            amount={baseQuantity}
             onAmountChange={onInputBaseQuantity}
             onCoinTypeChange={(e, data) => {setBaseAsset(data.value);coinTypeChanged(true, data.value);}}
             limitOrder={limitOrder}
             />
           <Divider />
           <Button className={styles.exchange} onClick={onChangeCoinType}><Icon name='exchange' /></Button>
-          <SwapAmountItem 
+          <SwapAmountItem
             className='mt-1 mb-0'
             coinType={quoteAsset}
             unitPrice={curPrices[quoteAsset]}
-            amount={quoteQuantity} 
+            amount={quoteQuantity}
             onAmountChange={onInputQuoteQuantity}
             onCoinTypeChange={(e, data) => {setQuoteAsset(data.value);coinTypeChanged(false, data.value);}}
             limitOrder={limitOrder}
@@ -305,19 +305,19 @@ export const SwapCreate = () => {
         </Form>
       </Grid.Row>
       <Grid.Row>
-        { (nodeConnected && walletConnected) 
+        { (nodeConnected && walletConnected)
             ? ((baseQuantity || true)
               ? <>
                   <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
-                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'bid' : 'ask'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button> 
+                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'ask' : 'bid'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button>
                   {mock && <>
                     <p>demo swap</p>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1BTC for 1ETH</Button> 
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1ETH for 1 BTC</Button> 
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1BTC for 1ETH</Button>
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1ETH for 1 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
-            : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Connect Node & Wallet to Swap</Button> 
+            : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Connect Node & Wallet to Swap</Button>
         }
       </Grid.Row>
     </Grid>
