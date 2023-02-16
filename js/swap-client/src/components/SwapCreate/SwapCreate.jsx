@@ -113,7 +113,7 @@ export const SwapCreate = () => {
             if(user.user.id == swap.secretSeeker.id){
               const network = swap.secretHolder.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
-              user.user.swapCommit(swap, { credentials });
+              user.user.swapCommit(swap, credentials);
             }
           })
           .on("swap.committing",swap => {
@@ -123,7 +123,7 @@ export const SwapCreate = () => {
             if(user.user.id == swap.secretHolder.id){
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
-              user.user.swapCommit(swap, { credentials });
+              user.user.swapCommit(swap, credentials);
             }
             // user.user.swapCommit(swap,
             //   user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
