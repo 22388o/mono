@@ -232,6 +232,43 @@ module.exports = class Client extends EventEmitter {
     })
   }
 
+  _fetch (args, data) {
+    return new Promise((resolve, reject) => {
+      const creds = `${this.id}:${this.id}`
+      const buf = (data && JSON.stringify(data)) || ''
+      const req = fetch(Object.assign(args, {
+        headers: Object.assign(args.headers || {}, {
+          accept: 'application/json',
+          'accept-encoding': 'application/json',
+          authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(buf),
+          'content-encoding': 'identity'
+        }),
+        body: buf
+      }))
+
+      req
+        .then(res => {
+          const { status } = res
+          const contentType = res.headers.get('Content-Type')
+
+          if (status !== 200 && status !== 400) {
+            reject(new Error(`unexpected status code ${status}`))
+          } else if (!contentType.startsWith('application/json')) {
+            reject(new Error(`unexpected content-type ${contentType}`))
+          } else {
+            res.json()
+              .then(obj => status === 200
+                ? resolve(obj)
+                : reject(Error(obj.message)))
+              .catch(reject)
+          }
+        })
+        .catch(reject)
+    })
+  }
+
   /**
    * Send data to the server
    * @param {Object} obj The object to send
