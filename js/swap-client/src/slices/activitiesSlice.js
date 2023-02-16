@@ -16,7 +16,11 @@ export const activitiesSlice = createSlice({
     },
     updateSwapStatus: (state, action) => {
       // state.activities.filter(activity => activity.swapId === action.payload.index)[0].status = action.payload.status;
-      state.activities.filter(activity => activity.status < action.payload.status)[0].status = action.payload.status;
+      
+      let statusToUpdate = state.activities.filter(activity => activity.status < action.payload.status)[0]
+      if (statusToUpdate[0].status) {
+        statusToUpdate[0].status = action.payload.status;
+      }
     },
     removeLatestSwap: (state, action) => {
       state.activities.pop();
