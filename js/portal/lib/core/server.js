@@ -256,7 +256,7 @@ module.exports = class Server extends EventEmitter {
         }
 
         ws.toJSON = function () {
-          return { type: 'websocket', user: ws.user }
+          return { '@type': 'websocket', user: ws.user }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()
@@ -308,7 +308,7 @@ module.exports = class Server extends EventEmitter {
           }
         }
 
-        this.emit('log', 'info', req, res)
+        this.emit('log', 'info', req)
 
         const { ctx } = INSTANCES.get(this)
         req.handler(req, res, ctx)
@@ -424,14 +424,11 @@ class IncomingMessage extends http.IncomingMessage {
   * @returns {Object}
   */
   toJSON () {
-    return {
-      type: 'HttpRequest',
-      user: this.user,
-      method: this.method,
-      url: this.url,
-      headers: this.headers,
-      json: this.json
-    }
+    const { method, url, headers, json, user } = this
+    const obj = { '@type': 'HttpRequest', method, url, headers }
+    if (json != null) obj.json = json
+    if (user != null) obj.user = user
+    return obj
   }
 }
 
@@ -453,12 +450,11 @@ class ServerResponse extends http.ServerResponse {
   * @returns {Object}
   */
   toJSON () {
-    return {
-      type: 'HttpResponse',
-      statusCode: this.statusCode,
-      headers: this.headers,
-      json: this.json
-    }
+    const { statusCode, json } = this
+    const headers = Object.assign({}, this.getHeaders())
+    const obj = { '@type': 'HttpResponse', statusCode, headers }
+    if (json != null) obj.json = json
+    return obj
   }
 
   /**
