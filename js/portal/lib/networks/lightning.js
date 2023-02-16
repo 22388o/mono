@@ -51,11 +51,15 @@ module.exports = class Lightning extends Network {
       const invoice = await ln.createHodlInvoice(args)
       party.counterparty.state[this.name] = { invoice }
     } catch (err) {
-      // ln errors are arrays with 3 elements
-      // 0: Numeric error code (HTTP status code)
-      // 1: String error code
-      // 2: JSON object with an `err` property
-      throw Error(err[2].err.details)
+      if (err instanceof Array) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      } else {
+        throw err
+      }
     }
 
     if (party.isSecretSeeker) {
@@ -72,11 +76,15 @@ module.exports = class Lightning extends Network {
             }
           })
       } catch (err) {
-        // ln errors are arrays with 3 elements
-        // 0: Numeric error code (HTTP status code)
-        // 1: String error code
-        // 2: JSON object with an `err` property
-        throw Error(err[2].err.details)
+        if (err instanceof Array) {
+          // ln errors are arrays with 3 elements
+          // 0: Numeric error code (HTTP status code)
+          // 1: String error code
+          // 2: JSON object with an `err` property
+          throw Error(err[2].err.details)
+        } else {
+          throw err
+        }
       }
     } else {
       throw Error('multi-party swaps are not supported!')
@@ -127,11 +135,15 @@ module.exports = class Lightning extends Network {
               await ln.settleHodlInvoice(Object.assign({ secret: secret }, grpc))
             } catch (err) {
               console.log(`\n${this.name}.settleHodlInvoice`, party, err)
-              // ln errors are arrays with 3 elements
-              // 0: Numeric error code (HTTP status code)
-              // 1: String error code
-              // 2: JSON object with an `err` property
-              throw Error(err[2].err.details)
+              if (err instanceof Array) {
+                // ln errors are arrays with 3 elements
+                // 0: Numeric error code (HTTP status code)
+                // 1: String error code
+                // 2: JSON object with an `err` property
+                throw Error(err[2].err.details)
+              } else {
+                throw err
+              }
             }
           }
         })
@@ -151,11 +163,15 @@ module.exports = class Lightning extends Network {
       try {
         holderPaymentRequest = await ln.decodePaymentRequest(args)
       } catch (err) {
-        // ln errors are arrays with 3 elements
-        // 0: Numeric error code (HTTP status code)
-        // 1: String error code
-        // 2: JSON object with an `err` property
-        throw Error(err[2].err.details)
+        if (err instanceof Array) {
+          // ln errors are arrays with 3 elements
+          // 0: Numeric error code (HTTP status code)
+          // 1: String error code
+          // 2: JSON object with an `err` property
+          throw Error(err[2].err.details)
+        } else {
+          throw err
+        }
       }
 
       if (holderPaymentRequest.id !== party.swap.secretHash) {
@@ -167,11 +183,15 @@ module.exports = class Lightning extends Network {
         const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
         console.log('payment confirmation by', party.id, holderPaymentConfirmation)
       } catch (err) {
-        // ln errors are arrays with 3 elements
-        // 0: Numeric error code (HTTP status code)
-        // 1: String error code
-        // 2: JSON object with an `err` property
-        throw Error(err[2].err.details)
+        if (err instanceof Array) {
+          // ln errors are arrays with 3 elements
+          // 0: Numeric error code (HTTP status code)
+          // 1: String error code
+          // 2: JSON object with an `err` property
+          throw Error(err[2].err.details)
+        } else {
+          throw err
+        }
       }
     } else {
       throw Error('multi-party swaps are not supported!')
