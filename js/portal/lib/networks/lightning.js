@@ -4,6 +4,7 @@
 
 const Network = require('../core/network')
 const ln = require('lightning')
+const debug = require('debug')('network:lightning')
 
 /**
  * Exports an interface to the Lightning blockchain network
@@ -33,6 +34,8 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
+    debug('open', party, opts)
+
     // Requests are made using the Invoice macaroon for both parties
     const grpc = ln.authenticatedLndGrpc({
       cert: opts.lightning.cert,
@@ -111,6 +114,8 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
+    debug('commit', party, opts)
+
     if (party.isSecretSeeker) {
       // This request is made through the SecretSeeker's LND node
       const grpc = ln.authenticatedLndGrpc({

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
+    "debug": "^4.3.4",
     "ethereumjs-common": "^1.5.2",
     "ethereumjs-tx": "^2.1.2",
     "lightning": "^6.2.6",

@@ -7,6 +7,7 @@ const Web3 = require('web3')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
+const debug = require('debug')('network:ethereum')
 
 /**
  * Exports a Web3 interface to the Ethereum blockchain network
@@ -38,6 +39,8 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
+    debug('open', party, opts)
+
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
@@ -81,6 +84,8 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   commit (party, opts) {
+    debug('commit', party, opts)
+
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
         const subscription = this.eventClaim.watch((err, claim) => {
