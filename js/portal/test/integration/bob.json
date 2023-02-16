@@ -3,7 +3,7 @@
     "socket": "localhost:10001",
     "cert": "base64 or hex format",
     "admin": "base64 or hex format",
-    "invoice": "base64 or hex format",
+    "invoice": "base64 or hex format"
   },
   "ethereum": {
     "public": "hex-formatted public key, starting with 0x",
