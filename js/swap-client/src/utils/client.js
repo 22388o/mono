@@ -207,7 +207,7 @@ export default class Client extends EventEmitter {
             res.json()
               .then(obj => {
                 if (status === 200) {
-                  this.emit('log', 'info', 'response', obj)
+                  // this.emit('log', 'info', 'response', obj)
                   resolve(obj)
                 } else {
                   this.emit('log', 'error', 'response', obj)

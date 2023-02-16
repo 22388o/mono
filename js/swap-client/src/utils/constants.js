@@ -5,6 +5,6 @@ export const getAlice = () => {
   return alice
 }
 
-export const getCarol = (secret) => {
+export const getCarol = () => {
   return bob
 }
