@@ -33,17 +33,27 @@ export const SwapCreate = () => {
   const [quoteAsset, setQuoteAsset] = useState('ETH');
   const [limitOrder, setLimitOrder] = useState(true);
 
-  const [secret, setSecret] = useState(Math.random().toString(36).slice(2));
+  const [secret, setSecret] = useState(null);
   const hashSecret = async function hash(string) {
+    // const myBitArray = await sjcl.hash.sha256.hash(string)
+    //   log("hashSecret output myBitArray", myBitArray);
+    // const myHash = await sjcl.codec.hex.fromBits(myBitArray)
+    //   log("hashSecret output myHash", myHash);
+    // return myHash;
+    
     const utf8 = new TextEncoder().encode(string);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray
       .map((bytes) => bytes.toString(16).padStart(2, '0'))
       .join('');
+      // log("hashSecret output utf8", utf8);
+      // log("hashSecret output hashBuffer", hashBuffer);
+      // log("hashSecret output hashArray", hashArray);
+      // log("hashSecret output hashHex", hashHex);
     return hashHex;
   }
-  const [secretHash, setSecretHash] = useState(hashSecret('SHA-256', secret));
+  // const [secretHash, setSecretHash] = useState(null);
 
   const [swapOrders, setSwapOrders] = useState([]);
   const activities = useAppSelector(state => state.activities.activities);
@@ -81,8 +91,8 @@ export const SwapCreate = () => {
     //   // .once('swap.committed', swap => { swapOrder.userSwapCommitted = swap })
     //   user.user.websocket.onmessage(data => {log("data",data)})
     // }
-    setSecret(Math.random().toString(36).slice(2))
-    setSecretHash(hashSecret('SHA-256', secret))
+    // setSecret(Math.random().toString(36).slice(2))
+    // setSecretHash(hashSecret('SHA-256', secret))
 
   }, []);
 
@@ -175,7 +185,7 @@ export const SwapCreate = () => {
 
   const onCreateSwap = async (order) => {
     setSecret(Math.random().toString(36).slice(2));
-    setSecretHash(hashSecret('SHA-256', secret));
+    // setSecretHash(hashSecret(secret));
 
     // console.log("SwapCreate: onCreateSwap", order);
     // log("SwapCreate: onCreateSwap ", user)
@@ -185,14 +195,15 @@ export const SwapCreate = () => {
     //   return res.json();
     // })
     // .then(data => {
-      const secretHashReturned = secretHash.then(data => {return data})
-      log("{secret, secretHash}",{secret, secretHash: await secretHash});
+      // const secret256 = await sha256(secret);
+      log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
+      const secretHash = await hashSecret(secret);
       // dispatch(addSecret({secret, secretHash}));
       await user.user.submitLimitOrder(
       {
        uid: user.user.id,
        side: order.side,
-       hash: await secretHash,
+       hash: secretHash,
        baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
        baseNetwork: order.baseNetwork,
        baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
