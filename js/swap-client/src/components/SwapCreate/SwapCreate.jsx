@@ -15,6 +15,10 @@ import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
 import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
+import { 
+	updateSwapInfo, 
+	updateSwapStatus 
+} from "../../slices/activitiesSlice.js";
 
 export const SwapCreate = () => {
   const mock = true;
@@ -45,6 +49,7 @@ export const SwapCreate = () => {
       // log("hashSecret output hashHex", hashHex);
     return hashHex;
   }
+  const [orderSecret, setOrderSecret] = useState(null);
 
   const [swapOrders, setSwapOrders] = useState([]);
   const activities = useAppSelector(state => state.activities.activities);
@@ -53,10 +58,9 @@ export const SwapCreate = () => {
   const user = useAppSelector(state => state.user);
 
 
-  let swapOrder;
   const log = (message, obj, debug = true) => {
     if (debug) {
-      console.log("SwapCreate: ", message)
+      console.log(message + " (SwapCreate)")
      console.log(obj)
     }
   }
@@ -75,15 +79,17 @@ export const SwapCreate = () => {
 
   }, []);
 
+  const abortController = new AbortController();
 
   useEffect(() => {
+
     if(user.isLoggedIn) {
       try {
         log("user", user);
         const connected = user.user.connect().then(
           user.user.on("swap.created",swap => {
-            log('swap.created event received', swap)
-            if(user.user.id == swap.secretSeeker.id){
+            // log('swap.created event received', swap)
+            if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
               const network = swap.secretHolder.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
               user.user.swapOpen(swap, { [network]: credentials[network]});
@@ -91,22 +97,37 @@ export const SwapCreate = () => {
           })
           .on("swap.opening",swap => {
             log('swap.opening event received', swap)
-
-            const swapOrder = swapOrders.find(order => order.swapId === swap.id);
-            if(user.user.id == swap.secretHolder.id){
+            log("orderSecret in swap.opening",orderSecret)
+            if(user.user.id == swap.secretHolder.id) { // TODO also add check if swapOpen already called on swap id
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
-              log("JSON.stringify(swapOrder.secretHash)",JSON.stringify(swapOrder.secretHash))
-              log("swapOrder.secretHash",swapOrder.secretHash)
-              user.user.swapOpen(swap, { [network]: credentials[network], secret: JSON.stringify(swapOrder.secretHash)})
+              user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret });
             }
           })
           .on("swap.opened",swap => {
             log('swap.opened event received', swap)
-            user.user.swapOpen(swap,
-              user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
-              user.user.id == swap.secretHolder.id ? swap.secretHash : ''
-            )
+            log("orderSecret in swap.opened",orderSecret)
+            if(user.user.id == swap.secretSeeker.id){
+              const network = swap.secretHolder.network['@type'].toLowerCase();
+              const credentials = user.user.credentials;
+              user.user.swapCommit(swap, credentials);
+            }
+          })
+          .on("swap.committing",swap => {
+            log('swap.committing event received', swap)
+            log("orderSecret in swap.committing",orderSecret)
+            if(user.user.id == swap.secretHolder.id){
+              const network = swap.secretSeeker.network['@type'].toLowerCase();
+              const credentials = user.user.credentials;
+              user.user.swapCommit(swap, credentials);
+            }
+            // user.user.swapCommit(swap,
+            //   user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
+            //   user.user.id == swap.secretHolder.id ? swap.secretHash : ''
+            // )
+          })
+          .on("swap.committed",swap => {
+            log('swap.committed event received', swap)
           })
         )
       } catch (error) {
@@ -119,16 +140,19 @@ export const SwapCreate = () => {
     //     user.user.disconnect();
     //   }
     // }
+    return () => {
+      abortController.abort();
+    };
 
   }, [user]);
 
 
   useEffect(() => {
     // console.log(`SwapCreate: activities.length: ${activities.length}`);
-    if(swapOrder != undefined){
-      console.log("swapOrder changed");
-      console.log({swapOrder})
-    }
+    // if(swapOrders != undefined){
+    //   console.log("swapOrders changed");
+    //   console.log({swapOrders})
+    // }
 
 
     // if(swapOrders.length > 0) {
@@ -141,6 +165,7 @@ export const SwapCreate = () => {
     //   //   }
     //   // )
     // }
+    log("activities", activities)
     setSwapOrders(activities);
 
   }, [activities])
@@ -164,61 +189,63 @@ export const SwapCreate = () => {
   const onCreateSwap = async (order) => {
     const secret = Math.random().toString(36).slice(2);
 
-      log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
-      const secretHash = await hashSecret(secret);
+    log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
+    const secretHash = await hashSecret(secret);
+    setOrderSecret(secretHash)
       
-      await user.user.submitLimitOrder(
-      {
-       uid: user.user.id,
-       side: order.side,
-       hash: secretHash,
-       baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
-       baseNetwork: order.baseNetwork,
-       baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
-       quoteAsset: baseAsset=='BTC'? quoteAsset : baseAsset,
-       quoteNetwork: order.quoteNetwork,
-       quoteQuantity: order.quoteQuantity ? order.quoteQuantity : quoteQuantity,
-      }
-    ).then(data => {
+    await user.user.submitLimitOrder(
+    {
+      uid: user.user.id,
+      side: order.side,
+      hash: secretHash,
+      baseAsset: baseAsset=='BTC' ? baseAsset : quoteAsset,
+      baseNetwork: order.baseNetwork,
+      baseQuantity: order.baseQuantity ? order.baseQuantity : baseQuantity,
+      quoteAsset: baseAsset=='BTC'? quoteAsset : baseAsset,
+      quoteNetwork: order.quoteNetwork,
+      quoteQuantity: order.quoteQuantity ? order.quoteQuantity : quoteQuantity,
+      signal: abortController.signal
+    }
+  ).then(data => {
 
-      // log("this is data inside submitLimitOrder", data);
+    // log("this is data inside submitLimitOrder", data);
 
-        const curDate = new Date();
-        const date = {
-          year: curDate.getFullYear(),
-          month: curDate.getMonth(),
-          day: curDate.getDate()
-        };
-        
-        dispatch(addSwapItem({
-          key: data.id,
-          swapId: data.id,
-          ts: data.ts,
-          uid: data.uid,
-          type: data.type,
-          side: data.side,
-          secret,
-          secretHash,
-          hash: data.hash,
-          baseAsset: data.side == 'bid' ? data.baseAsset : data.quoteAsset,
-          baseQuantity: data.baseQuantity,
-          baseNetwork: order.baseNetwork,
-          quoteAsset: data.side != 'bid' ? data.baseAsset : data.quoteAsset,
-          quoteNetwork: order.quoteNetwork,
-          quoteQuantity: data.quoteQuantity,
-          status: 1,
-          createdDate: date
-        }));
-          // console.log("completed submitLimitOrder")
-          // }, 1000)
-        // })
-        // .catch(err => console.log(err))
-        // console.log(`SwapCreate: submitLimitOrder completed`)
-        // console.log({swapOrder})
-    });
-    // .on("swap.created", data => {
-    //   log("swap.created!!!!", data);
+    const curDate = new Date();
+    const date = {
+      year: curDate.getFullYear(),
+      month: curDate.getMonth(),
+      day: curDate.getDate()
+    };
+    
+    dispatch(addSwapItem({
+      key: data.id,
+      swapId: data.id,
+      ts: data.ts,
+      uid: data.uid,
+      type: data.type,
+      side: data.side,
+      secret,
+      secretHash,
+      hash: data.hash,
+      baseAsset: data.side == 'bid' ? data.baseAsset : data.quoteAsset,
+      baseQuantity: data.baseQuantity,
+      baseNetwork: order.baseNetwork,
+      quoteAsset: data.side != 'bid' ? data.baseAsset : data.quoteAsset,
+      quoteNetwork: order.quoteNetwork,
+      quoteQuantity: data.quoteQuantity,
+      status: 1,
+      createdDate: date
+    }));
+      // console.log("completed submitLimitOrder")
+      // }, 1000)
     // })
+    // .catch(err => console.log(err))
+    // console.log(`SwapCreate: submitLimitOrder completed`)
+    // console.log({swapOrder})
+  });
+  // .on("swap.created", data => {
+  //   log("swap.created!!!!", data);
+  // })
     
   }
 
@@ -273,8 +300,8 @@ export const SwapCreate = () => {
                   <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'ask' : 'bid'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button>
                   {mock && <>
                     <p>demo swap</p>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1BTC for 1ETH</Button>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', baseQuantity: 1, quoteNetwork: 'goerli', quoteQuantity: 1})}>Swap 1ETH for 1 BTC</Button>
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'ask', baseNetwork: 'lightning.btc', baseQuantity: 200000, quoteNetwork: 'goerli', quoteQuantity: 10000000000})}>Swap 200000BTC for 10000000000ETH</Button>
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({side: 'bid', baseNetwork: 'lightning.btc', baseQuantity: 200000, quoteNetwork: 'goerli', quoteQuantity: 10000000000})}>Swap 10000000000ETH for 200000 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
