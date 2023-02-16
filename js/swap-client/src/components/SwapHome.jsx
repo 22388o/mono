@@ -99,32 +99,13 @@ export const SwapHome = () => {
   const port = window.location.port;
   let aliceCred = getAlice();
   let bobCred = getBob();
-	// const [alice, setAlice] = useState(new Client({ id: 'alice', hostname, port, credentials: aliceCred }));
-	// const [bob, setBob] = useState(new Client({ id: 'bob', hostname, port, credentials: bobCred }));
 	const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
 	const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });
 
 
   
 
-
-  // useEffect(() => {
-  //   if(user.isLoggedIn) {
-      
-  //   }
-  // },[])
-
-  // alice
-  // .once('swap.created', swap => { aliceSwapCreated = swap })
-  // .once('swap.opened', swap => { aliceSwapOpened = swap })
-  // .once('swap.committed', swap => { aliceSwapCommitted = swap })
-
-  // bob
-  // .once('swap.created', swap => { bobSwapCreated = swap })
-  // .once('swap.opened', swap => { bobSwapOpened = swap })
-  // .once('swap.committed', swap => { bobSwapCommitted = swap })
-
-  
+ 
   const logIn = (data) => {
     dispatch(signIn(data));
     setOpen(false);

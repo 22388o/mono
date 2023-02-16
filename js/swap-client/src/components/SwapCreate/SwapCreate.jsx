@@ -13,7 +13,6 @@ import {
 } from "../../hooks";
 import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
-import { addSecret } from "../../slices/secretSlice";
 import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
 
@@ -34,13 +33,7 @@ export const SwapCreate = () => {
   const [limitOrder, setLimitOrder] = useState(true);
 
   const [secret, setSecret] = useState(null);
-  const hashSecret = async function hash(string) {
-    // const myBitArray = await sjcl.hash.sha256.hash(string)
-    //   log("hashSecret output myBitArray", myBitArray);
-    // const myHash = await sjcl.codec.hex.fromBits(myBitArray)
-    //   log("hashSecret output myHash", myHash);
-    // return myHash;
-    
+  const hashSecret = async function hash(string) {    
     const utf8 = new TextEncoder().encode(string);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -53,7 +46,6 @@ export const SwapCreate = () => {
       // log("hashSecret output hashHex", hashHex);
     return hashHex;
   }
-  // const [secretHash, setSecretHash] = useState(null);
 
   const [swapOrders, setSwapOrders] = useState([]);
   const activities = useAppSelector(state => state.activities.activities);
@@ -70,7 +62,6 @@ export const SwapCreate = () => {
     }
   }
 
-
   useEffect(() => {
     const core = async () => {
       const btc = await getBTCPrice();
@@ -83,24 +74,12 @@ export const SwapCreate = () => {
     };
     core();
 
-    // if(user.user) {
-    //   log("user",user);
-    //   // user.user
-    //   // .once('swap.created', swap => { swapOrder.userSwapCreated = swap })
-    //   // .once('swap.opened', swap => { swapOrder.userSwapOpened = swap })
-    //   // .once('swap.committed', swap => { swapOrder.userSwapCommitted = swap })
-    //   user.user.websocket.onmessage(data => {log("data",data)})
-    // }
-    // setSecret(Math.random().toString(36).slice(2))
-    // setSecretHash(hashSecret('SHA-256', secret))
-
   }, []);
 
 
   useEffect(() => {
     if(user.isLoggedIn) {
       try {
-        // setLoggedInUser(user.user.connect())
         log("user", user);
         const connected = user.user.connect().then(
           user.user.on("swap.created",swap => {
@@ -153,16 +132,16 @@ export const SwapCreate = () => {
     }
 
 
-    if(swapOrders.length > 0) {
-      log("swapOrder",{swapOrders})
-      // swapOrders[swapOrders.length].then( data => {
-      //     log("data",data);
-      //     if(data.event.type == "swap.created"){
-      //       console.log("swap.created!!!");
-      //     }
-      //   }
-      // )
-    }
+    // if(swapOrders.length > 0) {
+    //   log("swapOrder",{swapOrders})
+    //   // swapOrders[swapOrders.length].then( data => {
+    //   //     log("data",data);
+    //   //     if(data.event.type == "swap.created"){
+    //   //       console.log("swap.created!!!");
+    //   //     }
+    //   //   }
+    //   // )
+    // }
     setSwapOrders(activities);
 
   }, [activities])
@@ -185,20 +164,10 @@ export const SwapCreate = () => {
 
   const onCreateSwap = async (order) => {
     setSecret(Math.random().toString(36).slice(2));
-    // setSecretHash(hashSecret(secret));
 
-    // console.log("SwapCreate: onCreateSwap", order);
-    // log("SwapCreate: onCreateSwap ", user)
-    // fetchSwapCreate({baseQuantity, quoteQuantity})
-    // .then(res => {
-    //   console.log(res);
-    //   return res.json();
-    // })
-    // .then(data => {
-      // const secret256 = await sha256(secret);
       log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
       const secretHash = await hashSecret(secret);
-      // dispatch(addSecret({secret, secretHash}));
+      
       await user.user.submitLimitOrder(
       {
        uid: user.user.id,
@@ -221,26 +190,7 @@ export const SwapCreate = () => {
           month: curDate.getMonth(),
           day: curDate.getDate()
         };
-        // let data = Object.assign(order, {
-        //   swapHash: order.secretHash,
-        //   secret: order.swapSecret,
-        //   createdDate: curDate})
-        // log('SwapCreate: submitLimitOrder.then(data ', data);
-        // console.log(data.swap.id);
-        // console.log(`${JSON.stringify(data)}`);
-        // setTimeout(() => {
-        // dispatch(setIndex(activities.length));
-        // dispatch(setBaseQuantity({baseQuantity}));
-        // dispatch(setQuoteQuantity(quoteQuantity));
-        // dispatch(setSwapId(data.swap.id));
-        // dispatch(setRequest1(null));
-        // dispatch(setRequest2(null));
-        // dispatch(setSecretSeekerId(data.swap.secretSeeker.id));
-        // dispatch(setSecretHolderId(data.swap.secretHolder.id));
-        // dispatch(setSecret(data.swapSecret));
-        // dispatch(setSecretHash(data.swap.secretHash));
-        // dispatch(setSwapStatus(1));
-        // dispatch(setCreatedDate(curDate));
+        
         dispatch(addSwapItem({
           key: data.id,
           swapId: data.id,
@@ -258,8 +208,6 @@ export const SwapCreate = () => {
           quoteNetwork: order.quoteNetwork,
           quoteQuantity: data.quoteQuantity,
           status: 1,
-          // secretSeekerId: data.swap.secretSeeker.id,
-          // secretHolderId: data.swap.secretHolder.id,
           createdDate: date
         }));
           // console.log("completed submitLimitOrder")
