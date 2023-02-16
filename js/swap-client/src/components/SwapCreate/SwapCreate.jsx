@@ -52,6 +52,7 @@ export const SwapCreate = () => {
   const [orderSecret, setOrderSecret] = useState(null);
 
   const [swapOrders, setSwapOrders] = useState([]);
+  const [createSwap, setCreateSwap] = useState(false);
   const activities = useAppSelector(state => state.activities.activities);
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
@@ -81,6 +82,7 @@ export const SwapCreate = () => {
 
   const abortController = new AbortController();
 
+
   useEffect(() => {
     log("{user, orderSecret", { user, orderSecret })
     if(user.isLoggedIn) {
@@ -99,8 +101,8 @@ export const SwapCreate = () => {
           .on("swap.opening",swap => {
             // dispatch(updateSwapStatus({ status: 3 }));
             log('swap.opening event received', swap)
-            // log("orderSecret in swap.opening",orderSecret)
-            if(user.user.id == swap.secretHolder.id) { // TODO also add check if swapOpen already called on swap id
+            log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null",orderSecret)
+            if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
               user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret });
@@ -196,6 +198,12 @@ export const SwapCreate = () => {
     // log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
     const secretHash = await hashSecret(secret);
 
+    setOrderSecret(secretHash);
+    await thenCreateSwap(order, secret, secretHash);
+  }
+
+const thenCreateSwap = async (order, secret, secretHash) => {
+
     const ask = order.side=='ask';
     const baseA = order.baseAsset ? order.baseAsset : baseAsset
     const quoteA = order.quoteAsset ? order.quoteAsset : quoteAsset
@@ -232,8 +240,8 @@ export const SwapCreate = () => {
     const toSat = (num) => { return num * 100000000 }
       
     try {
-      setOrderSecret(secretHash);
 
+      // setOrderSecret(secretHash);
     } catch (error) {log("error on setOrderSecret(secretHash)", error.message)}
     finally {
       await user.user.submitLimitOrder(
@@ -315,9 +323,11 @@ export const SwapCreate = () => {
     // .on("swap.created", data => {
     //   log("swap.created!!!!", data);
     // })
+    }
   }
+  useEffect(() => {
     
-  }
+  },[createSwap])
 
   const onChangeCoinType = () => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
