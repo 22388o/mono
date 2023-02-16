@@ -27,7 +27,7 @@ export const ConnectionComponent = () => {
     dispatch(signOut());
     dispatch(clearNodeData());
     dispatch(clearWalletData());
-    // return Promise.all([alice.disconnect(), carol.disconnect()]);
+    // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
   }
 

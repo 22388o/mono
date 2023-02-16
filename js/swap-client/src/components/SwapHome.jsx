@@ -16,7 +16,7 @@ import {
   openSwap,
   commitSwap
 } from "../utils/apis";
-import { getAlice, getCarol } from '../utils/constants';
+import { getAlice, getBob } from '../utils/constants';
 import Client from '../utils/client';
 
 export const SwapHome = () => {
@@ -63,8 +63,8 @@ export const SwapHome = () => {
       }
       if(swap.status === 1 && ((swap.request1 && !swap.request2) || (!swap.request1 && swap.request2))) {
         setTimeout(() => {
-          console.log("carol opens the swap");
-          simulateOpen(swap.swapId, carol, swap.swapId, swap.secretHolderId, swap.secret, false);
+          console.log("bob opens the swap");
+          simulateOpen(swap.swapId, bob, swap.swapId, swap.secretHolderId, swap.secret, false);
           dispatch(updateSwapStatus({index: swap.swapId, status: 2}));
           }, 1000
         );
@@ -79,8 +79,8 @@ export const SwapHome = () => {
       }
       if(swap.status === 3 && swap.commit1 && !swap.commit2){
         setTimeout(() => {
-          console.log("carol commits the swap");
-          simulateCommit(swap.swapId, carol, swap.swapId, swap.secretHolderId, false);
+          console.log("bob commits the swap");
+          simulateCommit(swap.swapId, bob, swap.swapId, swap.secretHolderId, false);
           dispatch(updateSwapStatus({index: swap.swapId, status: 4}));
           }, 1000
         );
@@ -98,11 +98,11 @@ export const SwapHome = () => {
   const hostname = window.location.hostname;
   const port = window.location.port;
   let aliceCred = getAlice();
-  let carolCred = getCarol();
+  let bobCred = getBob();
 	// const [alice, setAlice] = useState(new Client({ id: 'alice', hostname, port, credentials: aliceCred }));
-	// const [carol, setCarol] = useState(new Client({ id: 'carol', hostname, port, credentials: carolCred }));
+	// const [bob, setBob] = useState(new Client({ id: 'bob', hostname, port, credentials: bobCred }));
 	const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
-	const carol = new Client({ id: 'carol', hostname, port, credentials: carolCred });
+	const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });
 
 
   
@@ -119,7 +119,7 @@ export const SwapHome = () => {
   // .once('swap.opened', swap => { aliceSwapOpened = swap })
   // .once('swap.committed', swap => { aliceSwapCommitted = swap })
 
-  // carol
+  // bob
   // .once('swap.created', swap => { bobSwapCreated = swap })
   // .once('swap.opened', swap => { bobSwapOpened = swap })
   // .once('swap.committed', swap => { bobSwapCommitted = swap })
@@ -141,12 +141,12 @@ export const SwapHome = () => {
     // return Promise.all([alice.connect()]);
   }
 
-  const signInAsCarol = () => {
-    dispatch(signIn(carol));
-    dispatch(setNodeData(carol.credentials.lightning));
-    dispatch(setWalletData(carol.credentials.ethereum));
+  const signInAsBob = () => {
+    dispatch(signIn(bob));
+    dispatch(setNodeData(bob.credentials.lightning));
+    dispatch(setWalletData(bob.credentials.ethereum));
     setOpen(false);
-    // return Promise.all([carol.connect()]);
+    // return Promise.all([bob.connect()]);
   }
 
   const logOut = () => {
@@ -154,7 +154,7 @@ export const SwapHome = () => {
     dispatch(clearNodeData());
     dispatch(clearWalletData());
     setOpen(false);
-    // return Promise.all([alice.disconnect(), carol.disconnect()]);
+    // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
   }
 
@@ -181,8 +181,8 @@ export const SwapHome = () => {
               <Button onClick={signInAsAlice}>
                 Sign in as Alice
               </Button>
-              <Button onClick={signInAsCarol}>
-                Sign in as Carol
+              <Button onClick={signInAsBob}>
+                Sign in as Bob
               </Button>
               </>
             : <>
