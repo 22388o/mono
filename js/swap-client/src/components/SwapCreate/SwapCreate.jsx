@@ -32,7 +32,6 @@ export const SwapCreate = () => {
   const [quoteAsset, setQuoteAsset] = useState('ETH');
   const [limitOrder, setLimitOrder] = useState(true);
 
-  const [secret, setSecret] = useState(null);
   const hashSecret = async function hash(string) {    
     const utf8 = new TextEncoder().encode(string);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -83,7 +82,7 @@ export const SwapCreate = () => {
         log("user", user);
         const connected = user.user.connect().then(
           user.user.on("swap.created",swap => {
-            log('swap.created!!!!!', swap)
+            log('swap.created event received', swap)
             if(user.user.id == swap.secretSeeker.id){
               const network = swap.secretHolder.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
@@ -91,7 +90,7 @@ export const SwapCreate = () => {
             }
           })
           .on("swap.opening",swap => {
-            log('swap.opening!!!!!', swap)
+            log('swap.opening event received', swap)
 
             const swapOrder = swapOrders.find(order => order.swapId === swap.id);
             if(user.user.id == swap.secretHolder.id){
@@ -103,7 +102,7 @@ export const SwapCreate = () => {
             }
           })
           .on("swap.opened",swap => {
-            log('swap.opened!!!!!', swap)
+            log('swap.opened event received', swap)
             user.user.swapOpen(swap,
               user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
               user.user.id == swap.secretHolder.id ? swap.secretHash : ''
@@ -163,7 +162,7 @@ export const SwapCreate = () => {
   }
 
   const onCreateSwap = async (order) => {
-    setSecret(Math.random().toString(36).slice(2));
+    const secret = Math.random().toString(36).slice(2);
 
       log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
       const secretHash = await hashSecret(secret);
