@@ -26,9 +26,9 @@ export const SwapAmountItem = ({coinType, amount, className, onAmountChange, uni
   return <Form.Group widths='equal' className={className}>
     <Form.Field className={styles.swapAmountInput}>
       { limitOrder ? 
-          <input className={styles.swapInput} type='number' value={amount} onChange={onAmountChange}/>
+          <input className={styles.swapInput} type='number' value={(amount===0)?'':amount} onChange={onAmountChange}/>
         :
-          <input className={styles.swapInput} type='number' value={amount} onChange={onAmountChange}/>
+          <input className={styles.swapInput} type='number' value={(amount===0)?'':amount} onChange={onAmountChange}/>
       }
       { unitPrice * amount > 0 ? <p className={styles.price}>${unitPrice * amount}</p> : ''}
     </Form.Field>

@@ -173,17 +173,24 @@ export const SwapCreate = () => {
         log('swap.committing event received', swap)
         log("orderSecret in swap.committing",orderSecret)
 
-        let ethBal, btcBal;
-
-
         if(user.user.id == swap.secretHolder.id){
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapCommit(swap, credentials);
           setSwapState(3);
           console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
+        } 
 
+      })
 
+    } else if(swapState === 3) {
+      console.log("swapState swap.opened/committing swapCommit sent", swapState)
+      user.user.on("swap.committed",swap => {
+        log('swap.committed event received', swap)
+
+        let ethBal, btcBal;
+
+        if(user.user.id == swap.secretHolder.id){
             btcBal = toSats(node.balance) - swap.secretHolder.quantity;
             ethBal = toWei(wallet.balance) + swap.secretSeeker.quantity;
         } else {
@@ -191,19 +198,13 @@ export const SwapCreate = () => {
           ethBal = toWei(wallet.balance) - swap.secretSeeker.quantity;
         }
 
-
-
+        console.log("swap claim completed, settingSwapState to 4");
+        setSwapState(4);
 
         const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         dispatch(setNodeBalance(fromSats(btcBal)))
         dispatch(setWalletBalance(fromWei(ethBal)))
-      })
-
-    } else if(swapState === 3) {
-      console.log("swapState swap.opened/committing swapCommit sent", swapState)
-      user.user.on("swap.committed",swap => {
-        log('swap.committed event received', swap)
       })
       
     } 
@@ -220,8 +221,10 @@ export const SwapCreate = () => {
   }, [swapState, activities]);
 
   const coinTypeChanged = (isBase, coinType) => {
-    if(isBase) setQuoteQuantity(baseQuantity * curPrices[coinType] / curPrices[quoteAsset]);
-    else  setBaseQuantity(quoteQuantity * curPrices[coinType] / curPrices[baseAsset]);
+    if(!limitOrder) {
+      if(isBase) setQuoteQuantity(baseQuantity * curPrices[coinType] / curPrices[quoteAsset]);
+      else  setBaseQuantity(quoteQuantity * curPrices[coinType] / curPrices[baseAsset]);
+    }
   }
 
   const onInputBaseQuantity = (e) => {
@@ -249,8 +252,15 @@ export const SwapCreate = () => {
 
     setSecret(secretHex);
     setOrderSecret(secretHash);
-    setSwapState(0); // swap begins
-    await thenCreateSwap(order, secret, secretHash);
+    if(baseQuantity==0 || quoteQuantity==0) {
+      console.log("baseQuantity or quoteQuantity is 0");
+    }
+    else {
+      setBaseQuantity();
+      setQuoteQuantity();
+      setSwapState(0); // swap begins
+      await thenCreateSwap(order, secret, secretHash);
+    }
   }
 
 const thenCreateSwap = async (order, secret, secretHash) => {
@@ -360,6 +370,9 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         status: 1,
         createdDate: date
       }));
+
+      setBaseQuantity(0);
+      setQuoteQuantity(0);
     });
     }
   }

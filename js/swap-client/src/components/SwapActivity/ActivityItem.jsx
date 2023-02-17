@@ -36,9 +36,9 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
           { getStringFromDate(activity.createdDate) }
         </Grid.Row>
         <Grid.Row>
-          <Button secondary onClick={onCancelSwap} className={styles.cancelBtn}>
+          { activity.status < 4 && <Button secondary onClick={onCancelSwap} className={styles.cancelBtn}>
             Cancel
-          </Button>
+          </Button> }
         </Grid.Row>
       </Grid.Column>
     </Grid.Row>
