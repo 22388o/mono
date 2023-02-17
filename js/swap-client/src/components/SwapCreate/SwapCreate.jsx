@@ -172,22 +172,38 @@ export const SwapCreate = () => {
         // dispatch(updateSwapStatus({ status: 5 }));
         log('swap.committing event received', swap)
         log("orderSecret in swap.committing",orderSecret)
+
+        let ethBal, btcBal;
+
+
         if(user.user.id == swap.secretHolder.id){
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapCommit(swap, credentials);
           setSwapState(3);
           console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
+
+
+            btcBal = toSats(node.balance) - swap.secretHolder.quantity;
+            ethBal = toWei(wallet.balance) + swap.secretSeeker.quantity;
+        } else {
+          btcBal = toSats(node.balance) + swap.secretHolder.quantity;
+          ethBal = toWei(wallet.balance) - swap.secretSeeker.quantity;
         }
+
+
+
+
+        const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.state.lightning.btc.invoice.tokens : swap.secretSeeker.state.goerli.invoice.tokens;
+        dispatch(setNodeBalance(fromSats(btcBal)))
+        dispatch(setWalletBalance(fromWei(ethBal)))
       })
 
     } else if(swapState === 3) {
       console.log("swapState swap.opened/committing swapCommit sent", swapState)
       user.user.on("swap.committed",swap => {
         log('swap.committed event received', swap)
-
-        dispatch(setNodeBalance(node.balance))
-        dispatch(setWalletBalance(wallet.balance))
       })
       
     } 

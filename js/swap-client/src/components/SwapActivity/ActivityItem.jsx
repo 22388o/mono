@@ -25,9 +25,9 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
           { SWAP_STATUS[activity.status] }
         </Grid.Row>
         <Grid.Row>
-          { Number(Number(activity.baseQuantity).toFixed(4)) + ' ' + 
+          { activity.baseQuantity + ' ' + 
           activity.baseAsset + ' > ' + 
-          Number(Number(activity.quoteQuantity).toFixed(4)) + ' ' + 
+          activity.quoteQuantity + ' ' + 
           activity.quoteAsset }
         </Grid.Row>
       </Grid.Column>
