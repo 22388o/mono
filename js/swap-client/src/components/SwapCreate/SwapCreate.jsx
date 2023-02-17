@@ -11,7 +11,7 @@ import {
   useAppDispatch,
   useAppSelector
 } from "../../hooks";
-import { fetchSwapCreate, getBTCPrice, getETHPrice } from "../../utils/apis";
+import { getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
 import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
@@ -128,10 +128,6 @@ export const SwapCreate = () => {
               const credentials = user.user.credentials;
               user.user.swapCommit(swap, credentials);
             }
-            // user.user.swapCommit(swap,
-            //   user.user.id == swap.secretHolder.id  ? swap.secretHolder.network.name : swap.secretSeeker.network.name,
-            //   user.user.id == swap.secretHolder.id ? swap.secretHash : ''
-            // )
           })
           .on("swap.committed",swap => {
             log('swap.committed event received', swap)
@@ -153,29 +149,6 @@ export const SwapCreate = () => {
 
   }, [user, orderSecret]);
 
-
-  useEffect(() => {
-    // console.log(`SwapCreate: activities.length: ${activities.length}`);
-    // if(swapOrders != undefined){
-    //   console.log("swapOrders changed");
-    //   console.log({swapOrders})
-    // }
-
-
-    // if(swapOrders.length > 0) {
-    //   log("swapOrder",{swapOrders})
-    //   // swapOrders[swapOrders.length].then( data => {
-    //   //     log("data",data);
-    //   //     if(data.event.type == "swap.created"){
-    //   //       console.log("swap.created!!!");
-    //   //     }
-    //   //   }
-    //   // )
-    // }
-    log("activities", activities)
-    setSwapOrders(activities);
-
-  }, [activities])
 
 
   const coinTypeChanged = (isBase, coinType) => {
@@ -315,16 +288,7 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         status: 1,
         createdDate: date
       }));
-        // console.log("completed submitLimitOrder")
-        // }, 1000)
-      // })
-      // .catch(err => console.log(err))
-      // console.log(`SwapCreate: submitLimitOrder completed`)
-      // console.log({swapOrder})
     });
-    // .on("swap.created", data => {
-    //   log("swap.created!!!!", data);
-    // })
     }
   }
   useEffect(() => {
