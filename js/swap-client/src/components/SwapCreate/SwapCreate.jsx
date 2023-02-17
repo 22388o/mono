@@ -106,7 +106,7 @@ export const SwapCreate = () => {
             if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
               const network = swap.secretSeeker.network['@type'].toLowerCase();
               const credentials = user.user.credentials;
-              user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret });
+              user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret.toString('hex') });
             }
           })
           .on("swap.opened",swap => {
@@ -194,7 +194,8 @@ export const SwapCreate = () => {
   }
 
   const onCreateSwap = async (order) => {
-    const secret = Math.random().toString(36).slice(2);
+    const secret = crypto.getRandomValues(new Uint8Array(32))
+    // const secret = Math.random().toString(36).slice(2);
 
     // log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
     const secretHash = await hashSecret(secret);
