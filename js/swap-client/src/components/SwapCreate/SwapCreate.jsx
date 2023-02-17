@@ -51,7 +51,7 @@ export const SwapCreate = () => {
   }
   const [orderSecret, setOrderSecret] = useState(null);
 
-  const [swapOrders, setSwapOrders] = useState([]);
+  const [swapState, setSwapState] = useState(0);
   const [createSwap, setCreateSwap] = useState(false);
   const activities = useAppSelector(state => state.activities.activities);
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
@@ -81,75 +81,99 @@ export const SwapCreate = () => {
 
   }, []);
 
-  const abortController = new AbortController();
-
-
   useEffect(() => {
-    log("{user, orderSecret", { user, orderSecret })
-    if(user.isLoggedIn && orderSecret!== null) {
+    log("useEffect {user, orderSecret}", { user, orderSecret })
+    if(user.isLoggedIn) {
       try {
         log("user", user);
-        const connected = user.user.connect().then(
-          user.user.on("swap.created",swap => {
-            // dispatch(updateSwapStatus({ status: 2 }));
-            log('swap.created event received', swap)
-            if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
-              const network = swap.secretHolder.network['@type'].toLowerCase();
-              const credentials = user.user.credentials;
-              user.user.swapOpen(swap, { [network]: credentials[network]});
-            }
-          })
-          .on("swap.opening",swap => {
-            // dispatch(updateSwapStatus({ status: 3 }));
-            log('swap.opening event received', swap)
-            log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null",orderSecret)
-            if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
-              const network = swap.secretSeeker.network['@type'].toLowerCase();
-              const credentials = user.user.credentials;
-              user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret.toString('hex') });
-            }
-          })
-          .on("swap.opened",swap => {
-            // dispatch(updateSwapStatus({ status: 4 }));
-            log('swap.opened event received', swap)
-            // log("orderSecret in swap.opened",orderSecret)
-            if(user.user.id == swap.secretSeeker.id){
-              const network = swap.secretHolder.network['@type'].toLowerCase();
-              const credentials = user.user.credentials;
-              user.user.swapCommit(swap, credentials);
-            }
-          })
-          .on("swap.committing",swap => {
-            // dispatch(updateSwapStatus({ status: 5 }));
-            log('swap.committing event received', swap)
-            log("orderSecret in swap.committing",orderSecret)
-            if(user.user.id == swap.secretHolder.id){
-              const network = swap.secretSeeker.network['@type'].toLowerCase();
-              const credentials = user.user.credentials;
-              user.user.swapCommit(swap, credentials);
-            }
-          })
-          .on("swap.committed",swap => {
-            log('swap.committed event received', swap)
-          })
-        )
+        const connected = user.user.connect()
       } catch (error) {
         console.warn(`sorry an error occurred, due to ${error.message} `);
-        logOut();
+        // logOut();
       }
     }
-    // else {
-    //   return function cleanup() {
-    //     user.user.disconnect();
-    //   }
-    // }
+
     return () => {
-      abortController.abort();
+      if(user.isLoggedIn) user.user.disconnect()
+      console.log("useEffect cleanup");
     };
 
-  }, [user, orderSecret]);
+  }, [user]);
 
+  useEffect(() => {
+    log("running useEffect", swapState)
+    if(swapState === 0) {
+      console.log("swapState: swap begins ", swapState)
 
+    } else if(swapState === 1) {
+      console.log("swapState: swap order request sent ", swapState)
+
+      user.user.on("swap.created",swap => {
+        // dispatch(updateSwapStatus({ status: 2 }));
+        log('swap.created event received', swap)
+        if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
+          const network = swap.secretHolder.network['@type'].toLowerCase();
+          const credentials = user.user.credentials;
+          setSwapState(2);
+          console.log("swapOpen (secretSeeker) requested, sentsettingSwapState to 2");
+          user.user.swapOpen(swap, { [network]: credentials[network]});
+        }
+      })
+      user.user.on("swap.opening", swap => {
+        // dispatch(updateSwapStatus({ status: 3 }));
+        log('swap.opening event received', swap)
+        log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null",orderSecret)
+        if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
+          const network = swap.secretSeeker.network['@type'].toLowerCase();
+          const credentials = user.user.credentials;
+          // setSwapState(2);
+          // console.log("settingSwapState to 2");
+          user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret.toString('hex') });
+          setSwapState(2);
+          console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
+        }
+      })
+
+    } else if(swapState === 2) {
+      console.log("swapState: swap.created/opening swapOpen sent", swapState)
+      user.user.on("swap.opened",swap => {
+        // dispatch(updateSwapStatus({ status: 4 }));
+        log('swap.opened event received', swap)
+        // log("orderSecret in swap.opened",orderSecret)
+        if(user.user.id == swap.secretSeeker.id){
+          const network = swap.secretHolder.network['@type'].toLowerCase();
+          const credentials = user.user.credentials;
+          user.user.swapCommit(swap, credentials);
+          setSwapState(3);
+          console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
+        }
+      })
+      user.user.on("swap.committing",swap => {
+        // dispatch(updateSwapStatus({ status: 5 }));
+        log('swap.committing event received', swap)
+        log("orderSecret in swap.committing",orderSecret)
+        if(user.user.id == swap.secretHolder.id){
+          const network = swap.secretSeeker.network['@type'].toLowerCase();
+          const credentials = user.user.credentials;
+          user.user.swapCommit(swap, credentials);
+          setSwapState(3);
+          console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
+        }
+      })
+
+    } else if(swapState === 3) {
+      console.log("swapState swap.opened/committing swapCommit sent", swapState)
+      user.user.on("swap.committed",swap => {
+        log('swap.committed event received', swap)
+      })
+      
+    } 
+    // else if(swapState === 4) {
+    //   console.log("swapState ", swapState)
+    // } else if(swapState === 5) {
+    //   console.log("swapState ", swapState)}
+    
+  }, [swapState]);
 
   const coinTypeChanged = (isBase, coinType) => {
     if(isBase) setQuoteQuantity(baseQuantity * curPrices[coinType] / curPrices[quoteAsset]);
@@ -174,6 +198,7 @@ export const SwapCreate = () => {
     const secretHash = await hashSecret(secret);
 
     setOrderSecret(secretHash);
+    setSwapState(0); // swap begins
     await thenCreateSwap(order, secret, secretHash);
   }
 
@@ -229,11 +254,10 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         baseQuantity: args.base.quantity,
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
-        quoteQuantity: args.quote.quantity,
-        signal: abortController.signal
+        quoteQuantity: args.quote.quantity
       }
     ).then(data => {
-
+      setSwapState(1); // swap request sent
       // log("this is data inside submitLimitOrder", data);
 
       const curDate = new Date();
@@ -291,9 +315,6 @@ const thenCreateSwap = async (order, secret, secretHash) => {
     });
     }
   }
-  useEffect(() => {
-    
-  },[createSwap])
 
   const onChangeCoinType = () => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
