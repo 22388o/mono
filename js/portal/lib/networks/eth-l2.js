@@ -9,6 +9,7 @@ const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
 const SwapClient = require('./EthL2/SwapClient')
 const SwapCoordinator = require('./EthL2/SwapCoordinator')
+const debug = require('debug')('network:eth-l2')
 
 /**
  * Exports an interface to the Ethereum L2 network
@@ -16,40 +17,40 @@ const SwapCoordinator = require('./EthL2/SwapCoordinator')
  */
 module.exports = class EthL2 extends Network {
   constructor (props) {
-    super({ name: props.name, assets: props.assets })    
+    super({ name: props.name, assets: props.assets })
 
-    //TODO: uncomment this later for settlement
+    // TODO: uncomment this later for settlement
 
-    //this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
-    //this.web3.chainId = props.chainId
+    // this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
+    // this.web3.chainId = props.chainId
 
-    //this.contract = this.web3.eth.contract(props.abi).at(props.address)
+    // this.contract = this.web3.eth.contract(props.abi).at(props.address)
 
-    //const blockNum = this.web3.eth.blockNumber
-    //const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
-    //this.eventDeposit = this.contract.Deposited({}, watchArgs)
-    //this.eventClaim = this.contract.Claimed({}, watchArgs)
+    // const blockNum = this.web3.eth.blockNumber
+    // const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
+    // this.eventDeposit = this.contract.Deposited({}, watchArgs)
+    // this.eventClaim = this.contract.Claimed({}, watchArgs)
 
-    let coord = new SwapCoordinator();
-    process.SwapCoordinator = coord;    
-    coord.connect();
+    let coord = new SwapCoordinator()
+    process.SwapCoordinator = coord
+    coord.connect()
 
     Object.seal(this)
   }
 
-  async makeClient(party, opts){    
-    return new Promise((resolve, reject) => {      
+  async makeClient (party, opts) {
+    return new Promise((resolve, reject) => {
       let client = new SwapClient({keypair: {
-        address: opts.ethereum.public,
-        private: opts.ethereum.private
-      }});
-      client.connect();
-      
+        address: opts.ethl2.public,
+        private: opts.ethl2.private
+      }})
+      client.connect()
+
       setTimeout(() => {
-        resolve(client);
+        resolve(client)
       }, 5000)
-    
-      return party;
+
+      return party
     })
   }
 
@@ -63,35 +64,42 @@ module.exports = class EthL2 extends Network {
    * @param {String} [opts.secret] The secret used by the SecretHolder
    * @returns {Promise<Party>}
    */
-  async open (party, opts) {        
-    let client = await this.makeClient(party, opts)
+  async open (party, opts) {
+    try {
+      const client = await this.makeClient(party, opts)
 
-    if (party.isSecretSeeker) {
-      throw Error('not implemented yet!')
-    } else if (party.isSecretHolder) {
-      const { counterparty } = party
+      if (party.isSecretSeeker) {
+        throw Error('not implemented yet!')
+      } else if (party.isSecretHolder) {
+        const { counterparty } = party
 
-      let secret = '0x'+opts.secret
-      client.registerSecret(secret)
-      let hashOfSecret = client.computeHashOfSecret(secret)
-        
-      let invoice = client.createInvoice({
-        amount: counterparty.quantity.toString(),
-        tokenAddress: '0x00',
-        hashOfSecret: hashOfSecret,
-        payee: client.address,
-      })
-              
-      party.counterparty.state[this.name] = { invoice }
+        const secret = `0x${opts.secret}`
+        client.registerSecret(secret)
+        const hashOfSecret = client.computeHashOfSecret(secret)
 
-      client.once('invoicePaid', (payment) => {            
-        client.revealSecret(secret) //TODO: check if amount is correct 1st
-      })
-    }else {
-      throw Error('multi-party swaps are not supported!')
+        const invoice = client.createInvoice({
+          amount: counterparty.quantity.toString(),
+          tokenAddress: '0x00',
+          hashOfSecret: hashOfSecret,
+          payee: client.address
+        })
+        debug(party.id, `is created an ${this.name} invoice`, invoice)
+
+        party.counterparty.state[this.name] = { invoice }
+
+        client.once('invoicePaid', (payment) => {
+          debug(party.id, 'saw the invoice paid via payment', payment)
+          debug(party.id, 'revealing secret...', secret)
+          client.revealSecret(secret)
+        })
+      } else {
+        throw Error('multi-party swaps are not supported!')
+      }
+
+      return party
+    } catch (err) {
+      debug(party.id, 'got error while trying to .open()', err)
     }
-
-    return party
   }
 
   /**
@@ -104,119 +112,36 @@ module.exports = class EthL2 extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    let client = await this.makeClient(party, opts)
+    const client = await this.makeClient(party, opts)
 
     return new Promise((resolve, reject) => {
-      if (party.isSecretSeeker) {
-        client.once('secret', (secret) => {                
-          resolve(secret.substr(2))
-        })
-        
-        let invoice = party.state[this.name].invoice
-        
-        client.once( 'invoicePaidByMe', receipt => {                
-          console.log(`\n${this.name}.onPaid`, party, receipt)
-          party.counterparty.state[this.name] = { receipt }
-        })
-        
-        client.payInvoice(invoice)
-      } else if (party.isSecretHolder) {
-        // Alice needs to call .claim() to reveal the secret
-        throw Error('not implemented yet!')
-      } else {
-        throw Error('multi-party swaps are not supported!')
-      }
-
-      return party
-    })
-  }
-
-  _parseInvoiceId (invoice) {
-    const hex = invoice.logs[0].data.substr(2, 64)
-    const dec = parseInt(hex, 16)
-    return dec.toString()
-  }
-
-  _createInvoice (amount, address, keys) {
-    const method = 'createInvoice'
-    const params = [address, `0x${amount.toString(16)}`, '0']
-    return this._callSolidity(method, params, keys)
-  }
-
-  _payInvoice (invoiceId, secretHash, keys, amount) {
-    const method = 'payInvoice'
-    const params = [invoiceId, secretHash]
-    return this._callSolidity(method, params, keys, `0x${amount.toString(16)}`)
-  }
-
-  _settleInvoice (secret, keys) {
-    const method = 'claim'
-    const params = [secret]
-    return this._callSolidity(method, params, keys)
-  }
-
-  _callSolidity (funcName, funcParams, keys, ethValue) {
-    return new Promise((resolve, reject) => {
-      const { web3, contract } = this
-      const txMetadata = { from: keys.public, value: ethValue }
-      const func = contract[funcName]
-      const paramsArray = [...funcParams, txMetadata]
-      const getData = func.getData
-      const calldata = getData.apply(func, paramsArray)
-      const estimateGasArgs = {
-        from: keys.public,
-        to: contract.address,
-        gas: '1000000',
-        value: ethValue,
-        data: calldata
-      }
-
-      web3.eth.estimateGas(estimateGasArgs, function (err, estimatedGas) {
-        if (err) return reject(err)
-
-        web3.eth.getGasPrice((err, gasPrice) => {
-          if (err) return reject(err)
-
-          web3.eth.getTransactionCount(keys.public, (err, nonce) => {
-            if (err) return reject(err)
-
-            const txObj = {
-              gasPrice: web3.toHex(gasPrice),
-              gasLimit: web3.toHex(9500000),
-              data: calldata,
-              from: keys.public,
-              to: contract.address,
-              nonce,
-              value: ethValue,
-              chainId: web3.chainId // ropsten = 3, mainnet = 1
-            }
-            const common = Common.forCustomChain('mainnet', {
-              name: 'shyft',
-              chainId: web3.chainId,
-              networkId: web3.chainId
-            }, 'petersburg')
-            const tx = new Tx(txObj, { common })
-            tx.sign(Buffer.from(keys.private, 'hex'))
-            const stx = `0x${tx.serialize().toString('hex')}`
-
-            web3.eth.sendRawTransaction(stx, (err, hash) => {
-              if (err) return reject(err)
-
-              ;(function pollForReceipt () {
-                web3.eth.getTransactionReceipt(hash, function (err, receipt) {
-                  if (err != null) {
-                    reject(err)
-                  } else if (receipt != null) {
-                    resolve(receipt)
-                  } else {
-                    setTimeout(pollForReceipt, 10000)
-                  }
-                })
-              }())
-            })
+      try {
+        if (party.isSecretSeeker) {
+          client.once('secret', (secret) => {
+            debug(party.id, '(secretSeeker) got secret', secret)
+            resolve(secret.substr(2))
           })
-        })
-      })
+
+          const invoice = party.state[this.name].invoice
+
+          client.once('invoicePaidByMe', receipt => {
+            debug(party.id, '(secretSeeker) got receipt for payment', receipt)
+            party.counterparty.state[this.name] = { receipt }
+          })
+
+          debug(party.id, '(secretSeeker) paying the invoice', invoice)
+          client.payInvoice(invoice)
+        } else if (party.isSecretHolder) {
+          // Alice needs to call .claim() to reveal the secret
+          throw Error('not implemented yet!')
+        } else {
+          throw Error('multi-party swaps are not supported!')
+        }
+
+        return party
+      } catch (err) {
+        debug(party.id, 'got error while trying to .open()', err)
+      }
     })
   }
 }

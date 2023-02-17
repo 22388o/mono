@@ -15,9 +15,9 @@ import { getBTCPrice, getETHPrice } from "../../utils/apis";
 import { addSwapItem } from "../../slices/activitiesSlice";
 import styles from '../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
-import { 
-	updateSwapInfo, 
-	updateSwapStatus 
+import {
+	updateSwapInfo,
+	updateSwapStatus
 } from "../../slices/activitiesSlice.js";
 import { setNodeBalance, setWalletBalance } from '../../slices/walletSlice';
 
@@ -195,7 +195,7 @@ export const SwapCreate = () => {
 
 
         const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.state.lightning.btc.invoice.tokens : swap.secretSeeker.state.goerli.invoice.tokens;
+        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.state['lightning.btc'].invoice.tokens : swap.secretSeeker.state['eth-l2.eth'].invoice.tokens;
         dispatch(setNodeBalance(fromSats(btcBal)))
         dispatch(setWalletBalance(fromWei(ethBal)))
       })
@@ -205,17 +205,17 @@ export const SwapCreate = () => {
       user.user.on("swap.committed",swap => {
         log('swap.committed event received', swap)
       })
-      
-    } 
+
+    }
     // else if(swapState === 4) {
     //   console.log("swapState ", swapState)
     // } else if(swapState === 5) {
     //   console.log("swapState ", swapState)}
-    
+
   }, [swapState]);
   useEffect(() => {
     // log("activities", activities)
-    if(activities.length > 0) 
+    if(activities.length > 0)
     dispatch(updateSwapStatus({ secretHash: orderSecret ,status: swapState + 1 }));
   }, [swapState, activities]);
 
@@ -265,28 +265,28 @@ const thenCreateSwap = async (order, secret, secretHash) => {
 
     const args = ask ?  { // if order is an ask, bitcoin as base
       base: {
-        asset: baseA, 
+        asset: baseA,
         network: baseNet,
         quantity: baseQty
       },
       quote: {
-        asset: quoteA, 
+        asset: quoteA,
         network: quoteNet,
         quantity: quoteQty
       }
     } : {
       base: {
-        asset: quoteA, 
+        asset: quoteA,
         network: quoteNet,
         quantity: quoteQty
       },
       quote: {
-        asset: baseA, 
+        asset: baseA,
         network: baseNet,
         quantity: baseQty
       }
     }
-      
+
     try {
 
       // setOrderSecret(secretHash);
@@ -314,33 +314,33 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         month: curDate.getMonth(),
         day: curDate.getDate()
       };
-      
-      
+
+
       const ask = order.side=='ask';
       const args = ask ?  { // if order is an ask, bitcoin as base
         base: {
-          asset: data.baseAsset, 
+          asset: data.baseAsset,
           network: order.baseNetwork,
           quantity: fromSats(data.baseQuantity)
         },
         quote: {
-          asset: data.quoteAsset, 
+          asset: data.quoteAsset,
           network: order.quoteNetwork,
           quantity: fromWei(data.quoteQuantity)
         }
       } : {
         base: {
-          asset: data.quoteAsset, 
+          asset: data.quoteAsset,
           network: order.quoteNetwork,
           quantity: fromWei(data.quoteQuantity)
         },
         quote: {
-          asset: data.baseAsset, 
+          asset: data.baseAsset,
           network: order.baseNetwork,
           quantity: fromSats(data.baseQuantity)
         }
       }
-      
+
       dispatch(addSwapItem({
         key: data.id,
         swapId: data.id,
@@ -413,26 +413,26 @@ const thenCreateSwap = async (order, secret, secretHash) => {
               ? <>
                   <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
                   <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (
-                    baseAsset == 'BTC' ? 'ask' : 'bid'), 
-                    baseNetwork: (baseAsset == 'BTC' ? 'lightning.btc' :'goerli'), 
-                    quoteNetwork: (baseAsset == 'BTC' ? 'goerli' : 'lightning.btc') })}>Swap</Button>
+                    baseAsset == 'BTC' ? 'ask' : 'bid'),
+                    baseNetwork: (baseAsset == 'BTC' ? 'lightning.btc' :'eth-l2.eth'),
+                    quoteNetwork: (baseAsset == 'BTC' ? 'eth-l2.eth' : 'lightning.btc') })}>Swap</Button>
                   {mock && <>
                     <p>demo swap</p>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
-                      side: 'ask', 
+                      side: 'ask',
                       baseAsset: 'BTC',
-                      baseNetwork: 'lightning.btc', 
-                      baseQuantity: 0.001, 
+                      baseNetwork: 'lightning.btc',
+                      baseQuantity: 0.001,
                       quoteAsset: 'ETH',
-                      quoteNetwork: 'goerli', 
+                      quoteNetwork: 'eth-l2.eth',
                       quoteQuantity: 0.0000000000001})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
-                      side: 'bid', 
+                      side: 'bid',
                       baseAsset: 'ETH',
-                      baseNetwork: 'goerli', 
-                      baseQuantity: 0.0000000000001, 
+                      baseNetwork: 'eth-l2.eth',
+                      baseQuantity: 0.0000000000001,
                       quoteAsset: 'BTC',
-                      quoteNetwork: 'lightning.btc', 
+                      quoteNetwork: 'lightning.btc',
                       quoteQuantity: 0.001})}>Swap 0.0000000000001 ETH for 0.001 BTC</Button>
                   </>}
                 </>
