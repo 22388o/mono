@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Header, Image, Grid, Menu, Modal, Form, TextArea, Icon } from 'semantic-ui-react';
+import { Button, Dropdown, Header, Image, Grid, Menu, Modal, Form, TextArea, Icon } from 'semantic-ui-react';
 import { SwapCreate } from './SwapCreate/SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 import { WalletComponent } from './Wallet/WalletComponent';
@@ -145,6 +145,35 @@ export const SwapHome = () => {
     return Promise.all([user.user.disconnect()])
   }
 
+  const savedLogins = [
+    {
+      key: 'user',
+      text: (
+        <span>
+          Previous logins:
+        </span>
+      ),
+      disabled: true,
+    },
+    { key: "alice", text: "alice", name: "alice", value: "alice" },
+    { key: "bob", text: "bob", name: "bob", value: "bob" }
+  ];
+  const selectSavedLogin = (e, { value }) => {
+    log("e",e)
+    log("value",value)
+    setSelectedLogin(value.name)
+    if (value == "alice") signInAsAlice()
+    if (value == "bob") signInAsBob()
+  };
+  const trigger = (
+    <span className={styles.coinType}>
+      <Icon name='suitcase' /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Connect Wallet
+    </span>
+  )
+
+  const [selectedLogin, setSelectedLogin] = useState();
+
+
   return (
     <div id="container">
       <Menu.Menu className='nav-container'>
@@ -163,14 +192,19 @@ export const SwapHome = () => {
       <div className='sign-in-container'>
         { !user.isLoggedIn 
             ? <>
-              {/* <Button primary onClick={() => setOpen(true)} className='gradient-btn'>Sign In</Button>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; */}
-              <Button onClick={signInAsAlice}>
-                Sign in as Alice
-              </Button>
-              <Button onClick={signInAsBob}>
-                Sign in as Bob
-              </Button>
+              <Form.Field className={styles.coinType}>
+                <Dropdown 
+                 icon=''
+                  className={styles.swapCoinSelect}
+                  placeholder='Connect'
+                  compact
+                  selection
+                  value={selectedLogin}
+                  onChange={selectSavedLogin}
+                  options={savedLogins}
+                  trigger={trigger}
+                />
+              </Form.Field>
               </>
             : <>
                 <Menu.Menu position='right'>
@@ -213,64 +247,6 @@ export const SwapHome = () => {
           </Grid.Row>
         </Grid.Column>
       </Grid>
-      <Modal
-        basic
-        closeIcon
-        dimmer={'blurring'}
-        open={open}
-        onOpen={() => setOpen(true)}
-        onClose={() => setOpen(false)}
-        className={styles.signInModal}
-      >
-        <Modal.Header>Enter your credentials</Modal.Header>
-        <Modal.Actions>
-          
-        <Form>
-          <Form.Field>
-            <label>Lightning Network Client Info</label>
-            <TextArea placeholder="Input in JSON format: {
-                isSecretHolder: true,
-                secret: secret,
-                left: {
-                  client: 'ln-client',
-                  node: 'lnd',
-                  request: null,
-                  clientInfo: {
-                    cert: '',
-                    adminMacaroon: '',
-                    invoiceMacaroon: '',
-                    socket: 'localhost:00000'
-                  },
-                  lnd: {
-                    admin: null,
-                    invoice: null
-                  }
-                },
-                right: {
-                    client: 'ln-client',
-                    node: 'lnd',
-                    request: null,
-                    clientInfo: {
-                        cert: '',
-                        adminMacaroon: '',
-                        invoiceMacaroon: '',
-                        socket: 'localhost:00000'
-                    },
-                    lnd: {
-                        admin: null,
-                        invoice: null
-                    }
-                }
-              }" />
-          </Form.Field>
-          <Form.Field>
-            <label>Ethereum Private Key</label>
-            <input placeholder='Ethereum Private Key' />
-          </Form.Field>
-          <Button type='submit' onClick={(e) => {logIn(e.data)}} className='gradient-btn'>Sign In</Button>
-        </Form>
-        </Modal.Actions>
-      </Modal>
     </div>
   )
 }
