@@ -61,6 +61,8 @@ export const SwapCreate = () => {
   const nodeConnected = useAppSelector(state => state.wallet.node.connected);
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
   const user = useAppSelector(state => state.user);
+  const node = useAppSelector(state => state.wallet.node);
+  const wallet = useAppSelector(state => state.wallet.wallet);
 
   const logOut = () => {
     dispatch(signOut());
@@ -178,6 +180,9 @@ export const SwapCreate = () => {
       console.log("swapState swap.opened/committing swapCommit sent", swapState)
       user.user.on("swap.committed",swap => {
         log('swap.committed event received', swap)
+
+        dispatch(setNodeBalance(node.balance))
+        dispatch(setWalletBalance(wallet.balance))
       })
       
     } 
@@ -396,10 +401,10 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       side: 'ask', 
                       baseAsset: 'BTC',
                       baseNetwork: 'lightning.btc', 
-                      baseQuantity: 200000, 
+                      baseQuantity: 100000, 
                       quoteAsset: 'ETH',
                       quoteNetwork: 'goerli', 
-                      quoteQuantity: 100000})}>Swap 0.002 BTC for 0.0000000000001 ETH</Button>
+                      quoteQuantity: 100000})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
                       side: 'bid', 
                       baseAsset: 'ETH',
@@ -407,7 +412,7 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       baseQuantity: 100000, 
                       quoteAsset: 'BTC',
                       quoteNetwork: 'lightning.btc', 
-                      quoteQuantity: 200000})}>Swap 0.0000000000001 ETH for 0.002 BTC</Button>
+                      quoteQuantity: 100000})}>Swap 0.0000000000001 ETH for 0.001 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
