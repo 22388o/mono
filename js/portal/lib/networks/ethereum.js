@@ -174,8 +174,8 @@ module.exports = class Ethereum extends Network {
             if (err) return reject(err)
 
             const txObj = {
-              gasPrice: web3.toHex(gasPrice),
-              gasLimit: web3.toHex(9500000),
+              gasPrice: web3.toHex(gasPrice.mul(2)),
+              gasLimit: web3.toHex(500000),
               data: calldata,
               from: keys.public,
               to: contract.address,

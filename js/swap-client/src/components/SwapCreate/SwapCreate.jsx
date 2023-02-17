@@ -374,15 +374,15 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       baseQuantity: 200000, 
                       quoteAsset: 'ETH',
                       quoteNetwork: 'goerli', 
-                      quoteQuantity: 10000000000})}>Swap 200000BTC for 10000000000ETH</Button>
+                      quoteQuantity: 100000})}>Swap 200000BTC for 100000ETH</Button>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
                       side: 'bid', 
                       baseAsset: 'ETH',
                       baseNetwork: 'goerli', 
-                      baseQuantity: 10000000000, 
+                      baseQuantity: 100000, 
                       quoteAsset: 'BTC',
                       quoteNetwork: 'lightning.btc', 
-                      quoteQuantity: 200000})}>Swap 10000000000ETH for 200000 BTC</Button>
+                      quoteQuantity: 200000})}>Swap 100000ETH for 200000 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
