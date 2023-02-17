@@ -20,7 +20,7 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
       <Grid.Column width={1}>
         <Icon name="random" />
       </Grid.Column>
-      <Grid.Column width={9}>
+      <Grid.Column width={10}>
         <Grid.Row>
           { SWAP_STATUS[activity.status] }
         </Grid.Row>
@@ -31,7 +31,7 @@ export const ActivityItem = ({ activity, index, onShowDetails }) => {
           activity.quoteAsset }
         </Grid.Row>
       </Grid.Column>
-      <Grid.Column width={5} className='right'>
+      <Grid.Column width={4} className='right'>
         <Grid.Row>
           { getStringFromDate(activity.createdDate) }
         </Grid.Row>
