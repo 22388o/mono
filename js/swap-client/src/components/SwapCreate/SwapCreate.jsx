@@ -19,6 +19,7 @@ import {
 	updateSwapInfo, 
 	updateSwapStatus 
 } from "../../slices/activitiesSlice.js";
+import { setNodeBalance, setWalletBalance } from '../../slices/walletSlice';
 
 export const SwapCreate = () => {
   const mock = true;
@@ -58,6 +59,14 @@ export const SwapCreate = () => {
   const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
   const user = useAppSelector(state => state.user);
 
+  const logOut = () => {
+    dispatch(signOut());
+    dispatch(clearNodeData());
+    dispatch(clearWalletData());
+    setOpen(false);
+    // return Promise.all([alice.disconnect(), bob.disconnect()]);
+    return Promise.all([user.user.disconnect()])
+  }
 
   const log = (message, obj, debug = true) => {
     if (debug) {

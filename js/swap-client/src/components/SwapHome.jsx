@@ -7,7 +7,12 @@ import { ConnectionComponent } from './Wallet/Connection';
 import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
-import { setNodeData, setWalletData, clearNodeData, clearWalletData } from '../slices/walletSlice';
+import { setNodeData, 
+         setWalletData,
+         setNodeBalance,
+         setWalletBalance, 
+         clearNodeData, 
+         clearWalletData } from '../slices/walletSlice';
 import { 
 	updateSwapInfo, 
 	updateSwapStatus 
@@ -115,6 +120,8 @@ export const SwapHome = () => {
     // console.log({user});
     dispatch(setNodeData(alice.credentials.lightning));
     dispatch(setWalletData(alice.credentials.ethereum));
+    dispatch(setNodeBalance(1));
+    dispatch(setWalletBalance(1));
     setOpen(false);
     // return Promise.all([alice.connect()]);
   }
@@ -123,6 +130,8 @@ export const SwapHome = () => {
     dispatch(signIn(bob));
     dispatch(setNodeData(bob.credentials.lightning));
     dispatch(setWalletData(bob.credentials.ethereum));
+    dispatch(setNodeBalance(1));
+    dispatch(setWalletBalance(1));
     setOpen(false);
     // return Promise.all([bob.connect()]);
   }

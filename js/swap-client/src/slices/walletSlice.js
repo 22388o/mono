@@ -4,12 +4,14 @@ const initialState = {
   node: {
     title: 'Node',
     connected: false,
-    data: null
+    data: null,
+    balance: 0
   },
   wallet: {
     title: 'Wallet',
     connected: false,
-    data: null
+    data: null,
+    balance: 0
   }
 };
 
@@ -25,6 +27,12 @@ export const walletSlice = createSlice({
       state.wallet.connected = true;
       state.wallet.data = action.payload;
     },
+    setNodeBalance: (state, action) => {
+      state.node.balance = action.payload;
+    },
+    setWalletBalance: (state, action) => {
+      state.wallet.balance = action.payload;
+    },
     clearNodeData: (state) => {
       state.node.connected = false;
       state.node.data = null;
@@ -39,6 +47,8 @@ export const walletSlice = createSlice({
 export const {
   setNodeData,
   setWalletData,
+  setNodeBalance,
+  setWalletBalance, 
   clearNodeData,
   clearWalletData
 } = walletSlice.actions;

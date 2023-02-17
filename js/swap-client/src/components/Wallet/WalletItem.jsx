@@ -1,3 +1,4 @@
+import { node } from 'prop-types';
 import React from 'react';
 import { 
   Button, 
@@ -20,7 +21,7 @@ export const WalletItem = ({type, item, onConnect}) => {
       <Grid.Column width={7} className='align-right'>
         { !item.connected 
             ? <Button circular secondary className='gradient-btn' onClick={e => onConnect()}>Connect {item.title}</Button>
-            : <h3>0.012 { type === 'bitcoin' ? 'BTC' : 'ETH' }</h3>
+            : <h3>{ item.balance } { type === 'bitcoin' ? 'BTC' : 'ETH' }</h3>
         }
       </Grid.Column>
     </Grid.Row>
