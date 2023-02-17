@@ -35,10 +35,12 @@ export const walletSlice = createSlice({
     },
     clearNodeData: (state) => {
       state.node.connected = false;
+      state.node.balance = 0;
       state.node.data = null;
     },
     clearWalletData: (state) => {
       state.wallet.connected = false;
+      state.wallet.balance = 0;
       state.wallet.data = null;
     }
   }
