@@ -19,9 +19,7 @@ module.exports = class Ethereum extends Network {
 
     this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
     this.web3.chainId = props.chainId
-
     this.contract = this.web3.eth.contract(props.abi).at(props.address)
-
     this.eventDeposit = this.contract.Deposited({})
     this.eventClaim = this.contract.Claimed({})
 
@@ -39,11 +37,10 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    debug('open', party, opts)
-
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
+      debug(party.id, `(secretHolder) is creating an ${this.name} invoice`)
       const { counterparty } = party
       const invoice = await this._createInvoice(
         counterparty.quantity,
@@ -52,21 +49,27 @@ module.exports = class Ethereum extends Network {
       )
       invoice.id = this._parseInvoiceId(invoice)
       party.counterparty.state[this.name] = { invoice }
+      debug(party.id, `(secretHolder) create an ${this.name} invoice`, invoice)
 
       // Subscribe to the Deposit event, and settle the invoice when the deposit
       // is made by the counterparty.
       const subscription = this.eventDeposit.watch((err, deposit) => {
         subscription.stopWatching()
+        debug(party.id, '(secretHolder) got deposit event, and has stopped watching')
 
         if (err != null) {
-          console.log(`\n${this.name}.onDeposit`, err)
+          debug(party.id, '(secretHolder) got an error waiting for deposit', err)
           return this.emit('error', err)
         } else {
-          console.log(`\n${this.name}.claim`, party, opts.secret)
+          debug(party.id, '(secretHolder) got the deposit')
+          debug(party.id, `(secretHolder) is settling the ${this.name} invoice using secret "${opts.secret}"`)
+
           this._settleInvoice(`0x${opts.secret}`, opts.ethereum)
+            .then((...args) => debug(party.id, `(secretHolder) has settled the ${this.name} invoice`, ...args))
             .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
         }
       })
+      debug(party.id, '(secretHolder) is now waiting for funds')
     } else {
       throw Error('multi-party swaps are not supported!')
     }
@@ -84,35 +87,35 @@ module.exports = class Ethereum extends Network {
    * @returns {Promise<Party>}
    */
   commit (party, opts) {
-    debug('commit', party, opts)
-
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
         const subscription = this.eventClaim.watch((err, claim) => {
           subscription.stopWatching()
+          debug(party.id, '(secretSeeker) got claim event, and has stopped watching')
 
           if (err != null) {
-            console.log(`\n${this.name}.onClaim`, err)
+            debug(party.id, '(secretSeeker) got an error waiting for claim', err)
             reject(err)
           } else {
             const claimSecret = claim.args.secret.toFixed()
             const bnSecret = BigNumber.BigNumber.from(claimSecret)
             const secret = bnSecret.toHexString()
-            console.log(`\n${this.name}.BigNumber()`, party, claimSecret, bnSecret, secret)
+            debug(party.id, '(secretSeeker) got secret', secret)
             resolve(secret.substr(2))
           }
         })
-
         const invoiceId = party.state[this.name].invoice.id
         const secretHashHex = `0x${party.swap.secretHash}`
-        const onPaid = receipt => {
-          console.log(`\n${this.name}.onPaid`, party, receipt)
-          party.counterparty.state[this.name] = { receipt }
-        }
 
+        debug(party.id, `(secretSeeker) is paying the ${this.name} invoice bearing id ${invoiceId} with secret hash`, secretHashHex)
         this._payInvoice(invoiceId, secretHashHex, opts.ethereum, party.quantity)
-          .then(onPaid)
+          .then(receipt => {
+            debug(party.id, `(secretSeeker) has paid the ${this.name} invoice`, receipt)
+            party.counterparty.state[this.name] = { receipt }
+          })
           .catch(reject)
+
+        debug(party.id, '(secretSeeker) is now waiting for funds to be claimed')
       } else if (party.isSecretHolder) {
         // Alice needs to call .claim() to reveal the secret
         throw Error('not implemented yet!')
@@ -163,19 +166,22 @@ module.exports = class Ethereum extends Network {
         value: ethValue,
         data: calldata
       }
+      debug('calling', funcName, funcParams, keys, ethValue)
 
       web3.eth.estimateGas(estimateGasArgs, function (err, estimatedGas) {
         if (err) return reject(err)
 
+        debug('estimateGas', funcName, estimatedGas)
         web3.eth.getGasPrice((err, gasPrice) => {
           if (err) return reject(err)
 
+          debug('getGasPrice', funcName, gasPrice)
           web3.eth.getTransactionCount(keys.public, (err, nonce) => {
             if (err) return reject(err)
 
             const txObj = {
-              gasPrice: web3.toHex(gasPrice.mul(2)),
-              gasLimit: web3.toHex(500000),
+              gasPrice: web3.toHex(gasPrice),
+              gasLimit: web3.toHex(estimatedGas),
               data: calldata,
               from: keys.public,
               to: contract.address,
@@ -195,6 +201,7 @@ module.exports = class Ethereum extends Network {
             web3.eth.sendRawTransaction(stx, (err, hash) => {
               if (err) return reject(err)
 
+              debug('transaction hash', funcName, hash)
               ;(function pollForReceipt () {
                 web3.eth.getTransactionReceipt(hash, function (err, receipt) {
                   if (err != null) {
@@ -202,6 +209,7 @@ module.exports = class Ethereum extends Network {
                   } else if (receipt != null) {
                     resolve(receipt)
                   } else {
+                    debug('continuing to poll for receipt...')
                     setTimeout(pollForReceipt, 10000)
                   }
                 })

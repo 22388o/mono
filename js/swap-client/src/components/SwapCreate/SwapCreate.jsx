@@ -37,19 +37,22 @@ export const SwapCreate = () => {
   const [quoteAsset, setQuoteAsset] = useState('ETH');
   const [limitOrder, setLimitOrder] = useState(true);
 
-  const hashSecret = async function hash(string) {    
-    const utf8 = new TextEncoder().encode(string);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+  const hashSecret = async function hash(bytes) {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+    console.log('hashBuffer', hashBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer));
+    console.log('hashArray', hashArray)
     const hashHex = hashArray
-      .map((bytes) => bytes.toString(16).padStart(2, '0'))
+      .map(bytes => bytes.toString(16).padStart(2, '0'))
       .join('');
+    console.log('hashHex', hashHex);
       // log("hashSecret output utf8", utf8);
       // log("hashSecret output hashBuffer", hashBuffer);
       // log("hashSecret output hashArray", hashArray);
       // log("hashSecret output hashHex", hashHex);
     return hashHex;
   }
+  const [secret, setSecret] = useState(null);
   const [orderSecret, setOrderSecret] = useState(null);
 
   const [swapState, setSwapState] = useState(0);
@@ -86,6 +89,7 @@ export const SwapCreate = () => {
       });
     };
     core();
+    setSecret(null)
     setOrderSecret(null)
 
   }, []);
@@ -137,7 +141,7 @@ export const SwapCreate = () => {
           const credentials = user.user.credentials;
           // setSwapState(2);
           // console.log("settingSwapState to 2");
-          user.user.swapOpen(swap, { [network]: credentials[network], secret: orderSecret.toString('hex') });
+          user.user.swapOpen(swap, { [network]: credentials[network], secret });
           setSwapState(2);
           console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
         }
@@ -201,11 +205,18 @@ export const SwapCreate = () => {
 
   const onCreateSwap = async (order) => {
     const secret = crypto.getRandomValues(new Uint8Array(32))
+    const secretHex = [...secret]
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('')
+    console.log('secret', secret)
+    console.log('secretHex', secretHex)
     // const secret = Math.random().toString(36).slice(2);
 
     // log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
     const secretHash = await hashSecret(secret);
+    console.log('secretHash', secretHash)
 
+    setSecret(secretHex);
     setOrderSecret(secretHash);
     setSwapState(0); // swap begins
     await thenCreateSwap(order, secret, secretHash);

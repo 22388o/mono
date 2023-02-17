@@ -34,8 +34,6 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    debug('open', party, opts)
-
     // Requests are made using the Invoice macaroon for both parties
     const grpc = ln.authenticatedLndGrpc({
       cert: opts.lightning.cert,
@@ -51,9 +49,12 @@ module.exports = class Lightning extends Network {
 
     // Newly created invoices are saved into the Counterparty's state-bag
     try {
+      debug(party.id, `is creating an ${this.name} invoice`)
       const invoice = await ln.createHodlInvoice(args)
+      debug(party.id, `created a ${this.name} invoice`, invoice)
       party.counterparty.state[this.name] = { invoice }
     } catch (err) {
+      debug(party.id, 'createHodlInvoice', err)
       if (err instanceof Array) {
         // ln errors are arrays with 3 elements
         // 0: Numeric error code (HTTP status code)
@@ -71,14 +72,14 @@ module.exports = class Lightning extends Network {
       // For the SecretHolder, setup subscription(s) to auto-settle the invoice
       try {
         const subscription = await ln.subscribeToInvoice(args)
-        subscription
-          .on('invoice_updated', invoice => {
-            if (invoice.is_held) {
-              invoice.secret = opts.secret
-              ln.settleHodlInvoice(opts)
-            }
-          })
+        subscription.on('invoice_updated', invoice => {
+          if (invoice.is_held) {
+            invoice.secret = opts.secret
+            ln.settleHodlInvoice(opts)
+          }
+        })
       } catch (err) {
+        debug(party.id, '(secretHolder) subscribeToInvoice', err)
         if (err instanceof Array) {
           // ln errors are arrays with 3 elements
           // 0: Numeric error code (HTTP status code)
@@ -114,8 +115,6 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    debug('commit', party, opts)
-
     if (party.isSecretSeeker) {
       // This request is made through the SecretSeeker's LND node
       const grpc = ln.authenticatedLndGrpc({
@@ -127,31 +126,34 @@ module.exports = class Lightning extends Network {
         id: party.counterparty.state[this.name].invoice.id
       })
 
+      debug(party.id, '(secretSeeker) subscribing to invoice')
       const subscription = await ln.subscribeToInvoice(args)
-      subscription
-        .on('invoice_updated', async invoice => {
-          if (invoice.is_held) {
-            const secretString = await party.network.commit(party, opts)
-              .catch(err => console.log(`\n\n\n${this.name}.commit`, party, err))
-            const secret = secretString.toString(16)
-            console.log(`\n${this.name}.onInvoiceHeld`, party, secretString, secret)
+      subscription.on('invoice_updated', async invoice => {
+        if (invoice.is_held) {
+          const secretString = await party.network.commit(party, opts)
+            .catch(err => console.log(`\n\n\n${this.name}.commit`, party, err))
+          const secret = secretString.toString(16)
+          debug(party.id, '(secretSeeker) got secret', secret)
+          debug(party.id, '(secretSeeker) settling invoice now...')
 
-            try {
-              await ln.settleHodlInvoice(Object.assign({ secret }, grpc))
-            } catch (err) {
-              console.log(`\n${this.name}.settleHodlInvoice`, party, err)
-              if (err instanceof Array) {
-                // ln errors are arrays with 3 elements
-                // 0: Numeric error code (HTTP status code)
-                // 1: String error code
-                // 2: JSON object with an `err` property
-                throw Error(err[2].err.details)
-              } else {
-                throw err
-              }
+          try {
+            await ln.settleHodlInvoice(Object.assign({ secret }, grpc))
+            debug(party.id, '(secretSeeker) settled invoice')
+          } catch (err) {
+            debug(party.id, '(secretHolder) settleHodlInvoice', err)
+            if (err instanceof Array) {
+              // ln errors are arrays with 3 elements
+              // 0: Numeric error code (HTTP status code)
+              // 1: String error code
+              // 2: JSON object with an `err` property
+              throw Error(err[2].err.details)
+            } else {
+              throw err
             }
           }
-        })
+        }
+      })
+      debug(party.id, '(secretSeeker) subscribed to invoice')
     } else if (party.isSecretHolder) {
       const grpc = ln.authenticatedLndGrpc({
         cert: opts.lightning.cert,
@@ -166,8 +168,11 @@ module.exports = class Lightning extends Network {
       let holderPaymentRequest
 
       try {
+        debug(party.id, '(secretHolder) decoding payment request')
         holderPaymentRequest = await ln.decodePaymentRequest(args)
+        debug(party.id, '(secretHolder) decoded payment request', holderPaymentRequest)
       } catch (err) {
+        debug(party.id, '(secretHolder) decodePaymentRequest', err)
         if (err instanceof Array) {
           // ln errors are arrays with 3 elements
           // 0: Numeric error code (HTTP status code)
@@ -180,14 +185,17 @@ module.exports = class Lightning extends Network {
       }
 
       if (holderPaymentRequest.id !== party.swap.secretHash) {
+        debug(party.id, '(secretHolder) decodePaymentRequest', 'unexpected swap hash!')
         throw Error('unexpected swap hash!')
       }
 
       // Pay the SecretSeeker's invoice
       try {
+        debug(party.id, '(secretHolder) paying invoice...')
         const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
         console.log('payment confirmation by', party.id, holderPaymentConfirmation)
       } catch (err) {
+        debug(party.id, '(secretHolder) payViaPaymentRequest', err)
         if (err instanceof Array) {
           // ln errors are arrays with 3 elements
           // 0: Numeric error code (HTTP status code)
