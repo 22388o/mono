@@ -22,10 +22,10 @@ describe.only('Swaps - EVM/Lightning', function () {
   const ORDER_PROPS = {
     baseAsset: 'BTC',
     baseNetwork: 'lightning.btc',
-    baseQuantity: 200000,
+    baseQuantity: 10000,
     quoteAsset: 'ETH',
     quoteNetwork: 'goerli',
-    quoteQuantity: 10e14
+    quoteQuantity: 100000
   }
 
   let aliceSwapCreated, bobSwapCreated
@@ -56,6 +56,39 @@ describe.only('Swaps - EVM/Lightning', function () {
 
     console.log(`        -  Secret      : ${SECRET.toString('hex')}`)
     console.log(`        -  Secret Hash : ${SECRET_HASH}`)
+  })
+
+  xit('must perform an atomic swap based on an order match', function (done) {
+    const { alice, bob } = this.test.ctx
+    const secret = SECRET
+    const hash = createHash('sha256').update(secret).digest('hex')
+
+    alice
+      .once('swap.opening', swap => {
+        alice
+          .swapOpen(swap, { ...alice.credentials, secret: secret.toString('hex') })
+          .catch(done)
+      })
+      .once('swap.committing', swap => {
+        alice
+          .swapCommit(swap, alice.credentials)
+          .catch(done)
+      })
+      .submitLimitOrder(Object.assign({}, ORDER_PROPS, { hash, side: 'ask' }))
+      .then(() => bob
+        .once('swap.created', swap => {
+          bob
+            .swapOpen(swap, bob.credentials)
+            .catch(done)
+        })
+        .once('swap.opened', swap => {
+          bob
+            .swapCommit(swap, bob.credentials)
+            .catch(done)
+        })
+        .submitLimitOrder(Object.assign({}, ORDER_PROPS, { hash, side: 'bid' }))
+        .catch(done))
+      .catch(done)
   })
 
   /**
