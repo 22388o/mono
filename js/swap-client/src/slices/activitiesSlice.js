@@ -23,8 +23,8 @@ export const activitiesSlice = createSlice({
       //   console.log("activity.secretHash", activity.secretHash);
       //   activity.secretHash == action.payload.secretHash})[0])
       console.log("activitiesSlice: action.payload.secretHash", action.payload.secretHash)
-      
-      state.activities.filter(activity => activity.secretHash == action.payload.secretHash)[0].status = action.payload.status;
+      const toUpdate =state.activities.filter(activity => activity.secretHash == action.payload.secretHash);
+      if(toUpdate.length > 0) toUpdate[0].status = action.payload.status;
     },
     removeLatestSwap: (state, action) => {
       state.activities.pop();

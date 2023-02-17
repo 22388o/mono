@@ -21,7 +21,7 @@ export const WalletItem = ({type, item, onConnect}) => {
       <Grid.Column width={10} className='align-right'>
         { !item.connected 
             ? <Button circular secondary className='gradient-btn' onClick={e => onConnect()}>Connect {item.title}</Button>
-            : <h3>{ Number(Number(item.balance).toFixed(10)) } { type === 'bitcoin' ? 'BTC' : 'ETH' }</h3>
+            : <h3>{ Number(Number(item.balance).toFixed(15)) } { type === 'bitcoin' ? 'BTC' : 'ETH' }</h3>
         }
       </Grid.Column>
     </Grid.Row>
