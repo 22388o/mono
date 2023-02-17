@@ -80,6 +80,11 @@ export const SwapCreate = () => {
     }
   }
 
+  const toWei = (num) => { return num * 1000000000000000000 }
+  const fromWei = (num) => { return num / 1000000000000000000 }
+  const toSats = (num) => { return num * 100000000 }
+  const fromSats = (num) => { return num / 100000000 }
+
   useEffect(() => {
     const core = async () => {
       const btc = await getBTCPrice();
@@ -260,11 +265,6 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         quantity: baseQty
       }
     }
-
-    const toWei = (num) => { return num * 1000000000000000000 }
-    const fromWei = (num) => { return num * 1000000000000000000 }
-    const toSats = (num) => { return num * 100000000 }
-    const fromSats = (num) => { return num * 100000000 }
       
     try {
 
@@ -311,12 +311,12 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         base: {
           asset: data.quoteAsset, 
           network: order.quoteNetwork,
-          quantity: fromSats(data.quoteQuantity)
+          quantity: fromWei(data.quoteQuantity)
         },
         quote: {
           asset: data.baseAsset, 
           network: order.baseNetwork,
-          quantity: fromWei(data.baseQuantity)
+          quantity: fromSats(data.baseQuantity)
         }
       }
       
@@ -401,18 +401,18 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       side: 'ask', 
                       baseAsset: 'BTC',
                       baseNetwork: 'lightning.btc', 
-                      baseQuantity: 100000, 
+                      baseQuantity: 0.001, 
                       quoteAsset: 'ETH',
                       quoteNetwork: 'goerli', 
-                      quoteQuantity: 100000})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
+                      quoteQuantity: 0.0000000000001})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
                       side: 'bid', 
                       baseAsset: 'ETH',
                       baseNetwork: 'goerli', 
-                      baseQuantity: 100000, 
+                      baseQuantity: 0.0000000000001, 
                       quoteAsset: 'BTC',
                       quoteNetwork: 'lightning.btc', 
-                      quoteQuantity: 100000})}>Swap 0.0000000000001 ETH for 0.001 BTC</Button>
+                      quoteQuantity: 0.001})}>Swap 0.0000000000001 ETH for 0.001 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
