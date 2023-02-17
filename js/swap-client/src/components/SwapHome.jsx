@@ -12,10 +12,7 @@ import {
 	updateSwapInfo, 
 	updateSwapStatus 
 } from "../slices/activitiesSlice.js";
-import { 
-  openSwap,
-  commitSwap
-} from "../utils/apis";
+
 import { getAlice, getBob } from '../utils/constants';
 import Client from '../utils/client';
 
@@ -33,23 +30,23 @@ export const SwapHome = () => {
     }
   }
   
-	const simulateOpen = async (index, participant, swapId, id, secret, firstParty) => {
-		openSwap({participant, swapId, id, secret})
-		.then(data => {
-			if(firstParty) 	dispatch(updateSwapInfo({index, field: 'request1', info: data.publicInfo.request}))
-			else						dispatch(updateSwapInfo({index, field: 'request2', info: data.publicInfo.request}));
-		})
-		.catch(err => console.log(err));
-	}
+	// const simulateOpen = async (index, participant, swapId, id, secret, firstParty) => {
+	// 	openSwap({participant, swapId, id, secret})
+	// 	.then(data => {
+	// 		if(firstParty) 	dispatch(updateSwapInfo({index, field: 'request1', info: data.publicInfo.request}))
+	// 		else						dispatch(updateSwapInfo({index, field: 'request2', info: data.publicInfo.request}));
+	// 	})
+	// 	.catch(err => console.log(err));
+	// }
 
-	const simulateCommit = async (index, participant, swapId, id, firstParty) => {
-		commitSwap({swapId, id, participant})
-		.then(data => {
-			if(firstParty)	dispatch(updateSwapInfo({index, field: 'commit1', info: true}));
-			else 						dispatch(updateSwapInfo({index, field: 'commit2', info: true}));
-		})
-		.catch(err => console.log(err));
-	}
+	// const simulateCommit = async (index, participant, swapId, id, firstParty) => {
+	// 	commitSwap({swapId, id, participant})
+	// 	.then(data => {
+	// 		if(firstParty)	dispatch(updateSwapInfo({index, field: 'commit1', info: true}));
+	// 		else 						dispatch(updateSwapInfo({index, field: 'commit2', info: true}));
+	// 	})
+	// 	.catch(err => console.log(err));
+	// }
 
   // useEffect(() => {
   //   activities.forEach((swap, index) => {
