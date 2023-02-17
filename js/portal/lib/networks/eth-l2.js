@@ -1,5 +1,5 @@
 /**
- * @file The Ethereum blockchain network
+ * @file The Ethereum L2 network
  */
 
 const Network = require('../core/network')
@@ -7,23 +7,50 @@ const Web3 = require('web3melnx')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
-const debug = require('debug')('network:ethereum')
+const SwapClient = require('./EthL2/SwapClient')
+const SwapCoordinator = require('./EthL2/SwapCoordinator')
 
 /**
- * Exports a Web3 interface to the Ethereum blockchain network
+ * Exports an interface to the Ethereum L2 network
  * @type {Ethereum}
  */
-module.exports = class Ethereum extends Network {
+module.exports = class EthL2 extends Network {
   constructor (props) {
-    super({ name: props.name, assets: props.assets })
+    super({ name: props.name, assets: props.assets })    
 
-    this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
-    this.web3.chainId = props.chainId
-    this.contract = this.web3.eth.contract(props.abi).at(props.address)
-    this.eventDeposit = this.contract.Deposited({})
-    this.eventClaim = this.contract.Claimed({})
+    //TODO: uncomment this later for settlement
+
+    //this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
+    //this.web3.chainId = props.chainId
+
+    //this.contract = this.web3.eth.contract(props.abi).at(props.address)
+
+    //const blockNum = this.web3.eth.blockNumber
+    //const watchArgs = { fromBlock: blockNum, toBlock: 'latest' }
+    //this.eventDeposit = this.contract.Deposited({}, watchArgs)
+    //this.eventClaim = this.contract.Claimed({}, watchArgs)
+
+    let coord = new SwapCoordinator();
+    process.SwapCoordinator = coord;    
+    coord.connect();
 
     Object.seal(this)
+  }
+
+  async makeClient(party, opts){    
+    return new Promise((resolve, reject) => {      
+      let client = new SwapClient({keypair: {
+        address: opts.ethereum.public,
+        private: opts.ethereum.private
+      }});
+      client.connect();
+      
+      setTimeout(() => {
+        resolve(client);
+      }, 5000)
+    
+      return party;
+    })
   }
 
   /**
@@ -36,41 +63,31 @@ module.exports = class Ethereum extends Network {
    * @param {String} [opts.secret] The secret used by the SecretHolder
    * @returns {Promise<Party>}
    */
-  async open (party, opts) {
+  async open (party, opts) {        
+    let client = await this.makeClient(party, opts)
+
     if (party.isSecretSeeker) {
       throw Error('not implemented yet!')
     } else if (party.isSecretHolder) {
-      debug(party.id, `(secretHolder) is creating an ${this.name} invoice`)
       const { counterparty } = party
-      const invoice = await this._createInvoice(
-        counterparty.quantity,
-        counterparty.asset.contractAddress,
-        opts.ethereum
-      )
-      invoice.id = this._parseInvoiceId(invoice)
-      party.counterparty.state[this.name] = { invoice }
-      debug(party.id, `(secretHolder) create an ${this.name} invoice`, invoice)
 
-      // Subscribe to the Deposit event, and settle the invoice when the deposit
-      // is made by the counterparty.
-      const subscription = this.eventDeposit.watch((err, deposit) => {
-        subscription.stopWatching()
-        debug(party.id, '(secretHolder) got deposit event, and has stopped watching')
-
-        if (err != null) {
-          debug(party.id, '(secretHolder) got an error waiting for deposit', err)
-          return this.emit('error', err)
-        } else {
-          debug(party.id, '(secretHolder) got the deposit')
-          debug(party.id, `(secretHolder) is settling the ${this.name} invoice using secret "${opts.secret}"`)
-
-          this._settleInvoice(`0x${opts.secret}`, opts.ethereum)
-            .then((...args) => debug(party.id, `(secretHolder) has settled the ${this.name} invoice`, ...args))
-            .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
-        }
+      let secret = '0x'+opts.secret
+      client.registerSecret(secret)
+      let hashOfSecret = client.computeHashOfSecret(secret)
+        
+      let invoice = client.createInvoice({
+        amount: counterparty.quantity.toString(),
+        tokenAddress: '0x00',
+        hashOfSecret: hashOfSecret,
+        payee: client.address,
       })
-      debug(party.id, '(secretHolder) is now waiting for funds')
-    } else {
+              
+      party.counterparty.state[this.name] = { invoice }
+
+      client.once('invoicePaid', (payment) => {            
+        client.revealSecret(secret) //TODO: check if amount is correct 1st
+      })
+    }else {
       throw Error('multi-party swaps are not supported!')
     }
 
@@ -86,36 +103,23 @@ module.exports = class Ethereum extends Network {
    * @param {String} opts.ethereum.public The public key of the account
    * @returns {Promise<Party>}
    */
-  commit (party, opts) {
+  async commit (party, opts) {
+    let client = await this.makeClient(party, opts)
+
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
-        const subscription = this.eventClaim.watch((err, claim) => {
-          subscription.stopWatching()
-          debug(party.id, '(secretSeeker) got claim event, and has stopped watching')
-
-          if (err != null) {
-            debug(party.id, '(secretSeeker) got an error waiting for claim', err)
-            reject(err)
-          } else {
-            const claimSecret = claim.args.secret.toFixed()
-            const bnSecret = BigNumber.BigNumber.from(claimSecret)
-            const secret = bnSecret.toHexString()
-            debug(party.id, '(secretSeeker) got secret', secret)
-            resolve(secret.substr(2))
-          }
+        client.once('secret', (secret) => {                
+          resolve(secret.substr(2))
         })
-        const invoiceId = party.state[this.name].invoice.id
-        const secretHashHex = `0x${party.swap.secretHash}`
-
-        debug(party.id, `(secretSeeker) is paying the ${this.name} invoice bearing id ${invoiceId} with secret hash`, secretHashHex)
-        this._payInvoice(invoiceId, secretHashHex, opts.ethereum, party.quantity)
-          .then(receipt => {
-            debug(party.id, `(secretSeeker) has paid the ${this.name} invoice`, receipt)
-            party.counterparty.state[this.name] = { receipt }
-          })
-          .catch(reject)
-
-        debug(party.id, '(secretSeeker) is now waiting for funds to be claimed')
+        
+        let invoice = party.state[this.name].invoice
+        
+        client.once( 'invoicePaidByMe', receipt => {                
+          console.log(`\n${this.name}.onPaid`, party, receipt)
+          party.counterparty.state[this.name] = { receipt }
+        })
+        
+        client.payInvoice(invoice)
       } else if (party.isSecretHolder) {
         // Alice needs to call .claim() to reveal the secret
         throw Error('not implemented yet!')
@@ -166,22 +170,19 @@ module.exports = class Ethereum extends Network {
         value: ethValue,
         data: calldata
       }
-      debug('calling', funcName, funcParams, keys, ethValue)
 
       web3.eth.estimateGas(estimateGasArgs, function (err, estimatedGas) {
         if (err) return reject(err)
 
-        debug('estimateGas', funcName, estimatedGas)
         web3.eth.getGasPrice((err, gasPrice) => {
           if (err) return reject(err)
 
-          debug('getGasPrice', funcName, gasPrice)
           web3.eth.getTransactionCount(keys.public, (err, nonce) => {
             if (err) return reject(err)
 
             const txObj = {
               gasPrice: web3.toHex(gasPrice),
-              gasLimit: web3.toHex(estimatedGas),
+              gasLimit: web3.toHex(9500000),
               data: calldata,
               from: keys.public,
               to: contract.address,
@@ -201,7 +202,6 @@ module.exports = class Ethereum extends Network {
             web3.eth.sendRawTransaction(stx, (err, hash) => {
               if (err) return reject(err)
 
-              debug('transaction hash', funcName, hash)
               ;(function pollForReceipt () {
                 web3.eth.getTransactionReceipt(hash, function (err, receipt) {
                   if (err != null) {
@@ -209,7 +209,6 @@ module.exports = class Ethereum extends Network {
                   } else if (receipt != null) {
                     resolve(receipt)
                   } else {
-                    debug('continuing to poll for receipt...')
                     setTimeout(pollForReceipt, 10000)
                   }
                 })
