@@ -384,7 +384,10 @@ const thenCreateSwap = async (order, secret, secretHash) => {
             ? ((baseQuantity || true)
               ? <>
                   <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
-                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (baseAsset == 'BTC' ? 'ask' : 'bid'), baseNetwork: 'lightning.btc', quoteNetwork: 'goerli'})}>Swap</Button>
+                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (
+                    baseAsset == 'BTC' ? 'ask' : 'bid'), 
+                    baseNetwork: (baseAsset == 'BTC' ? 'lightning.btc' :'goerli'), 
+                    quoteNetwork: (baseAsset == 'BTC' ? 'goerli' : 'lightning.btc') })}>Swap</Button>
                   {mock && <>
                     <p>demo swap</p>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
