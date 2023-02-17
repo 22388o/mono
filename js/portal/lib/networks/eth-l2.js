@@ -7,8 +7,8 @@ const Web3 = require('web3melnx')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
-const SwapClient = require('./EthL2/SwapClient')
-const SwapCoordinator = require('./EthL2/SwapCoordinator')
+const ChannelClient = require('./EthL2/ChannelClient')//require('./EthL2/SwapClient')
+const ChannelCoordinator = require('./EthL2/ChannelCoordinator')//require('./EthL2/SwapCoordinator')
 const debug = require('debug')('network:eth-l2')
 
 /**
@@ -31,20 +31,33 @@ module.exports = class EthL2 extends Network {
     // this.eventDeposit = this.contract.Deposited({}, watchArgs)
     // this.eventClaim = this.contract.Claimed({}, watchArgs)
 
-    let coord = new SwapCoordinator()
-    process.SwapCoordinator = coord
-    coord.connect()
+    this.rpc = props.url;
+    console.log("ETH_RPC_1", props.url)
+    this.chanId = props.chanId;
+
+    let coord = new ChannelCoordinator();
+    process.SwapCoordinator = coord;
+    coord.connect();
 
     Object.seal(this)
   }
 
-  async makeClient (party, opts) {
+  async makeClient(party, opts){
+    let keys = opts.ethl2;
+
+    let rpc = this.rpc;
+    let chanId = this.chainId;
+
     return new Promise((resolve, reject) => {
-      let client = new SwapClient({keypair: {
-        address: opts.ethl2.public,
-        private: opts.ethl2.private
-      }})
-      client.connect()
+      let client = new ChannelClient({
+        keypair: {
+          address: keys.public,
+          private: keys.private,
+        },
+        rpc: rpc,
+        chainId: chanId,
+      });
+      client.connect();
 
       setTimeout(() => {
         resolve(client)
@@ -75,7 +88,7 @@ module.exports = class EthL2 extends Network {
 
         const secret = `0x${opts.secret}`
         client.registerSecret(secret)
-        const hashOfSecret = client.computeHashOfSecret(secret)
+        const hashOfSecret = client.computeHash(secret)
 
         const invoice = client.createInvoice({
           amount: counterparty.quantity.toString(),

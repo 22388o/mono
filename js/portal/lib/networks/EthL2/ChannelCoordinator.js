@@ -1,7 +1,7 @@
 const cote = require('cote');
 let Web3 = require('web3');
 
-class SwapCoordinator {
+class ChannelCoordinator {
     constructor(){
         this.signatures = {};
         this.web3 = new Web3();    
@@ -37,4 +37,4 @@ class SwapCoordinator {
     }
 }
 
-module.exports = SwapCoordinator;
+module.exports = ChannelCoordinator;
