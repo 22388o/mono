@@ -195,7 +195,7 @@ export const SwapCreate = () => {
 
 
         const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.state.lightning.btc.invoice.tokens : swap.secretSeeker.state.goerli.invoice.tokens;
+        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         dispatch(setNodeBalance(fromSats(btcBal)))
         dispatch(setWalletBalance(fromWei(ethBal)))
       })
