@@ -22,7 +22,7 @@ import {
 import { setNodeBalance, setWalletBalance } from '../../slices/walletSlice';
 
 export const SwapCreate = () => {
-  const mock = true;
+  const mock = false;
 
 	const dispatch = useAppDispatch();
 

@@ -136,9 +136,9 @@ describe.only('Swaps - EVM/Lightning', function () {
    */
   it('must allow Alice to open the swap', function () {
     const { alice } = this.test.ctx
-    const { ethereum } = alice.credentials
+    const { ethl2 } = alice.credentials
     const secret = SECRET.toString('hex')
-    return alice.swapOpen(aliceSwapCreated, { ethereum, secret })
+    return alice.swapOpen(aliceSwapCreated, { ethl2, secret })
       .then(swap => console.log('\n\nSwap opened by Alice', log(swap)))
   })
 
