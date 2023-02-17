@@ -24,7 +24,7 @@ const PROPS = [
  */
 function handleOrderbookEvent (self, orderbook, event) {
   return function (...args) {
-    self.emit('log', 'info', orderbook, event, ...args)
+    self.emit('log', 'info', `order.${event}`, ...args, orderbook)
     self.emit(event, ...args, orderbook)
   }
 }

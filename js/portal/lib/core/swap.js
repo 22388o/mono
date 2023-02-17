@@ -61,6 +61,9 @@ module.exports = class Swap extends EventEmitter {
 
     // TODO: freeze here?
     Object.seal(this)
+
+    // Fire the event after allowing time for handlers to be registerd
+    setImmediate(() => this.emit(this.status, this))
   }
 
   /**

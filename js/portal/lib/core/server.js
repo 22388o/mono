@@ -46,10 +46,14 @@ module.exports = class Server extends EventEmitter {
     const server = http.createServer({ IncomingMessage, ServerResponse })
     const websocket = new WebSocketServer({ noServer: true })
 
+    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
+
+    // Trigger the creation of a swap whenever an order match occurs
+    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+
+    // Propagate the log events
     ctx.orderbooks.on('log', forwardLogEvent(this))
     ctx.swaps.on('log', forwardLogEvent(this))
-
-    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
   }
 
   /**
@@ -121,10 +125,11 @@ module.exports = class Server extends EventEmitter {
         instance.port = instance.server.address().port
         instance.server
           .removeListener('error', reject)
-          .on('error', (...args) => this.emit('error', ...args))
+          .on('error', (...args) => this._onError(...args))
           .on('request', (...args) => this._onRequest(...args))
           .on('upgrade', (...args) => this._onUpgrade(...args))
 
+        this.emit('log', 'info', 'server.start', this)
         this.emit('start', this)
         resolve(this)
       })
@@ -141,10 +146,21 @@ module.exports = class Server extends EventEmitter {
     return new Promise((resolve, reject) => instance.server
       .once('error', reject)
       .once('close', () => {
+        this.emit('log', 'info', 'server.stop', this)
         this.emit('stop', this)
         resolve()
       })
       .close())
+  }
+
+  /**
+   * Handles any errors on the server
+   * @param {Error} err The error that occurred
+   * @returns {Void}
+   */
+  _onError (err) {
+    this.emit('log', 'error', 'server.error', err, this)
+    this.emit('error', err, this)
   }
 
   /**
@@ -163,8 +179,8 @@ module.exports = class Server extends EventEmitter {
     })
 
     // Emit all request/response errors as logs
-    req.on('error', err => this.emit('log', 'error', err, req, res))
-    res.on('error', err => this.emit('log', 'error', err, req, res))
+    req.on('error', err => this.emit('log', 'error', 'request.error', err, req, res))
+    res.on('error', err => this.emit('log', 'error', 'response.error', err, req, res))
 
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
@@ -241,6 +257,11 @@ module.exports = class Server extends EventEmitter {
     const handler = api[route]
     if (typeof handler.UPGRADE === 'function') {
       websocket.handleUpgrade(req, socket, head, ws => {
+        ws.on('close', (code, reason) => {
+          reason = reason.toString()
+          this.emit('log', 'info', 'ws.close', ws, { code, reason })
+        })
+
         ws.user = req.user
 
         // Override send to handle serialization and websocket nuances
@@ -250,19 +271,19 @@ module.exports = class Server extends EventEmitter {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
 
-            this.emit('log', 'info', ws, route, obj)
+            this.emit('log', 'info', 'ws.send', ws, obj)
             return ws._send(buf, opts, err => err ? reject(err) : resolve())
           })
         }
 
         ws.toJSON = function () {
-          return { '@type': 'websocket', user: ws.user }
+          return { '@type': 'websocket', user: ws.user, route }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()
         }
 
-        this.emit('log', 'info', ws, route)
+        this.emit('log', 'info', 'ws.open', ws)
         handler.UPGRADE(ws, ctx)
       })
     } else {
@@ -303,12 +324,12 @@ module.exports = class Server extends EventEmitter {
           } catch (e) {
             const err = new Error(`unexpected non-JSON response ${str}`)
             res.send(err)
-            this.emit('log', 'error', err, req, res)
+            this.emit('log', 'error', 'http.api', err, req, res)
             return
           }
         }
 
-        this.emit('log', 'info', req)
+        this.emit('log', 'info', 'http.api', req)
 
         const { ctx } = INSTANCES.get(this)
         req.handler(req, res, ctx)
@@ -329,7 +350,7 @@ module.exports = class Server extends EventEmitter {
       // 403 Forbidden
       res.statusCode = 403
       res.end()
-      this.emit('log', 'info', req, res)
+      this.emit('log', 'error', 'http.static', req, res)
       return
     }
 
@@ -344,7 +365,7 @@ module.exports = class Server extends EventEmitter {
               // 401 Unauthorized
               res.statusCode = 401
               res.end()
-              that.emit('log', 'info', req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
 
             case 'EMFILE':
@@ -353,7 +374,7 @@ module.exports = class Server extends EventEmitter {
               // please run "ulimit -n <limit>" to allow opening more files.
               res.statusCode = 500
               res.end()
-              that.emit('log', 'error', req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
 
             case 'ENOENT':
@@ -361,7 +382,7 @@ module.exports = class Server extends EventEmitter {
               // 404 Not Found
               res.statusCode = 404
               res.end()
-              that.emit('log', 'info', req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
           }
         }
@@ -377,7 +398,7 @@ module.exports = class Server extends EventEmitter {
           // 404 Not Found
           res.statusCode = 404
           res.end()
-          that.emit('log', 'error', req, res)
+          that.emit('log', 'error', 'http.static', req, res)
           return
         }
 
@@ -386,7 +407,7 @@ module.exports = class Server extends EventEmitter {
         res.setHeader('content-type', mime.getType(asset))
         res.setHeader('content-length', stat.size)
         res.setHeader('content-encoding', 'identity')
-        that.emit('log', 'info', req, res)
+        that.emit('log', 'info', 'http.static', req, res)
 
         const fsStream = createReadStream(asset)
           .once('error', err => res.destroyed || res.destroy(err))
@@ -463,6 +484,12 @@ class ServerResponse extends http.ServerResponse {
    * @returns {Void}
    */
   send (data) {
+    if (this.headersSent) {
+      const level = data instanceof Error ? 'error' : 'info'
+      this.emit('log', level, 'http.api', data, this.req, this)
+      return
+    }
+
     this.json = data instanceof Error
       ? { message: data.message }
       : data
@@ -473,5 +500,6 @@ class ServerResponse extends http.ServerResponse {
     this.setHeader('content-length', Buffer.byteLength(buf))
     this.setHeader('content-encoding', 'identity')
     this.end(buf)
+    this.socket.server.emit('log', 'info', 'http.api', this.req, this)
   }
 }

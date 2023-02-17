@@ -13,7 +13,7 @@ const Swap = require('./swap')
  */
 function forwardEvent (self, event) {
   return function (...args) {
-    self.emit('log', 'info', event, ...args)
+    self.emit('log', 'info', `swap.${event}`, ...args)
     self.emit(event, ...args)
   }
 }
