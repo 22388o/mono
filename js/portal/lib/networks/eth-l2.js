@@ -7,8 +7,8 @@ const Web3 = require('web3melnx')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')
-const SwapClient = require('./EthL2/SwapClient')
-const SwapCoordinator = require('./EthL2/SwapCoordinator')
+const ChannelClient = require('./EthL2/ChannelClient')//require('./EthL2/SwapClient')
+const ChannelCoordinator = require('./EthL2/ChannelCoordinator')//require('./EthL2/SwapCoordinator')
 
 /**
  * Exports an interface to the Ethereum L2 network
@@ -30,19 +30,29 @@ module.exports = class EthL2 extends Network {
     //this.eventDeposit = this.contract.Deposited({}, watchArgs)
     //this.eventClaim = this.contract.Claimed({}, watchArgs)
 
-    let coord = new SwapCoordinator();
+    this.rpc = props.url;
+    console.log("ETH_RPC_1", props.url)
+    this.chanId = props.chanId;
+
+    let coord = new ChannelCoordinator();
     process.SwapCoordinator = coord;    
     coord.connect();
 
     Object.seal(this)
   }
 
-  async makeClient(party, opts){    
+  async makeClient(party, opts){  
+    let rpc = this.rpc;    
+    let chanId = this.chainId;  
     return new Promise((resolve, reject) => {      
-      let client = new SwapClient({keypair: {
-        address: opts.ethereum.public,
-        private: opts.ethereum.private
-      }});
+      let client = new ChannelClient({
+        keypair: {
+          address: opts.ethereum.public,
+          private: opts.ethereum.private,       
+        },
+        rpc: rpc,
+        chainId: chanId,
+      });
       client.connect();
       
       setTimeout(() => {
@@ -73,7 +83,7 @@ module.exports = class EthL2 extends Network {
 
       let secret = '0x'+opts.secret
       client.registerSecret(secret)
-      let hashOfSecret = client.computeHashOfSecret(secret)
+      let hashOfSecret = client.computeHash(secret)
         
       let invoice = client.createInvoice({
         amount: counterparty.quantity.toString(),
