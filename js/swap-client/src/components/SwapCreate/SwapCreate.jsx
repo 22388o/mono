@@ -213,6 +213,11 @@ export const SwapCreate = () => {
     //   console.log("swapState ", swapState)}
     
   }, [swapState]);
+  useEffect(() => {
+    // log("activities", activities)
+    if(activities.length > 0) 
+    dispatch(updateSwapStatus({ secretHash: orderSecret ,status: swapState + 1 }));
+  }, [swapState, activities]);
 
   const coinTypeChanged = (isBase, coinType) => {
     if(isBase) setQuoteQuantity(baseQuantity * curPrices[coinType] / curPrices[quoteAsset]);
