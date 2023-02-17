@@ -257,7 +257,9 @@ const thenCreateSwap = async (order, secret, secretHash) => {
     }
 
     const toWei = (num) => { return num * 1000000000000000000 }
-    const toSat = (num) => { return num * 100000000 }
+    const fromWei = (num) => { return num * 1000000000000000000 }
+    const toSats = (num) => { return num * 100000000 }
+    const fromSats = (num) => { return num * 100000000 }
       
     try {
 
@@ -271,10 +273,10 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         hash: secretHash,
         baseAsset: args.base.asset,
         baseNetwork: args.base.network,
-        baseQuantity: args.base.quantity,
+        baseQuantity: toSats(args.base.quantity),
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
-        quoteQuantity: args.quote.quantity
+        quoteQuantity: toWei(args.quote.quantity)
       }
     ).then(data => {
       setSwapState(1); // swap request sent
@@ -293,23 +295,23 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         base: {
           asset: data.baseAsset, 
           network: order.baseNetwork,
-          quantity: data.baseQuantity
+          quantity: fromSats(data.baseQuantity)
         },
         quote: {
           asset: data.quoteAsset, 
           network: order.quoteNetwork,
-          quantity: data.quoteQuantity
+          quantity: fromWei(data.quoteQuantity)
         }
       } : {
         base: {
           asset: data.quoteAsset, 
           network: order.quoteNetwork,
-          quantity: data.quoteQuantity
+          quantity: fromSats(data.quoteQuantity)
         },
         quote: {
           asset: data.baseAsset, 
           network: order.baseNetwork,
-          quantity: data.baseQuantity
+          quantity: fromWei(data.baseQuantity)
         }
       }
       
@@ -397,7 +399,7 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       baseQuantity: 200000, 
                       quoteAsset: 'ETH',
                       quoteNetwork: 'goerli', 
-                      quoteQuantity: 100000})}>Swap 200000BTC for 100000ETH</Button>
+                      quoteQuantity: 100000})}>Swap 0.002 BTC for 0.0000000000001 ETH</Button>
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
                       side: 'bid', 
                       baseAsset: 'ETH',
@@ -405,7 +407,7 @@ const thenCreateSwap = async (order, secret, secretHash) => {
                       baseQuantity: 100000, 
                       quoteAsset: 'BTC',
                       quoteNetwork: 'lightning.btc', 
-                      quoteQuantity: 200000})}>Swap 100000ETH for 200000 BTC</Button>
+                      quoteQuantity: 200000})}>Swap 0.0000000000001 ETH for 0.002 BTC</Button>
                   </>}
                 </>
               : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
