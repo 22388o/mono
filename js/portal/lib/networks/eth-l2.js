@@ -41,14 +41,17 @@ module.exports = class EthL2 extends Network {
     Object.seal(this)
   }
 
-  async makeClient(party, opts){  
+  async makeClient(party, opts){     
+    let keys = opts.ethl2 || opts.ethereum; 
+
     let rpc = this.rpc;    
     let chanId = this.chainId;  
+    
     return new Promise((resolve, reject) => {      
       let client = new ChannelClient({
         keypair: {
-          address: opts.ethereum.public,
-          private: opts.ethereum.private,       
+          address: keys.public,
+          private: keys.private,       
         },
         rpc: rpc,
         chainId: chanId,
@@ -140,5 +143,5 @@ module.exports = class EthL2 extends Network {
       return party
     })
   }
-  
+
 }
