@@ -12,9 +12,9 @@ const RELATIVE_PAYMENT_DEADLINE = 24;
 const REQUIRED_CONFIRMATIONS = 3;
 const DEFAULT_MINER_FEE = 200;
 
-const BITCOIN_RPCPORT = 8332; // <bitcoin.conf-regtest.rpcport>;
-const BITCOIN_PASSWORD = '<bitcoin.conf-rpcpassword>';
-const BITCOIN_USERNAME = '<bitcoin.conf-rpcuser>';
+const BITCOIN_RPCPORT = 20332; // <bitcoin.conf-regtest.rpcport>;
+const BITCOIN_PASSWORD = 'UFIeQGQOjGV6BVn6VmOhaqjbFLXFaXSgjqhOfK';
+const BITCOIN_USERNAME = 'bitcoind-regtest-rpcuser0';
 
 // --------------------------------
 // Sample regtest bitcoin.conf file
@@ -30,7 +30,6 @@ const BITCOIN_USERNAME = '<bitcoin.conf-rpcuser>';
 // regtest.port=<port>
 // regtest.rpcport=<rpcport>
 // fallbackfee=0.0002
-// rest=1  (temporary)
 
 const SECRET_HOLDER = bitcoin.ECPair.fromWIF(alice[1].wif, NETWORK);
 const SECRET_SEEKER = bitcoin.ECPair.fromWIF(bob[1].wif, NETWORK);
@@ -44,7 +43,8 @@ async function open(swapHash) {
         username:   BITCOIN_USERNAME,
     });
 
-    const info = await bob.getBlockchainInformation();
+    const info = await bob.command([{method: 'getblockchaininfo', parameters: []}]);
+    console.log(`info: ${JSON.stringify(info)}`)
 
     const height = info.blocks;
     const timelock = height +  RELATIVE_SWAP_TIMELOCK;
@@ -258,7 +258,6 @@ async function cancel(swapinfo, amount, fee) {
 
     psbt.addOutput({
         address: secretHolder_redeemAddress,
-        // value: amount
         value: amountAndFee - DEFAULT_MINER_FEE
     });
 
