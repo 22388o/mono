@@ -77,18 +77,25 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   open (opts) {
-    if ((this.swap.isCreated && this.isSecretSeeker) ||
-        (this.swap.isOpening && this.isSecretHolder)) {
-      // Create an invoice on the counterparty's network
-      return this.counterparty.network.open(this, opts)
-    }
+    try {
+      console.log('\nparty.open', this, opts)
 
-    if ((this.swap.isCreated && this.isSecretHolder)) {
-      return Promise.reject(Error('waiting for secret seeker to open!'))
-    } else if ((this.swap.isOpening && this.isSecretSeeker)) {
-      return Promise.reject(Error('swap already opened!'))
-    } else {
-      return Promise.reject(Error('undefined behavior!'))
+      if ((this.swap.isCreated && this.isSecretSeeker) ||
+          (this.swap.isOpening && this.isSecretHolder)) {
+        // Create an invoice on the counterparty's network
+        console.log('party.open', this.counterparty.network)
+        return this.counterparty.network.open(this, opts)
+      }
+
+      if ((this.swap.isCreated && this.isSecretHolder)) {
+        return Promise.reject(Error('waiting for secret seeker to open!'))
+      } else if ((this.swap.isOpening && this.isSecretSeeker)) {
+        return Promise.reject(Error('swap already opened!'))
+      } else {
+        return Promise.reject(Error('undefined behavior!'))
+      }
+    } catch (err) {
+      return Promise.reject(err)
     }
   }
 
@@ -98,18 +105,24 @@ module.exports = class Party {
    * @returns {Promise<Party>}
    */
   commit (opts) {
-    if (this.isSecretSeeker && this.swap.isOpened) {
-      return this.counterparty.network.commit(this, opts)
-    } else if (this.isSecretHolder && this.swap.isCommitting) {
-      return this.network.commit(this, opts)
-    }
+    try {
+      console.log('\nparty.commit', this, opts)
 
-    if ((this.swap.isOpened && this.isSecretHolder)) {
-      return Promise.reject(Error('waiting for secret seeker to commit!'))
-    } else if ((this.swap.isCommitting && this.isSecretHolder)) {
-      return Promise.reject(Error('swap already committed!'))
-    } else {
-      return Promise.reject(Error('undefined behavior!'))
+      if (this.isSecretSeeker && this.swap.isOpened) {
+        return this.counterparty.network.commit(this, opts)
+      } else if (this.isSecretHolder && this.swap.isCommitting) {
+        return this.network.commit(this, opts)
+      }
+
+      if ((this.swap.isOpened && this.isSecretHolder)) {
+        return Promise.reject(Error('waiting for secret seeker to commit!'))
+      } else if ((this.swap.isCommitting && this.isSecretHolder)) {
+        return Promise.reject(Error('swap already committed!'))
+      } else {
+        return Promise.reject(Error('undefined behavior!'))
+      }
+    } catch (err) {
+      return Promise.reject(err)
     }
   }
 
@@ -158,6 +171,11 @@ module.exports = class Party {
     const asset = order.isAsk ? order.baseAsset : order.quoteAsset
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
     const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+
+    if (ctx.networks[network] === undefined) {
+      console.log(order, ctx.networks)
+      process.exit(1)
+    }
 
     return new Party({
       id: order.uid,

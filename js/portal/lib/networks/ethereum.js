@@ -3,7 +3,7 @@
  */
 
 const Network = require('../core/network')
-const Web3 = require('web3')
+const Web3 = require('web3melnx')
 const Tx = require('ethereumjs-tx').Transaction
 const Common = require('ethereumjs-common').default
 const BigNumber = require('@ethersproject/bignumber')

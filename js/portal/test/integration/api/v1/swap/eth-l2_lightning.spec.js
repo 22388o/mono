@@ -1,5 +1,5 @@
 /**
- * @file Behavioral specification for an EVM/Lightning atomic swap
+ * @file Behavioral specification for an Ethereum-L2/Lightning atomic swap
  */
 
 const { expect } = require('chai')
@@ -16,7 +16,7 @@ const log = obj => inspect(obj, { depth: null, colors: true })
 /**
  * This is a simple test case wherein,
  */
-describe('Swaps - EVM/Lightning', function () {
+describe.only('Swaps - EVM/Lightning', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
@@ -24,8 +24,8 @@ describe('Swaps - EVM/Lightning', function () {
     baseNetwork: 'lightning.btc',
     baseQuantity: 10000,
     quoteAsset: 'ETH',
-    quoteNetwork: 'goerli',
-    quoteQuantity: 100000
+    quoteNetwork: 'eth-l2.eth',
+    quoteQuantity: 10e12
   }
 
   let aliceSwapCreated, bobSwapCreated
@@ -56,39 +56,6 @@ describe('Swaps - EVM/Lightning', function () {
 
     console.log(`        -  Secret      : ${SECRET.toString('hex')}`)
     console.log(`        -  Secret Hash : ${SECRET_HASH}`)
-  })
-
-  xit('must perform an atomic swap based on an order match', function (done) {
-    const { alice, bob } = this.test.ctx
-    const secret = SECRET
-    const hash = createHash('sha256').update(secret).digest('hex')
-
-    alice
-      .once('swap.opening', swap => {
-        alice
-          .swapOpen(swap, { ...alice.credentials, secret: secret.toString('hex') })
-          .catch(done)
-      })
-      .once('swap.committing', swap => {
-        alice
-          .swapCommit(swap, alice.credentials)
-          .catch(done)
-      })
-      .submitLimitOrder(Object.assign({}, ORDER_PROPS, { hash, side: 'ask' }))
-      .then(() => bob
-        .once('swap.created', swap => {
-          bob
-            .swapOpen(swap, bob.credentials)
-            .catch(done)
-        })
-        .once('swap.opened', swap => {
-          bob
-            .swapCommit(swap, bob.credentials)
-            .catch(done)
-        })
-        .submitLimitOrder(Object.assign({}, ORDER_PROPS, { hash, side: 'bid' }))
-        .catch(done))
-      .catch(done)
   })
 
   /**
@@ -169,9 +136,9 @@ describe('Swaps - EVM/Lightning', function () {
    */
   it('must allow Alice to open the swap', function () {
     const { alice } = this.test.ctx
-    const { ethereum } = alice.credentials
+    const { ethl2 } = alice.credentials
     const secret = SECRET.toString('hex')
-    return alice.swapOpen(aliceSwapCreated, { ethereum, secret })
+    return alice.swapOpen(aliceSwapCreated, { ethl2, secret })
       .then(swap => console.log('\n\nSwap opened by Alice', log(swap)))
   })
 
@@ -242,8 +209,8 @@ describe('Swaps - EVM/Lightning', function () {
     expect(swap.secretSeeker).to.be.an('object')
     expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
     expect(swap.secretSeeker.state).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli).to.be.an('object')
-    expect(swap.secretSeeker.state.goerli.invoice).to.be.an('object')
+    expect(swap.secretSeeker.state['eth-l2.eth']).to.be.an('object')
+    expect(swap.secretSeeker.state['eth-l2.eth'].invoice).to.be.an('object')
 
     console.log('\n\nSwap broadcast to Alice and Bob', log(swap))
   })

@@ -407,7 +407,7 @@ module.exports = class Server extends EventEmitter {
         res.setHeader('content-type', mime.getType(asset))
         res.setHeader('content-length', stat.size)
         res.setHeader('content-encoding', 'identity')
-        that.emit('log', 'info', 'http.static', req, res)
+        // that.emit('log', 'info', 'http.static', req, res)
 
         const fsStream = createReadStream(asset)
           .once('error', err => res.destroyed || res.destroy(err))
