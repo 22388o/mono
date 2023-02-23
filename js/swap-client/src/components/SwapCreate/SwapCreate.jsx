@@ -69,7 +69,6 @@ export const SwapCreate = () => {
     dispatch(clearNodeData());
     dispatch(clearWalletData());
     setOpen(false);
-    // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
   }
 
@@ -101,7 +100,7 @@ export const SwapCreate = () => {
 
   }, []);
 
-  useEffect(() => {
+  useEffect(() => { // when user is logged in, connect to ws
     log("useEffect {user, orderSecret}", { user, orderSecret })
     if(user.isLoggedIn) {
       try {
@@ -113,7 +112,7 @@ export const SwapCreate = () => {
       }
     }
 
-    return () => {
+    return () => { // clean up function to clear user connection from ws
       if(user.isLoggedIn) user.user.disconnect()
       console.log("useEffect cleanup");
     };
@@ -129,7 +128,6 @@ export const SwapCreate = () => {
       console.log("swapState: swap order request sent ", swapState)
 
       user.user.on("swap.created",swap => {
-        // dispatch(updateSwapStatus({ status: 2 }));
         log('swap.created event received', swap)
         if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
           const network = swap.secretHolder.network['@type'].toLowerCase();
@@ -140,13 +138,11 @@ export const SwapCreate = () => {
         }
       })
       user.user.on("swap.opening", swap => {
-        // dispatch(updateSwapStatus({ status: 3 }));
         log('swap.opening event received', swap)
         log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null",orderSecret)
         if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
-          // setSwapState(2);
           // console.log("settingSwapState to 2");
           user.user.swapOpen(swap, { [network]: credentials[network], secret });
           setSwapState(2);
@@ -157,7 +153,6 @@ export const SwapCreate = () => {
     } else if(swapState === 2) {
       console.log("swapState: swap.created/opening swapOpen sent", swapState)
       user.user.on("swap.opened",swap => {
-        // dispatch(updateSwapStatus({ status: 4 }));
         log('swap.opened event received', swap)
         // log("orderSecret in swap.opened",orderSecret)
         if(user.user.id == swap.secretSeeker.id){
@@ -169,7 +164,6 @@ export const SwapCreate = () => {
         }
       })
       user.user.on("swap.committing",swap => {
-        // dispatch(updateSwapStatus({ status: 5 }));
         log('swap.committing event received', swap)
         log("orderSecret in swap.committing",orderSecret)
 
@@ -208,10 +202,6 @@ export const SwapCreate = () => {
       })
       
     } 
-    // else if(swapState === 4) {
-    //   console.log("swapState ", swapState)
-    // } else if(swapState === 5) {
-    //   console.log("swapState ", swapState)}
     
   }, [swapState]);
   useEffect(() => {

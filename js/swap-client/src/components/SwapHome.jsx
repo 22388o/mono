@@ -35,67 +35,6 @@ export const SwapHome = () => {
     }
   }
   
-	// const simulateOpen = async (index, participant, swapId, id, secret, firstParty) => {
-	// 	openSwap({participant, swapId, id, secret})
-	// 	.then(data => {
-	// 		if(firstParty) 	dispatch(updateSwapInfo({index, field: 'request1', info: data.publicInfo.request}))
-	// 		else						dispatch(updateSwapInfo({index, field: 'request2', info: data.publicInfo.request}));
-	// 	})
-	// 	.catch(err => console.log(err));
-	// }
-
-	// const simulateCommit = async (index, participant, swapId, id, firstParty) => {
-	// 	commitSwap({swapId, id, participant})
-	// 	.then(data => {
-	// 		if(firstParty)	dispatch(updateSwapInfo({index, field: 'commit1', info: true}));
-	// 		else 						dispatch(updateSwapInfo({index, field: 'commit2', info: true}));
-	// 	})
-	// 	.catch(err => console.log(err));
-	// }
-
-  // useEffect(() => {
-  //   activities.forEach((swap, index) => {
-  //     if(swap.status === 1 && swap.swapHash && (!swap.request1 && !swap.arequest2)) {
-  //       setTimeout(() => {
-  //         simulateOpen(swap.swapId, alice, swap.swapId, swap.secretSeekerId, null, true);
-  //         dispatch(updateSwapStatus({index: swap.swapId, status: 1}));
-  //         console.log("alice opens the swap");
-  //         }, 1000
-  //       );
-  //     }
-  //     if(swap.status === 1 && ((swap.request1 && !swap.request2) || (!swap.request1 && swap.request2))) {
-  //       setTimeout(() => {
-  //         console.log("bob opens the swap");
-  //         simulateOpen(swap.swapId, bob, swap.swapId, swap.secretHolderId, swap.secret, false);
-  //         dispatch(updateSwapStatus({index: swap.swapId, status: 2}));
-  //         }, 1000
-  //       );
-  //     }
-  //     if(swap.status === 2 && swap.request1 && swap.request2){
-  //       setTimeout(() => {
-  //         console.log("alice commits the swap");
-  //         simulateCommit(swap.swapId, alice, swap.swapId, swap.secretSeekerId, true);
-  //         dispatch(updateSwapStatus({index: swap.swapId, status: 3}));
-  //         }, 1000
-  //       );
-  //     }
-  //     if(swap.status === 3 && swap.commit1 && !swap.commit2){
-  //       setTimeout(() => {
-  //         console.log("bob commits the swap");
-  //         simulateCommit(swap.swapId, bob, swap.swapId, swap.secretHolderId, false);
-  //         dispatch(updateSwapStatus({index: swap.swapId, status: 4}));
-  //         }, 1000
-  //       );
-  //     }
-  //     if(swap.status === 4 && swap.commit1 && swap.commit2){
-  //       setTimeout(() => {
-  //         dispatch(updateSwapStatus({index: swap.swapId, status: 5}));
-  //         }, 1000
-  //       );
-  //     }
-  //   });
-  // }, [activities]);
-
   // Client ws
   const hostname = window.location.hostname;
   const port = window.location.port;
@@ -103,10 +42,6 @@ export const SwapHome = () => {
   let bobCred = getBob();
 	const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
 	const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });
-
-
-  
-
  
   const logIn = (data) => {
     dispatch(signIn(data));
@@ -114,16 +49,15 @@ export const SwapHome = () => {
   }
   
   const signInAsAlice = () => {
-    // console.log({alice})
-    // console.log({aliceCred})
+    // log("alice", alice);
+    // log("aliceCred", aliceCred);
     dispatch(signIn(alice));
-    // console.log({user});
+    // log("user", user);
     dispatch(setNodeData(alice.credentials.lightning));
     dispatch(setWalletData(alice.credentials.ethereum));
     dispatch(setNodeBalance(1));
     dispatch(setWalletBalance(1));
     setOpen(false);
-    // return Promise.all([alice.connect()]);
   }
 
   const signInAsBob = () => {
@@ -133,7 +67,6 @@ export const SwapHome = () => {
     dispatch(setNodeBalance(1));
     dispatch(setWalletBalance(1));
     setOpen(false);
-    // return Promise.all([bob.connect()]);
   }
 
   const logOut = () => {
@@ -141,7 +74,6 @@ export const SwapHome = () => {
     dispatch(clearNodeData());
     dispatch(clearWalletData());
     setOpen(false);
-    // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
   }
 
@@ -221,16 +153,6 @@ export const SwapHome = () => {
         }
       </div>
       <div>
-        {/* <Image
-          centered
-          circular
-          size='large'
-          src='https://pbs.twimg.com/profile_banners/1082726135941586949/1650477093/1500x500'
-        />
-        <Header as='h2' icon textAlign='center'>
-          <Header.Content>Portal Lightning Swap Demo</Header.Content>
-        </Header>
-        <br /> */}
       </div><br />
       <Grid className={styles.homeContainer} centered>
         <Grid.Column className={styles.column}>
