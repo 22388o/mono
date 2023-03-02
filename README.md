@@ -2,7 +2,6 @@
 
 A polyglot mono-repo powered by the `nix` package manager.
 
-
 ## structure
 
 This repository is organized by language. At the root, is a directory for each language, designated by the file-extension of source code written in the language.
@@ -30,7 +29,6 @@ $ nix --version
 nix (Nix) 2.7.0
 ```
 
-
 ## portable developer environment
 
 This repository ships with its own portable developer environment that frees developers from having to track down and pin the versions of various development tools/frameworks and elimiate the most common sources of variablility in builds.
@@ -38,33 +36,31 @@ This repository ships with its own portable developer environment that frees dev
 To access the developer environment, from the root of the repository run:
 
 ```
-~github/fabriclabs/mono$ nix-shell
+~github/PortalDefi/mono$ nix-shell
 
-[nix-shell:~/github/fabriclabs/mono]$
+[nix-shell:~/github/PortalDefi/mono]$
 ```
 
 On your first setup, you will be provided with instructions to setup the required security credentials to be able to perform deployments.
 
-
 ## secure credential access
 
 As of this writing, you need access to third-party service credentials (AWS, Cloudflare, etc.). If you don't already have access to these, please reach out to anand@portaldefi.com to get yourself setup.
-
 
 ## deployments
 
 To deploy infrastructure, navigate to the directory containing the infrastructure to be deployed.
 
 ```
-[nix-shell:~/github/fabriclabs/mono]$ cd tf/environments/playnet
+[nix-shell:~/github/PortalDefi/mono]$ cd tf/environments/playnet
 
-[nix-shell:~/github/fabriclabs/mono/tf/environments/playnet]$
+[nix-shell:~/github/PortalDefi/mono/tf/environments/playnet]$
 ```
 
 Start out by initializing terraform state.
 
 ```
-[nix-shell:~/github/fabriclabs/mono/tf/environments/playnet]$ terraform init
+[nix-shell:~/github/PortalDefi/mono/tf/environments/playnet]$ terraform init
 Initializing modules...
 
 Initializing the backend...
@@ -106,7 +102,7 @@ commands will detect it and remind you to do so if necessary.
 Once the terraform state has been initialized, then proceed to generate a plan.
 
 ```
-[nix-shell:~/github/fabriclabs/mono/tf/environments/playnet]$ terraform plan
+[nix-shell:~/github/PortalDefi/mono/tf/environments/playnet]$ terraform plan
 tls_private_key.deploy: Refreshing state... [id=d587f86873a640d3d23a348dac1177435b086c4d]
 aws_key_pair.playnet: Refreshing state... [id=playnet-deploy_key]
 ...

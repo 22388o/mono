@@ -38,11 +38,11 @@ function buildApi (path) {
   //
   // [
   //   ...
-  //   '/fabriclabs/mono/js/portal/api/v1/bitcoin/index.js',
-  //   '/fabriclabs/mono/js/portal/api/v1/ethereum/index.js',
-  //   '/fabriclabs/mono/js/portal/api/v1/lightning/index.js',
-  //   '/fabriclabs/mono/js/portal/api/v1/marketdata/index.js',
-  //   '/fabriclabs/mono/js/portal/api/v1/orderbook/index.js',
+  //   '/PortalDefi/mono/js/portal/api/v1/bitcoin/index.js',
+  //   '/PortalDefi/mono/js/portal/api/v1/ethereum/index.js',
+  //   '/PortalDefi/mono/js/portal/api/v1/lightning/index.js',
+  //   '/PortalDefi/mono/js/portal/api/v1/marketdata/index.js',
+  //   '/PortalDefi/mono/js/portal/api/v1/orderbook/index.js',
   //   ...
   // ]
   //
