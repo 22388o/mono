@@ -16,7 +16,6 @@
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
     "test:integration": "mocha test/integration",
-    "test:balance": "mocha test/integration",
     "watch": "npm test -- --watch"
   },
   "dependencies": {
