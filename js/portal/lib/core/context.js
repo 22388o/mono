@@ -8,6 +8,7 @@ const Orderbooks = require('./orderbooks')
 const Store = require('./store')
 const Swaps = require('./swaps')
 const Contracts = require('../../contracts/index.json')
+const Channels = require('./channels')
 
 /**
  * Export the request context
@@ -70,3 +71,10 @@ HttpContext.orderbooks = new Orderbooks(null, HttpContext)
  * @type {Swaps}
  */
 HttpContext.swaps = new Swaps(null, HttpContext)
+
+
+/**
+ * Interface to L2 channels
+ * @type {Channels}
+ */
+HttpContext.channels = new Channels(null, HttpContext)

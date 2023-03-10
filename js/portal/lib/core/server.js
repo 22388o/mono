@@ -39,7 +39,7 @@ module.exports = class Server extends EventEmitter {
 
     const env = process.env
     const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || 'localhost'
-    const port = props.port || env.PORTAL_HTTP_PORT || 0
+    const port = props.port || parseInt(env.PORTAL_HTTP_PORT) || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
     const ctx = require('./context')

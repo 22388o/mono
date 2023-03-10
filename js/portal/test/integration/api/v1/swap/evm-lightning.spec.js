@@ -58,7 +58,7 @@ describe('Swaps - EVM/Lightning', function () {
     console.log(`        -  Secret Hash : ${SECRET_HASH}`)
   })
 
-  xit('must perform an atomic swap based on an order match', function (done) {
+  it('must perform an atomic swap based on an order match', function (done) {
     const { alice, bob } = this.test.ctx
     const secret = SECRET
     const hash = createHash('sha256').update(secret).digest('hex')

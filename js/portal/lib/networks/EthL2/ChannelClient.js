@@ -208,6 +208,7 @@ class ChannelClient extends EventEmitter {
 
     async sendTransfer(transfer){
         let channel = await this.getOrLoadChannel(this.address, transfer.targetAddress, transfer.tokenAddress);
+        console.log(`transfer.targetAddress: ${transfer.targetAddress}; transfer.tokenAddress: ${transfer.tokenAddress}`)
         if(!channel){
             console.log(this.name, "CHANNEL NOT OPENED TO", transfer.targetAddress);
             return null;
