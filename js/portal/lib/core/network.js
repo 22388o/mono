@@ -69,4 +69,8 @@ module.exports = class Network extends EventEmitter {
   abort (party) {
     throw new Error('not implemented!')
   }
+
+  async getBalance(creds) {
+    throw new Error('not implemented!')
+  }
 }
