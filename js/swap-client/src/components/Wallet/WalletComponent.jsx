@@ -10,7 +10,12 @@ import {
 import { WalletItem } from './WalletItem';
 import styles from '../styles/wallet/WalletComponent.module.css';
 import { useState } from 'react';
-import { setNodeData, setWalletData, clearNodeData, clearWalletData } from '../../slices/walletSlice';
+import { setNodeData, 
+         setWalletData,
+         setNodeBalance, 
+         setWalletBalance,
+         clearNodeData, 
+         clearWalletData } from '../../slices/walletSlice';
 import { signIn, signOut } from '../../slices/userSlice.js';
 import { useAppDispatch, useAppSelector } from "../../hooks.js";
 import Client from '../../utils/client';
@@ -27,6 +32,11 @@ export const WalletComponent = () => {
   const wallet = useAppSelector(state => state.wallet.wallet);
   const user = useAppSelector(state => state.user);
 
+  const toWei = (num) => { return num * 1000000000000000000 }
+  const fromWei = (num) => { return num / 1000000000000000000 }
+  const toSats = (num) => { return num * 100000000 }
+  const fromSats = (num) => { return num / 100000000 }
+  
   useEffect(() => {
     // console.log("node or wallet updated")
     // console.log({wallet})
@@ -42,6 +52,7 @@ export const WalletComponent = () => {
       const port = window.location.port;
       dispatch(signIn(new Client({ id: 'unnamed', hostname, port, credentials: Object.assign(nodeInput,walletInput) })));
     }
+  
     else if (!node.connected && !wallet.connected) {
       dispatch(signOut());
     }
@@ -49,9 +60,16 @@ export const WalletComponent = () => {
   }, [node, wallet]);
 
   useEffect(() => {
+    async function getBalance() {
+      const {balances} = await user.user.getBalance(user.user.credentials);
+      if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
+    }
+
     if (!user.isLoggedIn) {
       clearNodeData()
       clearWalletData()
+    } else if(user.isLoggedIn) {
+      getBalance();
     }
   }, [user.isLoggedIn]);
 

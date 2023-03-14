@@ -167,6 +167,29 @@ export default class Client extends EventEmitter {
     return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
   }
 
+
+  /**
+   * Abort the atomic swap optimistically and returns funds to owners
+   * @param {Swap|Object} swap The swap to abort
+   * @param {Object} opts Options for the operation
+   * @returns {Object} balances - containing full balance
+   *   - pendingBalance - 
+   *   - inbound - 
+   *   - unsettledBalance - 
+   *   - inbound - 
+   *   - pendingInbound - 
+   */
+  getBalance (opts) {
+    return this._request('/api/v1/channel', { method: 'POST' }, { opts })
+  }
+
+  // getBalance (opts) {
+  //   return this._request({
+  //     method: 'GET',
+  //     path: '/api/v1/channel'
+  //   }, { opts })
+  // }
+
    /**
     * Performs an HTTP request and returns the response
     * @param {String} url The URL path for the request

@@ -15,7 +15,7 @@ const HTTP_METHODS = module.exports
  * @param {HttpContext} ctx The HTTP request context
  * @returns {Void}
  */
-HTTP_METHODS.GET = function getBalance (req, res, ctx) {
+HTTP_METHODS.POST = function getBalance (req, res, ctx) {
     const networks = req.json.opts
 
     ctx.channels.getBalance(networks)

@@ -55,8 +55,8 @@ export const SwapHome = () => {
     // log("user", user);
     dispatch(setNodeData(alice.credentials.lightning));
     dispatch(setWalletData(alice.credentials.ethereum));
-    dispatch(setNodeBalance(1));
-    dispatch(setWalletBalance(1));
+    // dispatch(setNodeBalance(1));
+    // dispatch(setWalletBalance(1));
     setOpen(false);
   }
 
@@ -64,8 +64,8 @@ export const SwapHome = () => {
     dispatch(signIn(bob));
     dispatch(setNodeData(bob.credentials.lightning));
     dispatch(setWalletData(bob.credentials.ethereum));
-    dispatch(setNodeBalance(1));
-    dispatch(setWalletBalance(1));
+    // dispatch(setNodeBalance(1));
+    // dispatch(setWalletBalance(1));
     setOpen(false);
   }
 
