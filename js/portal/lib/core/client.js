@@ -176,7 +176,7 @@ module.exports = class Client extends EventEmitter {
 
   getBalance (opts) {
     return this._request({
-      method: 'GET',
+      method: 'POST',
       path: '/api/v1/channel'
     }, { opts })
   }
