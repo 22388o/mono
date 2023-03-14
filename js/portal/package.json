@@ -15,7 +15,7 @@
     "start": "node bin/portal",
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
-    "test:integration": "mocha test/integration",
+    "test:integration": "DEBUG=* mocha test/integration",
     "watch": "npm test -- --watch"
   },
   "dependencies": {
