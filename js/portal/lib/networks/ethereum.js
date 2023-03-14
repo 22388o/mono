@@ -127,6 +127,10 @@ module.exports = class Ethereum extends Network {
     })
   }
 
+  async getBalance(creds) {
+    throw new Error('not implemented!')
+  }
+
   _parseInvoiceId (invoice) {
     const hex = invoice.logs[0].data.substr(2, 64)
     const dec = parseInt(hex, 16)

@@ -12,9 +12,9 @@ const RELATIVE_PAYMENT_DEADLINE = 24;
 const REQUIRED_CONFIRMATIONS = 3;
 const DEFAULT_MINER_FEE = 200;
 
-const BITCOIN_RPCPORT = 8332; // <bitcoin.conf-regtest.rpcport>;
-const BITCOIN_PASSWORD = '<bitcoin.conf-rpcpassword>';
-const BITCOIN_USERNAME = '<bitcoin.conf-rpcuser>';
+const BITCOIN_RPCPORT = 20332;
+const BITCOIN_PASSWORD = 'UFIeQGQOjGV6BVn6VmOhaqjbFLXFaXSgjqhOfK';
+const BITCOIN_USERNAME = 'bitcoind-regtest-rpcuser0';
 
 // --------------------------------
 // Sample regtest bitcoin.conf file
@@ -30,7 +30,6 @@ const BITCOIN_USERNAME = '<bitcoin.conf-rpcuser>';
 // regtest.port=<port>
 // regtest.rpcport=<rpcport>
 // fallbackfee=0.0002
-// rest=1  (temporary)
 
 const SECRET_HOLDER = bitcoin.ECPair.fromWIF(alice[1].wif, NETWORK);
 const SECRET_SEEKER = bitcoin.ECPair.fromWIF(bob[1].wif, NETWORK);
@@ -44,9 +43,9 @@ async function open(swapHash) {
         username:   BITCOIN_USERNAME,
     });
 
-    const info = await bob.getBlockchainInformation();
+    const info = await bob.command([{method: 'getblockchaininfo', parameters: []}]);
 
-    const height = info.blocks;
+    const height = info[0].blocks;
     const timelock = height +  RELATIVE_SWAP_TIMELOCK;
     const holderPublicKey = SECRET_HOLDER.publicKey.toString('hex');
     const seekerPublicKey = SECRET_SEEKER.publicKey.toString('hex');
@@ -84,7 +83,7 @@ async function commit(secret, swapinfo, amount, fee) {
 
     const amountAndFee = amount + fee;
 
-    const scantx = await bob.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]);
+    const scantx = await bob.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range
 
     // for basic demo - assume one payment
     // later accommodate multiple payments that add up to at least amount + fee with sufficient confirmations for all
@@ -153,7 +152,6 @@ async function commit(secret, swapinfo, amount, fee) {
 
     psbt.addOutput({
         address: secretSeeker_redeemAddress,
-        // value: amount
         value: amountAndFee - DEFAULT_MINER_FEE
     });
 
@@ -177,6 +175,7 @@ async function commit(secret, swapinfo, amount, fee) {
     try {
         const txid = await bob.command([{method: 'sendrawtransaction', parameters: [`${transaction.toHex()}` ]}]);
         return txid;
+        // return transaction.toHex();
     } catch( exception ) {
         console.log(`Failed broadcast of commit transaction, exception: ${exception}`)
         return transaction.toHex();
@@ -196,7 +195,7 @@ async function cancel(swapinfo, amount, fee) {
 
     const psbt = new bitcoin.Psbt({NETWORK});
 
-    const info = await bob.getBlockchainInformation();
+    const info = await bob.command([{method: 'getblockchaininfo', parameters: []}]);
     const height = info.blocks;
     if (height < swapinfo.timelock) {
         const confirmationToGo = swapinfo.timelock - height
@@ -208,7 +207,7 @@ async function cancel(swapinfo, amount, fee) {
     psbt.setLocktime(bip65.encode({blocks: parseInt(swapinfo.timelock)}));
 
     const amountAndFee = amount + fee;
-    const scantx = await bob.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]);
+    const scantx = await bob.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range
     const success = scantx[0].success;
     if (!success) {
         console.log("scan for tx outputs failed")
@@ -258,7 +257,6 @@ async function cancel(swapinfo, amount, fee) {
 
     psbt.addOutput({
         address: secretHolder_redeemAddress,
-        // value: amount
         value: amountAndFee - DEFAULT_MINER_FEE
     });
 
@@ -282,6 +280,7 @@ async function cancel(swapinfo, amount, fee) {
     try {
         const txid = await bob.command([{method: 'sendrawtransaction', parameters: [`${transaction.toHex()}` ]}]);
         return txid;
+        // return transaction.toHex();
     } catch( exception ) {
         console.log(`Failed broadcast of refund transaction, exception: ${exception}`)
         return transaction.toHex();

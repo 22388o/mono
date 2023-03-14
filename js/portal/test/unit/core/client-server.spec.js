@@ -27,11 +27,11 @@ describe('Client/Server', function () {
    * Validates the client/server instantiation and expected instance interfaces
    */
   describe('Instantiation', function () {
-    it('must instantiate a server with reasonable defaults', function () {
+    it('must instantiate a server with reasonable defaults', async function () {
       let server = null
 
       expect(() => { server = new Server() }).to.not.throw()
-
+      await console.log(`server.port: ${server.port}; type: ${typeof server.port}`)
       expect(server).to.be.an.instanceof(Server)
       expect(server.hostname).to.be.a('string').that.equals('localhost')
       expect(server.port).to.be.a('number').that.equals(0)

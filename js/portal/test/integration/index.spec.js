@@ -23,18 +23,23 @@ before('Initialize client/server', function () {
       }
       const alice = create('alice')
       const bob = create('bob')
+      // const carol = create('carol')
 
+
+      // Object.assign(this, { alice, bob, carol, client, server })
       Object.assign(this, { alice, bob, client, server })
 
       return Promise.all([
         client.connect(),
         alice.connect(),
-        bob.connect()
+        bob.connect(),
+        // carol.connect()
       ])
     })
 })
 
 after('Destroy client/server', function () {
+  // const { alice, bob, carol, client, server } = this.test.ctx
   const { alice, bob, client, server } = this.test.ctx
 
   return Promise.all([
