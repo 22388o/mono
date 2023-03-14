@@ -197,11 +197,17 @@ export const SwapCreate = () => {
 
         const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        dispatch(setNodeBalance(fromSats(btcBal)))
+        // dispatch(setNodeBalance(fromSats(btcBal)))
         dispatch(setWalletBalance(fromWei(ethBal)))
+        getBalance();
+
       })
       
     } 
+    async function getBalance() {
+      const {balances} = await user.user.getBalance(user.user.credentials);
+      if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
+    }
     
   }, [swapState]);
   useEffect(() => {
