@@ -1,0 +1,61 @@
+
+.connectModal {
+  background: #2B2B2B !important;
+  border-radius: 1.5em !important;
+  width: 500px !important;
+  border: 1px solid #6b6b6b !important;
+}
+.logoIcon {
+  padding: 0 !important;
+}
+.item {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 1rem !important;
+  cursor: pointer;
+}
+.flex-between {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+.copy-btn {
+  background-color: transparent !important;
+  width: 100% !important;
+  color: white !important;
+/*  border-image: linear-gradient(to right, #00c6ff, #0072ff) 1 !important;
+  background-clip: padding-box !important;
+  border-radius: 10px !important; */
+}
+.copy-btn i {
+  outline-style: none !important;
+}
+.add-amount {
+  cursor: pointer;
+}
+.add-amount-modal {
+  background: #2B2B2B !important;
+  border-radius: 1.5em !important;
+  width: 350px !important;
+  border: 1px solid #6b6b6b !important;
+}
+.add-modal-header {
+  background: none !important;
+  font-size: 1rem !important;
+  text-align: center;
+}
+.add-amount-content {
+  width: 320px !important;
+  background-color: #1A1A1A !important;
+  border: 1px solid grey !important;
+  border-radius: 12px !important;
+  margin: 15px !important;
+  padding: 1rem 0.5rem 1rem 0.5rem !important;
+}
+.exchange-btn {
+  background: none !important;
+  border: none !important;
+}
+.exchange-btn i {
+  transform: rotate(90deg);
+  color: lightgrey;
+}

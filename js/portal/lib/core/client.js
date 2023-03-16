@@ -182,6 +182,19 @@ module.exports = class Client extends EventEmitter {
   }
 
   /**
+   * Create a lightning invoice for client, payable by anyone
+   * @param {Object} opts Options for the operation
+   * @returns {Object} invoice - created invoice hash
+   */
+  createInvoice (opts) {
+    return this._request({
+      method: 'POST',
+      path: '/api/v1/invoice'
+    }, opts)
+  }
+
+
+  /**
    * Performs an HTTP request and returns the response
    * @param {Object} args Arguments for the operation
    * @param {Object} [data] Data to be sent as part of the request

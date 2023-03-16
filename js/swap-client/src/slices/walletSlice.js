@@ -12,7 +12,9 @@ const initialState = {
     connected: false,
     data: null,
     balance: 0
-  }
+  },
+  receivingProcess: 0,
+  sendingProcess: 0
 };
 
 export const walletSlice = createSlice({
@@ -42,6 +44,12 @@ export const walletSlice = createSlice({
       state.wallet.connected = false;
       state.wallet.balance = 0;
       state.wallet.data = null;
+    },
+    setReceivingProcess: (state, action) => {
+      state.receivingProcess = action.payload;
+    },
+    setSendingProcess: (state, action) => {
+      state.sendingProcess = action.payload;
     }
   }
 });
@@ -52,7 +60,9 @@ export const {
   setNodeBalance,
   setWalletBalance, 
   clearNodeData,
-  clearWalletData
+  clearWalletData,
+  setReceivingProcess,
+  setSendingProcess
 } = walletSlice.actions;
 
 export default walletSlice.reducer;

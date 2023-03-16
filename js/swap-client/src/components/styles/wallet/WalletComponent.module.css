@@ -58,3 +58,24 @@
 .gradientBack:hover {
   background: linear-gradient(to right, #a1a0ff, #b26dff) !important;
 }
+/*
+.text-gradient-btn {
+  font-size: 1.1rem !important;
+  font-weight: bold !important;
+  border: none !important;
+  background: linear-gradient(to right, #9bacff, #cb97ff) !important;
+  -webkit-background-clip: text !important;
+  -moz-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}*/
+.arrow-up {
+  margin-left: 0px !important;
+  margin-right: 0.5rem !important;
+  transform: rotate(-45deg);
+}
+.arrow-down {
+  margin-left: 0px !important;
+  margin-right: 0.5rem !important;
+  transform: rotate(45deg);
+}

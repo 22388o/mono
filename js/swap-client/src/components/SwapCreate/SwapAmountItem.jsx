@@ -17,18 +17,25 @@ const friendOptions = [
   }
 ]
 
-export const SwapAmountItem = ({coinType, amount, className, onAmountChange, unitPrice, onCoinTypeChange, limitOrder = true}) => {
+export const SwapAmountItem = ({coinType, amount, className, onAmountChange, unitPrice, onCoinTypeChange, availQty, limitOrder = true}) => {
   const links = {
     'btc': "https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true",
     'eth': "https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true"
   };
 
+  const onKeyDown = (e) => {
+    if(e.keyCode === 109) {
+      e.preventDefault();
+      return;
+    }
+  }
+
   return <Form.Group widths='equal' className={className}>
     <Form.Field className={styles.swapAmountInput}>
       { limitOrder ? 
-          <input className={styles.swapInput} type='number' value={(amount===0)?'':amount} onChange={onAmountChange}/>
+          <input placeholder={availQty} type='number' value={(amount===0)?'':amount} onChange={onAmountChange} onKeyDown={onKeyDown}/>
         :
-          <input className={styles.swapInput} type='number' value={(amount===0)?'':amount} onChange={onAmountChange}/>
+          <input placeholder={availQty} type='number' value={(amount===0)?'':amount} onChange={onAmountChange} onKeyDown={onKeyDown}/>
       }
       { unitPrice * amount > 0 ? <p className={styles.price}>${unitPrice * amount}</p> : ''}
     </Form.Field>

@@ -101,9 +101,9 @@ export default class Client extends EventEmitter {
     */
   disconnect () {
     return new Promise((resolve, reject) => {
-      // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
-      // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
-      // this.websocket.close() // TODO
+      this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
+      this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+      this.websocket.close() // TODO
     })
   }
 
@@ -169,8 +169,7 @@ export default class Client extends EventEmitter {
 
 
   /**
-   * Abort the atomic swap optimistically and returns funds to owners
-   * @param {Swap|Object} swap The swap to abort
+   * Get balance from all connected channels of the client
    * @param {Object} opts Options for the operation
    * @returns {Object} balances - containing full balance
    *   - pendingBalance - 
@@ -189,6 +188,19 @@ export default class Client extends EventEmitter {
   //     path: '/api/v1/channel'
   //   }, { opts })
   // }
+
+
+
+  /**
+   * Create a lightning invoice for client, payable by anyone
+   * @param {Object} opts Options for the operation
+   * @returns {Object} invoice - created invoice hash
+   */
+  createInvoice (opts) {
+    return this._request('/api/v1/invoice', { method: 'POST' }, opts)
+  }
+
+
 
    /**
     * Performs an HTTP request and returns the response

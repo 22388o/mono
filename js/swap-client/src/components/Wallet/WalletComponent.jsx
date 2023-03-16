@@ -6,6 +6,7 @@ import {
   Grid,
   Modal,
   TextArea,
+  Icon
 } from 'semantic-ui-react';
 import { WalletItem } from './WalletItem';
 import styles from '../styles/wallet/WalletComponent.module.css';
@@ -15,10 +16,14 @@ import { setNodeData,
          setNodeBalance, 
          setWalletBalance,
          clearNodeData, 
-         clearWalletData } from '../../slices/walletSlice';
+         clearWalletData, 
+         setReceivingProcess, 
+         setSendingProcess } from '../../slices/walletSlice';
 import { signIn, signOut } from '../../slices/userSlice.js';
 import { useAppDispatch, useAppSelector } from "../../hooks.js";
 import Client from '../../utils/client';
+import { ReceiveFunds } from './ReceiveFunds';
+import { SendFunds } from './SendFunds';
 
 
 export const WalletComponent = () => {
@@ -93,7 +98,11 @@ export const WalletComponent = () => {
     <>
       <Grid className={styles.walletContainer}>
         <Grid.Row className={styles.walletHeader}>
-        <h3>Funds</h3>
+          <h3>Funds</h3>
+          <div>
+            <button onClick={() => dispatch(setReceivingProcess(1))} className='img-button'><img style={{height:'2em'}} src='./receive.png' /></button>
+            <button onClick={() => dispatch(setSendingProcess(1))} className='img-button'><img style={{height:'2em'}} src='./send.png' /></button>
+          </div>
         </Grid.Row>
         <WalletItem type='bitcoin' item={node} onConnect={() => setNodeModalOpen(true)} />
         <Divider />
@@ -149,6 +158,8 @@ export const WalletComponent = () => {
           <Button circular secondary className={styles.gradientBack} onClick={e => onConnectWallet(walletInput)}>Connect Wallet</Button>
         </Modal.Actions>
       </Modal>
+      <ReceiveFunds />
+      <SendFunds />
     </>
   );
 }

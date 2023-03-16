@@ -218,21 +218,14 @@ module.exports = class Lightning extends Network {
   }
 
   /**
-   * Opens the swap on behalf of one of the parties
+   * Gets the balances in channels connected to the node
    *
-   * This method creates a HodlInvoice for the calling party, and saves it into
-   * counterparty's state-bag.
-   *
-   * For a SecretHolder, it sets up additional event-triggered machinery to pay
-   * the SecretSeeker's invoice
-   *
-   * @param {Party} party The party that is opening the swap
-   * @param {Object} opts Options for the operation
-   * @param {Object} opts.lightning Arguments used to connect to LND
-   * @param {String} opts.lightning.cert TLS certificate used to connect to LND
-   * @param {String} opts.lightning.invoice The invoice macaroon used with LND
-   * @param {String} opts.lightning.admin The admin macaroon used with LND
-   * @param {String} opts.lightning.socket The URL to the LND daemon
+   * @param {Object} creds Options for the operation
+   * @param {Object} creds.lightning Arguments used to connect to LND
+   * @param {String} creds.lightning.cert TLS certificate used to connect to LND
+   * @param {String} creds.lightning.invoice The invoice macaroon used with LND
+   * @param {String} creds.lightning.admin The admin macaroon used with LND
+   * @param {String} creds.lightning.socket The URL to the LND daemon
    * @returns {Promise<{lightning: {pendingBalance: number, balance: number, inbound: number, pendingInbound: number, unsettledBalance: number}}>}
    */
   async getBalance (creds) {
@@ -286,5 +279,53 @@ module.exports = class Lightning extends Network {
 
 
     return balance
+  }
+
+  /**
+   * Creates an invoice for node
+   *
+   * @param {Object} opts Options for the operation
+   * @param {Object} opts Arguments used to connect to LND
+   * @param {String} opts.cert TLS certificate used to connect to LND
+   * @param {String} opts.invoice The invoice macaroon used with LND
+   * @param {String} opts.admin The admin macaroon used with LND
+   * @param {String} opts.socket The URL to the LND daemon
+   * @param {Number} opts.paymentAmount The amount of satoshis to pay
+   * @returns {Promise<{lightning: {pendingBalance: number, balance: number, inbound: number, pendingInbound: number, unsettledBalance: number}}>}
+   */
+  async createInvoice (opts) {
+    debug(`\nNetwork.createInvoice ${this.name} ${JSON.stringify(opts)}`)
+
+    // Requests are made using the Invoice macaroon for both parties
+    const grpc = ln.authenticatedLndGrpc({
+      cert: opts.cert,
+      macaroon: opts.admin,
+      socket: opts.socket
+    })
+
+    // Invoices are for the quantity of tokens specified by the payment amount
+    const args = Object.assign(grpc)
+
+    let invoice
+
+    // Newly created invoices are saved into the Counterparty's state-bag
+    try {
+      debug(opts.socket, `is creating an ${this.name} invoice`)
+      let createInvoice = await ln.createInvoice(args)
+      debug(opts.socket, `created a ${this.name} invoice`, createInvoice)
+      invoice = { createInvoice }
+    } catch (err) {
+      debug('LND - createInvoice', err)
+      if (err instanceof Array) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      } else {
+        throw err
+      }
+    }
+    return invoice
   }
 }

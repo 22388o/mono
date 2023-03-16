@@ -113,8 +113,10 @@ input { font-family: 'Noto Sans' !important; }
 .pt-1 { padding-top: 1em !important; }
 .pt-0 { padding-top: 0em !important; }
 .pb-1 { padding-bottom: 1em !important; }
+.m-1 { margin: 1em !important; }
+.p-1 { padding: 1em !important; }
 
-.space-between { justify-content: space-between !important;}
+.space-between { display: flex !important; justify-content: space-between !important;}
 
 .w-100 { width: 100% !important; }
 .h-3 { height: 3em !important; }
@@ -162,9 +164,19 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-#container {
-  background-color: #191b21;
-}
+#container { background-color: #191b21; }
 .ui.selection.visible.dropdown>.text:not(.default) {
   color: white !important;
+}
+
+.flex-center {
+  display: flex !important;
+  justify-content: center !important;
+}
+.bg-none {background: none !important;}
+.fs-1 { font-size: 1rem !important; }
+.fs-1half { font-size: 1.5rem !important; }
+
+.img-button {
+  background: none !important;
 }

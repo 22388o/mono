@@ -8,11 +8,12 @@ import styles from './styles/SwapHome.module.css';
 import { useAppDispatch, useAppSelector } from "../hooks.js";
 import { signIn, signOut } from '../slices/userSlice.js';
 import { setNodeData, 
-         setWalletData,
-         setNodeBalance,
-         setWalletBalance, 
-         clearNodeData, 
-         clearWalletData } from '../slices/walletSlice';
+  setWalletData,
+  setNodeBalance,
+  setWalletBalance, 
+  clearNodeData, 
+  clearWalletData 
+} from '../slices/walletSlice';
 import { 
 	updateSwapInfo, 
 	updateSwapStatus 
@@ -56,7 +57,7 @@ export const SwapHome = () => {
     dispatch(setNodeData(alice.credentials.lightning));
     dispatch(setWalletData(alice.credentials.ethereum));
     // dispatch(setNodeBalance(1));
-    // dispatch(setWalletBalance(1));
+    dispatch(setWalletBalance(1000));
     setOpen(false);
   }
 
@@ -65,7 +66,7 @@ export const SwapHome = () => {
     dispatch(setNodeData(bob.credentials.lightning));
     dispatch(setWalletData(bob.credentials.ethereum));
     // dispatch(setNodeBalance(1));
-    // dispatch(setWalletBalance(1));
+    dispatch(setWalletBalance(1000));
     setOpen(false);
   }
 
@@ -141,7 +142,7 @@ export const SwapHome = () => {
             : <>
                 <Menu.Menu position='right'>
                   <Menu.Item name='logout'>
-                    <Button inverted color='red' onClick={e => logOut()}>Logout</Button>
+                    <b>Signed in as <u>{user.user.id.toUpperCase()}</u></b>&nbsp;&nbsp; <Button inverted color='red' onClick={e => logOut()}>Logout</Button>
                   </Menu.Item>
                 </Menu.Menu>
                 {user.credentials!=null && <Menu.Menu position='right'>

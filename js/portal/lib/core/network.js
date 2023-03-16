@@ -73,4 +73,7 @@ module.exports = class Network extends EventEmitter {
   async getBalance(creds) {
     throw new Error('not implemented!')
   }
+  async createInvoice(lndCreds, paymentAmount) {
+    throw new Error('not implemented!')
+  }
 }

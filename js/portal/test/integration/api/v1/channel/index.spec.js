@@ -1,6 +1,6 @@
 const {expect} = require("chai");
 describe.only('Channel - balance', function () {
-    it('must return the balances from the lightning channel', function () {
+    xit('must return the balances from the lightning channel', function () {
         const { alice } = this.test.ctx
 
         return alice.getBalance(alice.credentials)

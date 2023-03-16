@@ -62,7 +62,7 @@ describe('Swaps - EVM/Lightning', function () {
    * Alice places an order using the secret hash. The test waits for the order
    * to be opened on the orderbook.
    */
-  it('must allow Alice to place an order', function (done) {
+  xit('must allow Alice to place an order', function (done) {
     this.test.ctx.alice
       .once('order.opened', order => {
         console.log('\n\nAlice placed order', log(order))

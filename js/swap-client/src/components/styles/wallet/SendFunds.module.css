@@ -1,0 +1,35 @@
+
+.connectModal {
+  background: #2B2B2B !important;
+  border-radius: 1.5em !important;
+  width: 500px !important;
+  border: 1px solid #6b6b6b !important;
+}
+.logoIcon {
+  padding: 0 !important;
+}
+.item {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 1rem !important;
+  cursor: pointer;
+}
+.flex-between {
+  display: flex !important;
+  justify-content: space-between !important;
+}
+.recipient-addr {
+  display: flex !important;
+  background: black !important;
+  color: white !important;
+  border: 1px solid grey !important;
+  font-weight: bold !important;
+  font-size: 1em !important;
+  padding: 0.5em !important;
+  border-radius: 0.5em !important;
+  width: 100% !important;
+  margin: 1rem 0 1rem 0 !important;
+}
+.recipient-addr:focus {
+  border: 1px solid black !important;
+}

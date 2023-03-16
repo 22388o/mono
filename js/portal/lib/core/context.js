@@ -9,6 +9,7 @@ const Store = require('./store')
 const Swaps = require('./swaps')
 const Contracts = require('../../contracts/index.json')
 const Channels = require('./channels')
+const Invoice = require('./invoice')
 
 /**
  * Export the request context
@@ -78,3 +79,9 @@ HttpContext.swaps = new Swaps(null, HttpContext)
  * @type {Channels}
  */
 HttpContext.channels = new Channels(null, HttpContext)
+
+ /**
+  * Interface to creating Invoices
+  * @type {Invoice}
+  */
+HttpContext.invoice = new Invoice(null, HttpContext)
