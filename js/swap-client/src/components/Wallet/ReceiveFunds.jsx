@@ -26,6 +26,8 @@ export const ReceiveFunds = () => {
   const wallet = useAppSelector(state => state.wallet.wallet);
   const receivingProcess = useAppSelector(state => state.wallet.receivingProcess);
   // const lightningPayReq = require('bolt11');
+  const [invoiceCopied, setInvoiceCopied] = useState(false);
+
 
   useEffect(() => {
     if(receivingProcess === 1) setModalOpen(true);

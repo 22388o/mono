@@ -34,3 +34,7 @@ export const log = (message, obj, debug = true) => {
 	 console.log(obj)
 	}
 };
+
+export const validateInvoiceAddress = (addr) => {
+	return addr.length > 6;
+}

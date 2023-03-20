@@ -12,7 +12,7 @@
   justify-content: right;
   margin-right: -3em;
 }
-
+/*
 .cancelBtn {
   border: none !important;
   background: linear-gradient(to right, #7e7dfe, #a351ff) !important;
@@ -28,4 +28,20 @@
           background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   padding-left: 0 !important;
+}
+*/
+.swap-amount>div{
+  text-align: right;
+}
+
+
+.cancel-btn {
+  background: transparent !important;
+  color: #FF5959 !important;
+  border: 2px solid #FF5959 !important;
+  padding: 0.3em 0.5em !important;
+  margin-top: 0.3em !important;
+}
+.cancel-btn:hover {
+  background: #ff4d4d31 !important;
 }

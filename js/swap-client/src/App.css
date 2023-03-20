@@ -115,6 +115,8 @@ input { font-family: 'Noto Sans' !important; }
 .pb-1 { padding-bottom: 1em !important; }
 .m-1 { margin: 1em !important; }
 .p-1 { padding: 1em !important; }
+.pl-05 { padding-left: 0.5em !important; }
+.pr-05 { padding-right: 0.5em !important; }
 
 .space-between { display: flex !important; justify-content: space-between !important;}
 
