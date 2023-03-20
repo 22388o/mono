@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import { setReceivingProcess } from '../../slices/walletSlice';
 import styles from '../styles/wallet/ReceiveFunds.module.css';
 import { CHAIN_INFO } from '../../utils/constants';
+import classNames from 'classnames';
 
 export const ReceiveFunds = () => {
   const dispatch = useAppDispatch();
@@ -131,11 +132,21 @@ export const ReceiveFunds = () => {
             <h4 style={{overflowWrap: 'anywhere'}}>{invoiceHash}</h4>
           </Grid.Row>
           <Grid.Row textAlign='center'>
-            <Button className={styles['copy-btn']}><Icon name='copy outline' />Copy</Button>
+            <Button 
+                className={classNames({
+                  [styles['copy-btn']]: !invoiceCopied,
+                  [styles['copy-btn-active']]: invoiceCopied
+                })}
+                onClick={() => setInvoiceCopied(true)} >
+              { !invoiceCopied ? <><Icon name='copy outline' />Copy</>
+                : <><Icon name='check circle' />Copied</>}
+            </Button>
           </Grid.Row>
           <Divider className='m-1' />
           <Grid.Row>
-            <a className={styles['add-amount']} onClick={() => setAddAmountOpen(true)}><Icon name='pencil alternate' /> Add Amount</a>
+            <a className={styles['add-amount']} onClick={() => setAddAmountOpen(true)}>
+              <Icon name='pencil alternate' /> Add Amount
+            </a>
           </Grid.Row>
           <Divider className='m-1' />
           <Grid.Row container className={styles['flex-between']}>
@@ -182,9 +193,9 @@ export const ReceiveFunds = () => {
             </Grid.Column>
           </Grid>
         </Modal.Content>
-        <Modal.Actions>
-          <Button>Cancel</Button>
-          <Button>Add Amount</Button>
+        <Modal.Actions style={{display:'flex',justifyContent:'space-between'}}>
+          <Button className={styles['cancel-btn']} onClick={() => setAddAmountOpen(false)}>Cancel</Button>
+          <Button className={`gradient-btn ${styles['add-amount-btn']}`}>Add Amount</Button>
         </Modal.Actions>
       </Modal>
     </Modal>

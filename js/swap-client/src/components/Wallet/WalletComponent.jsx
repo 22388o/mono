@@ -99,10 +99,10 @@ export const WalletComponent = () => {
       <Grid className={styles.walletContainer}>
         <Grid.Row className={styles.walletHeader}>
           <h3>Funds</h3>
-          <div>
+          { user.isLoggedIn && <div>
             <button onClick={() => dispatch(setReceivingProcess(1))} className='img-button'><img style={{height:'2em'}} src='./receive.png' /></button>
             <button onClick={() => dispatch(setSendingProcess(1))} className='img-button'><img style={{height:'2em'}} src='./send.png' /></button>
-          </div>
+          </div> }
         </Grid.Row>
         <WalletItem type='bitcoin' item={node} onConnect={() => setNodeModalOpen(true)} />
         <Divider />
