@@ -4,6 +4,8 @@
       {
         "nodetype": "lnd",
         "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
         "socket": "localhost:<port>",
         "cert": "",
         "admin": "",
@@ -12,6 +14,8 @@
       {
         "nodetype": "bitcoind",
         "network": "bitcoin",
+        "fungible": true,
+        "asset": "BTC",
         "rpcuser": "",
         "rpcpassword": "",
         "rpcport": 8332
@@ -21,6 +25,8 @@
       {
         "nodetype": "lnd",
         "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
         "socket": "localhost:<port>",
         "cert": "",
         "admin": "",
@@ -29,6 +35,8 @@
       {
         "nodetype": "bitcoind",
         "network": "bitcoin",
+        "fungible": false,
+        "asset": "ORD",
         "rpcuser": "",
         "rpcpassword": "",
         "rpcport": 8332
@@ -38,6 +46,8 @@
       {
         "nodetype": "lnd",
         "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
         "socket": "localhost:<port>",
         "cert": "",
         "admin": "",
@@ -46,6 +56,8 @@
       {
         "nodetype": "lnd",
         "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
         "socket": "localhost:<port>",
         "cert": "",
         "admin": "",
