@@ -1,0 +1,56 @@
+{
+  "nodes": {
+    "submarine": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      },
+      {
+        "nodetype": "bitcoind",
+        "network": "bitcoin",
+        "rpcuser": "",
+        "rpcpassword": "",
+        "rpcport": 8332
+      }
+    ],
+    "ordinal-sub": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      },
+      {
+        "nodetype": "bitcoind",
+        "network": "bitcoin",
+        "rpcuser": "",
+        "rpcpassword": "",
+        "rpcport": 8332
+      }
+    ],
+    "lightning-lightning": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      },
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      }
+    ]
+  }
+}
