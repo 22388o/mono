@@ -28,3 +28,4 @@ docs/package-lock.json
 
 # Miscellaneous 
 .DS_Store
+**/*.bak

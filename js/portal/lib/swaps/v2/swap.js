@@ -260,4 +260,20 @@ module.exports = class Swap extends EventEmitter {
     const secretSeeker = Party.fromOrder(takerOrder, ctx)
     return new Swap({ id, secretHash, secretHolder, secretSeeker })
   }
+
+  /**
+   * Creates a new swap using swap type and template
+   * @param {Order|Object} secretHolder The swap secret holder
+   * @param {Order|Object} secretSeeker The swap secret seeker
+   * @returns {Promise<Swap>}
+   */
+
+  static fromProps (swapType, secretHolderProps, secretSeekerProps, ctx) {
+    const id = uuid()
+    const secretHash = secretHolderProps.hash
+    const secretHolder = Party.fromProps(secretHolderProps, ctx)
+    const secretSeeker = Party.fromProps(secretSeekerProps, ctx)
+    return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
+  }
+
 }

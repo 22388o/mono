@@ -54,6 +54,28 @@ module.exports = class Swaps extends EventEmitter {
     }
 
     /**
+     * Creates a new swap using swap type and template
+     * @param {String} swapType
+     * @param {Object} secretHolderProps Props for the swap secret holder
+     * @param {Object} secretSeekerProps Props for the swap secret seeker
+     * @returns {Promise<Swap>}
+     */
+    fromProps (swapType, secretHolderProps, secretSeekerProps) {
+        return new Promise((resolve, reject) => {
+            let swap
+
+            try {
+                swap = Swap.fromProps(swapType, secretHolderProps, secretSeekerProps, this.ctx)
+                this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
+            } catch (err) {
+                return reject(err)
+            }
+
+            resolve(swap)
+        })
+    }
+
+    /**
      * Handles the opening of a swap by a user that is a party to the swap
      * @param {Swap} swap The swap to open
      * @param {String} swap.id The unique identifier of the swap to be opened
