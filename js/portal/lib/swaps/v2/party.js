@@ -1,7 +1,8 @@
 /**
  * @file Defines a party to an atomic swap
  */
-
+const HolderTemplate = require('./holdertemplate/holdertemplate')
+const SeekerTemplate = require('./seekertemplate/seekertemplate')
 /**
  * Defines a party to a swap
  * @type {Party}
@@ -26,6 +27,7 @@ module.exports = class Party {
     this.asset = props.asset
     this.network = props.network
     this.quantity = props.quantity
+    this.template = props.template
 
 
     this.swap = null // assigned by the swap constructor
@@ -164,7 +166,7 @@ module.exports = class Party {
   }
 
   /**
-   * Creates a secret-holding party from the an order from the matching engine
+   * Creates a party from the an order from the matching engine
    * @param {Order} order An order (maker or taker) returned by order matching
    * @returns {Party}
    */
@@ -185,4 +187,62 @@ module.exports = class Party {
       quantity
     })
   }
+
+  /**
+   * Creates a party from props for a secret holder
+   * @param {Order} order An order (maker or taker) returned by order matching
+   * @returns {Party}
+   */
+  static fromHolderProps(swapType, secretHolderProps, ctx) {
+    console.log(`secretHolderProps in fromHolderProps: ${JSON.stringify(secretHolderProps, null, 2)}`)
+
+    // const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    // const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
+    // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+    //
+    // if (ctx.networks[network] === undefined) {
+    //   console.log(order, ctx.networks)
+    //   process.exit(1)
+    // }
+    //
+    // return new Party({
+    //   id: order.uid,
+    //   asset: ctx.assets[asset],
+    //   network: ctx.networks[network],
+    //   quantity
+    // })
+
+    return null
+  }
+
+  /**
+   * Creates a party from props for a secret seeker
+   * @param {Order} order An order (maker or taker) returned by order matching
+   * @returns {Party}
+   */
+  static fromSeekerProps(swapType, secretSeekerProps, ctx) {
+    console.log(`secretSeekerProps in fromSeekerProps: ${JSON.stringify(secretSeekerProps, null, 2)}`)
+
+    const template = SeekerTemplate.fromProps(this, swapType, secretSeekerProps)
+
+
+    // const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    // const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
+    // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+    //
+    // if (ctx.networks[network] === undefined) {
+    //   console.log(order, ctx.networks)
+    //   process.exit(1)
+    // }
+    //
+    // return new Party({
+    //   id: order.uid,
+    //   asset: ctx.assets[asset],
+    //   network: ctx.networks[network],
+    //   quantity
+    // })
+
+    return null
+  }
+
 }

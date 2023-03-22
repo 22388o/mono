@@ -2,7 +2,7 @@
  * @file Defines an instance of an atomic swap
  */
 
-const Party = require('../../core/party')
+const Party = require('./party')
 const { hash, uuid } = require('../../helpers')
 const { EventEmitter } = require('events')
 
@@ -269,10 +269,20 @@ module.exports = class Swap extends EventEmitter {
    */
 
   static fromProps (swapType, secretHolderProps, secretSeekerProps, ctx) {
+    console.log(`inside Swap.fromProps`)
+
     const id = uuid()
     const secretHash = secretHolderProps.hash
-    const secretHolder = Party.fromProps(secretHolderProps, ctx)
-    const secretSeeker = Party.fromProps(secretSeekerProps, ctx)
+  try {
+    console.log(`about to call Party.fromHolderProps`)
+    const secretHolder = Party.fromHolderProps(swapType, secretHolderProps, ctx)
+    console.log(`about to call Party.fromSeekerProps`)
+    const secretSeeker = Party.fromSeekerProps(swapType, secretSeekerProps, ctx)
+  } catch (err) {
+      console.log(`Error: ${err}`)
+    return reject(err)
+  }
+    console.log(`both Parties created`)
     return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
   }
 

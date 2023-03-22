@@ -38,25 +38,25 @@ HTTP_METHODS.POST = function swapCreate (req, res, ctx) {
   const holderSubmarineSwapProps = Object.assign(req.json.holderSubmarineSwapProps, {hash: swapHash})
   const seekerSubmarineSwapProps = req.json.seekerSubmarineSwapProps
 
-  console.log(`holderSubmarineSwapProps: ${JSON.stringify(holderSubmarineSwapProps)}`)
-  console.log(`seekerSubmarineSwapProps: ${JSON.stringify(seekerSubmarineSwapProps)}`)
+  console.log(`holderSubmarineSwapProps: ${JSON.stringify(holderSubmarineSwapProps, null, 2)}`)
+  console.log(`seekerSubmarineSwapProps: ${JSON.stringify(seekerSubmarineSwapProps, null, 2)}`)
 
-  // ctx.swaps.fromProps("submarine", holderSubmarineSwapProps, seekerSubmarineSwapProps)
-  //     .then(swap => res.send({swap: swap, swapSecret: swapSecret}))
-  //     .catch(err => res.send(err))
+  ctx.swaps2.fromProps("submarine", holderSubmarineSwapProps, seekerSubmarineSwapProps)
+      .then(swap => res.send({swap: swap, swapSecret: swapSecret}))
+      .catch(err => res.send(err))
 
-  const swap = {
-    swap: {
-      id: 'swap0',
-      secretHolder: {
-        id: holderSubmarineSwapProps.uid
-      },
-      secretSeeker: {
-        id: seekerSubmarineSwapProps.uid
-      },
-      secretHash: holderSubmarineSwapProps.hash
-    },
-    swapSecret: swapSecret
-  }
-  return res.send(swap)
+  // const swap = {
+  //   swap: {
+  //     id: 'swap0',
+  //     secretHolder: {
+  //       id: holderSubmarineSwapProps.uid
+  //     },
+  //     secretSeeker: {
+  //       id: seekerSubmarineSwapProps.uid
+  //     },
+  //     secretHash: holderSubmarineSwapProps.hash
+  //   },
+  //   swapSecret: swapSecret
+  // }
+  // return res.send(swap)
 }
