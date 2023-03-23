@@ -7,7 +7,7 @@ module.exports = class Template {
         return this._party
     }
 
-    open() {
+    open(party, opts) {
         throw new Error('not implemented!')
     }
 

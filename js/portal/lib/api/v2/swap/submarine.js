@@ -15,12 +15,12 @@ const HTTP_METHODS = module.exports
  */
 HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
     const swap = req.json.swap
-    const party = {id: req.user}
+    const party = req.json.party //{id: req.user}
     const opts = req.json.opts
 
     console.log(`swapOpen - swap: ${JSON.stringify(swap)}\n\n party: ${JSON.stringify(party)}\n\n opts: ${JSON.stringify(opts)}`)
 
-    ctx.swaps.open(swap, party, opts)
+    ctx.swaps2.open(swap, party, opts)
         .then(swap => res.send(swap))
         .catch(err => res.send(err))
 }
@@ -33,10 +33,10 @@ HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
  */
 HTTP_METHODS.POST = function swapCommit (req, res, ctx) {
     const swap = req.json.swap
-    const party = { id: req.user }
+    const party = req.json.party //{ id: req.user }
     const opts = req.json.opts
 
-    ctx.swaps.commit(swap, party, opts)
+    ctx.swaps2.commit(swap, party, opts)
         .then(swap => res.send(swap))
         .catch(err => res.send(err))
 }

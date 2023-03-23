@@ -4,8 +4,21 @@ const Template = require('../template')
 module.exports = class HolderTemplate extends Template {
   constructor(party, node1, node2) {
     super(party)
-    this.node1 = node1
-    this.node2 = node2
+    this._node1 = node1
+    this._node2 = node2
+  }
+
+  get node1() {
+    return this._node1
+  }
+
+  get node2() {
+    return this._node2
+  }
+
+  open(party, opts) {
+    console.log("Open in holderTemplate")
+    return party
   }
 
   static fromProps(party, swapType, secretSeekerProps) {

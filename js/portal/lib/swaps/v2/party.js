@@ -1,6 +1,7 @@
 /**
  * @file Defines a party to an atomic swap
  */
+const { uuid } = require('../../helpers')
 const HolderTemplate = require('./holdertemplate/holdertemplate')
 const SeekerTemplate = require('./seekertemplate/seekertemplate')
 /**
@@ -64,6 +65,10 @@ module.exports = class Party {
     return this.swap && this.swap.secretSeeker === this
   }
 
+  get hasTemplate () {
+    return this.template != null
+  }
+
   get swapHash () {
     return this.swap.secretHash
   }
@@ -82,6 +87,10 @@ module.exports = class Party {
   open (opts) {
     try {
       console.log('\nparty.open', this, opts)
+
+      if (this.hasTemplate) {
+        return this.template.open(this, opts)
+      }
 
       if ((this.swap.isCreated && this.isSecretSeeker) ||
           (this.swap.isOpening && this.isSecretHolder)) {
@@ -194,25 +203,30 @@ module.exports = class Party {
    * @returns {Party}
    */
   static fromHolderProps(swapType, secretHolderProps, ctx) {
-    console.log(`secretHolderProps in fromHolderProps: ${JSON.stringify(secretHolderProps, null, 2)}`)
+    // console.log(`secretHolderProps in fromHolderProps: ${JSON.stringify(secretHolderProps, null, 2)}`)
 
-    // const asset = order.isAsk ? order.baseAsset : order.quoteAsset
-    // const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-    //
-    // if (ctx.networks[network] === undefined) {
-    //   console.log(order, ctx.networks)
-    //   process.exit(1)
-    // }
-    //
-    // return new Party({
-    //   id: order.uid,
-    //   asset: ctx.assets[asset],
-    //   network: ctx.networks[network],
-    //   quantity
-    // })
+    const template = HolderTemplate.fromProps(this, swapType, secretHolderProps)
+    const userid = secretHolderProps.uid
+    const asset = secretHolderProps.asset
+    const network = secretHolderProps.templateProps.nodes[swapType][0].network
+    const quantity = secretHolderProps.quantity
 
-    return null
+    if (ctx.networks[network] === undefined) {
+      console.log(secretHolderProps.hash, ctx.networks)
+      process.exit(1)
+    }
+
+
+    const party = new Party({
+      id: userid + '--' + uuid(),
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity,
+      template
+    })
+
+    // console.log(`secretHolder party before return - party: ${JSON.stringify(party, null, 2)}`)
+    return party
   }
 
   /**
@@ -221,28 +235,33 @@ module.exports = class Party {
    * @returns {Party}
    */
   static fromSeekerProps(swapType, secretSeekerProps, ctx) {
-    console.log(`secretSeekerProps in fromSeekerProps: ${JSON.stringify(secretSeekerProps, null, 2)}`)
+    // console.log(`secretSeekerProps in fromSeekerProps: ${JSON.stringify(secretSeekerProps, null, 2)}`)
+
 
     const template = SeekerTemplate.fromProps(this, swapType, secretSeekerProps)
+    const userid = secretSeekerProps.uid
+    const asset = secretSeekerProps.asset
+    const network = secretSeekerProps.templateProps.nodes[swapType][0].network
+    const quantity = secretSeekerProps.quantity
+
+    if (ctx.networks[network] === undefined) {
+      console.log(secretSeekerProps.hash, ctx.networks)
+      process.exit(1)
+    }
 
 
-    // const asset = order.isAsk ? order.baseAsset : order.quoteAsset
-    // const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-    //
-    // if (ctx.networks[network] === undefined) {
-    //   console.log(order, ctx.networks)
-    //   process.exit(1)
-    // }
-    //
-    // return new Party({
-    //   id: order.uid,
-    //   asset: ctx.assets[asset],
-    //   network: ctx.networks[network],
-    //   quantity
-    // })
 
-    return null
+    const party = new Party({
+      id: userid + '--' + uuid(),
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity,
+      template
+    })
+
+    // console.log(`secretSeeker party before return - party: ${JSON.stringify(party, null, 2)}`)
+
+    return party
   }
 
 }

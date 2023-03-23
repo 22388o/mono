@@ -329,7 +329,7 @@ module.exports = class Server extends EventEmitter {
           }
         }
 
-        this.emit('log', 'info', 'http.api', req)
+        // this.emit('log', 'info', 'http.api', req)
 
         const { ctx } = INSTANCES.get(this)
         req.handler(req, res, ctx)

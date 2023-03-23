@@ -61,16 +61,16 @@ module.exports = class Swaps extends EventEmitter {
      * @returns {Promise<Swap>}
      */
     fromProps (swapType, secretHolderProps, secretSeekerProps) {
-        console.log(`inside swaps.fromProps`)
+        // console.log(`inside swaps.fromProps`)
 
 
         return new Promise((resolve, reject) => {
             let swap
 
             try {
-                console.log(`about to call Swap.fromProps`)
+                // console.log(`about to call Swap.fromProps`)
                 swap = Swap.fromProps(swapType, secretHolderProps, secretSeekerProps, this.ctx)
-                console.log(`after call to Swap.fromProps`)
+                // console.log(`after call to Swap.fromProps`)
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
             } catch (err) {
                 return reject(err)

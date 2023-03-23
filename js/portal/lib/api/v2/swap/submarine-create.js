@@ -18,23 +18,6 @@ HTTP_METHODS.POST = function swapCreate (req, res, ctx) {
   const swapHash = sha256(secret)
   const swapSecret = secret.toString('hex')
 
-  // {
-  //   holderSubmarineSwapProps: {
-  //     uid: 'uid1',
-  //         hash: swapHash,
-  //         party: 'secretHolder',
-  //         quantity: 50000,
-  //         asset: 'BTC'
-  //   },
-  //   seekerSubmarineSwapProps: {
-  //     uid: 'uid0',
-  //         hash: null,
-  //         party: 'secretSeeker',
-  //         quantity: 50000,
-  //         asset: 'BTC'
-  //   }
-  // }
-
   const holderSubmarineSwapProps = Object.assign(req.json.holderSubmarineSwapProps, {hash: swapHash})
   const seekerSubmarineSwapProps = req.json.seekerSubmarineSwapProps
 
@@ -44,19 +27,4 @@ HTTP_METHODS.POST = function swapCreate (req, res, ctx) {
   ctx.swaps2.fromProps("submarine", holderSubmarineSwapProps, seekerSubmarineSwapProps)
       .then(swap => res.send({swap: swap, swapSecret: swapSecret}))
       .catch(err => res.send(err))
-
-  // const swap = {
-  //   swap: {
-  //     id: 'swap0',
-  //     secretHolder: {
-  //       id: holderSubmarineSwapProps.uid
-  //     },
-  //     secretSeeker: {
-  //       id: seekerSubmarineSwapProps.uid
-  //     },
-  //     secretHash: holderSubmarineSwapProps.hash
-  //   },
-  //   swapSecret: swapSecret
-  // }
-  // return res.send(swap)
 }

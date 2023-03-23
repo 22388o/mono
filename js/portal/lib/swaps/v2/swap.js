@@ -46,6 +46,9 @@ module.exports = class Swap extends EventEmitter {
       throw Error('cannot self-swap between secretHolder and secretSeeker!')
     }
 
+    // console.log(`swap constructor - secretHolder: ${JSON.stringify(props.secretHolder, null, 2)}\n\n`)
+    // console.log(`swap constructor - secretSeeker: ${JSON.stringify(props.secretSeeker, null, 2)}\n\n`)
+
     super()
 
     SWAP_INSTANCES.set(this, {
@@ -201,6 +204,9 @@ module.exports = class Swap extends EventEmitter {
     // NOTE: Mutation!!
     const { state } = party
     party = isHolder ? secretHolder : secretSeeker
+
+    console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
+    console.log(`party: ${JSON.stringify(party, null, 2)}`)
     party.state = Object.assign({}, party.state, state)
 
     party = await party.open(opts)
@@ -269,21 +275,26 @@ module.exports = class Swap extends EventEmitter {
    */
 
   static fromProps (swapType, secretHolderProps, secretSeekerProps, ctx) {
-    console.log(`inside Swap.fromProps`)
+    // console.log(`inside Swap.fromProps`)
 
     const id = uuid()
     const secretHash = secretHolderProps.hash
+
+    let secretHolder, secretSeeker
   try {
-    console.log(`about to call Party.fromHolderProps`)
-    const secretHolder = Party.fromHolderProps(swapType, secretHolderProps, ctx)
-    console.log(`about to call Party.fromSeekerProps`)
-    const secretSeeker = Party.fromSeekerProps(swapType, secretSeekerProps, ctx)
+    // console.log(`about to call Party.fromHolderProps`)
+    secretHolder = Party.fromHolderProps(swapType, secretHolderProps, ctx)
+    // console.log(`about to call Party.fromSeekerProps`)
+    secretSeeker = Party.fromSeekerProps(swapType, secretSeekerProps, ctx)
   } catch (err) {
       console.log(`Error: ${err}`)
     return reject(err)
   }
-    console.log(`both Parties created`)
+    // console.log(`both Parties created`)
+    // console.log(`before swap constructor call - secretHolder: ${JSON.stringify(secretHolder, null, 2)}\n\n`)
+    // console.log(`before swap constructor call - secretSeeker: ${JSON.stringify(secretSeeker, null, 2)}\n\n`)
     return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
+    // console.log(`swap created`)
   }
 
 }
