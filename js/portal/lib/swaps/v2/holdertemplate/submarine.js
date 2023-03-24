@@ -5,7 +5,6 @@ const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
 const bitcoin = require('bitcoinjs-lib');
-// const NETWORK = bitcoin.networks.regtest;
 
 module.exports = class Submarine extends HolderTemplate {
 

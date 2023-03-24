@@ -91,11 +91,7 @@ module.exports = class Party {
 
       if (this.hasTemplate) {
         const party = await(this.template.open(this, opts))
-        // console.log(`this.counterparty: ${JSON.stringify(this.counterparty, null, 2)}`)
-        // console.log(`party: ${JSON.stringify(party, null, 2)}`)
         this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
-        // console.log(`this.counterparty: ${JSON.stringify(this.counterparty, null, 2)}`)
-        // this.state.shared = Object.assign(this.state.shared, party.state.shared)
         return party
       }
 
@@ -129,11 +125,7 @@ module.exports = class Party {
 
       if (this.hasTemplate) {
         const party = await(this.template.commit(this, opts))
-        // console.log(`this.counterparty: ${JSON.stringify(this.counterparty, null, 2)}`)
-        // console.log(`party: ${JSON.stringify(party, null, 2)}`)
         this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
-        // console.log(`this.counterparty: ${JSON.stringify(this.counterparty, null, 2)}`)
-        // this.state.shared = Object.assign(this.state.shared, party.state.shared)
         return party
       }
 

@@ -8,11 +8,8 @@ const Client = require('bitcoin-core');
 const { getDescriptorInfo, createRawTransaction } = require('bitcoin-core/src/methods');
 const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
-
-//const { alice, bob } = require('../bitcoin-test-wallets-generator/wallets.json');
 const SwapInfo = require('../swap-info');
 const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStackToScriptWitness')
-// const ln = require('lightning')
 
 
 const RELATIVE_SWAP_TIMELOCK = 36;
