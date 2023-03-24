@@ -6,10 +6,13 @@ const bitcoin = require('bitcoinjs-lib');
 const bip65 = require('bip65');
 const Client = require('bitcoin-core');
 const { getDescriptorInfo, createRawTransaction } = require('bitcoin-core/src/methods');
+const ln = require('lightning')
+const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
 //const { alice, bob } = require('../bitcoin-test-wallets-generator/wallets.json');
 const SwapInfo = require('../swap-info');
 const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStackToScriptWitness')
+// const ln = require('lightning')
 
 
 const RELATIVE_SWAP_TIMELOCK = 36;
@@ -101,6 +104,7 @@ module.exports = class Submarine extends SeekerTemplate {
 
     // async function commit(secret, swapinfo, amount, fee) {
     async commit(party, opts) {
+
         const carol = new Client({
             port:       this.node2.creds.rpcport,
             password:   this.node2.creds.rpcpassword,
@@ -111,8 +115,12 @@ module.exports = class Submarine extends SeekerTemplate {
         const amount = party.quantity
         const swapinfo = party.state.shared.swapinfo
 
-        const seekerPublicKey = party.state.shared.seekerPublicKey
+        const wif = this.node2.creds.wif
+        const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK)
+        const seekerPublicKey = seekerPair.publicKey
+
         const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({pubkey: seekerPublicKey, NETWORK});
+
         const secretSeeker_redeemAddress = secretSeeker_p2wpkh.address;
 
         const psbt = new bitcoin.Psbt({NETWORK});
@@ -140,7 +148,8 @@ module.exports = class Submarine extends SeekerTemplate {
         if (numUtxos == 0) {
             console.log('payment not received yet')
             // TODO: determine return contract
-            return void 0;
+            // return void 0;
+            return party
         } else if (numUtxos > 1) {
             console.log(`multiple payments, numUtxos: ${numUtxos}`)
             // TODO: determine return contract and implement handling in time
@@ -175,6 +184,28 @@ module.exports = class Submarine extends SeekerTemplate {
             return void 0;
         }
 
+        const auth = {
+            cert: this.node1.creds.cert,
+            macaroon: this.node1.creds.adminMacaroon,
+            socket: this.node1.creds.socket
+        }
+
+        const carolAdmin = ln.authenticatedLndGrpc(auth)
+        const request = party.state.shared.request
+        carolAdmin.request = request
+        const details = await decodePaymentRequest(carolAdmin).catch(reason => console.log(reason))
+        const swapHash = party.swapHash
+        if (swapHash !== details.id) {
+            throw new Error('Swap hash does not match payment hash for invoice ')
+        }
+
+        console.log('Carol about to pay invoice')
+        const paidInvoice = await payViaPaymentRequest(carolAdmin).catch(reason => console.log(reason))
+
+        console.log(`paidInvoice.secret: ${paidInvoice.secret}`)
+        const secret = paidInvoice.secret
+
+
         psbt.addInput({
             hash: utxo.txid,
             index: utxo.vout,
@@ -191,8 +222,6 @@ module.exports = class Submarine extends SeekerTemplate {
             value: amountAndFee - DEFAULT_MINER_FEE
         });
 
-        const wif = this.node2.creds.wif
-        const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK);
 
         psbt.signInput(0, seekerPair);
 
@@ -211,14 +240,17 @@ module.exports = class Submarine extends SeekerTemplate {
             }
         })
         const transaction = psbt.extractTransaction();
+
         try {
             const txid = await carol.command([{method: 'sendrawtransaction', parameters: [`${transaction.toHex()}` ]}]);
-            return txid;
+            party.state.shared.txid = txid
             // return transaction.toHex();
         } catch( exception ) {
             console.log(`Failed broadcast of commit transaction, exception: ${exception}`)
-            return transaction.toHex();
+            // return transaction.toHex();
         }
+        party.state.shared.transaction = transaction.toHex()
+        return party
 
     }
 

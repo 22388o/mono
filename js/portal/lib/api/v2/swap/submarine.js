@@ -36,6 +36,7 @@ HTTP_METHODS.POST = function swapCommit (req, res, ctx) {
     const party = req.json.party //{ id: req.user }
     const opts = req.json.opts
 
+    console.log("swapCommit api v2")
     ctx.swaps2.commit(swap, party, opts)
         .then(swap => res.send(swap))
         .catch(err => res.send(err))
