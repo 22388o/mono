@@ -44,6 +44,12 @@ module.exports = class Swaps extends EventEmitter {
 
             try {
                 swap = Swap.fromOrders(maker, taker, this.ctx)
+                  .once('created', forwardEvent(this, 'created'))
+                  .once('opening', forwardEvent(this, 'opening'))
+                  .once('opened', forwardEvent(this, 'opened'))
+                  .once('committing', forwardEvent(this, 'committing'))
+                  .once('committed', forwardEvent(this, 'committed'))
+
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
             } catch (err) {
                 return reject(err)
@@ -70,6 +76,12 @@ module.exports = class Swaps extends EventEmitter {
             try {
                 // console.log(`about to call Swap.fromProps`)
                 swap = Swap.fromProps(swapType, secretHolderProps, secretSeekerProps, this.ctx)
+                  .once('created', forwardEvent(this, 'created'))
+                  .once('opening', forwardEvent(this, 'opening'))
+                  .once('opened', forwardEvent(this, 'opened'))
+                  .once('committing', forwardEvent(this, 'committing'))
+                  .once('committed', forwardEvent(this, 'committed'))
+
                 // console.log(`after call to Swap.fromProps`)
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
             } catch (err) {

@@ -62,7 +62,7 @@ module.exports = class Party {
   }
 
   get swapHash () {
-    return this.swap.secretHash
+    return this.swap && this.swap.secretHash
   }
 
   /**

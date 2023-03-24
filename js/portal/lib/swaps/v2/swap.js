@@ -56,7 +56,8 @@ module.exports = class Swap extends EventEmitter {
       secretHash: props.secretHash, // hexString
       secretHolder: props.secretHolder,
       secretSeeker: props.secretSeeker,
-      status: SWAP_STATUS[0]
+      status: SWAP_STATUS[0],
+      sharedState: {}
     })
 
     SWAP_INSTANCES.get(this).secretHolder.swap = this
@@ -205,8 +206,8 @@ module.exports = class Swap extends EventEmitter {
     const { state } = party
     party = isHolder ? secretHolder : secretSeeker
 
-    console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
-    console.log(`party: ${JSON.stringify(party, null, 2)}`)
+    // console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
+    // console.log(`party: ${JSON.stringify(party, null, 2)}`)
     party.state = Object.assign({}, party.state, state)
 
     party = await party.open(opts)
@@ -243,6 +244,11 @@ module.exports = class Swap extends EventEmitter {
     }
 
     party = isHolder ? secretHolder : secretSeeker
+
+    // console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
+    // console.log(`party: ${JSON.stringify(party, null, 2)}`)
+    // party.state = Object.assign({}, party.state, state)
+
     party = await party.commit(opts)
     SWAP_INSTANCES.get(this).status = this.isCommitting
       ? SWAP_STATUS[4]
@@ -278,14 +284,17 @@ module.exports = class Swap extends EventEmitter {
     // console.log(`inside Swap.fromProps`)
 
     const id = uuid()
+
+    console.log(`secretHolderProps IN FROM_PROPS: ${JSON.stringify(secretHolderProps, null, 2)}`)
     const secretHash = secretHolderProps.hash
+    console.log(`secretHash: ${secretHash}`)
 
     let secretHolder, secretSeeker
   try {
     // console.log(`about to call Party.fromHolderProps`)
-    secretHolder = Party.fromHolderProps(swapType, secretHolderProps, ctx)
+    secretHolder = Party.fromHolderProps(swapType, secretHash, secretHolderProps, ctx)
     // console.log(`about to call Party.fromSeekerProps`)
-    secretSeeker = Party.fromSeekerProps(swapType, secretSeekerProps, ctx)
+    secretSeeker = Party.fromSeekerProps(swapType, secretHash, secretSeekerProps, ctx)
   } catch (err) {
       console.log(`Error: ${err}`)
     return reject(err)
@@ -293,8 +302,10 @@ module.exports = class Swap extends EventEmitter {
     // console.log(`both Parties created`)
     // console.log(`before swap constructor call - secretHolder: ${JSON.stringify(secretHolder, null, 2)}\n\n`)
     // console.log(`before swap constructor call - secretSeeker: ${JSON.stringify(secretSeeker, null, 2)}\n\n`)
-    return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
+    const swap = new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
+
     // console.log(`swap created`)
+    return swap
   }
 
 }

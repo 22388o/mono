@@ -8,14 +8,15 @@ const Client = require('bitcoin-core');
 const { getDescriptorInfo, createRawTransaction } = require('bitcoin-core/src/methods');
 
 //const { alice, bob } = require('../bitcoin-test-wallets-generator/wallets.json');
-// const SwapInfo = require('./swap-info');
-// const witnessStackToScriptWitness  = require('./bitcoinjs-function/witnessStackToScriptWitness')
+const SwapInfo = require('../swap-info');
+const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStackToScriptWitness')
 
-// const NETWORK = bitcoin.networks.regtest;
-// const RELATIVE_SWAP_TIMELOCK = 36;
-// const RELATIVE_PAYMENT_DEADLINE = 24;
-// const REQUIRED_CONFIRMATIONS = 3;
-// const DEFAULT_MINER_FEE = 200;
+
+const RELATIVE_SWAP_TIMELOCK = 36;
+const RELATIVE_PAYMENT_DEADLINE = 24;
+const REQUIRED_CONFIRMATIONS = 3;
+const DEFAULT_MINER_FEE = 200;
+const NETWORK = bitcoin.networks.regtest
 
 module.exports = class Submarine extends SeekerTemplate {
     constructor(party, node1, node2) {
@@ -24,42 +25,201 @@ module.exports = class Submarine extends SeekerTemplate {
 
     async open(party, opts) {
         console.log("Open in seeker submarine")
-        console.log(`node1: ${JSON.stringify(this.node1, null, 2)}`)
-        console.log(`node2: ${JSON.stringify(this.node2, null, 2)}`)
+
+        const scriptGenerator = function(secretSeekerPublicKey,  secretHolderPublicKey, swapHash, timelock) {
+            return bitcoin.script.fromASM(
+              `
+        OP_HASH160
+        ${bitcoin.crypto.ripemd160(Buffer.from(swapHash, 'hex')).toString('hex')}
+        OP_EQUAL
+        OP_IF
+            ${secretSeekerPublicKey}
+        OP_ELSE
+            ${bitcoin.script.number.encode(timelock).toString('hex')}
+            OP_CHECKLOCKTIMEVERIFY
+            OP_DROP
+            ${secretHolderPublicKey}
+        OP_ENDIF
+        OP_CHECKSIG
+        `
+                .trim()
+                .replace(/\s+/g, ' ')
+            );
+        };
+
+        // console.log(`node1: ${JSON.stringify(this.node1, null, 2)}`)
+        // console.log(`node2: ${JSON.stringify(this.node2, null, 2)}`)
 
             const carol = new Client({
                 port:       this.node2.creds.rpcport,
                 password:   this.node2.creds.rpcpassword,
-                username:   this.node2.creds.rpcuser,
+                username:   this.node2.creds.rpcuser
             });
 
             const info = await carol.command([{method: 'getblockchaininfo', parameters: []}]);
 
             console.log(`info: ${JSON.stringify(info, null, 2)}`)
-            //
-            // const height = info[0].blocks;
-            // const timelock = height +  RELATIVE_SWAP_TIMELOCK;
-            // const holderPublicKey = SECRET_HOLDER.publicKey.toString('hex');
-            // const seekerPublicKey = SECRET_SEEKER.publicKey.toString('hex');
-            //
-            // const witnessScriptRaw = scriptGenerator(seekerPublicKey, holderPublicKey, swapHash, timelock);
-            // const p2wsh = bitcoin.payments.p2wsh({redeem: {output: witnessScriptRaw, NETWORK}, NETWORK})
-            //
-            // const witnessScript = witnessScriptRaw.toString('hex');
-            //
-            // const scriptInfo = await carol.decodeScript(witnessScript);
-            // const payAddress = scriptInfo.segwit.address;
-            // const barePayDescriptor = `addr(${payAddress})`;
-            // const descriptorInfo = await carol.command([{method: 'getdescriptorinfo', parameters: [barePayDescriptor]}]);
-            // const checksum = descriptorInfo[0].checksum;
-            // const payDescriptor =  `${barePayDescriptor}#${checksum}`;
-            //
-            // const swapinfo = new SwapInfo.constructor( {descriptor: payDescriptor, witnessScript, timelock});
 
+            const wif = this.node2.creds.wif
+            // console.log(`wif: ${wif}`)
+            // const network = bitcoin.networks.regtest
+            // console.log(`network: ${network}`)
+            const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK);
+            // console.log(`holderPair created`)
+            const seekerPublicKey = seekerPair.publicKey.toString('hex');
+            // console.log(`seekerPublicKey: ${seekerPublicKey}`)
+
+            party.state.shared.seekerPublicKey = seekerPublicKey
+
+            const height = info[0].blocks;
+            const timelock = height +  RELATIVE_SWAP_TIMELOCK;
+            const holderPublicKey = party.state.shared.holderPublicKey
+
+            console.log(`holderPublicKey: ${holderPublicKey}`)
+            const swapHash = party.swapHash
+            const witnessScriptRaw = scriptGenerator(seekerPublicKey, holderPublicKey, swapHash, timelock);
+            const p2wsh = bitcoin.payments.p2wsh({redeem: {output: witnessScriptRaw, NETWORK}, NETWORK})
+
+            const witnessScript = witnessScriptRaw.toString('hex');
+
+            const scriptInfo = await carol.decodeScript(witnessScript);
+            const payAddress = scriptInfo.segwit.address;
+            const barePayDescriptor = `addr(${payAddress})`;
+            const descriptorInfo = await carol.command([{method: 'getdescriptorinfo', parameters: [barePayDescriptor]}]);
+            const checksum = descriptorInfo[0].checksum;
+            const payDescriptor =  `${barePayDescriptor}#${checksum}`;
+
+
+            const swapinfo = new SwapInfo.constructor( {descriptor: payDescriptor, witnessScript, timelock});
+            party.state.shared.swapinfo = swapinfo
             // return swapinfo;
 
+            console.log(`party in submarine.open: ${JSON.stringify(party, null, 2)}`)
 
         return party
+    }
+
+    // async function commit(secret, swapinfo, amount, fee) {
+    async commit(party, opts) {
+        const carol = new Client({
+            port:       this.node2.creds.rpcport,
+            password:   this.node2.creds.rpcpassword,
+            username:   this.node2.creds.rpcuser
+        });
+
+        const fee = party.state.shared.holderFee
+        const amount = party.quantity
+        const swapinfo = party.state.shared.swapinfo
+
+        const seekerPublicKey = party.state.shared.seekerPublicKey
+        const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({pubkey: seekerPublicKey, NETWORK});
+        const secretSeeker_redeemAddress = secretSeeker_p2wpkh.address;
+
+        const psbt = new bitcoin.Psbt({NETWORK});
+
+        const amountAndFee = amount + fee;
+
+        const scantx = await carol.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range
+
+        // for basic demo - assume one payment
+        // later accommodate multiple payments that add up to at least amount + fee with sufficient confirmations for all
+
+        const success = scantx[0].success;
+        if (!success) {
+            console.log("scan for tx outputs failed")
+            return void 0;
+            // TODO: throw exception?
+        }
+
+        const currentHeight = scantx[0].height;
+        const totalAmount = Math.round(scantx[0].total_amount * 10E8);
+
+        const utxos = scantx[0].unspents
+        const numUtxos = utxos.length;
+
+        if (numUtxos == 0) {
+            console.log('payment not received yet')
+            // TODO: determine return contract
+            return void 0;
+        } else if (numUtxos > 1) {
+            console.log(`multiple payments, numUtxos: ${numUtxos}`)
+            // TODO: determine return contract and implement handling in time
+            return void 0;
+        } else if (numUtxos == 1) {
+            // current happy path
+        } else {
+            console.log(`unusual value for numUtxos: ${numUtxos}`)
+            // TODO: throw exception?
+            return void 0;
+        }
+
+        const utxo = utxos[0]
+        const paymentTxHeight = utxo.height
+        const confirmations = currentHeight - paymentTxHeight + 1;
+        if (confirmations < REQUIRED_CONFIRMATIONS) {
+            console.log(`insufficient confirmations so far: ${confirmations} (must be 3 or greater)`)    // TODO: determine return contract
+            return void 0;
+        }
+
+        const timeZero = swapinfo.timelock - RELATIVE_SWAP_TIMELOCK;
+        const paymentDeadline = timeZero + RELATIVE_PAYMENT_DEADLINE
+
+        if (paymentTxHeight > paymentDeadline ) {
+            console.log(`L1 payment was made late, you really shouldn't have paid the invoice, payment height: ${paymentTxHeight}, payment deadline: ${paymentDeadline}, timelock: ${swapinfo.timelock}`)
+            // continue anyway
+        }
+
+        if (totalAmount < amountAndFee) {
+            console.log(`amount paid insufficient, expect ${amountAndFee}, paid ${totalAmount}`)
+            // TODO: determine return contract
+            return void 0;
+        }
+
+        psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.vout,
+            sequence: 0xfffffffe,
+            witnessUtxo: {
+                script: Buffer.from('0020' + bitcoin.crypto.sha256(Buffer.from(swapinfo.witnessScript, 'hex')).toString('hex'), 'hex'),
+                value: amountAndFee
+            },
+            witnessScript: Buffer.from(swapinfo.witnessScript, 'hex')
+        });
+
+        psbt.addOutput({
+            address: secretSeeker_redeemAddress,
+            value: amountAndFee - DEFAULT_MINER_FEE
+        });
+
+        const wif = this.node2.creds.wif
+        const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK);
+
+        psbt.signInput(0, seekerPair);
+
+        psbt.finalizeInput(0, (inputIndex, input, script) => {
+            const p2wsh = bitcoin.payments.p2wsh({
+                redeem: {
+                    input: bitcoin.script.compile([
+                        input.partialSig[inputIndex].signature,
+                        Buffer.from(secret, 'hex')
+                    ]),
+                    output: Buffer.from(script, 'hex')
+                }
+            });
+            return {
+                finalScriptWitness: witnessStackToScriptWitness(p2wsh.witness)
+            }
+        })
+        const transaction = psbt.extractTransaction();
+        try {
+            const txid = await carol.command([{method: 'sendrawtransaction', parameters: [`${transaction.toHex()}` ]}]);
+            return txid;
+            // return transaction.toHex();
+        } catch( exception ) {
+            console.log(`Failed broadcast of commit transaction, exception: ${exception}`)
+            return transaction.toHex();
+        }
+
     }
 
 
@@ -73,5 +233,7 @@ module.exports = class Submarine extends SeekerTemplate {
         const node2 = new Node2(props2)
         return new Submarine(party, node1, node2)
     }
+
+
 
 }

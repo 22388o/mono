@@ -19,7 +19,7 @@ HTTP_METHODS.POST = function swapCreate (req, res, ctx) {
   const swapSecret = secret.toString('hex')
 
   const holderSubmarineSwapProps = Object.assign(req.json.holderSubmarineSwapProps, {hash: swapHash})
-  const seekerSubmarineSwapProps = req.json.seekerSubmarineSwapProps
+  const seekerSubmarineSwapProps = Object.assign(req.json.seekerSubmarineSwapProps, {hash: swapHash})
 
   console.log(`holderSubmarineSwapProps: ${JSON.stringify(holderSubmarineSwapProps, null, 2)}`)
   console.log(`seekerSubmarineSwapProps: ${JSON.stringify(seekerSubmarineSwapProps, null, 2)}`)

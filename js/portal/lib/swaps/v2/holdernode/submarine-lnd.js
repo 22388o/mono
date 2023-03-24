@@ -7,8 +7,8 @@ module.exports = class Node1 extends Node {
         this.creds = {
             socket: props.socket,
             cert: props.cert,
-            admin: props.admin,
-            invoice: props.invoice
+            adminMacaroon: props.admin,
+            invoiceMacaroon: props.invoice
         }
     }
 

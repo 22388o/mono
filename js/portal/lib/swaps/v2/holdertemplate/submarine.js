@@ -2,8 +2,10 @@
 
 const HolderTemplate = require("./holdertemplate")
 const ln = require('lightning')
-const { createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
+const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
+const bitcoin = require('bitcoinjs-lib');
+// const NETWORK = bitcoin.networks.regtest;
 
 module.exports = class Submarine extends HolderTemplate {
 
@@ -15,46 +17,74 @@ module.exports = class Submarine extends HolderTemplate {
         console.log("Open in holder submarine")
         console.log(`party: ${JSON.stringify(party, null, 2)}`)
 
+        const wif = this.node2.creds.wif
+        console.log(`wif: ${wif}`)
+        const network = bitcoin.networks.regtest
+        console.log(`network: ${network}`)
+        const holderPair = bitcoin.ECPair.fromWIF(wif, network);
+        console.log(`holderPair created`)
+        const holderPublicKey = holderPair.publicKey.toString('hex');
+        console.log(`holderPublicKey: ${holderPublicKey}`)
 
-        const carolInvoice2 = ln.authenticatedLndGrpc({
-            cert: node1.creds.cert,
-            macaroon: node1.creds.invoiceMacaroon,
-            socket: node1.creds.socket
-        })
+        party.state.shared.holderPublicKey = holderPublicKey
+
+        const auth = {
+            cert: this.node1.creds.cert,
+            macaroon: this.node1.creds.invoiceMacaroon,
+            socket: this.node1.creds.socket
+        }
+        console.log(`auth: ${JSON.stringify(auth, null, 2)}`)
+
+        const carolInvoice = ln.authenticatedLndGrpc(auth)
+
+
+        console.log(`party: ${JSON.stringify(party, null, 2)}`)
         const swapHash = party.swapHash
         const quantity = party.quantity
+        const swapSecret = party.state.secret
+        const fee = party.fee
 
-        carolInvoice2.id = swapHash
-        carolInvoice2.tokens = quantity
-        console.log
-        const request2 = (await createHodlInvoice(carolInvoice2)).request
-        console.log(`request1: ${request2}`)
+        carolInvoice.id = swapHash
+        carolInvoice.secret = swapSecret
+        carolInvoice.tokens = quantity
+        console.log(`carolInvoice: ${JSON.stringify(carolInvoice, null, 2)}`)
+        // const request2 = (await createHodlInvoice(carolInvoice)).request
 
-        // const subscription = await subscribeToInvoice(carolInvoice2)
-        //
-        // await subscription.on('invoice_updated', async invoice2 => {
-        //     console.log('invoice updated for invoice1')
-        //     if (invoice2.is_confirmed) {
-        //         console.log('INVOICE in N2 PAID and SETTLED')
-        //     }
-        //
-        //     if (!invoice2.is_held) {
-        //         console.log('but not held')
-        //         return
-        //     }
-        //
-        //     console.log('invoice2 now held')
-        //     console.log(`secret: ${party.state.secret}`)
-        //     carolInvoice2.secret = party.state.secret
-        //     console.log('about to settle invoice2')
-        //     await settleHodlInvoice(carolInvoice2)
-        //     console.log('Carol has performed paymentStep2 on invoice2')
-        // })
-        // console.log(`in commit for carol: request2: ${request2}`)
-        // party.publicInfo.right.request = request2
-        // party.state.right.lnd.subscription = subscription
-    // }
+        let request
+        try {
+            request = (await createHodlInvoice(carolInvoice)).request
+        }
+        catch(err) {
+            console.log(`Error: ${err}`)
+        }
+        console.log(`request: ${request}`)
 
+        const subscription = await subscribeToInvoice(carolInvoice)
+
+        await subscription.on('invoice_updated', async invoice => {
+            // console.log('invoice updated for invoice')
+            if (invoice.is_confirmed) {
+                console.log(`INVOICE for ${party.id} PAID and SETTLED`)
+            }
+
+            if (!invoice.is_held) {
+                // console.log('but not held')
+                return
+            }
+
+            // console.log('invoice now held')
+            console.log(`secret: ${swapSecret}`)
+            carolInvoice.secret = swapSecret
+            // console.log('about to settle invoice')
+            await settleHodlInvoice(carolInvoice)
+            // console.log('Carol has performed paymentStep2 on invoice')
+        })
+        // console.log(`in commit for carol: request2: ${request}`)
+        party.state.shared.request = request
+        party.state.shared.holderFee = fee
+        party.state.subscription = subscription
+
+        console.log(`party in holder submarine: ${JSON.stringify(party, null, 2)}`)
         return party
     }
 
