@@ -16,8 +16,18 @@ module.exports = class HolderTemplate extends Template {
     return this._node2
   }
 
-  open(party, opts) {
+  async open(party, opts) {
     console.log("Open in holderTemplate")
+    return party
+  }
+
+  async commit(party, opts) {
+    console.log("Commit in holderTemplate")
+    return party
+  }
+
+  async abort(party, opts) {
+    console.log("Abort in holderTemplate")
     return party
   }
 

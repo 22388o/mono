@@ -24,6 +24,16 @@ module.exports = class SeekerTemplate extends Template {
         return party
     }
 
+    async commit(party, opts) {
+        console.log("Commit in seekerTemplate")
+        return party
+    }
+
+    async abort(party, opts) {
+        console.log("Abort in seekerTemplate")
+        return party
+    }
+
     static fromProps(party, swapType, secretSeekerProps) {
         const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
 

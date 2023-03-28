@@ -151,7 +151,19 @@ module.exports = class Party {
    * Gracefully aborts a swap for a single party
    * @returns {Promise<Party>}
    */
-  abort () {
+  async abort (opts) {
+    try {
+      console.log('\nparty.abort', this, opts)
+
+      if (this.hasTemplate) {
+        const party = await(this.template.abort(this, opts))
+        this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
+        return party
+      }
+    } catch (err) {
+      return Promise.reject(err)
+    }
+
     return Promise.reject(Error('not implemented yet!'))
   }
 

@@ -251,6 +251,10 @@ module.exports = class Submarine extends SeekerTemplate {
 
     }
 
+    async abort(party, opts) {
+        throw new Error('not implemented!')
+    }
+
 
     static fromProps(party, nodesProps) {
 

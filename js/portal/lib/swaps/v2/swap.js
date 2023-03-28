@@ -15,7 +15,8 @@ const SWAP_STATUS = [
   'opening',
   'opened',
   'committing',
-  'committed'
+  'committed',
+  'aborted'
 ]
 
 /**
@@ -143,6 +144,14 @@ module.exports = class Swap extends EventEmitter {
   }
 
   /**
+   * Returns whether or not the swap is in the `committed` state
+   * @returns {Boolean}
+   */
+  get isAborted () {
+    return this.status === SWAP_STATUS[5]
+  }
+
+  /**
    * The current status of the atomic swap
    * @returns {String}
    */
@@ -257,6 +266,45 @@ module.exports = class Swap extends EventEmitter {
 
     return this
   }
+
+  /**
+   * Handles aborting the swap by one of its parties
+   * @param {Object} party The party that is opening the swap
+   * @param {String} party.id The unique identifier of the party
+   * @param {Object} opts Configuration options for the operation
+   * @returns {Promise<Swap>}
+   */
+  async abort (party, opts) {
+    console.log('\nswap.abort', this, party, opts)
+
+    const { secretHolder, secretSeeker, status } = this
+    const isHolder = party.id === secretHolder.id
+    const isSeeker = party.id === secretSeeker.id
+    const isBoth = isHolder && isSeeker
+    const isNeither = !isHolder && !isSeeker
+
+    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
+      throw Error(`cannot abort swap "${this.id}" when ${status}!`)
+    } else if (isBoth) {
+      throw Error('self-swapping is not allowed!')
+    } else if (isNeither) {
+      throw Error(`"${party.id}" not a party to swap "${this.id}"!`)
+    }
+
+    party = isHolder ? secretHolder : secretSeeker
+
+    // console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
+    // console.log(`party: ${JSON.stringify(party, null, 2)}`)
+    // party.state = Object.assign({}, party.state, state)
+
+    party = await party.abort(opts)
+    SWAP_INSTANCES.get(this).status = SWAP_STATUS[5]
+
+    this.emit(this.status, this)
+
+    return this
+  }
+
 
   /**
    * Creates an atomic swap for settling a pair of orders

@@ -7,11 +7,15 @@ module.exports = class Template {
         return this._party
     }
 
-    open(party, opts) {
+    async open(party, opts) {
         throw new Error('not implemented!')
     }
 
-    commit() {
+    async commit(party, opts) {
+        throw new Error('not implemented!')
+    }
+
+    async abort() {
         throw new Error('not implemented!')
     }
 

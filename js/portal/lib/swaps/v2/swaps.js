@@ -49,6 +49,8 @@ module.exports = class Swaps extends EventEmitter {
                   .once('opened', forwardEvent(this, 'opened'))
                   .once('committing', forwardEvent(this, 'committing'))
                   .once('committed', forwardEvent(this, 'committed'))
+                  .once('aborted', forwardEvent(this, 'aborted'))
+
 
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
             } catch (err) {
@@ -81,6 +83,7 @@ module.exports = class Swaps extends EventEmitter {
                   .once('opened', forwardEvent(this, 'opened'))
                   .once('committing', forwardEvent(this, 'committing'))
                   .once('committed', forwardEvent(this, 'committed'))
+                  .once('aborted', forwardEvent(this, 'aborted'))
 
                 // console.log(`after call to Swap.fromProps`)
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
@@ -144,8 +147,13 @@ module.exports = class Swaps extends EventEmitter {
      * @returns {Promise<Void>}
      */
     abort (swap, party, opts) {
-        return new Promise((resolve, reject) => {
-            reject(Error('not implemented yet!'))
-        })
+        console.log('\nSwaps.abort', swap, party, opts)
+        if (swap == null || swap.id == null) {
+            throw new Error('unknown swap!')
+        } else if (!this.swaps.has(swap.id)) {
+            throw new Error(`unknown swap "${swap.id}"!`)
+        } else {
+            return this.swaps.get(swap.id).abort(party, opts)
+        }
     }
 }
