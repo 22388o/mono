@@ -1,0 +1,7 @@
+[Eth]
+NetworkId = 1337
+
+[Node]
+DataDir = 'playnet/state/portal/geth/data'
+HTTPHost = '127.0.0.1'
+HTTPPort = 8545
