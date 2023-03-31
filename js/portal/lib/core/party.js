@@ -171,12 +171,6 @@ module.exports = class Party {
     const asset = order.isAsk ? order.baseAsset : order.quoteAsset
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
     const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-
-    if (ctx.networks[network] === undefined) {
-      console.log(order, ctx.networks)
-      process.exit(1)
-    }
-
     return new Party({
       id: order.uid,
       asset: ctx.assets[asset],

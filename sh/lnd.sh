@@ -24,7 +24,7 @@ start)
   printf "starting lnd for $OWNER ... "
   [ -r $CONFIGFILE ] || fatal "$CONFIGFILE not found; startup failed!"
   mkdir -p $PORTAL_ROOT/playnet/state/$OWNER/$SERVICENAME
-  nohup lnd --configfile $CONFIGFILE >/dev/null 2>&1 &
+  nohup lnd --noseedbackup --configfile $CONFIGFILE >/dev/null 2>&1 &
   echo "done"
   ;;
 
