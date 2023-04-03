@@ -4,8 +4,10 @@ let Web3 = require('web3');
 let Web3legacy = require('web3melnx');
 
 const EventEmitter = require('events');
+const { getChannelBalance } = require('lightning');
 const Common = require('ethereumjs-common').default
 const Tx = require('ethereumjs-tx').Transaction
+NULL_ADDRESS =  '0x0000000000000000000000000000000000000000';
 
 class ChannelClient extends EventEmitter {
 
@@ -70,22 +72,31 @@ class ChannelClient extends EventEmitter {
 
     async loadChannel(sourceAddress, targetAddress, tokenAddress='0x00'){
         let channelId = this.getChannelId(sourceAddress, targetAddress, tokenAddress);
-       
+        return await this._loadChannel(channelId);
+    }
+
+    async loadChannelById(channelId){
+        return await this._loadChannel(channelId);
+    }
+
+    async _loadChannel(channelId){
+        
         let chan = await this.channelContract.channels(channelId);
 
         console.log(this.name, "CHANNEL FROM CHAIN", chan);
     
         let sender = chan[0]; let receiver = chan[1]; let deposited = chan[2]; let claimed = chan[3];
-        if(!(sender.toLowerCase() == sourceAddress.toLowerCase() && receiver.toLowerCase() == targetAddress.toLowerCase())){
+        //if(!(sender.toLowerCase() == sourceAddress.toLowerCase() && receiver.toLowerCase() == targetAddress.toLowerCase())){
+        if(sender == NULL_ADDRESS){
             //throw(this.name + " channel not opened " + sourceAddress + "=>" + targetAddress)
             return null;
         }
 
         let channel = {
             id: channelId,
-            tokenAddress: tokenAddress,
-            spender: sourceAddress, 
-            recipient: targetAddress,
+            tokenAddress: NULL_ADDRESS, //TODO get token address from result
+            spender: sender, 
+            recipient: receiver,
             deposited: parseInt(deposited.toFixed()), 
             spent: parseInt(claimed.toFixed()), 
         }
@@ -102,6 +113,18 @@ class ChannelClient extends EventEmitter {
         if(!channel){
             console.log(this.name, "CHANNEL NOT LOADED YET, LOADING FROM CHAIN")
             channel = await this.loadChannel(sourceAddress, targetAddress, tokenAddress);
+        }       
+
+        return channel;
+    }
+
+
+    async getOrLoadChannelById(channelId){
+        let channel = this.getChannelById(channelId);
+
+        if(!channel){
+            console.log(this.name, "CHANNEL NOT LOADED YET, LOADING FROM CHAIN")
+            channel = await this.loadChannelById(channelId);
         }       
 
         return channel;
@@ -141,9 +164,10 @@ class ChannelClient extends EventEmitter {
     }
 
     getChannelBalance(channel){
-        if(typeof channel == 'string') channel = this.channels[channel];        
-        if(channel.recipient == this.address) return parseInt(channel.spent); //TODO replace parseint with BigInt
-        if(channel.spender == this.address) return this.getChannelCapacity(channel);
+        if(typeof channel == 'string') channel = this.channels[channel];  
+        if(!channel) return null;        
+        if(channel.recipient.toLowerCase() == this.address.toLowerCase()) return parseInt(channel.spent); //TODO replace parseint with BigInt
+        if(channel.spender.toLowerCase() == this.address.toLowerCase()) return this.getChannelCapacity(channel);
         return null;
     }
 
@@ -156,12 +180,28 @@ class ChannelClient extends EventEmitter {
         return this.channels[ this.getChannelId(sourceAddress, targetAddress, tokenAddress) ];
     }
 
+    getChannelById(id){
+        return this.channels[ id ];
+    }
+
+    getCapacity(tokenAddress='0x0000000000000000000000000000000000000000'){
+        return this._getChannelsSum("capacity", tokenAddress);
+    }
+
     getBalance(tokenAddress='0x0000000000000000000000000000000000000000'){
+        return this._getChannelsSum("balance", tokenAddress);
+    }
+
+    _getChannelsSum(type, tokenAddress){
         let sum = 0;
         for(var id in this.channels){
             let channel = this.channels[id];
             if(channel.tokenAddress == tokenAddress){
-                sum += this.getChannelCapacity(channel);
+                if(type == "balance"){
+                    sum += this.getChannelBalance(channel);
+                }else if(type == "capacity"){
+                    sum += this.getChannelCapacity(channel);
+                }
             }
         }
         return sum;
@@ -602,10 +642,31 @@ class ChannelClient extends EventEmitter {
         })
     
         app.get('/balance', (req, res) => {
-            let balance = this.getBalance();
+            let token = req.query.token;
+            let balance = this.getBalance(token);
             res.send({
                 balance: balance
             })
+        })
+
+        app.get('/channel_balance', async (req, res) => {
+            let id = req.query.id;            
+            let channel = await this.getOrLoadChannelById(id);            
+
+            let balance = this.getChannelBalance(channel);
+            res.send({
+                balance: balance
+            })
+        })
+
+        app.get('/channel', async (req, res) => {
+            let id = req.query.id;            
+            let channel = await this.getOrLoadChannelById(id);            
+            let balance = this.getChannelBalance(channel);
+            res.send({
+                channel: channel, 
+                balance: balance,
+            });
         })
     
         app.get('/reveal', (req, res) => {
@@ -619,6 +680,7 @@ class ChannelClient extends EventEmitter {
         app.get('/transfer', async (req, res) => {
             let target = req.query.target;
             let amount = req.query.amount;
+            let spent = req.query.spent;
             let signature = req.query.signature;   
             let token = req.query.token;   
             let reveal = req.query.reveal;  
@@ -626,7 +688,9 @@ class ChannelClient extends EventEmitter {
             //res.send("SENDING TRANSFER " + amount + " to " + target + " with sig " + signature);
     
             let transfer = await this.sendTransfer({
-                tokenAddress:token, amount:amount,
+                tokenAddress:token, 
+                amount:amount,
+                spent: spent,
                 targetAddress: target,
                 signature: signature
             });

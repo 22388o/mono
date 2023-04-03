@@ -9,24 +9,28 @@
 <body>
     <h1>Send L2 payment</h1>
 
-    Your Address<br /><button id="connect" onclick="connect()">Connect Web3</button>
-    <span id="address"></span><br />
+    <button id="connect" onclick="connect()">Connect Web3</button>    
+    <b>Your Address</b><br/>
+    <span id="address" style="font-family: monospace;"></span><br />
+
+    <hr />
 
     <br />
-    Target Address<br />
-    <input id="target" value="0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a" /><br />
+    <b>Target Address</b><br/>
+    <input id="target" value="0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a" style="font-family:monospace; width:360px" /><br />
+    
+    <br />
+    <b>Channel Id</b> <br />
+    <span id="channel" style="font-family:monospace;"></span><br />
+    <b>Channel Balance</b><br/>
+    <span id="channel-balance"></span><br /><br />
 
-    <!--br />
-    Channel Id <br />
-    <span id="channel"></span><br /-->
 
-    Your Balance
-    <span id="balance"></span><br /><br />
 
     <!--Channel <br />
     <input id="channel" value="0xce1285848482e532d3dc47fa492e8269d3f4365377491cee04de4d6af995331a" /><br />-->
     
-    Payment Amount <br />
+    <b>Payment Amount</b> <br />
     <input id="amount" value="55" /><br />    
     <button id="send" onclick="sendPayment()">Send</button>
 </body>
@@ -35,6 +39,7 @@
 channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7';
 ETH =  '0x0000000000000000000000000000000000000000';
 baseRpcUrl = `http://localhost:3000`;
+channelInfo = null;
 
 function getChannelId(sourceAddress, targetAddress, tokenAddress='0x00'){  
     //TODO include token in channel id preimage              
@@ -64,7 +69,7 @@ function encodeTransferForSig(params){
 }
 
 
-async function sendAjax(url) {
+async function getHttp(url) {
     return new Promise((resolve, reject) =>{
         // Creating Our XMLHttpRequest object 
         var xhr = new XMLHttpRequest();
@@ -106,9 +111,13 @@ async function sendPayment(){
 
     //if(channelId != chan) throw "wrong computed channel";
 
+    let spent = parseInt(channelInfo.channel.spent) + parseInt(amount);
+
+    console.log("SPENT", spent);
+
     let encoded = encodeTransferForSig({
         channelId: channelId,
-        spent: amount
+        spent: spent,
     })
 
     const signature = await ethereum.request({ method: 'personal_sign', params: [ encoded, myaddress ] });
@@ -118,11 +127,12 @@ async function sendPayment(){
     let transferUrl = baseRpcUrl + `/transfer?` + getParams({
         target: target,
         amount: amount,
+        spent: spent,
         token: token,
         signature: signature,
     });
     console.log("TRANSFER URL", transferUrl)
-    let transfer = await sendAjax(transferUrl);
+    let transfer = await getHttp(transferUrl);
 
     console.log("TRANSFER", transfer);
 
@@ -130,15 +140,32 @@ async function sendPayment(){
         setTimeout(async () => {
             let revealUrl = baseRpcUrl + '/reveal?' + getParams({secret: transfer.secret})
             console.log("REVEALING SECRET", revealUrl);
-            let revealed = await sendAjax(revealUrl);
+            let revealed = await getHttp(revealUrl);
             console.log("REVEALED", revealed);
+
+            loadChannel();
         }, 1500)
     }
     
 }
-</script>
 
-<script>
+async function loadChannel(){
+    let target = document.getElementById('target').value;
+    let token = ETH;
+    let myaddress = web3.eth.accounts[0];
+
+    let channelId = getChannelId(myaddress, target, token);
+
+    document.getElementById('channel').innerHTML = channelId;
+
+    let info = await getHttp(baseRpcUrl + "/channel?id=" + channelId );
+
+    console.log(info);
+    document.getElementById('channel-balance').innerHTML = info.balance;
+
+    channelInfo = info;
+}
+
 
 async function connect() {
  if (window.ethereum) {
@@ -151,7 +178,7 @@ async function connect() {
  }
 }
 
-window.addEventListener('load', function() {
+window.addEventListener('load', async function() {
 
 
     // Load WEB3
@@ -171,16 +198,28 @@ window.addEventListener('load', function() {
 
     }
 
+    function loadAccount(){
+        account = web3.eth.accounts[0];
+        document.getElementById("address").innerHTML = account;  
+        if(account){
+            document.getElementById('connect').style.display = 'none';
+        }
+    }
+
     var account = web3.eth.accounts[0];
     var accountInterval = setInterval(function() {
         if (web3.eth.accounts[0] !== account) {
-            account = web3.eth.accounts[0];
-            document.getElementById("address").innerHTML = account;
+            loadAccount();
         }
     }, 100);
 
+    loadAccount();          
     //document.getElementById('channel').innerHTML = getChannelId();
-
+    
+    setTimeout(() => {
+        loadChannel();
+    }, 500);
+    
 });
 
 </script>
