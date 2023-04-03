@@ -316,6 +316,8 @@ class ChannelClient extends EventEmitter {
         let encodedTx = this.encodeTransferForSig(transfer);
         let sig = transfer.signature || this.signMessage(encodedTx).signature;
 
+        delete transfer.signature; //make sure you don't directly leak sig to receiver
+
         this.publisher.publish('transfer', transfer);
         this.publisher.publish("signed", {
             hashOfSecret: transfer.hashOfSecret,
