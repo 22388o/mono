@@ -23,10 +23,12 @@ class ChannelClient extends EventEmitter {
         web3.chainId = props.chainId;
         this.web3 = web3;        
 
-        this.channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7';
+        this.channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864'; //erc20 contract
+        //this.channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7'; //updated eth-only contract
         //this.channelContractAddress = '0x8a14863aDEE8926edD56f263d026AD2816f1C983'; //current mono contract
 
-        let abi = require('./abi_multichannel.js');
+        
+        let abi = require('./abi_multichannel_erc20.js');
         this.channelContract = this.web3.eth.contract(abi).at(this.channelContractAddress);
 
         this.mediatorAddress = '0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a';
@@ -70,7 +72,7 @@ class ChannelClient extends EventEmitter {
     //////////////////////////////////////////////////////////////////////////////
     // CHANNEL MANAGEMENT FUNCTIONS
 
-    async loadChannel(sourceAddress, targetAddress, tokenAddress='0x00'){
+    async loadChannel(sourceAddress, targetAddress, tokenAddress){
         let channelId = this.getChannelId(sourceAddress, targetAddress, tokenAddress);
         return await this._loadChannel(channelId);
     }
@@ -80,12 +82,12 @@ class ChannelClient extends EventEmitter {
     }
 
     async _loadChannel(channelId){
-        
+
         let chan = await this.channelContract.channels(channelId);
 
-        console.log(this.name, "CHANNEL FROM CHAIN", chan);
+        console.log(this.name, "CHANNEL FROM CHAIN", channelId, chan);
     
-        let sender = chan[0]; let receiver = chan[1]; let deposited = chan[2]; let claimed = chan[3];
+        let sender = chan[0]; let receiver = chan[1]; let deposited = chan[2]; let claimed = chan[3]; let token = chan[4];
         //if(!(sender.toLowerCase() == sourceAddress.toLowerCase() && receiver.toLowerCase() == targetAddress.toLowerCase())){
         if(sender == NULL_ADDRESS){
             //throw(this.name + " channel not opened " + sourceAddress + "=>" + targetAddress)
@@ -94,7 +96,7 @@ class ChannelClient extends EventEmitter {
 
         let channel = {
             id: channelId,
-            tokenAddress: NULL_ADDRESS, //TODO get token address from result
+            tokenAddress: token,
             spender: sender, 
             recipient: receiver,
             deposited: parseInt(deposited.toFixed()), 
@@ -118,7 +120,6 @@ class ChannelClient extends EventEmitter {
         return channel;
     }
 
-
     async getOrLoadChannelById(channelId){
         let channel = this.getChannelById(channelId);
 
@@ -130,16 +131,22 @@ class ChannelClient extends EventEmitter {
         return channel;
     }
 
-    async depositToChannel(channelId, amount){
-        //TODO update abi and provide amount/token
-        return await this._callSolidity('deposit', [channelId], this.keypair, amount);
+    async depositToChannel(channelId, amount, tokenAddress){
+        if(!tokenAddress) throw("provide tokenAddress to depositToChannel");
+
+        let value = tokenAddress == NULL_ADDRESS ? amount : '0x0';
+        
+        return await this._callSolidity('deposit', [channelId, amount, tokenAddress], this.keypair, value);
 
         //TODO increase local balance
     }
 
-    async openChannel(targetAddress, capacity, tokenAddress='0x00'){
-        //TODO update abi and provide amount/token
-        return await this._callSolidity('openChannel', [targetAddress], this.keypair, capacity);
+    async openChannel(targetAddress, capacity, tokenAddress){
+        if(!tokenAddress) throw("provide tokenAddress to openChannel");
+
+        let value = tokenAddress == NULL_ADDRESS ? capacity : '0x0';
+        
+        return await this._callSolidity('openChannel', [targetAddress, capacity, tokenAddress], this.keypair, value);
         
         //TODO increase local balance
     }
@@ -150,9 +157,10 @@ class ChannelClient extends EventEmitter {
         //TODO increase local balance
     }
 
-    getChannelId(sourceAddress, targetAddress, tokenAddress='0x00'){  
-        //TODO include token in channel id preimage              
-        let buffer = this.concatHex(this.channelContractAddress, sourceAddress, targetAddress); //, tokenAddress
+    getChannelId(sourceAddress, targetAddress, tokenAddress){  
+        if(!tokenAddress) throw("provide token address to getChannelId");
+                 
+        let buffer = this.concatHex(this.channelContractAddress, sourceAddress, targetAddress, tokenAddress); 
         return this.computeHashKeccak(buffer) 
     }
 
@@ -176,7 +184,7 @@ class ChannelClient extends EventEmitter {
         return '0x' + args.map(x => x.startsWith('0x') ? x.substr(2) : x ).join('');
     }
 
-    getChannel(sourceAddress, targetAddress, tokenAddress='0x00'){
+    getChannel(sourceAddress, targetAddress, tokenAddress){
         return this.channels[ this.getChannelId(sourceAddress, targetAddress, tokenAddress) ];
     }
 
@@ -660,6 +668,20 @@ class ChannelClient extends EventEmitter {
                 balance: balance
             })
         })
+
+        app.get('/channel/open', async (req, res) => {
+            let target = req.query.target;
+            let capacity = req.query.capacity;                        
+            let token = req.query.token;   
+
+            let result = await this.openChannel(target, capacity, token);
+
+            res.send({
+                success: true, 
+                receipt: result,
+            });
+        })
+
 
         app.get('/channel', async (req, res) => {
             let id = req.query.id;            

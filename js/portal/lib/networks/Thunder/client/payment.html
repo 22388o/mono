@@ -30,20 +30,33 @@
     <!--Channel <br />
     <input id="channel" value="0xce1285848482e532d3dc47fa492e8269d3f4365377491cee04de4d6af995331a" /><br />-->
     
-    <b>Payment Amount</b> <br />
-    <input id="amount" value="55" /><br />    
-    <button id="send" onclick="sendPayment()">Send</button>
+    <div id="open-channel"  style="display:none">
+        <b>Channel Capacity</b> <br />
+        <input id="capacity" value="1000" /><br />    
+        <button id="open-channel" onclick="openChannel()">Open Channel</button>
+    </div>
+
+    <div id="send-payment" style="display:none">
+        <b>Payment Amount</b> <br />
+        <input id="amount" value="55" /><br />    
+        <button id="send-payment" onclick="sendPayment()">Send</button>
+    </div>
 </body>
 
 <script>
-channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7';
+function getChannelContractAddress(){
+    let channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864';
+    return channelContractAddress;
+}
+
 ETH =  '0x0000000000000000000000000000000000000000';
 baseRpcUrl = `http://localhost:3000`;
 channelInfo = null;
 
-function getChannelId(sourceAddress, targetAddress, tokenAddress='0x00'){  
+function getChannelId(sourceAddress, targetAddress, tokenAddress){  
+    if(!tokenAddress) throw("provide tokenAddress to getChannelId");
     //TODO include token in channel id preimage              
-    let buffer = concatHex(channelContractAddress, sourceAddress, targetAddress); //, tokenAddress
+    let buffer = concatHex(getChannelContractAddress(), sourceAddress, targetAddress, tokenAddress); //
     return web3.sha3(buffer, {encoding: 'hex'});
 }
 
@@ -58,7 +71,7 @@ function decToUint256Hex(value){
 }
 
 function encodeTransferForSig(params){            
-    let message = concatHex(channelContractAddress, params.channelId, decToUint256Hex(params.spent));        
+    let message = concatHex(getChannelContractAddress(), params.channelId, decToUint256Hex(params.spent));        
     console.log("ENCODED TX", message);
 
     let hash = web3.sha3(message, {encoding: 'hex'}); //this.web3new.utils.keccak256(message);
@@ -99,6 +112,30 @@ function getParams(params){
     return Object.keys(params).map(k => k + '=' + params[k]).join('&')
 }
 
+async function openChannel(){
+    let capacity = document.getElementById('capacity').value;
+    let target = document.getElementById('target').value;
+    let token = ETH;
+    let myaddress = web3.eth.accounts[0];
+    let channelId = getChannelId(myaddress, target, token);
+
+    if(!capacity.startsWith('0x')) capacity = '0x'+parseInt(capacity).toString('16')
+
+    let openUrl = baseRpcUrl + `/channel/open?` + getParams({
+        target: target,
+        capacity: capacity,
+        token: token,        
+    });
+
+    console.log("OPEN URL", openUrl);
+
+    let opened = await getHttp(openUrl);
+
+    console.log("OPEN RESULT", opened);
+
+    loadChannel();
+}
+
 async function sendPayment(){
     //let chan = document.getElementById('channel').value;
     let amount = document.getElementById('amount').value;
@@ -107,7 +144,7 @@ async function sendPayment(){
 
     let myaddress = web3.eth.accounts[0];
 
-    let channelId = getChannelId(myaddress, target);
+    let channelId = getChannelId(myaddress, target, token);
 
     //if(channelId != chan) throw "wrong computed channel";
 
@@ -162,6 +199,16 @@ async function loadChannel(){
 
     console.log(info);
     document.getElementById('channel-balance').innerHTML = info.balance;
+
+    if(info.channel == null){
+        document.getElementById('open-channel').style.display="block"
+        document.getElementById('send-payment').style.display="none"
+    }else if(info.balance == 0){
+        //TODO add more channelf unds
+    }else{
+        document.getElementById('open-channel').style.display="none"
+        document.getElementById('send-payment').style.display="block"
+    }
 
     channelInfo = info;
 }
