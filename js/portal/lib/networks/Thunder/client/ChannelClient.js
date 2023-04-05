@@ -4,7 +4,6 @@ let Web3 = require('web3');
 let Web3legacy = require('web3melnx');
 
 const EventEmitter = require('events');
-const { getChannelBalance } = require('lightning');
 const Common = require('ethereumjs-common').default
 const Tx = require('ethereumjs-tx').Transaction
 NULL_ADDRESS =  '0x0000000000000000000000000000000000000000';
