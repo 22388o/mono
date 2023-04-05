@@ -27,26 +27,31 @@ class ChannelClient extends EventEmitter {
         //this.channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7'; //updated eth-only contract
         //this.channelContractAddress = '0x8a14863aDEE8926edD56f263d026AD2816f1C983'; //current mono contract
 
-        
-        let abi = require('./abi_multichannel_erc20.js');
-        this.channelContract = this.web3.eth.contract(abi).at(this.channelContractAddress);
+
+        let channelAbi = require('./abi_multichannel_erc20.js');
+        this.channelContract = this.web3.eth.contract(channelAbi).at(this.channelContractAddress);
 
         this.mediatorAddress = '0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a';
         
-        this.secrets = {};   
-        this.received = {};
-        this.signatures = {};
-        this.knownPaymentSignatures = {};
-        this.invoices = {};
-        this.counterInvoiced = {};      
-        
-        this.channels = {};        
+        this.state = {
+            secrets: {},
+            received: {},
+            signatures: {},
+            knownPaymentSignatures: {}, //TODO: not needed?
+            invoices: {},
+            counterInvoiced: {},
+            channels: {},
+        }
 
+        Object.keys(this.state).forEach(k => {
+            Object.defineProperty(this, k, {
+                get() { return this.state[k] },
+            });
+        })
+        
         this.name = this.address.substr(0,4);
         
         this.testMode = props.testMode;
-
-        //console.log("USING KEYPAIR", this.name, this.keypair);
     }
 
     connect(){
@@ -700,6 +705,10 @@ class ChannelClient extends EventEmitter {
             this.revealSecret(secret);
             res.send({success: true});
         })
+
+        app.get('/state', (req, res) =>{
+            res.send(this.state);
+        });
 
         app.get('/transfer', async (req, res) => {
             let target = req.query.target;
