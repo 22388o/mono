@@ -25,4 +25,7 @@ docs/package-lock.json
 .DS_Store
 
 # Playnet-related stuff
-playnet/state
+playnet
+!playnet/bitcoind*
+!playnet/geth*
+!playnet/lnd*
