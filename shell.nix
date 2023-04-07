@@ -20,7 +20,7 @@ pkgs.mkShell {
 
   # Define the startup commands for the bitcoind and LND instances.
   shellHook = ''
-    #set -euo pipefail
+    set -euo pipefail
 
     ############################################################################
     # Aliases and exports
@@ -33,24 +33,24 @@ pkgs.mkShell {
     export PORTAL_ROOT=${toString ./.}
 
     ###########################################################################
-    # Check for playnet reset
+    # Check for developer environment reset
     ###########################################################################
     if [ ! -f $PORTAL_ROOT/playnet/.delete_to_reset ]; then
-      echo "resetting playnet..."
+      echo "resetting developer environment..."
       rm -rf $PORTAL_ROOT/playnet/{log,state}/*
       mkdir -p $PORTAL_ROOT/playnet/{log,state}/{alice,bob,portal}/{bitcoind,lnd}
     fi
 
     ###########################################################################
-    # Start the playnet
+    # Start the developer environment
     ###########################################################################
-    echo "starting playnet..."
+    echo "starting developer environment..."
     bitcoind -conf=$PORTAL_ROOT/playnet/bitcoind.portal.conf >/dev/null
     nohup lnd --noseedbackup --configfile $PORTAL_ROOT/playnet/lnd.alice.conf >/dev/null 2>&1 &
     nohup lnd --noseedbackup --configfile $PORTAL_ROOT/playnet/lnd.bob.conf >/dev/null 2>&1 &
 
     ###########################################################################
-    # Reset the playnet state
+    # Reset the developer environment state
     ###########################################################################
     if [ ! -f $PORTAL_ROOT/playnet/.delete_to_reset ]; then
       echo "creating a new bitcoin wallet and generating blocks..."
@@ -91,15 +91,15 @@ pkgs.mkShell {
 
       # Create the `reset` file to prevent the wallets from being recreated.
       touch $PORTAL_ROOT/playnet/.delete_to_reset
-      echo "playnet reset complete"
+      echo "developer environment reset complete"
     fi
 
-    #set +euo pipefail
+    set +euo pipefail
   '';
 
   # Define the cleanup commands to stop all running daemons.
   exitHook = ''
-    echo "stpping playnet..."
+    echo "stopping developer environment..."
     pkill bitcoind
     pkill lnd
   '';
