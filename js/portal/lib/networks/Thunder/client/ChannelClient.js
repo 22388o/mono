@@ -2,6 +2,7 @@ const cote = require('cote');
 const { emit } = require('process');
 let Web3 = require('web3');
 let Web3legacy = require('web3melnx');
+const { ethers } = require("ethers");
 
 const EventEmitter = require('events');
 const Common = require('ethereumjs-common').default
@@ -22,13 +23,19 @@ class ChannelClient extends EventEmitter {
         web3.chainId = props.chainId;
         this.web3 = web3;        
 
+        this.l1SwapContractAddress = '0x903616921c967582AEF1b2A0Da3264D0765947Da'; //L1 swap contract
+
         this.channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864'; //erc20 contract
         //this.channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7'; //updated eth-only contract
         //this.channelContractAddress = '0x8a14863aDEE8926edD56f263d026AD2816f1C983'; //current mono contract
 
 
-        let channelAbi = require('./abi_multichannel_erc20.js');
+        let channelAbi = require('./abi/abi_multichannel_erc20.js');
         this.channelContract = this.web3.eth.contract(channelAbi).at(this.channelContractAddress);
+
+        let l1SwapsAbi = require('./abi/abi_L1swap');
+        this.l1SwapsContract = this.web3.eth.contract(l1SwapsAbi).at(this.l1SwapContractAddress);
+
 
         this.mediatorAddress = '0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a';
         
@@ -40,6 +47,7 @@ class ChannelClient extends EventEmitter {
             invoices: {},
             counterInvoiced: {},
             channels: {},
+            sent:{},
         }
 
         Object.keys(this.state).forEach(k => {
@@ -59,7 +67,7 @@ class ChannelClient extends EventEmitter {
         this.publisher = new cote.Publisher({ name: 'client publisher ' + this.name });
 
         this.subscriber.on('transfersigs', update => this.handleSignaturesRevealed(update) );
-        this.subscriber.on('transfer', update => this.handleTransfer(update) );
+        this.subscriber.on('transfer', async update => await this.handleTransfer(update) );
         this.subscriber.on('invoice', update => this.handleInvoice(update) );
         this.subscriber.on('secret', update => this.handleSecretRevealed(update) );
     }
@@ -161,6 +169,24 @@ class ChannelClient extends EventEmitter {
         //TODO increase local balance
     }
 
+    async depositL1Payment(receiver, hashOfSecret, amount, tokenAddress){
+        if(tokenAddress == NULL_ADDRESS){
+            let hexAmount = '0x'+parseInt(amount).toString(16);            
+            let result = await this._callSolidity('depositEth', [
+                tokenAddress,
+                amount,
+                5,
+                hashOfSecret,
+                receiver,
+            ], this.keypair, hexAmount, this.l1SwapsContract);
+            console.log("DEPOSITED", amount, "WITH HASH", hashOfSecret);
+            return result;
+        }else{
+            //TODO 
+            throw("ERC20 submarine swaps not implemented")
+        }
+    }
+
     getChannelId(sourceAddress, targetAddress, tokenAddress){  
         if(!tokenAddress) throw("provide token address to getChannelId");
                  
@@ -227,7 +253,7 @@ class ChannelClient extends EventEmitter {
     // LOCAL STATE FUNCTIONS
 
     registerSecret(secret){
-        let hash = this.computeHash(secret);
+        let hash = this.computeHashOfSecret(secret);
         this.secrets[hash] = secret;
     }
 
@@ -266,13 +292,19 @@ class ChannelClient extends EventEmitter {
         })
     }
 
-    updateChannelState(channel, params){
+    updateChannelState(channel, params, clone){
         if(typeof channel == 'string') channel = this.channels[channel];
+
+        if(!channel) throw("ERROR: not found channel to update state");
+
+        if(clone) channel = {...channel};
 
         if(params.transfer){
             let transfer = params.transfer;
             channel.spent += parseInt(transfer.amount);
         }            
+
+        return channel;
     }
 
     async sendTransfer(transfer){      
@@ -300,7 +332,7 @@ class ChannelClient extends EventEmitter {
         
         if(!transfer.hashOfSecret){ //if a hash of secret is not provided, generate one and store it
             let secret = this.generateRandomSecret();
-            let hash = this.computeHash(secret);
+            let hash = this.computeHashOfSecret(secret);
             this.secrets[hash] = secret;
         
             console.log(this.name, "TRANSFER SECRET", secret, "HASH", hash);
@@ -310,23 +342,25 @@ class ChannelClient extends EventEmitter {
 
         transfer.channelId = channel.id;
 
-        //TODO: move this into signature reveal callback
-        this.updateChannelState(channel, {transfer}); //increment channel spent by transfer amount
-        transfer.spent = channel.spent.toString();    
+        //make a temporary clone channel and increment spent by transfer amount
+        let chan = this.updateChannelState(channel, {transfer}, true); 
+        transfer.spent = chan.spent.toString();    
 
         transfer.sourceAddress = this.address;
 
         transfer.targetAddress = nextAddress; //in case multihop, send payment to mediator
 
         console.log(this.name, "OUTGOING TRANSFER", transfer)
-        console.log(this.name, "NEW CHANNEL BALANCE PENDING", this.getChannelBalance(channel) )
-   
+        console.log(this.name, "NEW CHANNEL BALANCE PENDING", this.getChannelBalance(chan) )   
       
         if(transfer.signature) console.log("USING PREMADE SIGNATURE");
         else console.log("SIGNING IN NODE");
 
         let encodedTx = this.encodeTransferForSig(transfer);
         let sig = transfer.signature || this.signMessage(encodedTx).signature;
+
+        //store outgoing transfer for future reference
+        this.sent[transfer.hashOfSecret] = {...transfer};
 
         delete transfer.signature; //make sure you don't directly leak sig to receiver
 
@@ -347,7 +381,7 @@ class ChannelClient extends EventEmitter {
 
     handleSecretRevealed(update){
         let secret = update.secret;
-        let hashOfSecret = this.computeHash(secret);
+        let hashOfSecret = this.computeHashOfSecret(secret);
 
         //only emit secret event if you didn't create the secret
         if(!this.secrets[hashOfSecret]){        
@@ -362,13 +396,22 @@ class ChannelClient extends EventEmitter {
      
         let hash = revealed.hashOfSecret;
         let received = this.received[hash];
+        let sent = this.sent[hash];
+
+        console.log(this.name, "RECEIVED SIGS FROM COORDINATOR", revealed);      
         
+        if(sent){
+            console.log(this.name, "LOADED SENT TRANSACTION, UPDATING CHANNEL STATE");
+            this.updateChannelState(sent.channelId, {transfer:sent});       
+            console.log(this.name, "NEW CHANNEL BALANCE CONFIRMED", this.getChannelBalance(sent.channelId) )        
+        }
+
         if(!received){
-            console.log(this.name, "IGNORING SIGS, HAVENT RECEIVED PAYMENT FOR THIS HASH", revealed.hashOfSecret);
+            console.log(this.name, "NO RECEIVED PAYMENT FOR THIS HASH", revealed.hashOfSecret);
             this.signatures[revealed.hashOfSecret] = revealed.signatures;
             return false;
         }
-        console.log(this.name, "RECEIVED SIGS FROM COORDINATOR", revealed);      
+       
         //console.log(this.name, "TRANSFER FOR SIGS", received);
 
         let message = this.encodeTransferForSig(received);            
@@ -393,9 +436,7 @@ class ChannelClient extends EventEmitter {
             channel.spent = received.spent;
             
             let balance = this.getChannelBalance(channel);
-            console.log(this.name, "NEW CHANNEL BALANCE AFTER SECRET REVEAL", channel.id, balance);
-
-         
+            console.log(this.name, "NEW CHANNEL BALANCE CONFIRMED (after secret reveal)", channel.id, balance);         
         } 
 
         this.emit("signatures",{
@@ -405,7 +446,7 @@ class ChannelClient extends EventEmitter {
         return true;
     }
 
-    handleTransfer(transfer){
+    async handleTransfer(transfer){
         
         if(transfer.invoiceId && transfer.sourceAddress==this.address) this.emit("invoicePaidByMe", transfer);
         
@@ -434,6 +475,28 @@ class ChannelClient extends EventEmitter {
         if(transfer.path && this.address != transfer.path[transfer.path.length-1]){
             console.log(this.name, "FORWARDING PAYMENT AS MEDIATOR");
             this.sendTransfer(transfer);
+        }else if(transfer.submarineSwap){
+            console.log("SUBMARINE SWAP: DEPOSITING EQUIVALIENT L1 AMOUNT")
+            
+            await this.depositL1Payment(transfer.sourceAddress, transfer.hashOfSecret, transfer.amount, transfer.tokenAddress);            
+
+            //console.log("BLOCK NUMBER", this.web3.blockNumber);
+            let claimedEvent = this.l1SwapsContract.Claimed({secretHash: transfer.hashOfSecret}, {fromBlock: this.web3.blockNumber});            
+            claimedEvent.watch((error, result) => {
+                if(error){ 
+                    console.log("ERROR WITH CLAIMED EVENT WATCH");
+                    throw error;
+                }
+                claimedEvent.stopWatching();
+
+                //console.log("EVENT ARGS", result.args)
+                let secretHex = ethers.toBeHex(result.args.secret.toFixed());
+                let secretHashHex = ethers.toBeHex(result.args.trade.toFixed());
+                
+                console.log(this.name, "L1 CLAIMED EVENT FOR HASH", secretHashHex );
+                //console.log("REVEALING SECRET", secretHex)
+                this.revealSecret( secretHex );
+            })
         }
     }
 
@@ -471,9 +534,9 @@ class ChannelClient extends EventEmitter {
 
     encodeTransferForSig(params){            
         let message = this.concatHex(this.channelContractAddress, params.channelId, this.decToUint256Hex(params.spent));        
-        console.log("ENCODED TX", message);
+        //console.log("ENCODED TX", message);
         let hash =  this.web3new.utils.keccak256(message);;
-        console.log("ENCODED TX HASH", hash);
+        //console.log("ENCODED TX HASH", hash);
         return hash;
     }
 
@@ -481,8 +544,10 @@ class ChannelClient extends EventEmitter {
         return this.web3new.utils.keccak256(message);
     }
 
-    computeHash(secret){
-        return this.web3new.utils.soliditySha3(secret);
+    computeHashOfSecret(secret){        
+        //return this.web3new.utils.soliditySha3(secret);
+        //return this.web3new.utils.keccak256(secret);   
+        return ethers.sha256(secret); //use btc compatible hash for secrets
     }    
 
     signMessage(msg) {        
@@ -523,9 +588,7 @@ class ChannelClient extends EventEmitter {
         return recoveredAddr;
     }
 
-    generateRandomSecret(){
-        return '0x' + this.genRanHex(64)
-    }
+    generateRandomSecret(){ return '0x' + this.genRanHex(64); }
 
     genRanHex(size=64){ return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''); }
 
@@ -533,10 +596,10 @@ class ChannelClient extends EventEmitter {
     //////////////////////////////////////////////////////////////////////////////
     // ETHEREUM HELPER
 
-    async _callSolidity (funcName, funcParams, keys, ethValue) {
+    async _callSolidity (funcName, funcParams, keys, ethValue, contr) {
         return new Promise((resolve, reject) => {
           let web3 = this.web3;
-          let contract = this.channelContract;
+          let contract = contr || this.channelContract;
 
           const txMetadata = { from: keys.address, value: ethValue }
           const func = contract[funcName]
@@ -561,7 +624,7 @@ class ChannelClient extends EventEmitter {
                 if (err) return reject(err)
     
                 const txObj = {
-                  gasPrice: web3.toHex(gasPrice.mul(2)),
+                  gasPrice: web3.toHex(gasPrice.mul(3).div(2)).split('.')[0],
                   gasLimit: web3.toHex(estimatedGas * 2),
                   data: calldata,
                   from: keys.address,
@@ -592,6 +655,7 @@ class ChannelClient extends EventEmitter {
                       } else if (receipt != null) {
                         resolve(receipt)
                       } else {
+                        //console.log("RECEIPT:", receipt)
                         setTimeout(pollForReceipt, 10000)
                       }
                     })
@@ -699,7 +763,7 @@ class ChannelClient extends EventEmitter {
     
         app.get('/reveal', (req, res) => {
             let secret = req.query.secret;
-            let hashOfSecret = this.computeHash(secret);
+            let hashOfSecret = this.computeHashOfSecret(secret);
             console.log(this.name, "REVEALING SECRET", secret, "FOR", hashOfSecret);
             this.revealSecret(secret);
             res.send({success: true});
@@ -716,6 +780,7 @@ class ChannelClient extends EventEmitter {
             let signature = req.query.signature;   
             let token = req.query.token;   
             let reveal = req.query.reveal;  
+            let submarine = req.query.submarine;
     
             //res.send("SENDING TRANSFER " + amount + " to " + target + " with sig " + signature);
     
@@ -724,7 +789,8 @@ class ChannelClient extends EventEmitter {
                 amount:amount,
                 spent: spent,
                 targetAddress: target,
-                signature: signature
+                signature: signature,
+                submarineSwap: submarine ? true : false,
             });
     
             if(transfer){
