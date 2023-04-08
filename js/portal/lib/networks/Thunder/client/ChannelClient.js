@@ -415,7 +415,7 @@ class ChannelClient extends EventEmitter {
         //console.log(this.name, "TRANSFER FOR SIGS", received);
 
         let message = this.encodeTransferForSig(received);            
-        let recovered = this.verifyMessage(revealed.signatures[received.sourceAddress], message, received.sourceAddress);
+        let recovered = this.ecRecover(revealed.signatures[received.sourceAddress], message, received.sourceAddress);
         console.log(this.name, "RECOVERED ADDRESS", recovered, "==", received.sourceAddress);
 
         if(recovered.toLowerCase() != received.sourceAddress.toLowerCase()){
@@ -564,28 +564,19 @@ class ChannelClient extends EventEmitter {
         return result;
     }
 
-    verifyMessage(signature, message, sender) {
-        if(!sender) sender = this.address;        
-        //console.log(this.name + " verifying", signature, message);
+    verifySignature(signature, message, sender){
+        if(!sender) throw("provide valid sender address to verifySignature");
+        return this.ecRecover(signature, message).toLowerCase() == sender.toLowerCase();
+    }
 
-        let recoveredAddr = null;
-
-        try {
-            const from = sender;
-            const msg = message;
-            recoveredAddr = this.web3new.eth.accounts.recover(msg, signature);
-            console.log(this.name, 'recoveredAddr :', recoveredAddr);
-           
-            if (recoveredAddr.toLowerCase() === from.toLowerCase()) {
-                console.log(this.name, `Successfully ecRecovered signer as ${recoveredAddr}`);             
-            } else {
-                console.log(this.name, `Failed to verify signer when comparing ${recoveredAddr} to ${from}`);                
-            }
+    ecRecover(signature, message) {                     
+        try {          
+            return this.web3new.eth.accounts.recover(message, signature);
         } catch (err) {
             console.error(err);
         }
 
-        return recoveredAddr;
+        return "";
     }
 
     generateRandomSecret(){ return '0x' + this.genRanHex(64); }
