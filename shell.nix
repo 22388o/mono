@@ -42,7 +42,8 @@ pkgs.mkShell {
 
         geth)
           cli=geth
-          cli_args=(-conf="$PORTAL_ROOT/playnet/$service.$user.conf")
+          cli_args=(--dev)
+          cli_args+=(--config="$PORTAL_ROOT/playnet/$service.$user.toml")
           ;;
 
         lnd)
@@ -51,8 +52,9 @@ pkgs.mkShell {
           cli_args+=(--rpcserver=$(grep '^rpclisten=' "$PORTAL_ROOT/playnet/$service.$user.conf" | cut -d'=' -f2))
           cli_args+=(--lnddir=$(grep '^lnddir=' "$PORTAL_ROOT/playnet/$service.$user.conf" | cut -d'=' -f2))
           ;;
+
         *)
-          echo "Usage: $user {bitcoind|lnd} <command>"
+          echo "Usage: $user {bitcoind|geth|lnd} <command>"
           return 1
           ;;
       esac
@@ -82,6 +84,9 @@ pkgs.mkShell {
 
     # Disable SIGINT to avoid accidentally stopping geth and lnd
     stty intr ""
+
+    # Kill all services on exit
+    trap "pkill bitcoind geth lnd" EXIT
 
     readonly RESET_STATE=$([[ -f $PORTAL_ROOT/playnet/.delete_to_reset ]] && echo false || echo true)
     readonly LND_WALLET_FUNDS=10       # in btc
@@ -149,13 +154,19 @@ pkgs.mkShell {
       echo "- opening payment channel from alice to bob with $LND_CHANNEL_FUNDS sats..."
       BOB_LND_PEER_URL=$(grep '^listen=' "$PORTAL_ROOT/playnet/lnd.bob.conf" | cut -d'=' -f2)
       alice lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$BOB_LND_PEER_URL --node_key=$BOB_LND_NODEID >/dev/null
-      sleep 10
+      while [ $(alice lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
+        portal bitcoind -generate 1 >/dev/null
+        sleep 1
+      done
 
       # Open a payment channel from bob to alice and mine blocks to facilitate opening
       echo "- opening payment channel from bob to alice with $LND_CHANNEL_FUNDS sats..."
       ALICE_LND_PEER_URL=$(grep '^listen=' "$PORTAL_ROOT/playnet/lnd.alice.conf" | cut -d'=' -f2)
       bob lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$ALICE_LND_PEER_URL --node_key=$ALICE_LND_NODEID >/dev/null
-      sleep 10
+      while [ $(bob lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
+        portal bitcoind -generate 1 >/dev/null
+        sleep 1
+      done
 
       # Create the `reset` file to prevent the wallets from being recreated.
       touch $PORTAL_ROOT/playnet/.delete_to_reset
@@ -163,12 +174,5 @@ pkgs.mkShell {
     fi
 
     set +eu
-  '';
-
-  exitHook = ''
-    echo "stopping developer environment..."
-    pkill lnd
-    pkill geth
-    pkill bitcoind
   '';
 }
