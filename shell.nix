@@ -40,6 +40,11 @@ pkgs.mkShell {
           cli_args=(-conf="$PORTAL_ROOT/playnet/$service.$user.conf")
           ;;
 
+        geth)
+          cli=geth
+          cli_args=(-conf="$PORTAL_ROOT/playnet/$service.$user.conf")
+          ;;
+
         lnd)
           cli=lncli
           cli_args=(--network regtest)
@@ -75,6 +80,9 @@ pkgs.mkShell {
     ##########################################################################
     set -eu
 
+    # Disable SIGINT to avoid accidentally stopping geth and lnd
+    stty intr ""
+
     readonly RESET_STATE=$([[ -f $PORTAL_ROOT/playnet/.delete_to_reset ]] && echo false || echo true)
     readonly LND_WALLET_FUNDS=10       # in btc
     readonly LND_CHANNEL_FUNDS=1000000 # in satoshis
@@ -84,7 +92,8 @@ pkgs.mkShell {
     if [[ $RESET_STATE == "true" ]]; then
       echo "resetting developer environment..."
       rm -rf $PORTAL_ROOT/playnet/{log,state}/*
-      mkdir -p $PORTAL_ROOT/playnet/{log,state}/{alice,bob,portal}/{bitcoind,lnd}
+      mkdir -p $PORTAL_ROOT/playnet/log/{alice,bob,portal}
+      mkdir -p $PORTAL_ROOT/playnet/state/{alice,bob,portal}/{bitcoind,geth,lnd}
     fi
 
     # Start the services
@@ -93,12 +102,15 @@ pkgs.mkShell {
     echo "- starting bitcoind for portal..."
     bitcoind -conf="$PORTAL_ROOT/playnet/bitcoind.portal.conf" >/dev/null
 
+    echo "- starting geth for portal..."
+    nohup geth --dev --config "$PORTAL_ROOT/playnet/geth.portal.toml" >$PORTAL_ROOT/playnet/log/portal/geth.log 2>&1 &
+
     echo "- starting lnd for alice..."
-    nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.alice.conf" --noseedbackup >/dev/null 2>&1 &
+    nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.alice.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/alice/lnd.log 2>&1 &
     while $(alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     echo "- starting lnd for bob..."
-    nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.bob.conf" --noseedbackup >/dev/null 2>&1 &
+    nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.bob.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/bob/lnd.log 2>&1 &
     while $(bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     # Initialize state, if needed
@@ -155,7 +167,8 @@ pkgs.mkShell {
 
   exitHook = ''
     echo "stopping developer environment..."
-    pkill bitcoind
     pkill lnd
+    pkill geth
+    pkill bitcoind
   '';
 }
