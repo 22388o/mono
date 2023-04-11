@@ -1,11 +1,7 @@
 <html>
 
 <head>
-    <script src="
-    https://cdn.jsdelivr.net/npm/@metamask/legacy-web3@2.0.0/dist/metamask.web3.min.js
-    "></script>
-
-    <script src="./contract_info"></script>    
+   
 </head>
 
 <body>
@@ -53,6 +49,9 @@
         <br />
         <button id="send-payment" onclick="sendPayment()">Send</button>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@metamask/legacy-web3@2.0.0/dist/metamask.web3.min.js"></script>
+    <script src="./contract_info.js"></script>    
 </body>
 
 <script>
@@ -124,7 +123,7 @@ async function getHttp(url) {
     });
 }
 
-function getParams(params){
+function getUrlParamsString(params){
     return Object.keys(params).map(k => k + '=' + params[k]).join('&')
 }
 
@@ -137,7 +136,7 @@ async function openChannel(){
 
     if(!capacity.startsWith('0x')) capacity = '0x'+parseInt(capacity).toString('16')
 
-    let openUrl = baseRpcUrl + `/channel/open?` + getParams({
+    let openUrl = baseRpcUrl + `/channel/open?` + getUrlParamsString({
         target: target,
         capacity: capacity,
         token: token,        
@@ -192,7 +191,7 @@ async function sendPayment(){
 
     if(document.getElementById('submarine-swap').checked) params.submarine = true;
 
-    let transferUrl = baseRpcUrl + `/transfer?` + getParams(params);
+    let transferUrl = baseRpcUrl + `/transfer?` + getUrlParamsString(params);
     console.log("TRANSFER URL", transferUrl)
     let result = await getHttp(transferUrl);
 
@@ -206,7 +205,7 @@ async function sendPayment(){
 
         if(!params.submarine){
             setTimeout(async () => {
-                let revealUrl = baseRpcUrl + '/reveal?' + getParams({secret: result.secret})
+                let revealUrl = baseRpcUrl + '/reveal?' + getUrlParamsString({secret: result.secret})
                 console.log("REVEALING SECRET", revealUrl);
                 let revealed = await getHttp(revealUrl);
                 console.log("REVEALED", revealed);

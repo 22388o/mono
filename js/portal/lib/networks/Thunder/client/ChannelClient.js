@@ -483,6 +483,7 @@ class ChannelClient extends EventEmitter {
             await this.depositL1Payment(transfer.sourceAddress, transfer.hashOfSecret, transfer.amount, transfer.tokenAddress);            
 
             //console.log("BLOCK NUMBER", this.web3.blockNumber);
+            console.log("WAITING FOR L1 CLAIM EVENT WITH HASH", transfer.hashOfSecret)
             let claimedEvent = this.l1SwapsContract.Claimed({secretHash: transfer.hashOfSecret}, {fromBlock: this.web3.blockNumber});            
             claimedEvent.watch((error, result) => {
                 if(error){ 
@@ -495,7 +496,7 @@ class ChannelClient extends EventEmitter {
                 let secretHex = result.args.secret;
                 let secretHashHex = result.args.secretHash;
                 
-                console.log(this.name, "L1 CLAIMED EVENT FOR HASH", secretHashHex, "SECRET", secretHex );
+                console.log(this.name, "L1 CLAIMED EVENT FOR HASH", secretHashHex);
                 //console.log("REVEALING SECRET", secretHex)
                 this.revealSecret( secretHex );
             })
@@ -720,10 +721,10 @@ class ChannelClient extends EventEmitter {
             res.sendFile(__dirname + '/payment.html')
         })
 
-        app.get('/contract_info/json', (req,res) => {        
+        app.get('/contract_info', (req,res) => {        
             res.send(this.getContractInfo())
         })
-        app.get('/contract_info', (req,res) => {        
+        app.get('/contract_info.js', (req,res) => {        
             res.send("CONTRACT_INFO = " + JSON.stringify(this.getContractInfo(), null, 2) )
         })
     
