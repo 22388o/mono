@@ -23,9 +23,11 @@ class ChannelClient extends EventEmitter {
         web3.chainId = props.chainId;
         this.web3 = web3;        
 
-        this.l1SwapContractAddress = '0x903616921c967582AEF1b2A0Da3264D0765947Da'; //L1 swap contract
+        this.l1SwapContractAddress = '0xFA0551AD1B896CC77f4750A2d6B6D3dF08e72c26'; //L1 swap contract
 
-        this.channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864'; //erc20 contract
+        this.channelContractAddress = '0x1d03039dfbA5939AA536aAb6dD77FF5Abf299485';//sepolia deployment
+
+        //this.channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864'; //erc20 contract
         //this.channelContractAddress = '0xf7aC6619aB81D8E0e06f573d3A9c0E14983C15D7'; //updated eth-only contract
         //this.channelContractAddress = '0x8a14863aDEE8926edD56f263d026AD2816f1C983'; //current mono contract
 
@@ -490,10 +492,10 @@ class ChannelClient extends EventEmitter {
                 claimedEvent.stopWatching();
 
                 //console.log("EVENT ARGS", result.args)
-                let secretHex = ethers.toBeHex(result.args.secret.toFixed());
-                let secretHashHex = ethers.toBeHex(result.args.trade.toFixed());
+                let secretHex = result.args.secret;
+                let secretHashHex = result.args.secretHash;
                 
-                console.log(this.name, "L1 CLAIMED EVENT FOR HASH", secretHashHex );
+                console.log(this.name, "L1 CLAIMED EVENT FOR HASH", secretHashHex, "SECRET", secretHex );
                 //console.log("REVEALING SECRET", secretHex)
                 this.revealSecret( secretHex );
             })
@@ -699,6 +701,14 @@ class ChannelClient extends EventEmitter {
         });        
     }
 
+    getContractInfo(){    
+        return {
+            channelContractAddress: this.channelContractAddress,
+            l1SwapsContractAddress: this.l1SwapContractAddress,
+            l1SwapsAbi: require('./abi/abi_L1swap'),
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     // RPC SERVER
     setupRpc(opts){
@@ -708,6 +718,13 @@ class ChannelClient extends EventEmitter {
     
         app.get('/', (req, res) => {
             res.sendFile(__dirname + '/payment.html')
+        })
+
+        app.get('/contract_info/json', (req,res) => {        
+            res.send(this.getContractInfo())
+        })
+        app.get('/contract_info', (req,res) => {        
+            res.send("CONTRACT_INFO = " + JSON.stringify(this.getContractInfo(), null, 2) )
         })
     
         app.get('/balance', (req, res) => {

@@ -33,8 +33,9 @@ let eth_chain_id = process.env[envVars.ethChainId];
 if(!eth_rpc_url || !eth_chain_id){
     try{
         let config = require('./config.js');
-        eth_rpc_url = config.web3.goerli.rpc_url;
-        eth_chain_id = config.web3.goerli.chain_id;
+        let testnetChain = 'sepolia';
+        eth_rpc_url = config.web3[testnetChain].rpc_url;
+        eth_chain_id = config.web3[testnetChain].chain_id;
     }catch(ex){}
 }
 
@@ -56,7 +57,7 @@ client.connect();
 
 setTimeout(() => {
     client.setupRpc({port: rpc_port});
-}, 2000);
+}, 3333);
 
 
 

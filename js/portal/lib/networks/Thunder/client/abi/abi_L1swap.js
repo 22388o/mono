@@ -10,9 +10,9 @@ module.exports = [
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
+				"internalType": "bytes32",
 				"name": "secret",
-				"type": "uint256"
+				"type": "bytes32"
 			},
 			{
 				"indexed": true,

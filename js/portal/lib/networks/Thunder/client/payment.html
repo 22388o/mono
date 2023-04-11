@@ -5,128 +5,7 @@
     https://cdn.jsdelivr.net/npm/@metamask/legacy-web3@2.0.0/dist/metamask.web3.min.js
     "></script>
 
-    <script>
-    l1SwapsContractAddress = "0x903616921c967582AEF1b2A0Da3264D0765947Da";
-    l1SwapsAbi = [
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "trade",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "secret",
-				"type": "uint256"
-			},
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "secretHash",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "claimant",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			}
-		],
-		"name": "Claimed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "trade",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "tokenDeposited",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amountDeposited",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "tokenDesired",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amountDesired",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "networkDesired",
-				"type": "uint256"
-			},
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "secretHash",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			}
-		],
-		"name": "Deposited",
-		"type": "event"
-	},
-    {
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "secret",
-				"type": "uint256"
-			}
-		],
-		"name": "claim",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-    ]
-    </script>
+    <script src="./contract_info"></script>    
 </head>
 
 <body>
@@ -177,9 +56,8 @@
 </body>
 
 <script>
-function getChannelContractAddress(){
-    let channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864';
-    return channelContractAddress;
+function getChannelContractAddress(){    
+    return CONTRACT_INFO.channelContractAddress;
 }
 
 ETH =  '0x0000000000000000000000000000000000000000';
@@ -187,7 +65,6 @@ baseRpcUrl = `http://localhost:3000`;
 channelInfo = null;
 l1SwapsContract = null;
 secrets = {};
-depositedEvent = null;
 
 function generateRandomSecret(){ return '0x' + this.genRanHex(64); }
 function genRanHex(size=64){ return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''); }
@@ -357,6 +234,11 @@ async function sendPayment(){
                 claimButton.onclick = function(){
                     console.log("INITIATING METAMASK CLAIM WITH SECRET", secret);
                     l1SwapsContract.claim(secret, (err, txHash) => {
+                        if(!txHash){
+                            console.log("CLAIM TX REJECTED")
+                            return;
+                        }
+
                         console.log("CLAIM TX HASH", txHash);
                         claimButton.style.display = 'none';
 
@@ -486,6 +368,8 @@ window.addEventListener('load', async function() {
     //document.getElementById('channel').innerHTML = getChannelId();
     
     setTimeout(async () => {
+        l1SwapsContractAddress = CONTRACT_INFO.l1SwapsContractAddress;
+        l1SwapsAbi = CONTRACT_INFO.l1SwapsAbi;
         l1SwapsContract = web3.eth.contract(l1SwapsAbi).at(l1SwapsContractAddress);
 
         loadL1Balance();
@@ -495,7 +379,7 @@ window.addEventListener('load', async function() {
         document.getElementById('target').onchange = () => {
             loadChannel();
         }
-    }, 500);
+    }, 1000);
     
 });
 

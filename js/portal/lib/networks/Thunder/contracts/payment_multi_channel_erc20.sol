@@ -55,10 +55,20 @@ contract UniDirectionalPaymentMultiChannel is ReentrancyGuard {
     }
     
     mapping(uint => Channel) public channels;
+    mapping(address => mapping(address => uint)) public balances;
     
-    event Deposited(uint channelId, address sender, uint value, uint deposited, address token);  
-    event ChannelOpened(uint channelId, address sender, address receiver, uint value, address token);
-    event Settled(uint channelId, address sender, address receiver, uint withdrawing, uint spent, address token);
+    event Deposited(
+        bytes32 indexed channelId, 
+        address indexed sender, address indexed receiver, 
+        uint value, uint deposited, address token);  
+    event ChannelOpened(
+        bytes32 indexed channelId, 
+        address indexed sender, address indexed receiver, 
+        uint value, address token);
+    event Settled(
+        bytes32 indexed channelId, 
+        address indexed sender, address indexed receiver, 
+        uint withdrawing, uint spent, address token);
 
     constructor(){
 
@@ -89,6 +99,11 @@ contract UniDirectionalPaymentMultiChannel is ReentrancyGuard {
         
         uint channelId = getChannelId(msg.sender, _receiver, _token);
 
+        Channel storage existant = channels[channelId];
+        if(existant.deposited > 0){
+            balances[existant.sender][existant.token] -= (existant.deposited - existant.claimed);
+        }
+
         channels[channelId] = Channel({
             sender: msg.sender,
             receiver: _receiver,
@@ -100,10 +115,12 @@ contract UniDirectionalPaymentMultiChannel is ReentrancyGuard {
         if(_token != address(0)){
             Token(_token).transferFrom(msg.sender, address(this), _amount);
         }else{
-            require(_amount == msg.value, "msg.value not qual to _amount");
+            require(_amount == msg.value, "msg.value not qual to _amount");        
         }
 
-        emit ChannelOpened(channelId, msg.sender, _receiver, _amount, _token);
+        balances[msg.sender][_token] += _amount;
+
+        emit ChannelOpened(bytes32(channelId), msg.sender, _receiver, _amount, _token);
 
         return channelId;
     }
@@ -127,10 +144,12 @@ contract UniDirectionalPaymentMultiChannel is ReentrancyGuard {
         if(_token != address(0)){
             Token(_token).transferFrom(msg.sender, address(this), _amount);
         }else{
-            require(_amount == msg.value, "msg.value not qual to _amount");
+            require(_amount == msg.value, "msg.value not qual to _amount");            
         }
 
-        emit Deposited(_channelId, msg.sender, _amount, channel.deposited, _token);
+        balances[msg.sender][_token] += _amount;
+
+        emit Deposited(bytes32(_channelId), msg.sender, channel.receiver, _amount, channel.deposited, _token);
 
         return true;
     }
@@ -207,7 +226,9 @@ contract UniDirectionalPaymentMultiChannel is ReentrancyGuard {
 
         channel.claimed = _amount;  
 
-        emit Settled(_channelId, channel.sender, channel.receiver, withdrawing, _amount, channel.token);
+        balances[channel.sender][channel.token] -= withdrawing;
+
+        emit Settled(bytes32(_channelId), channel.sender, channel.receiver, withdrawing, _amount, channel.token);
 
         return true;          
     }
