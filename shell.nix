@@ -86,7 +86,12 @@ pkgs.mkShell {
     stty intr ""
 
     # Kill all services on exit
-    trap "pkill bitcoind geth lnd" EXIT
+    function on_exit() {
+      alice lnd stop
+      bob lnd stop
+      portal bitcoind stop
+    }
+    trap on_exit EXIT
 
     readonly RESET_STATE=$([[ -f $PORTAL_ROOT/playnet/.delete_to_reset ]] && echo false || echo true)
     readonly LND_WALLET_FUNDS=10       # in btc
@@ -171,6 +176,12 @@ pkgs.mkShell {
       # Create the `reset` file to prevent the wallets from being recreated.
       touch $PORTAL_ROOT/playnet/.delete_to_reset
       echo "reset complete"
+
+    else
+      # Load the default bitcoin wallet and generate a block to trigger sync
+      portal bitcoind loadwallet 'default' >/dev/null
+      portal bitcoind -generate 1
+
     fi
 
     set +eu
