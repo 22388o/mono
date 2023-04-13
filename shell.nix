@@ -19,15 +19,16 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    ##########################################################################
+    ############################################################################
     # Developer Environment
-    ##########################################################################
+    ############################################################################
     export PORTAL_ROOT=${toString ./.}
+    export PLAYNET_ROOT=${toString ./playnet}
 
 
-    ##########################################################################
+    ############################################################################
     # Functions/Helpers
-    ##########################################################################
+    ############################################################################
 
     function run_as_user() {
       local user=$1
@@ -63,9 +64,9 @@ pkgs.mkShell {
     }
 
 
-    ##########################################################################
+    ############################################################################
     # Aliases
-    ##########################################################################
+    ############################################################################
     alias alice='run_as_user alice'
     alias bob='run_as_user bob'
     alias portal='run_as_user portal'
@@ -77,16 +78,31 @@ pkgs.mkShell {
     alias tf-get-deploy-public-key='terraform state pull | jq -r ".resources[] | select(.name == \"deploy\") | .instances[0].attributes.public_key_openssh"'
 
 
-    ##########################################################################
+    ############################################################################
     # Services
-    ##########################################################################
+    ############################################################################
     set -eu
 
     # Disable SIGINT to avoid accidentally stopping geth and lnd
     stty intr ""
 
     # Kill all services on exit
-    trap "pkill bitcoind geth lnd" EXIT
+    function on_exit() {
+      echo "- terminating lnd for alice..."
+      alice lnd stop
+
+      echo "- terminating lnd for bob..."
+      bob lnd stop
+
+      echo "- terminating geth for portal..."
+      pkill geth
+
+      echo "- terminating bitcoind for portal..."
+      portal bitcoind stop
+
+      echo "terminated developer environment..."
+    }
+    trap on_exit EXIT
 
     readonly RESET_STATE=$([[ -f $PORTAL_ROOT/playnet/.delete_to_reset ]] && echo false || echo true)
     readonly LND_WALLET_FUNDS=10       # in btc
@@ -109,6 +125,7 @@ pkgs.mkShell {
 
     echo "- starting geth for portal..."
     nohup geth --dev --config "$PORTAL_ROOT/playnet/geth.portal.toml" >$PORTAL_ROOT/playnet/log/portal/geth.log 2>&1 &
+    export PORTAL_ETHEREUM_URL="http://$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPHost = ')[^']+" | tr -d "'"):$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPPort = )[0-9]+" | tr -d ' ')"
 
     echo "- starting lnd for alice..."
     nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.alice.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/alice/lnd.log 2>&1 &
@@ -171,6 +188,12 @@ pkgs.mkShell {
       # Create the `reset` file to prevent the wallets from being recreated.
       touch $PORTAL_ROOT/playnet/.delete_to_reset
       echo "reset complete"
+
+    else
+      # Load the default bitcoin wallet and generate a block to trigger sync
+      portal bitcoind loadwallet 'default' >/dev/null
+      portal bitcoind -generate 1 >/dev/null
+
     fi
 
     set +eu

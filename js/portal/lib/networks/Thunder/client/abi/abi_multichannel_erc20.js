@@ -64,6 +64,12 @@ module.exports = [
       },
       {
         indexed: false,
+        internalType: 'uint256',
+        name: 'deposited',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
         internalType: 'address',
         name: 'token',
         type: 'address'
@@ -96,7 +102,13 @@ module.exports = [
       {
         indexed: false,
         internalType: 'uint256',
-        name: 'amount',
+        name: 'withdrawing',
+        type: 'uint256'
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'spent',
         type: 'uint256'
       },
       {
@@ -157,6 +169,11 @@ module.exports = [
         internalType: 'uint256',
         name: 'claimed',
         type: 'uint256'
+      },
+      {
+        internalType: 'address',
+        name: 'token',
+        type: 'address'
       }
     ],
     stateMutability: 'view',
@@ -168,10 +185,45 @@ module.exports = [
         internalType: 'uint256',
         name: '_channelId',
         type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256'
+      },
+      {
+        internalType: 'address',
+        name: '_token',
+        type: 'address'
       }
     ],
     name: 'deposit',
-    outputs: [],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'success',
+        type: 'bool'
+      }
+    ],
+    stateMutability: 'payable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_channelId',
+        type: 'uint256'
+      }
+    ],
+    name: 'depositEth',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'success',
+        type: 'bool'
+      }
+    ],
     stateMutability: 'payable',
     type: 'function'
   },
@@ -185,6 +237,11 @@ module.exports = [
       {
         internalType: 'address',
         name: '_receiver',
+        type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: '_token',
         type: 'address'
       }
     ],
@@ -210,6 +267,11 @@ module.exports = [
         internalType: 'address',
         name: '_receiver',
         type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: '_token',
+        type: 'address'
       }
     ],
     name: 'getChannelIdHex',
@@ -234,9 +296,14 @@ module.exports = [
         internalType: 'address',
         name: '_receiver',
         type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: '_token',
+        type: 'address'
       }
     ],
-    name: 'getChannelIdPacked',
+    name: 'getChannelIdPreimage',
     outputs: [
       {
         internalType: 'bytes',
@@ -301,9 +368,38 @@ module.exports = [
         internalType: 'address payable',
         name: '_receiver',
         type: 'address'
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256'
+      },
+      {
+        internalType: 'address',
+        name: '_token',
+        type: 'address'
       }
     ],
     name: 'openChannel',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'channelId',
+        type: 'uint256'
+      }
+    ],
+    stateMutability: 'payable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address payable',
+        name: '_receiver',
+        type: 'address'
+      }
+    ],
+    name: 'openChannelEth',
     outputs: [
       {
         internalType: 'uint256',
@@ -333,7 +429,13 @@ module.exports = [
       }
     ],
     name: 'settle',
-    outputs: [],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'success',
+        type: 'bool'
+      }
+    ],
     stateMutability: 'nonpayable',
     type: 'function'
   },
