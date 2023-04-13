@@ -29,10 +29,12 @@ contract PaymentChannel is ReentrancyGuard {
         return uint(getChannelIdHex(_sender, _receiver, _token));
     }
 
+    // solhint-disable-next-line max-line-length
     function getChannelIdHex(address _sender, address _receiver, address _token) public view returns (bytes32 channelId) {
         return keccak256(getChannelIdPreimage(_sender, _receiver, _token));
     }
 
+    // solhint-disable-next-line max-line-length
     function getChannelIdPreimage(address _sender, address _receiver, address _token) public view returns (bytes memory channelInfo) {
         return abi.encodePacked(address(this), _sender, _receiver, _token);
     }
@@ -154,6 +156,7 @@ contract PaymentChannel is ReentrancyGuard {
         require(_capacity(channel) > withdrawing, "insufficient capacity");
 
         if (channel.token == address(0)) {
+            // solhint-disable-next-line avoid-low-level-calls
             (bool sent, ) = channel.receiver.call {value: withdrawing}("");
             require(sent, "Failed to send Ether");
         } else {
