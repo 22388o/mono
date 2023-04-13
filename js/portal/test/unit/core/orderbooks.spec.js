@@ -28,10 +28,10 @@ describe('Orderbooks', function () {
     const BASE_ORDER = {
       uid: 'uid',
       type: 'limit',
-      baseAsset: 'ETH',
-      baseNetwork: 'goerli',
-      quoteAsset: 'USDC',
-      quoteNetwork: 'sepolia'
+      baseAsset: 'BTC',
+      baseNetwork: 'lightning.btc',
+      quoteAsset: 'ETH',
+      quoteNetwork: 'eth-l2.eth'
     }
 
     let orderbooks, order
