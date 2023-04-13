@@ -24,6 +24,7 @@
     "debug": "^4.3.4",
     "ethereumjs-common": "^1.5.2",
     "ethereumjs-tx": "^2.1.2",
+    "ethers": "^6.2.3",
     "lightning": "^6.2.6",
     "mime": "^3.0.0",
     "uuid": "^9.0.0",
