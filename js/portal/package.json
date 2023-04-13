@@ -8,13 +8,16 @@
   "scripts": {
     "clean": "rm -rf coverage node_modules package-lock.json",
     "coverage": "c8 mocha",
-    "lint": "standard",
-    "lint-fix": "standard --fix",
+    "lint": "npm run lint:js && npm run lint-sol",
+    "lint:js": "standard",
+    "lint:sol": "solhint contracts/*.sol",
+    "lint-fix": "npm run lint:js -- --fix && npm run lint:sol --fix",
     "posttest": "npm run lint",
     "debug": "DEBUG=* node bin/portal",
     "start": "node bin/portal",
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
+    "test:contracts": "mocha test/contracts",
     "test:integration": "mocha test/integration",
     "watch": "npm test -- --watch"
   },
@@ -34,9 +37,12 @@
   },
   "devDependencies": {
     "c8": "^7.12.0",
-    "chai": "^4.3.6",
-    "mocha": "^10.0.0",
-    "standard": "^17.0.0"
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "solc": "^0.7.6",
+    "solhint": "^3.3.7",
+    "standard": "^17.0.0",
+    "web3": "^1.8.2"
   },
   "c8": {
     "check-coverage": true,
@@ -57,6 +63,7 @@
     "timeout": 120000,
     "ui": "bdd",
     "watch-files": [
+      "contracts/**/*.sol",
       "lib/**/*.js",
       "test/**/*.js"
     ]
