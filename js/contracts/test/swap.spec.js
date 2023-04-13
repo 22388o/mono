@@ -4,16 +4,24 @@
 
 const { expect } = require('chai')
 const { createHash, randomBytes } = require('crypto')
-const Swap = artifacts.require('Swap')
+const lib = require('../lib/lib')
 
-contract('Swap', function (accounts) {
+describe('Swap', function () {
+  let Contract = null
+  let contract = null
+
+  beforeEach(async function () {
+    const { web3, contracts } = this
+    const object = contracts['Swap.sol']['Swap']
+    Contract = await lib.deploy(object, web3)
+    contract = Contract.methods
+  })
+
   describe('.toHash()', function () {
     it('must correctly generate a SHA-256 hash', async function () {
-      const swap = await Swap.deployed()
-
       const secret = randomBytes(32)
       const secretHash = createHash('sha256').update(secret).digest('hex')
-      const hash = await swap.toHash.call(secret)
+      const hash = await contract.toHash(secret).call()
 
       expect(hash).to.equal(`0x${secretHash}`)
     })
