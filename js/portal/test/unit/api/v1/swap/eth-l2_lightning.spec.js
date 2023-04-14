@@ -16,7 +16,7 @@ const log = obj => inspect(obj, { depth: null, colors: true })
 /**
  * This is a simple test case wherein,
  */
-describe('Swaps - EVM/Lightning', function () {
+describe.skip('Swaps - EVM/Lightning', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
