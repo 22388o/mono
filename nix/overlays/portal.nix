@@ -12,7 +12,6 @@ in
     portaldefi = {
       inherit nodejs;
 
-      contracts = import ../../js/contracts { inherit nodejs; pkgs = super; };
       demo = import ../../js/swap-client { inherit nodejs; pkgs = super; };
       portal = portal.build;
     };
