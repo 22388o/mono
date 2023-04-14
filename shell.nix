@@ -84,7 +84,8 @@ pkgs.mkShell {
     set -eu
 
     # Disable SIGINT to avoid accidentally stopping geth and lnd
-    stty intr ""
+    # Not needed for CI
+    [[ ''${GITHUB_ACTIONS-false} == true ]] || stty intr ""
 
     # Kill all services on exit
     function on_exit() {
