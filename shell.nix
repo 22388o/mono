@@ -83,10 +83,6 @@ pkgs.mkShell {
     ############################################################################
     set -eu
 
-    # Disable SIGINT to avoid accidentally stopping geth and lnd
-    # Not needed for CI
-    [[ ''${GITHUB_ACTIONS-false} == true ]] || stty intr ""
-
     # Kill all services on exit
     function on_exit() {
       echo "- terminating lnd for alice..."
@@ -120,6 +116,12 @@ pkgs.mkShell {
 
     # Start the services
     echo "starting developer environment..."
+
+    # Disable SIGINT to avoid accidentally stopping any nohup'd processes
+    if [[ ''${GITHUB_ACTIONS-false} == false ]]; then
+      echo "- disabling Ctrl-C..."
+      stty intr ""
+    fi
 
     echo "- starting bitcoind for portal..."
     bitcoind -conf="$PORTAL_ROOT/playnet/bitcoind.portal.conf" >/dev/null
@@ -155,7 +157,7 @@ pkgs.mkShell {
       BOB_LND_WALLET=$(run_as_user bob lnd newaddress p2wkh | jq -r .address)
 
       echo "- funding new LND wallet for alice..."
-      portal bitcoind sendtoaddress $ALICE_LND_WALLET $LND_WALLET_FUNDS >/dev/null
+      run_as_user portal bitcoind sendtoaddress $ALICE_LND_WALLET $LND_WALLET_FUNDS >/dev/null
       while [ $(run_as_user alice lnd walletbalance | jq -r '.confirmed_balance') -eq 0 ]; do
         run_as_user portal bitcoind -generate 1 >/dev/null
         sleep 1
@@ -192,8 +194,8 @@ pkgs.mkShell {
 
     else
       # Load the default bitcoin wallet and generate a block to trigger sync
-      portal bitcoind loadwallet 'default' >/dev/null
-      portal bitcoind -generate 1 >/dev/null
+      run_as_user portal bitcoind loadwallet 'default' >/dev/null
+      run_as_user portal bitcoind -generate 1 >/dev/null
 
     fi
 
