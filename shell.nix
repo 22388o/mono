@@ -90,16 +90,16 @@ pkgs.mkShell {
     # Kill all services on exit
     function on_exit() {
       echo "- terminating lnd for alice..."
-      alice lnd stop
+      run_as_user alice lnd stop
 
       echo "- terminating lnd for bob..."
-      bob lnd stop
+      run_as_user bob lnd stop
 
       echo "- terminating geth for portal..."
       pkill geth
 
       echo "- terminating bitcoind for portal..."
-      portal bitcoind stop
+      run_as_user portal bitcoind stop
 
       echo "terminated developer environment..."
     }
@@ -130,59 +130,59 @@ pkgs.mkShell {
 
     echo "- starting lnd for alice..."
     nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.alice.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/alice/lnd.log 2>&1 &
-    while $(alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
+    while $(run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     echo "- starting lnd for bob..."
     nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.bob.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/bob/lnd.log 2>&1 &
-    while $(bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
+    while $(run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     # Initialize state, if needed
     if [[ $RESET_STATE == "true" ]]; then
       echo "initializing developer environment..."
 
       echo "- creating a new bitcoin wallet..."
-      portal bitcoind createwallet 'default' >/dev/null
+      run_as_user portal bitcoind createwallet 'default' >/dev/null
 
       echo "- generating $BITCOIND_BLOCKS blocks..."
-      portal bitcoind -generate $BITCOIND_BLOCKS >/dev/null
+      run_as_user portal bitcoind -generate $BITCOIND_BLOCKS >/dev/null
 
       echo "- creating a new LND wallet for alice..."
-      ALICE_LND_NODEID=$(alice lnd getinfo | jq -r .identity_pubkey)
-      ALICE_LND_WALLET=$(alice lnd newaddress p2wkh | jq -r .address)
+      ALICE_LND_NODEID=$(run_as_user alice lnd getinfo | jq -r .identity_pubkey)
+      ALICE_LND_WALLET=$(run_as_user alice lnd newaddress p2wkh | jq -r .address)
 
       echo "- creating a new LND wallet for bob..."
-      BOB_LND_NODEID=$(bob lnd getinfo | jq -r .identity_pubkey)
-      BOB_LND_WALLET=$(bob lnd newaddress p2wkh | jq -r .address)
+      BOB_LND_NODEID=$(run_as_user bob lnd getinfo | jq -r .identity_pubkey)
+      BOB_LND_WALLET=$(run_as_user bob lnd newaddress p2wkh | jq -r .address)
 
       echo "- funding new LND wallet for alice..."
       portal bitcoind sendtoaddress $ALICE_LND_WALLET $LND_WALLET_FUNDS >/dev/null
-      while [ $(alice lnd walletbalance | jq -r '.confirmed_balance') -eq 0 ]; do
-        portal bitcoind -generate 1 >/dev/null
+      while [ $(run_as_user alice lnd walletbalance | jq -r '.confirmed_balance') -eq 0 ]; do
+        run_as_user portal bitcoind -generate 1 >/dev/null
         sleep 1
       done
 
       echo "- funding new LND wallet for bob..."
-      portal bitcoind sendtoaddress $BOB_LND_WALLET $LND_WALLET_FUNDS >/dev/null
-      while [ $(bob lnd walletbalance | jq -r '.confirmed_balance') -eq 0 ]; do
-        portal bitcoind -generate 1 >/dev/null
+      run_as_user portal bitcoind sendtoaddress $BOB_LND_WALLET $LND_WALLET_FUNDS >/dev/null
+      while [ $(run_as_user bob lnd walletbalance | jq -r '.confirmed_balance') -eq 0 ]; do
+        run_as_user portal bitcoind -generate 1 >/dev/null
         sleep 1
       done
 
       # Open a payment channel from alice to bob and mine blocks to facilitate opening
       echo "- opening payment channel from alice to bob with $LND_CHANNEL_FUNDS sats..."
       BOB_LND_PEER_URL=$(grep '^listen=' "$PORTAL_ROOT/playnet/lnd.bob.conf" | cut -d'=' -f2)
-      alice lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$BOB_LND_PEER_URL --node_key=$BOB_LND_NODEID >/dev/null
-      while [ $(alice lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
-        portal bitcoind -generate 1 >/dev/null
+      run_as_user alice lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$BOB_LND_PEER_URL --node_key=$BOB_LND_NODEID >/dev/null
+      while [ $(run_as_user alice lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
+        run_as_user portal bitcoind -generate 1 >/dev/null
         sleep 1
       done
 
       # Open a payment channel from bob to alice and mine blocks to facilitate opening
       echo "- opening payment channel from bob to alice with $LND_CHANNEL_FUNDS sats..."
       ALICE_LND_PEER_URL=$(grep '^listen=' "$PORTAL_ROOT/playnet/lnd.alice.conf" | cut -d'=' -f2)
-      bob lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$ALICE_LND_PEER_URL --node_key=$ALICE_LND_NODEID >/dev/null
-      while [ $(bob lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
-        portal bitcoind -generate 1 >/dev/null
+      run_as_user bob lnd openchannel --local_amt=$LND_CHANNEL_FUNDS --connect=$ALICE_LND_PEER_URL --node_key=$ALICE_LND_NODEID >/dev/null
+      while [ $(run_as_user bob lnd pendingchannels | jq '.pending_open_channels | length') -ne 0 ]; do
+        run_as_user portal bitcoind -generate 1 >/dev/null
         sleep 1
       done
 
