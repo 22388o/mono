@@ -130,11 +130,11 @@ pkgs.mkShell {
 
     echo "- starting lnd for alice..."
     nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.alice.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/alice/lnd.log 2>&1 &
-    while $(run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
+    while ! $(run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     echo "- starting lnd for bob..."
     nohup lnd --configfile "$PORTAL_ROOT/playnet/lnd.bob.conf" --noseedbackup >$PORTAL_ROOT/playnet/log/bob/lnd.log 2>&1 &
-    while $(run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
+    while ! $(run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
     # Initialize state, if needed
     if [[ $RESET_STATE == "true" ]]; then
