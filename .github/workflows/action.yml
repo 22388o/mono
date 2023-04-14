@@ -41,8 +41,7 @@ jobs:
     - name: Run unit tests
       # TODO: Fix this to setup the developer environment correctly
       # run: nix-build nix -A portaldefi-unit-tests
-      run: nix-shell --run "npm run test:unit"
-      working-directory: ./js/portal
+      run: nix-shell --run "cd js/portal && npm run test:unit"
 
     - name: Run portal integration tests
       run: nix-shell --run "npm run test:integration"
