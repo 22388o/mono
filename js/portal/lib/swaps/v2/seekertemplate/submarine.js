@@ -14,9 +14,9 @@ const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStack
 
 const RELATIVE_SWAP_TIMELOCK = 36;
 const RELATIVE_PAYMENT_DEADLINE = 24;
-const REQUIRED_CONFIRMATIONS = 3;
-const DEFAULT_MINER_FEE = 200;
-const NETWORK = bitcoin.networks.regtest
+const REQUIRED_CONFIRMATIONS = 1;
+const DEFAULT_MINER_FEE = 2000;
+const NETWORK = bitcoin.networks.bitcoin
 
 module.exports = class Submarine extends SeekerTemplate {
     constructor(party, node1, node2) {
@@ -75,6 +75,8 @@ module.exports = class Submarine extends SeekerTemplate {
             const timelock = height +  RELATIVE_SWAP_TIMELOCK;
             const holderPublicKey = party.state.shared.holderPublicKey
 
+            party.state.initialHeight = height
+
             console.log(`holderPublicKey: ${holderPublicKey}`)
             const swapHash = party.swapHash
             const witnessScriptRaw = scriptGenerator(seekerPublicKey, holderPublicKey, swapHash, timelock);
@@ -108,8 +110,22 @@ module.exports = class Submarine extends SeekerTemplate {
             username:   this.node2.creds.rpcuser
         });
 
-        const fee = party.state.shared.holderFee
-        const amount = party.quantity
+        let fee
+        if (typeof(party.state.shared.holderFee) == "string") {
+            fee = parseInt(party.state.shared.holderFee, 10)
+        }
+        else {
+            fee = party.state.shared.holderFee
+        }
+
+        let amount
+        if (typeof(party.quantity) == "string") {
+            amount = parseInt(party.quantity, 10)
+        }
+        else {
+            amount = party.quantity
+        }
+
         const swapinfo = party.state.shared.swapinfo
 
         const wif = this.node2.creds.wif
@@ -123,6 +139,15 @@ module.exports = class Submarine extends SeekerTemplate {
         const psbt = new bitcoin.Psbt({NETWORK});
 
         const amountAndFee = amount + fee;
+        console.log(`### fee           ###: ${fee}`)
+        console.log(`### fee (type)    ###: ${typeof(fee)}`)
+        console.log(`### amount        ###: ${amount}`)
+        console.log(`### amount (type) ###: ${typeof(amount)}`)
+        console.log(`### amountAndFee  ###: ${amountAndFee}`)
+
+        const height = party.state.initialHeight
+        console.log(`### height (type) ###: ${typeof(height)}`)
+        console.log(`### height  ###: ${height}`)
 
         const scantx = await carol.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range
 
@@ -138,6 +163,7 @@ module.exports = class Submarine extends SeekerTemplate {
 
         const currentHeight = scantx[0].height;
         const totalAmount = Math.round(scantx[0].total_amount * 10E8);
+        console.log(`### totalAmount   ###: ${totalAmount}`)
 
         const utxos = scantx[0].unspents
         const numUtxos = utxos.length;

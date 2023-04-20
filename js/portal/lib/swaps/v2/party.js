@@ -188,6 +188,7 @@ module.exports = class Party {
       asset: this.asset,
       network: this.network,
       quantity: this.quantity,
+      fee: this.fee,
       state: this.state,
       isSecretSeeker: this.isSecretSeeker,
       isSecretHolder: this.isSecretHolder

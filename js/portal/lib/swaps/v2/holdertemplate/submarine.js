@@ -5,11 +5,11 @@ const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
 const bitcoin = require('bitcoinjs-lib');
-const NETWORK = bitcoin.networks.regtest
+const NETWORK = bitcoin.networks.bitcoin
 const bip65 = require('bip65');
 const Client = require('bitcoin-core');
-const REQUIRED_CONFIRMATIONS = 3;
-const DEFAULT_MINER_FEE = 200;
+const REQUIRED_CONFIRMATIONS = 1;
+const DEFAULT_MINER_FEE = 2000;
 const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStackToScriptWitness')
 
 
@@ -25,7 +25,7 @@ module.exports = class Submarine extends HolderTemplate {
 
         const wif = this.node2.creds.wif
         console.log(`wif: ${wif}`)
-        const network = bitcoin.networks.regtest
+        const network = NETWORK
         console.log(`network: ${network}`)
         const holderPair = bitcoin.ECPair.fromWIF(wif, network);
         console.log(`holderPair created`)
