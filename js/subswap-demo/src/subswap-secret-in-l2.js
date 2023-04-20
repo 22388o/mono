@@ -184,7 +184,7 @@ async function commit(secret, swapinfo, amount, fee) {
 };
 
 async function cancel(swapinfo, amount, fee) {
-    const bob = new Client({
+    const alice = new Client({
         port:       BITCOIN_RPCPORT,
         password:   BITCOIN_PASSWORD,
         username:   BITCOIN_USERNAME,
@@ -195,7 +195,7 @@ async function cancel(swapinfo, amount, fee) {
 
     const psbt = new bitcoin.Psbt({NETWORK});
 
-    const info = await bob.command([{method: 'getblockchaininfo', parameters: []}]);
+    const info = await alice.command([{method: 'getblockchaininfo', parameters: []}]);
     const height = info.blocks;
     if (height < swapinfo.timelock) {
         const confirmationToGo = swapinfo.timelock - height

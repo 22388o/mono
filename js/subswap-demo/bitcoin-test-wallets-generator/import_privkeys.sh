@@ -44,6 +44,7 @@ while read -r wif
 do
     wallet=${wallets[count]}
     echo ${wallet}
+    echo ${wif}
     descriptor1="pk(${wif})"
     descriptor2="pkh(${wif})"
     descriptor3="wpkh(${wif})"
@@ -55,6 +56,8 @@ do
     checksum4=$(bitcoin-cli -datadir="${datadir}"  -rpcwallet="${wallet}" getdescriptorinfo "${descriptor4}" | jq -r '.checksum')
 
     command0="bitcoin-cli -datadir="${datadir}" createwallet "${wallet}" || die"
+    # echo $command0
+    eval $command0
 
     command1="bitcoin-cli -datadir="${datadir}"  -rpcwallet="${wallet}" importdescriptors '[{\"desc\": \""${descriptor1}\#${checksum1}"\", \"timestamp\":\"now\"}]' || die"
     command2="bitcoin-cli -datadir="${datadir}"  -rpcwallet="${wallet}" importdescriptors '[{\"desc\": \""${descriptor2}\#${checksum2}"\", \"timestamp\":\"now\"}]' || die"
@@ -80,5 +83,5 @@ do
     command10="bitcoin-cli -datadir="${datadir}" -rpcwallet="${wallet}" listdescriptors"
 #    eval $command10
 
-    ((count ++))s
+    ((count ++))
 done

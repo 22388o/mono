@@ -7,6 +7,7 @@ const Networks = require('./networks')
 const Orderbooks = require('./orderbooks')
 const Store = require('./store')
 const Swaps = require('./swaps')
+const Swaps2 = require('../swaps/v2/swaps')
 const Contracts = require('../../contracts/index.json')
 const Channels = require('./channels')
 
@@ -71,6 +72,12 @@ HttpContext.orderbooks = new Orderbooks(null, HttpContext)
  * @type {Swaps}
  */
 HttpContext.swaps = new Swaps(null, HttpContext)
+
+/**
+ * Interface to all version2 open atomic swaps in progress
+ * @type {Swaps}
+ */
+HttpContext.swaps2 = new Swaps2(null, HttpContext)
 
 
 /**

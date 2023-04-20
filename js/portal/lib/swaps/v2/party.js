@@ -1,7 +1,9 @@
 /**
  * @file Defines a party to an atomic swap
  */
-
+const { uuid } = require('../../helpers')
+const HolderTemplate = require('./holdertemplate/holdertemplate')
+const SeekerTemplate = require('./seekertemplate/seekertemplate')
 /**
  * Defines a party to a swap
  * @type {Party}
@@ -26,9 +28,15 @@ module.exports = class Party {
     this.asset = props.asset
     this.network = props.network
     this.quantity = props.quantity
+    this.fee = props.fee
+    this.template = props.template
+    this.swapHash = props.swapHash
+
 
     this.swap = null // assigned by the swap constructor
-    this.state = {} // populated by the user/client over http/rpc
+    this.state = {
+      shared: {}
+    } // populated by the user/client over http/rpc
   }
 
   /**
@@ -61,9 +69,10 @@ module.exports = class Party {
     return this.swap && this.swap.secretSeeker === this
   }
 
-  get swapHash () {
-    return this.swap && this.swap.secretHash
+  get hasTemplate () {
+    return this.template != null
   }
+
 
   /**
    * Opens a swap for a single party
@@ -76,9 +85,15 @@ module.exports = class Party {
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  open (opts) {
+  async open (opts) {
     try {
       console.log('\nparty.open', this, opts)
+
+      if (this.hasTemplate) {
+        const party = await(this.template.open(this, opts))
+        this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
+        return party
+      }
 
       if ((this.swap.isCreated && this.isSecretSeeker) ||
           (this.swap.isOpening && this.isSecretHolder)) {
@@ -104,9 +119,15 @@ module.exports = class Party {
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Party>}
    */
-  commit (opts) {
+  async commit (opts) {
     try {
       console.log('\nparty.commit', this, opts)
+
+      if (this.hasTemplate) {
+        const party = await(this.template.commit(this, opts))
+        this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
+        return party
+      }
 
       if (this.isSecretSeeker && this.swap.isOpened) {
         return this.counterparty.network.commit(this, opts)
@@ -130,7 +151,19 @@ module.exports = class Party {
    * Gracefully aborts a swap for a single party
    * @returns {Promise<Party>}
    */
-  abort () {
+  async abort (opts) {
+    try {
+      console.log('\nparty.abort', this, opts)
+
+      if (this.hasTemplate) {
+        const party = await(this.template.abort(this, opts))
+        this.counterparty.state.shared = Object.assign(this.counterparty.state.shared, party.state.shared)
+        return party
+      }
+    } catch (err) {
+      return Promise.reject(err)
+    }
+
     return Promise.reject(Error('not implemented yet!'))
   }
 
@@ -151,6 +184,7 @@ module.exports = class Party {
       '@type': this.constructor.name,
       id: this.id,
       swap: this.swap && { id: this.swap.id },
+      swapHash: this.swapHash,
       asset: this.asset,
       network: this.network,
       quantity: this.quantity,
@@ -163,7 +197,7 @@ module.exports = class Party {
   }
 
   /**
-   * Creates a secret-holding party from the an order from the matching engine
+   * Creates a party from the an order from the matching engine
    * @param {Order} order An order (maker or taker) returned by order matching
    * @returns {Party}
    */
@@ -184,4 +218,86 @@ module.exports = class Party {
       quantity
     })
   }
+
+  /**
+   * Creates a party from props for a secret holder
+   * @param {Order} order An order (maker or taker) returned by order matching
+   * @returns {Party}
+   */
+  static fromHolderProps(swapType, swapHash, secretHolderProps, ctx) {
+    // console.log(`secretHolderProps in fromHolderProps: ${JSON.stringify(secretHolderProps, null, 2)}`)
+
+    // console.log(`swapHash IN FROM_HOLDERPROPS: ${swapHash}`)
+
+    const template = HolderTemplate.fromProps(this, swapType, secretHolderProps)
+    const userid = secretHolderProps.uid
+    const asset = secretHolderProps.asset
+    const network = secretHolderProps.templateProps.nodes[swapType][0].network
+    const quantity = secretHolderProps.quantity
+    const fee = secretHolderProps.fee
+
+    if (ctx.networks[network] === undefined) {
+      console.log(secretHolderProps.hash, ctx.networks)
+      process.exit(1)
+    }
+
+
+    const party = new Party({
+      id: userid + '--' + uuid(),
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity,
+      fee,
+      template,
+      swapHash
+    })
+
+    // console.log(`party IN FROM_HOLDERPROPS: ${JSON.stringify(party, null, 2)} `)
+
+    // console.log(`secretHolder party before return - party: ${JSON.stringify(party, null, 2)}`)
+    return party
+  }
+
+  /**
+   * Creates a party from props for a secret seeker
+   * @param {Order} order An order (maker or taker) returned by order matching
+   * @returns {Party}
+   */
+  static fromSeekerProps(swapType, swapHash, secretSeekerProps, ctx) {
+    // console.log(`secretSeekerProps in fromSeekerProps: ${JSON.stringify(secretSeekerProps, null, 2)}`)
+
+    // console.log(`swapHash IN FROM_SEEKERPROPS: ${swapHash}`)
+
+    const template = SeekerTemplate.fromProps(this, swapType, secretSeekerProps)
+    const userid = secretSeekerProps.uid
+    const asset = secretSeekerProps.asset
+    const network = secretSeekerProps.templateProps.nodes[swapType][0].network
+    const quantity = secretSeekerProps.quantity
+    const fee = secretSeekerProps.fee
+
+    if (ctx.networks[network] === undefined) {
+      console.log(secretSeekerProps.hash, ctx.networks)
+      process.exit(1)
+    }
+
+
+
+    const party = new Party({
+      id: userid + '--' + uuid(),
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity,
+      fee,
+      template,
+      swapHash
+    })
+
+    // console.log(`party IN FROM_SEEKERPROPS: ${JSON.stringify(party, null, 2)} `)
+
+
+    // console.log(`secretSeeker party before return - party: ${JSON.stringify(party, null, 2)}`)
+
+    return party
+  }
+
 }
