@@ -1,5 +1,6 @@
 const cote = require('cote')
 const Web3 = require('web3')
+const { ethers } = require('ethers')
 
 class ChannelCoordinator {
   constructor () {
@@ -15,7 +16,7 @@ class ChannelCoordinator {
     this.subscriber.on('secret', (update) => {
       console.log(this.name, 'SECRET RECEIVED FROM KNOWER', update)
 
-      const hash = this.web3.utils.soliditySha3(update.secret)
+      const hash = this.computeHashOfSecret(update.secret)
 
       console.log(this.name, 'HASH OF SECRET', hash)
 
@@ -34,6 +35,10 @@ class ChannelCoordinator {
       this.signatures[update.hashOfSecret][update.signer] = update.signature
       // this.publisher.publish
     })
+  }
+
+  computeHashOfSecret (secret) {
+    return ethers.sha256(secret) // use btc compatible hash for secrets
   }
 }
 

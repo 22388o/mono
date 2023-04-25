@@ -1,19 +1,7 @@
 /// SPDX-License-Identifier: UNLICENSED
 pragma solidity "*";
 
-
-/// ERC-20 Interface
-interface IERC20 {
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    function transfer(address to, uint256 value) external returns (bool);
-    function approve(address spender, uint256 value) external returns (bool);
-    function transferFrom(address from, address to, uint256 value) external returns (bool);
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address who) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
-}
+import "./IERC20.sol";
 
 
 /// A smart contract that implements one-half of a swap, enabling the transfer
@@ -34,11 +22,14 @@ contract Swap {
         uint invoiceId,
         address tokenAddress,
         uint tokenAmount,
-        uint tokenNetwork);
+        uint tokenNetwork,
+        address indexed invoicer);
 
     event InvoicePaid(
-        uint invoiceId,
-        bytes32 secretHash);
+        uint indexed invoiceId,
+        bytes32 secretHash,
+        address indexed payee,
+        address indexed payer);
 
     function createInvoice(
         address tokenAddress,
@@ -56,7 +47,8 @@ contract Swap {
             invoiceCount,
             tokenAddress,
             tokenAmount,
-            tokenNetwork);
+            tokenNetwork,
+            msg.sender);
 
         return invoiceCount;
     }
@@ -93,7 +85,7 @@ contract Swap {
         invoiceToHash[invoiceId] = secretHash;
         hashToInvoice[uint(secretHash)] = invoiceId;
 
-        emit InvoicePaid(invoiceId, secretHash);
+        emit InvoicePaid(invoiceId, secretHash, invoiceCreators[invoiceCount], msg.sender);
         return true;
     }
 
@@ -105,6 +97,7 @@ contract Swap {
     mapping(uint => uint) public amounts;
     mapping(uint => uint) public secrets;
     mapping(uint => address) public recipients;
+    mapping(uint => address) public senders;
     mapping(uint => address) public tokenAddresses;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -114,23 +107,26 @@ contract Swap {
         uint trade,
         address tokenDeposited,
         uint amountDeposited,
-        address tokenAddress,
-        uint tokenAmount,
-        uint tokenNetwork,
-        bytes32 secretHash,
-        address recipient);
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired,
+        bytes32 indexed secretHash,
+        address indexed recipient,
+        address indexed sender);
 
     event Claimed(
         uint trade,
-        uint secret,
-        bytes32 secretHash);
+        bytes32 secret,
+        bytes32 indexed secretHash,
+        address indexed claimant,
+        address indexed sender);
 
     function deposit(
         address tokenDeposited,
         uint amountDeposited,
-        address tokenAddress,
-        uint tokenAmount,
-        uint tokenNetwork,
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired,
         bytes32 secretHash,
         address recipient) public returns (uint secretHashNumber) {
 
@@ -138,6 +134,7 @@ contract Swap {
 
         hashes[secretHashNumber] = true;
         recipients[secretHashNumber] = recipient;
+        senders[secretHashNumber] = msg.sender;
         amounts[secretHashNumber] = amountDeposited;
         tokenAddresses[secretHashNumber] = tokenDeposited;
 
@@ -148,19 +145,20 @@ contract Swap {
             secretHashNumber,
             tokenDeposited,
             amountDeposited,
-            tokenAddress,
-            tokenAmount,
-            tokenNetwork,
+            tokenDesired,
+            amountDesired,
+            networkDesired,
             secretHash,
-            recipient);
+            recipient,
+            msg.sender);
 
         return secretHashNumber;
     }
 
     function depositEth(
-        address tokenAddress,
-        uint tokenAmount,
-        uint tokenNetwork,
+        address tokenDesired,
+        uint amountDesired,
+        uint networkDesired,
         bytes32 secretHash,
         address recipient) public payable returns(uint secretHashNumber) {
 
@@ -170,16 +168,18 @@ contract Swap {
         amounts[secretHashNumber] = msg.value;
         recipients[secretHashNumber] = recipient;
         tokenAddresses[secretHashNumber] = address(0x0);
+        senders[secretHashNumber] = msg.sender;
 
         emit Deposited(
             secretHashNumber,
             address(0x0),
             msg.value,
-            tokenAddress,
-            tokenAmount,
-            tokenNetwork,
+            tokenDesired,
+            amountDesired,
+            networkDesired,
             secretHash,
-            recipient);
+            recipient,
+            msg.sender);
 
         return secretHashNumber;
     }
@@ -202,7 +202,7 @@ contract Swap {
             erc20.transfer(msg.sender, amounts[secretHashNumber]);
         }
 
-        emit Claimed(secretHashNumber, secret, secretHash);
+        emit Claimed(secretHashNumber, bytes32(secret), secretHash, msg.sender, senders[secretHashNumber]);
 
         return true;
     }

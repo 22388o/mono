@@ -11,11 +11,11 @@ describe('Order', function () {
     type: 'limit',
     side: 'bid',
     hash: 'myhash',
-    baseAsset: 'ETH',
-    baseNetwork: 'goerli',
+    baseAsset: 'BTC',
+    baseNetwork: 'lightning.btc',
     baseQuantity: 1,
-    quoteAsset: 'USDC',
-    quoteNetwork: 'sepolia',
+    quoteAsset: 'ETH',
+    quoteNetwork: 'eth-l2.eth',
     quoteQuantity: 10
   }
 

@@ -1,0 +1,504 @@
+<html>
+
+<head>
+    <script src="
+    https://cdn.jsdelivr.net/npm/@metamask/legacy-web3@2.0.0/dist/metamask.web3.min.js
+    "></script>
+
+    <script>
+    l1SwapsContractAddress = "0x903616921c967582AEF1b2A0Da3264D0765947Da";
+    l1SwapsAbi = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "trade",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "secret",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "secretHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "claimant",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "Claimed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "trade",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "tokenDeposited",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountDeposited",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "tokenDesired",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountDesired",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "networkDesired",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "bytes32",
+				"name": "secretHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "Deposited",
+		"type": "event"
+	},
+    {
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "secret",
+				"type": "uint256"
+			}
+		],
+		"name": "claim",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+    ]
+    </script>
+</head>
+
+<body>
+    <div style="float:right">
+        <b>L1 Balance</b>&nbsp;<span id="l1-balance" style="float:right; font-family: monospace; margin-top:3px;"></span><br />
+        <b>L2 Balance</b>&nbsp;<span id="l2-balance" style="float:right; font-family: monospace; margin-top:3px;"></span>
+    </div>
+    
+    <button id="connect" onclick="connect()">Connect Web3</button>    
+    <b>Your Address</b><br/>
+    <span id="address" style="font-family: monospace;"></span><br />
+
+    <hr />
+
+    <h1>Send L2 payment</h1>
+
+    <br />
+    <b>Target Address</b><br/>
+    <input id="target" value="0x8584223Ea6Bd70d30FbA40175595F0F09a61cA2a" style="font-family:monospace; width:360px" /><br />
+    
+    <br />
+    <b>Channel Id</b> <br />
+    <span id="channel" style="font-family:monospace;"></span><br />
+    <b>Channel Balance</b><br/>
+    <span id="channel-balance"></span><br /><br />
+
+
+
+    <!--Channel <br />
+    <input id="channel" value="0xce1285848482e532d3dc47fa492e8269d3f4365377491cee04de4d6af995331a" /><br />-->
+    
+    <div id="open-channel"  style="display:none">
+        <b>Channel Capacity</b> <br />
+        <input id="capacity" value="1000" /><br />    
+        <button id="open-channel" onclick="openChannel()">Open Channel</button>
+    </div>
+
+    <div id="send-payment" style="display:none">
+        <b>Payment Amount</b> <br />
+        <input id="amount" value="55" /><br />  
+        Submarine Swap 
+        <input type="checkbox" id="submarine-swap" />    
+        <button id="claim-button" style="display:none">claim counterpayment</button>
+        <br />
+        <br />
+        <button id="send-payment" onclick="sendPayment()">Send</button>
+    </div>
+</body>
+
+<script>
+function getChannelContractAddress(){
+    let channelContractAddress = '0xa95d15f30E369151af5bf89dA1074ff1B6666864';
+    return channelContractAddress;
+}
+
+ETH =  '0x0000000000000000000000000000000000000000';
+baseRpcUrl = `http://localhost:3000`;
+channelInfo = null;
+l1SwapsContract = null;
+secrets = {};
+depositedEvent = null;
+
+function generateRandomSecret(){ return '0x' + this.genRanHex(64); }
+function genRanHex(size=64){ return [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''); }
+
+function getChannelId(sourceAddress, targetAddress, tokenAddress){  
+    if(!tokenAddress) throw("provide tokenAddress to getChannelId");
+    //TODO include token in channel id preimage              
+    let buffer = concatHex(getChannelContractAddress(), sourceAddress, targetAddress, tokenAddress); //
+    return web3.sha3(buffer, {encoding: 'hex'});
+}
+
+function concatHex(){
+    var args = Array.prototype.slice.call(arguments);
+    return '0x' + args.map(x => x.startsWith('0x') ? x.substr(2) : x ).join('');
+}
+
+function decToUint256Hex(value){
+    let res = parseInt(value).toString(16).padStart(64, '0');        
+    return res;
+}
+
+function encodeTransferForSig(params){            
+    let message = concatHex(getChannelContractAddress(), params.channelId, decToUint256Hex(params.spent));        
+    console.log("ENCODED TX", message);
+
+    let hash = web3.sha3(message, {encoding: 'hex'}); //this.web3new.utils.keccak256(message);
+
+    console.log("ENCODED TX HASH", hash);
+
+    return hash;
+}
+
+
+async function getHttp(url) {
+    return new Promise((resolve, reject) =>{
+        // Creating Our XMLHttpRequest object 
+        var xhr = new XMLHttpRequest();
+
+        // Making our connection                  
+        xhr.open("GET", url, true);
+
+        // function execute after request is successful 
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                //console.log(this.responseText);
+                console.log("AJAX RESULT",this.responseText);
+                let result = JSON.parse(this.responseText);                
+                resolve(result);
+            }
+
+            if(this.status != 200){
+                reject("failed ajax call");
+            }
+        }
+        // Sending our request 
+        xhr.send();
+    });
+}
+
+function getParams(params){
+    return Object.keys(params).map(k => k + '=' + params[k]).join('&')
+}
+
+async function openChannel(){
+    let capacity = document.getElementById('capacity').value;
+    let target = document.getElementById('target').value;
+    let token = ETH;
+    let myaddress = web3.eth.accounts[0];
+    let channelId = getChannelId(myaddress, target, token);
+
+    if(!capacity.startsWith('0x')) capacity = '0x'+parseInt(capacity).toString('16')
+
+    let openUrl = baseRpcUrl + `/channel/open?` + getParams({
+        target: target,
+        capacity: capacity,
+        token: token,        
+    });
+
+    console.log("OPEN URL", openUrl);
+
+    let opened = await getHttp(openUrl);
+
+    console.log("OPEN RESULT", opened);
+
+    loadChannel();
+    loadL2Balance();
+}
+
+async function sendPayment(){
+    //let chan = document.getElementById('channel').value;
+    let amount = document.getElementById('amount').value;
+    let target = document.getElementById('target').value;
+    let token = ETH;
+
+    let myaddress = web3.eth.accounts[0];
+
+    let channelId = getChannelId(myaddress, target, token);
+
+    //if(channelId != chan) throw "wrong computed channel";
+
+    let spent = parseInt(channelInfo.channel.spent) + parseInt(amount);
+
+    console.log("SPENT", spent);
+
+    let encoded = encodeTransferForSig({
+        channelId: channelId,
+        spent: spent,
+    })
+
+    const signature = await ethereum.request({ method: 'personal_sign', params: [ encoded, myaddress ] });
+
+    console.log("SIG", signature);
+
+    let params = {
+        target: target,
+        amount: amount,
+        spent: spent,
+        token: token,
+        signature: signature,
+    };
+
+    let claimButton = document.getElementById('claim-button');
+               
+    claimButton.style.display = 'none';
+
+    if(document.getElementById('submarine-swap').checked) params.submarine = true;
+
+    let transferUrl = baseRpcUrl + `/transfer?` + getParams(params);
+    console.log("TRANSFER URL", transferUrl)
+    let result = await getHttp(transferUrl);
+
+    console.log("TRANSFER", result);
+
+   
+    if(result.status === 'success'){
+        secrets[result.transfer.hashOfSecret] = result.secret;
+        let secret = result.secret;
+        let hashOfSecret = result.transfer.hashOfSecret;
+
+        if(!params.submarine){
+            setTimeout(async () => {
+                let revealUrl = baseRpcUrl + '/reveal?' + getParams({secret: result.secret})
+                console.log("REVEALING SECRET", revealUrl);
+                let revealed = await getHttp(revealUrl);
+                console.log("REVEALED", revealed);
+
+                loadChannel();
+                loadL2Balance();
+            }, 1500)
+        }else{            
+            console.log("WAITING FOR COUNTER-DEPOSIT WITH HASH", hashOfSecret);
+            let depositedEvent = l1SwapsContract.Deposited({secretHash: hashOfSecret}, {fromBlock: web3.blockNumber});
+            
+            depositedEvent.watch((error, result) => {
+                depositedEvent.stopWatching();
+                console.log("AMOUNT DEPOSITED TO L1", result.args.amountDeposited.toFixed()); //TODO: make sure amount matches sent amount
+
+                /*console.log("EVENT METADATA");
+                console.log("blockHash\tblockNumber\tevent\tlogIndex\ttransactionHash\ttransactionIndex");
+                console.log(
+                    result.blockHash + "\t" + result.blockNumber + "\t" + result.event + "\t" + result.logIndex + "\t" +
+                    result.transactionHash + "\t" + result.transactionIndex
+                );*/
+
+                claimButton.style.display = 'block';
+               
+                claimButton.onclick = function(){
+                    console.log("INITIATING METAMASK CLAIM WITH SECRET", secret);
+                    l1SwapsContract.claim(secret, (err, txHash) => {
+                        console.log("CLAIM TX HASH", txHash);
+                        claimButton.style.display = 'none';
+
+                        waitForReceipt(txHash, (err, res) => {
+                            console.log("RECEIPT", res)
+                            setTimeout(() => {
+                                console.log("RELOADING CHANNEL")
+                                loadChannel();
+                                loadL2Balance();
+                                loadL1Balance();
+                            }, 5000);
+                        })
+                    })
+                }
+            });
+        }
+    }
+    
+}
+
+function waitForReceipt(hash, cb){
+    function pollForReceipt () {
+        web3.eth.getTransactionReceipt(hash, function (err, receipt) {
+            if (err != null) {
+                console.log("ERROR", err);
+                cb(err);
+            } else if (receipt != null) {
+                cb(null, receipt)
+            } else {
+                //console.log("RECEIPT:", receipt)
+                setTimeout(pollForReceipt, 5000)
+            }
+        })
+    }
+    pollForReceipt();
+}
+
+async function loadL2Balance(){
+    let info = await getHttp(baseRpcUrl + "/balance?token=" + ETH );
+    document.getElementById('l2-balance').innerHTML = info.balance;
+}
+
+async function loadChannel(){
+    let target = document.getElementById('target').value;
+    let token = ETH;
+    let myaddress = web3.eth.accounts[0];
+
+    let channelId = getChannelId(myaddress, target, token);
+
+    document.getElementById('channel').innerHTML = channelId;
+
+    let info = await getHttp(baseRpcUrl + "/channel?id=" + channelId );
+
+    console.log(info);
+    document.getElementById('channel-balance').innerHTML = info.balance;
+   
+    if(info.channel == null){
+        document.getElementById('open-channel').style.display="block"
+        document.getElementById('send-payment').style.display="none"
+    }else if(info.balance == 0){
+        //TODO add more channelf unds
+    }else{
+        document.getElementById('open-channel').style.display="none"
+        document.getElementById('send-payment').style.display="block"
+    }
+
+    channelInfo = info;
+}
+
+async function connect() {
+    if (window.ethereum) { 
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        window.web3 = new Web3(window.ethereum);
+    } else {
+        console.log("No wallet");
+    }
+}
+
+function loadL1Balance(){
+    let myaddress = web3.eth.accounts[0];
+
+    web3.eth.getBalance(myaddress, function(err, result) {
+        if (err) {
+            console.log(err)
+        } else {            
+            let bal = result.toFixed();
+            document.getElementById('l1-balance').innerHTML = bal.substr(bal.length-5);
+        }
+    })
+}
+
+window.addEventListener('load', async function() {
+
+
+    // Load WEB3
+    // Check wether it's already injected by something else (like Metamask or Parity Chrome plugin)
+    if(typeof web3 !== 'undefined') {
+        console.log("USING INJECTED WEB3");
+        web3 = new Web3(web3.currentProvider);  
+
+    // Or connect to a node
+    } else {
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    }
+
+    // Check the connection
+    if(!web3.isConnected()) {
+        console.error("Not connected");
+    }
+
+    function loadAccount(){
+        account = web3.eth.accounts[0];
+        document.getElementById("address").innerHTML = account;  
+        if(account){
+            document.getElementById('connect').style.display = 'none';
+        }
+    }
+
+    var account = web3.eth.accounts[0];
+    var accountInterval = setInterval(function() {
+        if (web3.eth.accounts[0] !== account) {
+            loadAccount();
+        }
+    }, 100);
+
+    loadAccount();          
+    //document.getElementById('channel').innerHTML = getChannelId();
+    
+    setTimeout(async () => {
+        l1SwapsContract = web3.eth.contract(l1SwapsAbi).at(l1SwapsContractAddress);
+
+        loadL1Balance();
+        await loadChannel();
+        loadL2Balance();
+
+        document.getElementById('target').onchange = () => {
+            loadChannel();
+        }
+    }, 500);
+    
+});
+
+</script>
+
+</html>

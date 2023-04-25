@@ -35,7 +35,7 @@ module.exports = class EthL2 extends Network {
     console.log('ETH_RPC_1', props.url)
     this.chanId = props.chanId
 
-    let coord = new ChannelCoordinator()
+    const coord = new ChannelCoordinator()
     process.SwapCoordinator = coord
     coord.connect()
 
@@ -43,18 +43,18 @@ module.exports = class EthL2 extends Network {
   }
 
   async makeClient (party, opts) {
-    let keys = opts.ethl2
+    const keys = opts.ethl2
 
-    let rpc = this.rpc
-    let chanId = this.chainId
+    const rpc = this.rpc
+    const chanId = this.chainId
 
     return new Promise((resolve, reject) => {
-      let client = new ChannelClient({
+      const client = new ChannelClient({
         keypair: {
           address: keys.public,
           private: keys.private
         },
-        rpc: rpc,
+        rpc,
         chainId: chanId
       })
       client.connect()
@@ -93,7 +93,7 @@ module.exports = class EthL2 extends Network {
         const invoice = client.createInvoice({
           amount: counterparty.quantity.toString(),
           tokenAddress: '0x00',
-          hashOfSecret: hashOfSecret,
+          hashOfSecret,
           payee: client.address
         })
         debug(party.id, `is created an ${this.name} invoice`, invoice)
