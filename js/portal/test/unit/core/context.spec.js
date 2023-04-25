@@ -1,5 +1,5 @@
 /**
- * @fle Behavioral specification for a Asset
+ * @file Behavioral specification for a Asset
  */
 
 const { expect } = require('chai')

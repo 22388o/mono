@@ -16,6 +16,7 @@ const ASSETS = require('./assets')
  */
 const NETWORKS = [
   'eth-l2.eth',
+  'ethereum',
   'lightning.btc'
 ]
 

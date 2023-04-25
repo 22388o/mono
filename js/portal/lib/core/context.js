@@ -23,8 +23,16 @@ const HttpContext = module.exports = {
  * @type {Networks}
  */
 HttpContext.networks = new Networks({
-  'eth-l2.eth': {
-    '@type': 'eth-l2',
+  // 'eth-l2.eth': {
+  //   '@type': 'eth-l2',
+  //   assets: ['ETH'],
+  //   abi: Contracts.abi,
+  //   address: process.env.PORTAL_GOERLI_CONTRACT_ADDRESS,
+  //   chainId: 5,
+  //   url: process.env.PORTAL_GOERLI_URL
+  // },
+  'ethereum': {
+    '@type': 'ethereum',
     assets: ['ETH'],
     abi: Contracts.abi,
     address: process.env.PORTAL_GOERLI_CONTRACT_ADDRESS,

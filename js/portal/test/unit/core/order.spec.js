@@ -1,5 +1,5 @@
 /**
- * @fle Behavioral specification for an Order
+ * @file Behavioral specification for an Order
  */
 
 const { expect } = require('chai')
@@ -15,7 +15,7 @@ describe('Order', function () {
     baseNetwork: 'lightning.btc',
     baseQuantity: 1,
     quoteAsset: 'ETH',
-    quoteNetwork: 'eth-l2.eth',
+    quoteNetwork: 'ethereum',
     quoteQuantity: 10
   }
 

@@ -1,5 +1,5 @@
 /**
- * @fle Behavioral specification for interface to supported blockchain orderbooks
+ * @file Behavioral specification for interface to supported blockchain orderbooks
  */
 
 const { expect } = require('chai')

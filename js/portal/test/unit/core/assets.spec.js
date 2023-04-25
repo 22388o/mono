@@ -1,5 +1,5 @@
 /**
- * @fle Behavioral specification for interface to supported assets
+ * @file Behavioral specification for interface to supported assets
  */
 
 const { expect } = require('chai')
