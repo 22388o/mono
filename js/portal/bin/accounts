@@ -1,0 +1,124 @@
+#!/usr/bin/env node
+
+const crypto = require("crypto")
+const { exec } = require('child_process')
+const fs = require("fs")
+const path = require('path')
+const bitcoin = require('bitcoinjs-lib')
+const bip32 = require('bip32')
+const bip39 = require('bip39')
+const _ = require("lodash")
+
+const JSON_SPACE = 4
+
+
+const wallets = [
+  { "alice": {
+        "mnemonic": "brain case hire edit submit cup spend sign crystal measure gadget install",
+        "passphrase": { "regtest": "", "testnet": "", "mainnet": "" }
+  }},
+  { "bob": {
+        "mnemonic": "come plastic first ginger sign nephew clever april salt banner monkey relief",
+        "passphrase": { "regtest": "", "testnet": "", "mainnet": "" }
+  }}
+]
+
+const accountNames = ["submarine", "ordinal"]
+
+const networks = ["regtest", "testnet", "mainnet"]
+
+// const network = bitcoin.networks[program.network]
+
+const addressCount = 2
+
+let accounts = {}
+
+wallets.forEach((walletInfo, walletIndex) => {
+
+  let walletName = Object.keys(walletInfo)
+  let mnemonic = walletInfo[walletName].mnemonic
+  let passphrase = walletInfo[walletName].passphrase
+
+  let wallet = [{ "mnemonic": mnemonic }]
+
+  networks.forEach((networkName, networkIndex) => {
+    let network = bitcoin.networks[networkName]
+    let seed = bip39.mnemonicToSeedSync(mnemonic, passphrase[networkName])
+    let master = bip32.fromSeed(seed, network)
+    let xpub = master.neutered().toBase58()
+    let pubKeyFingerprint = bitcoin.crypto.hash160(master.publicKey).slice(0, 4).toString('hex')
+
+    let networkNodes = {
+      "master": {
+        "xpub": xpub,
+        "pubKeyFingerprint": pubKeyFingerprint
+      }
+    }
+
+    accountNames.forEach((accountName, i) => {
+      let cointype
+
+      if (networkName == "mainnet") {
+        cointype = 0
+      } else if (["regtest", "testnet"].includes(networkName)) {
+        cointype = 1
+      } else {
+        throw new Error(`Cointype for network '${networkName}' not known`)
+      }
+
+      let accountPath = `m/84'/${cointype}'/${i}'`
+
+      let account = master.derivePath(accountPath)
+      let xpub = account.neutered().toBase58()
+
+      let addresses = []
+
+      _.range(addressCount).forEach(j => {
+
+        let path = `${accountPath}/0/${j}`
+        let child = master.derivePath(path)
+        let wif = child.toWIF()
+        let p2wpkh = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network })
+        let p2wpkhAddress = p2wpkh.address
+
+        addresses.push({
+          "wif": wif,
+          "p2wpkh": p2wpkhAddress,
+          "path": path.replace("'", "'")
+        })
+      })
+      let accountNodes = {
+        "xpub": xpub,
+        "path": accountPath.replace("'", "'"),
+        "addresses": addresses
+      }
+
+      _.set(networkNodes, accountName, accountNodes)
+
+    })
+
+    let networkInfo = {}
+    _.set(networkInfo, networkName, networkNodes)
+    wallet.push(networkInfo)
+  })
+
+  _.set(accounts, walletName, wallet)
+
+})
+
+
+
+
+
+// console.log(`accounts: ${JSON.stringify(accounts, null, JSON_SPACE)}`)
+
+
+fs.writeFile("config/accounts.json", JSON.stringify(accounts, null, 4), (err) => {
+  if (err) {  console.error(err);  return; };
+  console.log("The file accounts.json has been created in the config folder");
+});
+
+
+
+
+
