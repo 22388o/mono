@@ -16,6 +16,9 @@ terraform.tfstate*
 .idea
 *.iml
 
+# VSCode
+.vscode
+
 # Antora (docs)
 workspace
 docs/build
