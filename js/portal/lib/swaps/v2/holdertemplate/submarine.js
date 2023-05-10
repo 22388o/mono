@@ -5,7 +5,7 @@ const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
 const bitcoin = require('bitcoinjs-lib');
-const NETWORK = bitcoin.networks.bitcoin
+const NETWORK = bitcoin.networks.regtest
 const bip65 = require('bip65');
 const Client = require('bitcoin-core');
 const REQUIRED_CONFIRMATIONS = 1;
@@ -42,6 +42,7 @@ module.exports = class Submarine extends HolderTemplate {
         console.log(`auth: ${JSON.stringify(auth, null, 2)}`)
 
         const carolInvoice = ln.authenticatedLndGrpc(auth)
+        console.log(`bobInvoice - authd: ${JSON.stringify(carolInvoice)}`)
 
 
         console.log(`party: ${JSON.stringify(party, null, 2)}`)
@@ -62,6 +63,8 @@ module.exports = class Submarine extends HolderTemplate {
         }
         catch(err) {
             console.log(`Error: ${err}`)
+            console.log(`${typeof err}`)
+            console.log(`${JSON.stringify(err)}`)
         }
         console.log(`request: ${request}`)
 

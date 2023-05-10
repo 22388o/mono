@@ -16,7 +16,7 @@ const RELATIVE_SWAP_TIMELOCK = 36;
 const RELATIVE_PAYMENT_DEADLINE = 24;
 const REQUIRED_CONFIRMATIONS = 1;
 const DEFAULT_MINER_FEE = 2000;
-const NETWORK = bitcoin.networks.bitcoin
+const NETWORK = bitcoin.networks.regtest
 
 module.exports = class Submarine extends SeekerTemplate {
     constructor(party, node1, node2) {
@@ -244,6 +244,8 @@ module.exports = class Submarine extends SeekerTemplate {
             address: secretSeeker_redeemAddress,
             value: amountAndFee - DEFAULT_MINER_FEE
         });
+
+        console.log(`secretSeeker_redeemAddress: ${secretSeeker_redeemAddress}`)
 
 
         psbt.signInput(0, seekerPair);
