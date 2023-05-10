@@ -3,6 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf coverage node_modules package-lock.json",
+    "coverage": "c8 mocha",
+    "lint": "npm run lint:js && npm run lint-sol",
+    "lint:js": "standard",
+    "lint:sol": "solhint contracts/*.sol",
+    "lint-fix": "npm run lint:js -- --fix && npm run lint:sol --fix",
+    "posttest": "npm run lint",
+    "test": "mocha test/unit",
+    "test:unit": "mocha test/unit",
+    "test:contracts": "mocha test/contracts",
+    "test:integration": "mocha test/integration",
+    "watch": "npm test -- --watch"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
