@@ -58,15 +58,15 @@ module.exports = class Network extends EventEmitter {
     return this.assets.has(asset)
   }
 
-  open (party) {
+  open (party, opts) {
     throw new Error('not implemented!')
   }
 
-  commit (party) {
+  commit (party, opts) {
     throw new Error('not implemented!')
   }
 
-  abort (party) {
+  abort (party, opts) {
     throw new Error('not implemented!')
   }
 }

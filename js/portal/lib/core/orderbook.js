@@ -113,7 +113,7 @@ module.exports = class Orderbook extends EventEmitter {
   }
 
   /**
-   * Cancels previously added orders
+   * Cancels a previously added order
    * @param {Object} order The order to be cancelled
    * @returns {Promise<Void>}
    */

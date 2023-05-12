@@ -78,12 +78,9 @@ module.exports = class Party {
    */
   open (opts) {
     try {
-      console.log('\nparty.open', this, opts)
-
       if ((this.swap.isCreated && this.isSecretSeeker) ||
           (this.swap.isOpening && this.isSecretHolder)) {
         // Create an invoice on the counterparty's network
-        console.log('party.open', this.counterparty.network)
         return this.counterparty.network.open(this, opts)
       }
 
@@ -106,8 +103,6 @@ module.exports = class Party {
    */
   commit (opts) {
     try {
-      console.log('\nparty.commit', this, opts)
-
       if (this.isSecretSeeker && this.swap.isOpened) {
         return this.counterparty.network.commit(this, opts)
       } else if (this.isSecretHolder && this.swap.isCommitting) {
@@ -171,12 +166,6 @@ module.exports = class Party {
     const asset = order.isAsk ? order.baseAsset : order.quoteAsset
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
     const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
-
-    if (ctx.networks[network] === undefined) {
-      console.log(order, ctx.networks)
-      process.exit(1)
-    }
-
     return new Party({
       id: order.uid,
       asset: ctx.assets[asset],

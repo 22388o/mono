@@ -1,13 +1,13 @@
 /**
- * @fle Behavioral specification for interface to supported assets
+ * @file Behavioral specification for interface to supported assets
  */
 
 const { expect } = require('chai')
 const Assets = require('../../../lib/core/assets')
 
 const SUPPORTED = [
-  'ETH',
-  'USDC'
+  'BTC',
+  'ETH'
 ]
 
 describe('Assets', function () {

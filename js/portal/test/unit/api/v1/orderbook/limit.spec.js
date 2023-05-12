@@ -8,11 +8,11 @@ describe('Orderbook - Limit', function () {
   const PROPS = Object.freeze({
     side: 'bid',
     hash: 'myhash',
-    baseAsset: 'ETH',
-    baseNetwork: 'goerli',
+    baseAsset: 'BTC',
+    baseNetwork: 'lightning.btc',
     baseQuantity: 1,
-    quoteAsset: 'USDC',
-    quoteNetwork: 'sepolia',
+    quoteAsset: 'ETH',
+    quoteNetwork: 'ethereum',
     quoteQuantity: 10
   })
 
@@ -68,14 +68,14 @@ describe('Orderbook - Limit', function () {
 
   describe('Updates/Notifications', function () {
     before('submit an order', function (done) {
-      const { client } = this.test.ctx
+      const { alice } = this.test.ctx
       const O = PROPS
 
       const validateOrder = o => {
         expect(o).to.be.an('object')
         expect(o.id).to.be.a('string')
         expect(o.ts).to.be.a('number')
-        expect(o.uid).to.be.a('string').that.equals('client')
+        expect(o.uid).to.be.a('string').that.equals('alice')
         expect(o.type).to.be.a('string').that.equals('limit')
         expect(o.side).to.be.a('string').that.equals(O.side)
         expect(o.hash).to.be.a('string').that.equals(O.hash)
@@ -88,7 +88,7 @@ describe('Orderbook - Limit', function () {
         expect(o.reason).to.equal(null)
       }
 
-      client
+      alice
         .once('order.created', function onOrderCreated (o) {
           validateOrder(o)
           expect(o.status).to.be.a('string').that.equals('created')
@@ -107,17 +107,17 @@ describe('Orderbook - Limit', function () {
     })
 
     it('must submit a counter-order to match previous order', function () {
-      const { client } = this.test.ctx
+      const { bob } = this.test.ctx
       const O = Object.assign({}, PROPS, { side: 'ask' })
 
-      client
+      return bob
         .submitLimitOrder(O)
         .then(o => {
           expect(o).to.be.an('object')
           expect(o.id).to.be.a('string')
           expect(o.ts).to.be.a('number')
-          expect(o.uid).to.be.a('string').that.equals(O.uid)
-          expect(o.type).to.be.a('string').that.equals(O.type)
+          expect(o.uid).to.be.a('string').that.equals('bob')
+          expect(o.type).to.be.a('string').that.equals('limit')
           expect(o.side).to.be.a('string').that.equals(O.side)
           expect(o.hash).to.be.a('string').that.equals(O.hash)
           expect(o.baseAsset).to.be.a('string').that.equals(O.baseAsset)

@@ -19,7 +19,10 @@ module.exports = class Ethereum extends Network {
 
     this.web3 = new Web3(new Web3.providers.HttpProvider(props.url))
     this.web3.chainId = props.chainId
-    this.contract = this.web3.eth.contract(props.abi).at(props.address)
+
+    const contracts = require(props.contracts)
+    const contract = contracts.Swap
+    this.contract = this.web3.eth.contract(contract.abi).at(contract.address)
     this.eventDeposit = this.contract.Deposited({})
     this.eventClaim = this.contract.Claimed({})
 
@@ -97,7 +100,7 @@ module.exports = class Ethereum extends Network {
             debug(party.id, '(secretSeeker) got an error waiting for claim', err)
             reject(err)
           } else {
-            const claimSecret = claim.args.secret.toFixed()
+            const claimSecret = claim.args.secret
             const bnSecret = BigNumber.BigNumber.from(claimSecret)
             const secret = bnSecret.toHexString()
             debug(party.id, '(secretSeeker) got secret', secret)
@@ -179,42 +182,47 @@ module.exports = class Ethereum extends Network {
           web3.eth.getTransactionCount(keys.public, (err, nonce) => {
             if (err) return reject(err)
 
-            const txObj = {
-              gasPrice: web3.toHex(gasPrice),
-              gasLimit: web3.toHex(estimatedGas),
-              data: calldata,
-              from: keys.public,
-              to: contract.address,
-              nonce,
-              value: ethValue,
-              chainId: web3.chainId // ropsten = 3, mainnet = 1
+            try {
+              const txObj = {
+                gasPrice: web3.toHex(gasPrice),
+                gasLimit: web3.toHex(estimatedGas),
+                data: calldata,
+                from: keys.public,
+                to: contract.address,
+                nonce,
+                value: ethValue,
+                chainId: web3.chainId // ropsten = 3, mainnet = 1
+              }
+              const common = Common.forCustomChain('mainnet', {
+                name: 'shyft',
+                chainId: web3.chainId,
+                networkId: web3.chainId
+              }, 'petersburg')
+              const tx = new Tx(txObj, { common })
+              tx.sign(Buffer.from(keys.private, 'hex'))
+              const stx = `0x${tx.serialize().toString('hex')}`
+
+              web3.eth.sendRawTransaction(stx, (err, hash) => {
+                if (err) return reject(err)
+
+                debug('transaction hash', funcName, hash)
+                ;(function pollForReceipt () {
+                  web3.eth.getTransactionReceipt(hash, function (err, receipt) {
+                    if (err != null) {
+                      reject(err)
+                    } else if (receipt != null) {
+                      resolve(receipt)
+                    } else {
+                      debug('continuing to poll for receipt...')
+                      setTimeout(pollForReceipt, 10000)
+                    }
+                  })
+                }())
+              })
+            } catch (err) {
+              console.log(err)
+              reject(err)
             }
-            const common = Common.forCustomChain('mainnet', {
-              name: 'shyft',
-              chainId: web3.chainId,
-              networkId: web3.chainId
-            }, 'petersburg')
-            const tx = new Tx(txObj, { common })
-            tx.sign(Buffer.from(keys.private, 'hex'))
-            const stx = `0x${tx.serialize().toString('hex')}`
-
-            web3.eth.sendRawTransaction(stx, (err, hash) => {
-              if (err) return reject(err)
-
-              debug('transaction hash', funcName, hash)
-              ;(function pollForReceipt () {
-                web3.eth.getTransactionReceipt(hash, function (err, receipt) {
-                  if (err != null) {
-                    reject(err)
-                  } else if (receipt != null) {
-                    resolve(receipt)
-                  } else {
-                    debug('continuing to poll for receipt...')
-                    setTimeout(pollForReceipt, 10000)
-                  }
-                })
-              }())
-            })
           })
         })
       })

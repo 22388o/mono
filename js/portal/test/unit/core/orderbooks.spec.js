@@ -1,5 +1,5 @@
 /**
- * @fle Behavioral specification for interface to supported blockchain orderbooks
+ * @file Behavioral specification for interface to supported blockchain orderbooks
  */
 
 const { expect } = require('chai')
@@ -28,10 +28,10 @@ describe('Orderbooks', function () {
     const BASE_ORDER = {
       uid: 'uid',
       type: 'limit',
-      baseAsset: 'ETH',
-      baseNetwork: 'goerli',
-      quoteAsset: 'USDC',
-      quoteNetwork: 'sepolia'
+      baseAsset: 'BTC',
+      baseNetwork: 'lightning.btc',
+      quoteAsset: 'ETH',
+      quoteNetwork: 'ethereum'
     }
 
     let orderbooks, order

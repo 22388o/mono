@@ -15,10 +15,8 @@ const ASSETS = require('./assets')
  * @type {Array}
  */
 const NETWORKS = [
-  'goerli',
-  'eth-l2.eth',
-  'lightning.btc',
-  'sepolia'
+  'ethereum',
+  'lightning.btc'
 ]
 
 /**

@@ -13,6 +13,7 @@ const debug = require('debug')('network:lightning')
 module.exports = class Lightning extends Network {
   constructor (props) {
     super({ name: props.name, assets: props.assets })
+    Object.seal(this)
   }
 
   /**
@@ -34,8 +35,6 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
-    console.log('\nlightning.open', this, party, opts)
-
     // Requests are made using the Invoice macaroon for both parties
     const grpc = ln.authenticatedLndGrpc({
       cert: opts.lightning.cert,
@@ -49,8 +48,8 @@ module.exports = class Lightning extends Network {
       tokens: party.counterparty.quantity
     })
 
-    // Newly created invoices are saved into the Counterparty's state-bag
     try {
+      // Newly created invoices are saved into the Counterparty's state-bag
       debug(party.id, `is creating an ${this.name} invoice`)
       const invoice = await ln.createHodlInvoice(args)
       debug(party.id, `created a ${this.name} invoice`, invoice)
@@ -117,8 +116,6 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async commit (party, opts) {
-    console.log('\nlightning.commit', this, party, opts)
-
     if (party.isSecretSeeker) {
       // This request is made through the SecretSeeker's LND node
       const grpc = ln.authenticatedLndGrpc({
@@ -196,8 +193,7 @@ module.exports = class Lightning extends Network {
       // Pay the SecretSeeker's invoice
       try {
         debug(party.id, '(secretHolder) paying invoice...')
-        const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
-        console.log('payment confirmation by', party.id, holderPaymentConfirmation)
+        await ln.payViaPaymentRequest(args)
       } catch (err) {
         debug(party.id, '(secretHolder) payViaPaymentRequest', err)
         if (err instanceof Array) {

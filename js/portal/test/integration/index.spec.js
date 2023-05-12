@@ -16,32 +16,17 @@ before('Initialize client/server', function () {
       const server = instance
       const client = new Client({ id: 'client', hostname, port })
 
-      // For advanced multi-client test suites
-      const create = id => {
-        const credentials = require(`./${id}.json`)
-        return new Client({ id, hostname, port, credentials })
-      }
-      const alice = create('alice')
-      const bob = create('bob')
+      Object.assign(this, { client, server })
 
-      Object.assign(this, { alice, bob, client, server })
-
-      return Promise.all([
-        client.connect(),
-        alice.connect(),
-        bob.connect()
-      ])
+      return client.connect()
     })
 })
 
 after('Destroy client/server', function () {
-  const { alice, bob, client, server } = this.test.ctx
+  const { client, server } = this.test.ctx
 
-  return Promise.all([
-    client.disconnect(),
-    alice.disconnect(),
-    bob.disconnect()
-  ]).then(() => server.stop())
+  return client.disconnect()
+    .then(() => server.stop())
     .then(() => {
       this.test.ctx.alice = null
       this.test.ctx.bob = null
