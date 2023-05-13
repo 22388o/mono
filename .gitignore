@@ -16,6 +16,11 @@ terraform.tfstate*
 secure
 js/portal/test/integration/alice.json
 js/portal/test/integration/bob.json
+js/portal/config-*
+js/portal/config/*.json
+
+#Dev content
+js/portal/lib/api/v2/dev
 
 # IntelliJ
 .idea

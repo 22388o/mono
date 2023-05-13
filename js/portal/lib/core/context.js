@@ -68,6 +68,12 @@ HttpContext.assets = Assets
 HttpContext.orderbooks = new Orderbooks(null, HttpContext)
 
 /**
+ * Interface to all supported orderbooks
+ * @type {Orderbooks2}
+ */
+HttpContext.orderbooks2 = new Orderbooks2(null, HttpContext)
+
+/**
  * Interface to all open atomic swaps in progress
  * @type {Swaps}
  */
@@ -75,7 +81,7 @@ HttpContext.swaps = new Swaps(null, HttpContext)
 
 /**
  * Interface to all version2 open atomic swaps in progress
- * @type {Swaps}
+ * @type {Swaps2}
  */
 HttpContext.swaps2 = new Swaps2(null, HttpContext)
 

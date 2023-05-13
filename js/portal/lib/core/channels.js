@@ -44,7 +44,7 @@ module.exports = class Channels extends EventEmitter {
                 debug(`--> ${JSON.stringify(this.ctx.networks)}`)
                 const balance = await this.ctx.networks['lightning.btc'].getBalance(creds)
                 debug(`balance returned from lightning.getBalance: ${JSON.stringify(balance)}`)
-                result['balances'].push(balance)
+                result.balances.push(balance)
             }
         }
         return result
