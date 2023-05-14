@@ -2,13 +2,13 @@
  * @file Defines an order
  */
 
-const { uuid } = require('../helpers')
+const { uuid } = require('../../../helpers')
 
 /**
  * A list of supported assets
  * @type {Map}
  */
-const ASSETS = require('./assets')
+const ASSETS = require('../../../core/assets')
 
 /**
  * A list of supported networks

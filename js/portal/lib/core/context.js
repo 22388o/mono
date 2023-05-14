@@ -5,6 +5,7 @@
 const Assets = require('./assets')
 const Networks = require('./networks')
 const Orderbooks = require('./orderbooks')
+const Orderbooks2 = require('../swaps/v2/orderbook/orderbooks')
 const Store = require('./store')
 const Swaps = require('./swaps')
 const Swaps2 = require('../swaps/v2/swaps')
