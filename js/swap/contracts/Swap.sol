@@ -1,261 +1,65 @@
 /// SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.18;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// A smart contract that implements one-half of a swap, enabling the transfer
 /// of native ETH or any ERC-20 token on one EVM chain.
-contract Swap is ReentrancyGuard {
+contract Swap is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    ////////////////////////////////////////////////////////////////////
-    // Invoices
-    ////////////////////////////////////////////////////////////////////
-    uint256 public invoiceCount = 0;
-
-    mapping(uint => uint) public hashToInvoice;
-    mapping(uint256 => Invoice) public invoices;
-    struct Invoice {
-        address creator;
-        address tokenAddress;
-        uint256 tokenAmount;
-        uint256 tokenNetwork;
-        bytes32 invoiceToHash;
-    }
+    // lock time
+    uint256 public lockTime;
 
     ////////////////////////////////////////////////////////////////////////////
     // Token Deposit and Claim
     ////////////////////////////////////////////////////////////////////////////
-    // hashnumber => user deposit info
-    mapping(uint256 => TokenDeposit) public userDeposit;
+    // secret_hash => user deposit info
+    mapping(bytes32 => TokenDeposit[]) public userDeposit;
     struct TokenDeposit {
-        bool hashi;
-        bool claim;
-        uint256 amount;
-        uint256 secret;
-        address sender;
+        address creator;
+        DepositReq deposit;
+    }
+
+    struct DepositReq {
         address recipient;
-        address tokenAddress;
+        address tokenDeposit;
+        address tokenDesire;
+        uint256 amountDeposit;
+        uint256 amountDesire;
+        uint256 networkDeposit;
+        uint256 networkDesire;
     }
 
+    struct DepositInfo {
+        bool claim;
+        uint256 cnt;
+        uint256 create;
+    }
+
+    // secret_hash => DepositInfo
+    mapping(bytes32 => DepositInfo) public depositInfo;
+
     ////////////////////////////////////////////////////////////////////////////
-    // deposit and claim
+    // Events
     ////////////////////////////////////////////////////////////////////////////
-    event Deposited(
-        uint trade,
-        address tokenDeposited,
-        uint amountDeposited,
-        address tokenDesired,
-        uint amountDesired,
-        uint networkDesired,
+    event Deposit(address indexed creator, DepositReq req);
+
+    event Claim(
         bytes32 indexed secretHash,
-        address indexed recipient,
-        address indexed sender
+        address indexed claimer,
+        address claimToken,
+        address desireToken,
+        uint256 claimAmt,
+        uint256 desireAmt
     );
 
-    event Claimed(
-        uint trade,
-        bytes32 secret,
-        bytes32 indexed secretHash,
-        address indexed claimant,
-        address indexed sender
-    );
-
-    event InvoiceCreated(
-        uint256 invoiceId,
-        address tokenAddress,
-        uint256 tokenAmount,
-        uint256 tokenNetwork,
-        address indexed invoicer
-    );
-
-    event InvoicePaid(
-        uint indexed invoiceId,
-        bytes32 secretHash,
-        address indexed payee,
-        address indexed payer
-    );
-
-    function createInvoice(
-        address tokenAddress,
-        uint256 tokenAmount,
-        uint256 tokenNetwork
-    ) external returns (uint256) {
-        ++invoiceCount;
-
-        invoices[invoiceCount] = Invoice(
-            msg.sender,
-            tokenAddress,
-            tokenAmount,
-            tokenNetwork,
-            ""
-        );
-
-        emit InvoiceCreated(
-            invoiceCount,
-            tokenAddress,
-            tokenAmount,
-            tokenNetwork,
-            msg.sender
-        );
-
-        return invoiceCount;
-    }
-
-    function payInvoice(
-        uint256 invoiceId,
-        bytes32 secretHash
-    ) external payable returns (bool) {
-        require(
-            invoiceId <= invoiceCount && invoiceId != 0,
-            "Invalid invoice id"
-        );
-
-        Invoice memory info = invoices[invoiceId];
-
-        //if it's native ETH call payable function, otherwise pull token funds
-        if (info.tokenAddress == address(0)) {
-            require(info.tokenAmount == msg.value, "wrong eth amount");
-
-            //TODO: replace the ZERO placeholders with actual desired token info
-            depositEth(
-                address(0),
-                info.creator,
-                info.tokenAmount, //TODO: put actual desired token data
-                info.tokenNetwork, //TODO: put actual desired token data
-                secretHash
-            );
-        } else {
-            //TODO: replace the ZERO placeholders with actual desired token info
-            deposit(
-                info.tokenAddress,
-                address(0),
-                info.creator,
-                info.tokenAmount,
-                info.tokenAmount, //TODO: put actual desired token data
-                info.tokenNetwork, //TODO: put actual desired token data
-                secretHash
-            );
-        }
-
-        info.invoiceToHash = secretHash;
-        hashToInvoice[uint256(secretHash)] = invoiceId;
-
-        emit InvoicePaid(invoiceId, secretHash, info.creator, msg.sender);
-        return true;
-    }
-
-    function deposit(
-        address tokenDeposited,
-        address tokenDesired,
-        address recipient,
-        uint256 amountDeposited,
-        uint256 amountDesired,
-        uint256 networkDesired,
-        bytes32 secretHash
-    ) public returns (uint256 secretHashNumber) {
-        secretHashNumber = uint256(secretHash);
-
-        // transfer tokens first
-        IERC20(tokenDeposited).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amountDeposited
-        );
-
-        userDeposit[secretHashNumber] = TokenDeposit(
-            true,
-            false,
-            amountDeposited,
-            0,
-            msg.sender,
-            recipient,
-            tokenDeposited
-        );
-
-        emit Deposited(
-            secretHashNumber,
-            tokenDeposited,
-            amountDeposited,
-            tokenDesired,
-            amountDesired,
-            networkDesired,
-            secretHash,
-            recipient,
-            msg.sender
-        );
-    }
-
-    function depositEth(
-        address tokenDesired,
-        address recipient,
-        uint256 amountDesired,
-        uint256 networkDesired,
-        bytes32 secretHash
-    ) public payable returns (uint256 secretHashNumber) {
-        secretHashNumber = uint256(secretHash);
-
-        userDeposit[secretHashNumber] = TokenDeposit(
-            true,
-            false,
-            msg.value,
-            0,
-            msg.sender,
-            recipient,
-            address(0)
-        );
-
-        emit Deposited(
-            secretHashNumber,
-            address(0),
-            msg.value,
-            tokenDesired,
-            amountDesired,
-            networkDesired,
-            secretHash,
-            recipient,
-            msg.sender
-        );
-    }
-
-    function claim(uint256 secret) external nonReentrant returns (bool) {
-        bytes32 secretHash = toHash(secret);
-        uint256 secretHashNumber = uint256(secretHash);
-
-        TokenDeposit memory info = userDeposit[secretHashNumber];
-
-        require(info.hashi, "Invalid secret!");
-        require(!info.claim, "Already claimed!");
-        require(info.recipient == msg.sender, "Invalid claimant!");
-
-        info.secret = secret;
-        info.claim = true;
-
-        if (info.tokenAddress == address(0)) {
-            payable(msg.sender).transfer(info.amount);
-        } else {
-            IERC20(info.tokenAddress).safeTransfer(info.recipient, info.amount);
-        }
-
-        emit Claimed(
-            secretHashNumber,
-            bytes32(secret),
-            secretHash,
-            msg.sender,
-            info.sender
-        );
-
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Utility functions
-    ////////////////////////////////////////////////////////////////////////////
-    function toHash(uint256 secret) public pure returns (bytes32) {
-        return sha256(_toBytes(secret));
-    }
-
+    /**
+     * @notice Convert uint256 to bytes
+     * @param x Convertable value
+     */
     function _toBytes(uint256 x) internal pure returns (bytes memory b) {
         b = new bytes(32);
         // solhint-disable-next-line no-inline-assembly
@@ -263,4 +67,167 @@ contract Swap is ReentrancyGuard {
             mstore(add(b, 32), x)
         }
     }
+
+    /**
+     * @notice Convert secret number to hash
+     * @param secret Secret number
+     */
+    function toHash(uint256 secret) public pure returns (bytes32) {
+        return sha256(_toBytes(secret));
+    }
+
+    function _deposit(bytes32 _secretHash, DepositReq memory _req) internal {
+        DepositInfo storage info = depositInfo[_secretHash];
+
+        // check deposit lock time is not expired
+        require(
+            info.create == 0 || info.create + lockTime >= block.timestamp,
+            "Invalid secret hash"
+        );
+
+        require(
+            info.cnt == 0 ||
+                userDeposit[_secretHash][0].deposit.tokenDeposit ==
+                _req.tokenDeposit,
+            "Invalid deposit token"
+        );
+
+        // transfer tokens first
+        if (_req.tokenDeposit != address(0))
+            IERC20(_req.tokenDeposit).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _req.amountDeposit
+            );
+
+        bool newDeposit = true;
+        for (uint32 i; i < info.cnt; ++i) {
+            if (userDeposit[_secretHash][i].creator == msg.sender) {
+                newDeposit = false;
+                break;
+            }
+        }
+
+        // if new deposit
+        if (newDeposit) {
+            userDeposit[_secretHash].push(TokenDeposit(msg.sender, _req));
+            ++info.cnt;
+        }
+
+        // update create time
+        if (info.create == 0) info.create = block.timestamp;
+
+        emit Deposit(msg.sender, _req);
+    }
+
+    /**
+     * @notice Set lock time
+     * @param _lockTime Value of lock time
+     */
+    function setLockTime(uint256 _lockTime) external onlyOwner {
+        require(_lockTime > 0, "Invalid lock time");
+        lockTime = _lockTime;
+    }
+
+    /**
+     * Deposit assets
+     * @param secretHash Secret hash
+     * @param req  Deposit request param
+     */
+    function deposit(bytes32 secretHash, DepositReq memory req) external {
+        _deposit(secretHash, req);
+    }
+
+    /**
+     * @notice Deposit with native token
+     * @param tokenDesire Desired token address
+     * @param recipient Recipient address
+     * @param amountDesire Desired token amount
+     * @param networkDesire Desired token chain id
+     * @param secretHash Secret hash
+     */
+    function depositEth(
+        address tokenDesire,
+        address recipient,
+        uint256 amountDesire,
+        uint256 networkDesire,
+        bytes32 secretHash
+    ) public payable {
+        _deposit(
+            secretHash,
+            DepositReq(
+                recipient,
+                address(0),
+                tokenDesire,
+                msg.value,
+                amountDesire,
+                block.chainid,
+                networkDesire
+            )
+        );
+    }
+
+    /**
+     * @notice Claim with secret hash
+     * @param secret Secret hash
+     */
+    function claim(uint256 secret) external payable nonReentrant {
+        bytes32 secretHash = toHash(secret);
+
+        DepositInfo storage depositItem = depositInfo[secretHash];
+        require(!depositItem.claim, "Already claimed");
+        require(depositItem.cnt > 0, "No depositor");
+        require(
+            depositItem.create + lockTime >= block.timestamp,
+            "Can not claim now"
+        );
+
+        TokenDeposit[] memory info = userDeposit[secretHash];
+
+        // set this hash as claimed
+        depositItem.claim = true;
+
+        uint256 claimAmt;
+        uint256 desireAmt;
+        address desireToken = info[0].deposit.tokenDesire;
+        address claimToken = info[0].deposit.tokenDeposit;
+
+        for (uint32 i; i < info.length; ++i) {
+            DepositReq memory depoItem = info[i].deposit;
+            if (depoItem.recipient == msg.sender) {
+                claimAmt += depoItem.amountDeposit;
+                desireAmt += depoItem.amountDesire;
+            }
+        }
+
+        if (desireAmt > 0) {
+            if (desireToken == address(0))
+                require(msg.value >= desireAmt, "Insuffient received desired");
+            else
+                IERC20(claimToken).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    desireAmt
+                );
+        }
+
+        if (claimAmt > 0) {
+            if (claimToken == address(0)) {
+                payable(msg.sender).transfer(claimAmt);
+            } else {
+                IERC20(claimToken).safeTransfer(msg.sender, claimAmt);
+            }
+        }
+
+        emit Claim(
+            secretHash,
+            msg.sender,
+            claimToken,
+            desireToken,
+            claimAmt,
+            desireAmt
+        );
+    }
+
+    receive() external payable {}
 }
