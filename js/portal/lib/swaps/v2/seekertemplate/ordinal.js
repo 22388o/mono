@@ -18,7 +18,7 @@ const REQUIRED_CONFIRMATIONS = 1;
 const DEFAULT_MINER_FEE = 2000;
 const NETWORK = bitcoin.networks.regtest
 
-module.exports = class Submarine extends SeekerTemplate {
+module.exports = class Ordinal extends SeekerTemplate {
     constructor(party, node1, node2) {
         super(party, node1, node2)
     }

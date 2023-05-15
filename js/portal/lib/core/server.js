@@ -35,6 +35,7 @@ module.exports = class Server extends EventEmitter {
   constructor (props = {}) {
     super()
 
+    console.log('server constructor')
     Object.seal(this)
 
     const env = process.env
@@ -224,7 +225,10 @@ module.exports = class Server extends EventEmitter {
   _onUpgrade (req, socket, head) {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
+    console.log(`req.headers.host: `, req.headers.host)
     const { pathname } = req.parsedUrl
+
+    console.log(`req.parsedUrl: `, req.parsedUrl)
 
     // Parse the client identifier and stash it for later use
     // The authorization header is "Basic <base-64 encoded username:password>"
@@ -236,8 +240,15 @@ module.exports = class Server extends EventEmitter {
     // TODO: Fix this once authentication is figured out
     req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
 
+    console.log(`req.user: `, req.user)
+
+
     // Route the request
     const { api, ctx, websocket } = INSTANCES.get(this)
+
+    console.log(`api: `, JSON.stringify(api))
+    console.log(`ctx: `, ctx)
+    console.log(`websocket: `, websocket)
 
     // Parse the path components in reverse order until a match is obtained
     let route = req.parsedUrl.pathname
@@ -255,6 +266,7 @@ module.exports = class Server extends EventEmitter {
 
     // Execute the request handler or return an appropriate error
     const handler = api[route]
+    console.log('handler in _onUpgrade', handler)
     if (typeof handler.UPGRADE === 'function') {
       websocket.handleUpgrade(req, socket, head, ws => {
         ws.on('close', (code, reason) => {
@@ -283,8 +295,11 @@ module.exports = class Server extends EventEmitter {
           return this.toJSON()
         }
 
+
         this.emit('log', 'info', 'ws.open', ws)
+        console.log('before handler.UPGRADE')
         handler.UPGRADE(ws, ctx)
+        console.log('after handler.UPGRADE')
       })
     } else {
       socket.destroy(Error(`route ${route} does not support UPGRADE!`))

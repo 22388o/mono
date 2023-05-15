@@ -5,6 +5,7 @@
 const Assets = require('./assets')
 const Networks = require('./networks')
 const Orderbooks = require('./orderbooks')
+const Orderbooks2 = require('../swaps/v2/orderbook/orderbooks')
 const Store = require('./store')
 const Swaps = require('./swaps')
 const Swaps2 = require('../swaps/v2/swaps')
@@ -68,6 +69,12 @@ HttpContext.assets = Assets
 HttpContext.orderbooks = new Orderbooks(null, HttpContext)
 
 /**
+ * Interface to all supported orderbooks
+ * @type {Orderbooks2}
+ */
+HttpContext.orderbooks2 = new Orderbooks2(null, HttpContext)
+
+/**
  * Interface to all open atomic swaps in progress
  * @type {Swaps}
  */
@@ -75,7 +82,7 @@ HttpContext.swaps = new Swaps(null, HttpContext)
 
 /**
  * Interface to all version2 open atomic swaps in progress
- * @type {Swaps}
+ * @type {Swaps2}
  */
 HttpContext.swaps2 = new Swaps2(null, HttpContext)
 

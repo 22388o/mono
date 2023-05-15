@@ -1,5 +1,4 @@
 const Template = require('../template')
-const ln = require('lightning')
 
 module.exports = class SeekerTemplate extends Template {
     constructor(party, node1, node2) {
@@ -43,6 +42,10 @@ module.exports = class SeekerTemplate extends Template {
             case 'submarine':
                 const Submarine = require('./submarine')
                 template = Submarine.fromProps(party, nodesProps)
+                break
+            case 'ordinal':
+                const Ordinal = require('./ordinal')
+                template = Ordinal.fromProps(party, nodeProps)
                 break
             default:
                 template = null

@@ -13,7 +13,7 @@ const DEFAULT_MINER_FEE = 2000;
 const witnessStackToScriptWitness  = require('../bitcoinjs-function/witnessStackToScriptWitness')
 
 
-module.exports = class Submarine extends HolderTemplate {
+module.exports = class Ordinal extends HolderTemplate {
 
     constructor(party, node1, node2) {
         super(party, node1, node2)
@@ -224,5 +224,5 @@ module.exports = class Submarine extends HolderTemplate {
         const node2 = new Node2(props2)
         return new Submarine(party, node1, node2)
     }
-mai
+
 }
