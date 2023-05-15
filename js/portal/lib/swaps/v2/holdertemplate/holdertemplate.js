@@ -40,6 +40,10 @@ module.exports = class HolderTemplate extends Template {
         const Submarine = require('./submarine')
         template = Submarine.fromProps(party, nodesProps)
         break
+      case 'ordinal':
+        const Ordinal = require('./ordinal')
+        template = Ordinal.fromProps(party, nodeProps)
+        break
       default:
         template = null
     }
