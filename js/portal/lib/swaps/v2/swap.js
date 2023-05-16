@@ -314,11 +314,18 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Swap}
    */
   static fromOrders (makerOrder, takerOrder, ctx) {
+    console.log('swap2.fromOrders')
+    const swapType = 'ordinal'
+    // TODO: remove 'ordinal' hardcoding of swapType
     const id = hash(makerOrder.id, takerOrder.id)
     const secretHash = makerOrder.hash
-    const secretHolder = Party.fromOrder(makerOrder, ctx)
-    const secretSeeker = Party.fromOrder(takerOrder, ctx)
-    return new Swap({ id, secretHash, secretHolder, secretSeeker })
+    const secretHolder = Party.fromHolderOrder(swapType, makerOrder, ctx)
+    console.log('after secretHolder party creation')
+
+    const secretSeeker = Party.fromSeekerOrder(swapType, takerOrder, ctx)
+    console.log('after secretSeeker party creation')
+
+    return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
   }
 
   /**

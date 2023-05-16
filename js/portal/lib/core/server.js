@@ -50,11 +50,14 @@ module.exports = class Server extends EventEmitter {
     INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
 
     // Trigger the creation of a swap whenever an order match occurs
-    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+    ctx.orderbooks.on('match', (...args) => {
+      console.log('orderbooks.on match args: ', args)
+      ctx.swaps.fromOrders(...args)
+    })
 
     ctx.orderbooks2.on('match', (...args) => {
-      context.log('orderbooks2.on match args: ', args)
-      // ctx.swaps2.fromOrders(...args)
+      console.log('orderbooks2.on match args: ', args)
+      ctx.swaps2.fromOrders(...args)
     })
 
     // Propagate the log events
