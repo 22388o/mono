@@ -39,6 +39,7 @@ module.exports = class Swaps extends EventEmitter {
      * @returns {Promise<Swap>}
      */
     fromOrders (maker, taker) {
+        console.log('swaps2.fromOrders')
         return new Promise((resolve, reject) => {
             let swap
 

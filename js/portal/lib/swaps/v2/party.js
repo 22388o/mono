@@ -222,6 +222,45 @@ module.exports = class Party {
     })
   }
 
+  static fromHolderOrder (swapType, order, ctx) {
+    console.log('party.fromHolderOrder 0')
+    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
+    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+
+    console.log('party.fromHolderOrder 1')
+    if (ctx.networks[network] === undefined) {
+      console.log('party.fromHolderOrder 2')
+      console.log(order, ctx.networks)
+      process.exit(1)
+    }
+
+    return new Party({
+      id: order.uid,
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity
+    })
+  }
+
+  static fromSeekerOrder (swapType, order, ctx) {
+    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
+    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+
+    if (ctx.networks[network] === undefined) {
+      console.log(order, ctx.networks)
+      process.exit(1)
+    }
+
+    return new Party({
+      id: order.uid,
+      asset: ctx.assets[asset],
+      network: ctx.networks[network],
+      quantity
+    })
+  }
+
   /**
    * Creates a party from props for a secret holder
    * @param {Order} order An order (maker or taker) returned by order matching

@@ -53,7 +53,11 @@ HttpContext.networks = new Networks({
     address: process.env.PORTAL_SEPOLIA_CONTRACT_ADDRESS,
     chainId: 11155111,
     url: process.env.PORTAL_SEPOLIA_URL
-  }
+  },
+  'btc.btc': {
+    '@type': 'btc',
+    assets: ['BTC', 'BTCORD']
+  },
 }, HttpContext)
 
 /**
