@@ -18,7 +18,8 @@ const NETWORKS = [
   'goerli',
   'eth-l2.eth',
   'lightning.btc',
-  'sepolia'
+  'sepolia',
+  'btc.btc'
 ]
 
 /**
