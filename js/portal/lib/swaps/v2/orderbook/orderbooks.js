@@ -12,8 +12,10 @@ const { EventEmitter } = require('events')
  */
 const PROPS = [
   { baseAsset: 'BTC', quoteAsset: 'ETH', limitSize: 100000 },
-  { baseAsset: 'ETH', quoteAsset: 'USDC', limitSize: 100 }
+  { baseAsset: 'ETH', quoteAsset: 'USDC', limitSize: 100 },
+  { baseAsset: 'BTCORD', quoteAsset: 'BTC', limitSize: 100000 }
 ]
+// TODO: Confer on how this should be modified in the long term
 
 /**
  * Creates an event handler for the orderbook

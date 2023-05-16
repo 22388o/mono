@@ -21,8 +21,14 @@ HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
     console.log(`swapOpen - swap: ${JSON.stringify(swap)}\n\n party: ${JSON.stringify(party)}\n\n opts: ${JSON.stringify(opts)}`)
 
     ctx.swaps2.open(swap, party, opts)
-        .then(swap => res.send(swap))
-        .catch(err => res.send(err))
+        .then(swap => {
+            console.log('swap returning: ', swap)
+            res.send(swap)
+        })
+        .catch(err => {
+            console.log('swap err returning: ', err)
+            res.send(err)
+        })
 }
 /**
  * Cancels to a swap in progress

@@ -21,7 +21,7 @@ HTTP_METHODS.POST = function swapCreate (req, res, ctx) {
   let secretHolderProps = Object.assign(req.json.secretHolderProps, {hash: swapHash})
   let secretSeekerProps = Object.assign(req.json.secretSeekerProps, {hash: swapHash})
 
-  const swapType = Object.assign(req.json.swapType)
+  const swapType = req.json.swapType
 
 
   const holder = secretHolderProps.uid

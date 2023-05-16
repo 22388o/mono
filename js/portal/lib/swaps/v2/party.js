@@ -24,6 +24,8 @@ module.exports = class Party {
       throw Error('unique identifier of the user was not specified!')
     }
 
+    console.log('in party constructor props: ', JSON.stringify(props, null, 2))
+
     this.id = props.id
     this.asset = props.asset
     this.network = props.network
