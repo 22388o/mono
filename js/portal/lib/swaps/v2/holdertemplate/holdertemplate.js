@@ -35,6 +35,8 @@ module.exports = class HolderTemplate extends Template {
     const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
     let template
 
+    console.log('in holder template fromProps - swapType: ', swapType)
+
     switch(swapType) {
       case 'submarine':
         const Submarine = require('./submarine')
@@ -42,7 +44,7 @@ module.exports = class HolderTemplate extends Template {
         break
       case 'ordinal':
         const Ordinal = require('./ordinal')
-        template = Ordinal.fromProps(party, nodeProps)
+        template = Ordinal.fromProps(party, nodesProps)
         break
       default:
         template = null

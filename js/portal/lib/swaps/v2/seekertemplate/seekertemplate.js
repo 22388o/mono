@@ -36,6 +36,8 @@ module.exports = class SeekerTemplate extends Template {
     static fromProps(party, swapType, secretSeekerProps) {
         const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
 
+        console.log('in holder template fromProps - swapType: ', swapType)
+
         let template
 
         switch(swapType) {
@@ -44,10 +46,13 @@ module.exports = class SeekerTemplate extends Template {
                 template = Submarine.fromProps(party, nodesProps)
                 break
             case 'ordinal':
+                console.log('seekerTemplate switch swapType: ordinal')
                 const Ordinal = require('./ordinal')
-                template = Ordinal.fromProps(party, nodeProps)
+                template = Ordinal.fromProps(party, nodesProps)
+                console.log('template: ', JSON.stringify(template))
                 break
             default:
+                console.log('seekerTemplate switch swapType: default')
                 template = null
         }
         return template
