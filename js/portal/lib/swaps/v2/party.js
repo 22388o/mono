@@ -222,43 +222,51 @@ module.exports = class Party {
     })
   }
 
-  static fromHolderOrder (swapType, order, ctx) {
+  static fromHolderOrder (swapType, swapHash, order, ctx) {
     console.log('party.fromHolderOrder 0')
-    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
-    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+    console.log('swapType: ', swapType)
+    console.log('order: ', order)
 
-    console.log('party.fromHolderOrder 1')
-    if (ctx.networks[network] === undefined) {
-      console.log('party.fromHolderOrder 2')
-      console.log(order, ctx.networks)
-      process.exit(1)
+    let secretHolderProps = {
+      uid: order.uid,
+      hash: swapHash,
+      party: 'secretHolder',
+      quantity: order.quoteQuantity,
+      baseQuantity: order.baseQuantity,
+      quoteQuantity: order.quoteQuantity,
+      asset: order.quoteAsset,
+      fee: 1000 // TODO: connect to client entry
     }
 
-    return new Party({
-      id: order.uid,
-      asset: ctx.assets[asset],
-      network: ctx.networks[network],
-      quantity
-    })
+    const holder = secretHolderProps.uid
+    const holderTemplateProps = require(`../../../config/${holder}.json`)
+    secretHolderProps = { ...secretHolderProps, ...holderTemplateProps}
+
+    return this.fromHolderProps(swapType, swapHash, secretHolderProps, ctx )
   }
 
-  static fromSeekerOrder (swapType, order, ctx) {
-    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
-    const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+  static fromSeekerOrder (swapType, swapHash, order, ctx) {
 
-    if (ctx.networks[network] === undefined) {
-      console.log(order, ctx.networks)
-      process.exit(1)
+    console.log('party.fromSeekerOrder 0')
+    console.log('swapType: ', swapType)
+    console.log('order: ', order)
+
+    let secretSeekerProps = {
+      uid: order.uid,
+      hash: swapHash,
+      party: 'secretHolder',
+      quantity: order.quoteQuantity,
+      baseQuantity: order.baseQuantity,
+      quoteQuantity: order.quoteQuantity,
+      asset: order.quoteAsset,
+      fee: 0 // Connect to client entry
     }
 
-    return new Party({
-      id: order.uid,
-      asset: ctx.assets[asset],
-      network: ctx.networks[network],
-      quantity
-    })
+    const seeker = secretSeekerProps.uid
+    const seekerTemplateProps = require(`../../../config/${seeker}.json`)
+    secretSeekerProps = { ...secretSeekerProps, ...seekerTemplateProps}
+
+    return this.fromSeekerProps(swapType, swapHash, secretSeekerProps, ctx )
   }
 
   /**

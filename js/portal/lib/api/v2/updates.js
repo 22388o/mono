@@ -11,7 +11,12 @@
 module.exports.UPGRADE = function (ws, ctx) {
     const onError = err => err != null && ctx.log.error(err)
     const onOrder = order => order.uid === ws.user && ws.send(order, onError)
-    const onSwap = swap => swap.isParty({ id: ws.user }) && ws.send(swap)
+    const onSwap = swap => {
+        console.log('v2/updates ws.user: ', ws.user)
+        console.log('v2/updates swap: ', swap)
+        console.log('v2/updates swap.isParty({ id: ws.user} ): ', swap.isParty({id: ws.user}))
+        swap.isParty({ id: ws.user }) && ws.send(swap)
+    }
 
     ctx.orderbooks2
         .on('error', onError)

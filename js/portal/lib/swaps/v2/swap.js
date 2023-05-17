@@ -46,7 +46,7 @@ module.exports = class Swap extends EventEmitter {
     } else if (props.secretHolder.id === props.secretSeeker.id) {
       throw Error('cannot self-swap between secretHolder and secretSeeker!')
     }
-
+    console.log('v2/swap constructor 0')
     // console.log(`swap constructor - secretHolder: ${JSON.stringify(props.secretHolder, null, 2)}\n\n`)
     // console.log(`swap constructor - secretSeeker: ${JSON.stringify(props.secretSeeker, null, 2)}\n\n`)
 
@@ -61,14 +61,24 @@ module.exports = class Swap extends EventEmitter {
       sharedState: {}
     })
 
+    console.log('v2/swap constructor 1')
+
     SWAP_INSTANCES.get(this).secretHolder.swap = this
     SWAP_INSTANCES.get(this).secretSeeker.swap = this
+
+    console.log('v2/swap constructor 2')
 
     // TODO: freeze here?
     Object.seal(this)
 
+    console.log('v2/swap constructor 3')
+
     // Fire the event after allowing time for handlers to be registerd
     setImmediate(() => this.emit(this.status, this))
+
+    console.log('v2/swap constructor 4')
+    console.log('this.status: ', this.status)
+    console.log('this: ', this)
   }
 
   /**
@@ -182,9 +192,13 @@ module.exports = class Swap extends EventEmitter {
    * @param {Party|Object} party.id The unique identifier of the party
    * @returns {Boolean}
    */
-  isParty (party) {
-    return this.secretHolder.id === party.id ||
-      this.secretSeeker.id === party.id
+  isParty (user) {
+    return this.getUserIdFromPartyId(this.secretHolder.id) === user.id ||
+      this.getUserIdFromPartyId(this.secretSeeker.id) === user.id
+  }
+
+  getUserIdFromPartyId = (partyId) =>  {
+    return partyId.substring(0, partyId.indexOf('--'))
   }
 
   /**
@@ -319,10 +333,10 @@ module.exports = class Swap extends EventEmitter {
     // TODO: remove 'ordinal' hardcoding of swapType
     const id = hash(makerOrder.id, takerOrder.id)
     const secretHash = makerOrder.hash
-    const secretHolder = Party.fromHolderOrder(swapType, makerOrder, ctx)
+    const secretHolder = Party.fromHolderOrder(swapType, secretHash, makerOrder, ctx)
     console.log('after secretHolder party creation')
 
-    const secretSeeker = Party.fromSeekerOrder(swapType, takerOrder, ctx)
+    const secretSeeker = Party.fromSeekerOrder(swapType, secretHash, takerOrder, ctx)
     console.log('after secretSeeker party creation')
 
     return new Swap({ id, swapType, secretHash, secretHolder, secretSeeker })
