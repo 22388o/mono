@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+/**
+ * @file Starts the server
+ *
+ * This is a hard-linked file! Running each of these files will start the server
+ * using the API corresponding to the name of the binary.
+ */
+
+const { basename, extname, resolve } = require('path')
+const { inspect } = require('util')
+const Context = require('../lib/core/context')
+const Server = require('../lib/core/server')
+
+/**
+ * Expands a log object to print all its details
+ * @param {Object} obj The JSON log object
+ * @returns {Void}
+ */
+function log (obj) {
+  return inspect(obj, { showHidden: false, depth: null, colors: true })
+}
+
+/**
+ * The main() IIFE
+ * @returns {Void}
+ */
+;(function main () {
+  const name = basename(__filename, extname(__filename))
+  const api = resolve(__dirname, '..', 'lib', 'apis', name, 'api')
+  const server = new Server({ api })
+  const logAndExit = event => err => {
+    Context.log.error(event, err)
+    process.exit(1)
+  }
+
+  server
+    .on('error', Context.log.error)
+    .on('log', (level, ...args) => Context.log[level](level, ...(args.map(log))))
+    .start()
+
+  process
+    .on('uncaughtException', logAndExit('uncaughtException'))
+    .on('unhandledRejection', logAndExit('unhandledRejection'))
+}())

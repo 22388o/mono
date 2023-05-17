@@ -205,6 +205,8 @@ fi
 ############################################################################
 # Developer Environment
 ############################################################################
+export PORTAL_BITCOIN_URL="http://$(cat $PLAYNET_ROOT/bitcoind.portal.conf | grep rpcbind | cut -d= -f2):$(cat $PLAYNET_ROOT/bitcoind.portal.conf | grep rpcport | cut -d= -f2)"
+
 export PORTAL_ETHEREUM_URL="http://$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPHost = ')[^']+" | tr -d "'"):$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPPort = )[0-9]+" | tr -d ' ')"
 export PORTAL_ETHEREUM_CHAINID=$(__run_as_user portal geth attach --exec "eth.chainId()" | tr -d '"')
 export PORTAL_ETHEREUM_CONTRACTS="$PLAYNET_ROOT/contracts.json"

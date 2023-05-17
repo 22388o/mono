@@ -302,11 +302,14 @@ module.exports = class Server extends EventEmitter {
     // The authorization header is "Basic <base-64 encoded username:password>"
     // We split out the username and stash it on req.user
     const auth = req.headers.authorization
-    /* eslint-disable-next-line no-unused-vars */
-    const [algorithm, base64] = auth.split(' ')
-    /* eslint-disable-next-line no-unused-vars */
-    const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
-    req.user = user
+
+    if (auth != null) {
+      /* eslint-disable-next-line no-unused-vars */
+      const [algorithm, base64] = auth.split(' ')
+      /* eslint-disable-next-line no-unused-vars */
+      const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+      req.user = user
+    }
 
     // Collect the incoming HTTP body
     const chunks = []
@@ -345,6 +348,14 @@ module.exports = class Server extends EventEmitter {
   _handleStatic (req, res) {
     // ensure the asset to tbe served exists under the HTTP path
     const { root } = INSTANCES.get(this)
+    if (root == null) {
+      // 403 Forbidden
+      res.statusCode = 403
+      res.end()
+      this.emit('log', 'error', 'http.static', req, res)
+      return
+    }
+
     const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
     if (!pathToAsset.startsWith(root)) {
       // 403 Forbidden
