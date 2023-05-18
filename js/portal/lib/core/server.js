@@ -9,6 +9,8 @@ const mime = require('mime')
 const { join, normalize } = require('path')
 const { URL } = require('url')
 const { WebSocketServer } = require('ws')
+const zmq = require('zeromq/lib/index');
+const bitcoin = require('bitcoinjs-lib');
 
 /**
  * A weak-map storing private data for each instance of the class
@@ -44,10 +46,10 @@ module.exports = class Server extends EventEmitter {
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
     const ctx = require('./context')
-    const server = http.createServer({ IncomingMessage, ServerResponse })
-    const websocket = new WebSocketServer({ noServer: true })
+    const server = http.createServer({IncomingMessage, ServerResponse})
+    const websocket = new WebSocketServer({noServer: true})
 
-    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
+    INSTANCES.set(this, {hostname, port, api, root, ctx, server, websocket})
 
     // Trigger the creation of a swap whenever an order match occurs
     ctx.orderbooks.on('match', (...args) => {
@@ -63,6 +65,54 @@ module.exports = class Server extends EventEmitter {
     // Propagate the log events
     ctx.orderbooks.on('log', forwardLogEvent(this))
     ctx.swaps.on('log', forwardLogEvent(this))
+
+
+    // const listenForPendingTransactions = ctx => {
+    //   console.log('about to run pendingTxnListener')
+    //   async function run() {
+    //     console.log('starting to run pendingTxnListener')
+    //     const sock = new zmq.Subscriber
+    //
+    //     sock.connect("tcp://127.0.0.1:29000")
+    //     sock.subscribe("rawtx")
+    //
+    //     console.log("Subscriber connected to port 29000")
+    //
+    //     for await (const [topic, msg] of sock) {
+    //       // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+    //       if (topic.toString() === 'rawtx') {
+    //         try {
+    //           const rawtx = msg.toString('hex')
+    //
+    //           const tx = bitcoin.Transaction.fromHex(rawtx)
+    //           const network = bitcoin.networks.regtest
+    //           const output0 = tx.outs[0]
+    //           const out0 = output0.script
+    //           const value0 = output0.value
+    //           const addr0 = bitcoin.address.fromOutputScript(out0, network)
+    //
+    //           console.log('checking txn seen for address: ', addr0)
+    //           console.log('pending size: ', ctx.swaps2.size)
+    //           console.log('isPending: ', ctx.swaps2.isPending(addr0))
+    //           if (ctx.swaps2.isPending(addr0)) {
+    //             console.log('pending txn seen for address: ', addr0)
+    //             console.log('pending size: ', ctx.swaps2.size)
+    //             const swap = ctx.swaps2.getPending(addr0)
+    //             ctx.swaps2.removePending(addr0)
+    //             ctx.swaps2.emit('pendingTxn', swap)
+    //           }
+    //           console.log('First address of first output for new transaction: ', addr0)
+    //           console.log('\n')
+    //         } catch (e) {
+    //           console.log('issue running pendingTxnListener', e)
+    //         }
+    //       }
+    //
+    //     }
+    //   }
+    //   run()
+    // }
+    // listenForPendingTransactions(ctx)
   }
 
   /**
@@ -291,7 +341,7 @@ module.exports = class Server extends EventEmitter {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
 
-            this.emit('log', 'info', 'ws.send', ws, obj)
+            // this.emit('log', 'info', 'ws.send', ws, obj)
             return ws._send(buf, opts, err => err ? reject(err) : resolve())
           })
         }

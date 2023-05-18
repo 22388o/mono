@@ -4,6 +4,9 @@
 
 const { EventEmitter } = require('events')
 const Swap = require('./swap')
+const zmq = require("zeromq");
+const bitcoin = require("bitcoinjs-lib");
+const ctx = require("../../core/context");
 
 /**
  * Forwards events to the specified EventEmitter instance
@@ -13,8 +16,24 @@ const Swap = require('./swap')
  */
 function forwardEvent (self, event) {
     return function (...args) {
+        console.log('forwardEvent args: ', args)
+        console.log('forwardEvent event: ', event)
         self.emit('log', 'info', `swap.${event}`, ...args)
         self.emit(event, ...args)
+    }
+}
+
+function addPending (self, event) {
+    return function (...args) {
+        self.emit('log', 'info', `swap.${event}`, ...args)
+        const swap = args[0]
+        const swapid = swap.id
+        const userid = args[1]
+        const descriptor = args[2]
+        console.log('adding pending swap id: ', swapid)
+        console.log('   with descriptor: ', descriptor)
+        self.addPending(swapid, userid, descriptor)
+        self.emit(event, swap)
     }
 }
 
@@ -28,6 +47,9 @@ module.exports = class Swaps extends EventEmitter {
 
         this.ctx = ctx
         this.swaps = new Map()
+        this.pendingSwaps = new Map()
+
+        this.listenForPendingTransactions(this)
 
         Object.seal(this)
     }
@@ -51,6 +73,7 @@ module.exports = class Swaps extends EventEmitter {
                   .once('committing', forwardEvent(this, 'committing'))
                   .once('committed', forwardEvent(this, 'committed'))
                   .once('aborted', forwardEvent(this, 'aborted'))
+                  .once('holderPaymentPending', addPending(this, 'holderPaymentPending'))
 
 
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
@@ -85,6 +108,7 @@ module.exports = class Swaps extends EventEmitter {
                   .once('committing', forwardEvent(this, 'committing'))
                   .once('committed', forwardEvent(this, 'committed'))
                   .once('aborted', forwardEvent(this, 'aborted'))
+                  .once('pending', addPending(this, 'pending'))
 
                 // console.log(`after call to Swap.fromProps`)
                 this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
@@ -106,7 +130,7 @@ module.exports = class Swaps extends EventEmitter {
      * @returns {Promise<Swap>}
      */
     open (swap, party, opts) {
-        console.log('\nSwaps.open', swap, party, opts)
+        // console.log('\nSwaps.open', swap, party, opts)
 
         if (swap == null || swap.id == null) {
             return Promise.reject(Error('unknown swap!'))
@@ -157,4 +181,79 @@ module.exports = class Swaps extends EventEmitter {
             return this.swaps.get(swap.id).abort(party, opts)
         }
     }
+
+    addPending (swapid, username, descriptor) {
+        if (!descriptor.startsWith('addr(')) {
+            throw new Error('swap descriptors currently must be addr only: ', descriptor)
+        }
+        const address = descriptor.substring(5, 69)
+        // this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
+        this.pendingSwaps.has(address) || this.pendingSwaps.set(address, swapid)
+    }
+
+    removePending (address) {
+        this.pendingSwaps.delete(address)
+    }
+
+    isPending(address) {
+        return this.pendingSwaps.has(address)
+    }
+
+    getPending(address) {
+        return this.swaps.get(this.pendingSwaps.get(address))
+    }
+
+    getPendingSize() {
+        return this.pendingSwaps.size
+    }
+
+    listenForPendingTransactions = (self) => {
+        console.log('about to run pendingTxnListener')
+        async function run() {
+            console.log('starting to run pendingTxnListener')
+            const sock = new zmq.Subscriber
+
+            sock.connect("tcp://127.0.0.1:29000")
+            sock.subscribe("rawtx")
+
+            console.log("Subscriber connected to port 29000")
+
+            for await (const [topic, msg] of sock) {
+                // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+                if (topic.toString() === 'rawtx') {
+                    try {
+                        const rawtx = msg.toString('hex')
+
+                        const tx = bitcoin.Transaction.fromHex(rawtx)
+                        const network = bitcoin.networks.regtest
+                        const output0 = tx.outs[0]
+                        const out0 = output0.script
+                        const value0 = output0.value
+                        const addr0 = bitcoin.address.fromOutputScript(out0, network)
+
+                        console.log('checking txn seen for address: ', addr0)
+                        console.log('pending size: ', self.getPendingSize())
+                        console.log('isPending: ', self.isPending(addr0))
+                        if (self.isPending(addr0)) {
+                            console.log('pending txn seen for address: ', addr0)
+                            console.log('pending size: ', self.getPendingSize())
+                            const swap = self.getPending(addr0)
+                            self.removePending(addr0)
+                            swap.setStatusToHolderPaid()
+                            self.emit('holderPaid', swap)
+                        }
+                        console.log('First address of first output for new transaction: ', addr0)
+                        console.log('\n')
+                    } catch (e) {
+                        console.log('issue running pendingTxnListener', e)
+                    }
+                }
+
+            }
+        }
+        run()
+    }
+
+
+
 }

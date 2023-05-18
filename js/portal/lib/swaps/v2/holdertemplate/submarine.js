@@ -20,8 +20,8 @@ module.exports = class Submarine extends HolderTemplate {
     }
 
     async open(party, opts) {
-        console.log("Open in holder submarine")
-        console.log(`party: ${JSON.stringify(party, null, 2)}`)
+        // console.log("Open in holder submarine")
+        // console.log(`party: ${JSON.stringify(party, null, 2)}`)
 
         const wif = this.node2.creds.wif
         console.log(`wif: ${wif}`)
@@ -93,7 +93,7 @@ module.exports = class Submarine extends HolderTemplate {
         party.state.shared.holderFee = fee
         party.state.subscription = subscription
 
-        console.log(`party in holder submarine: ${JSON.stringify(party, null, 2)}`)
+        // console.log(`party in holder submarine: ${JSON.stringify(party, null, 2)}`)
         return party
     }
 

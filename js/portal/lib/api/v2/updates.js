@@ -12,9 +12,9 @@ module.exports.UPGRADE = function (ws, ctx) {
     const onError = err => err != null && ctx.log.error(err)
     const onOrder = order => order.uid === ws.user && ws.send(order, onError)
     const onSwap = swap => {
-        console.log('v2/updates ws.user: ', ws.user)
-        console.log('v2/updates swap: ', swap)
-        console.log('v2/updates swap.isParty({ id: ws.user} ): ', swap.isParty({id: ws.user}))
+        // console.log('v2/updates ws.user: ', ws.user)
+        // console.log('v2/updates swap: ', swap)
+        // console.log('v2/updates swap.isParty({ id: ws.user} ): ', swap.isParty({id: ws.user}))
         swap.isParty({ id: ws.user }) && ws.send(swap)
     }
 
@@ -31,6 +31,8 @@ module.exports.UPGRADE = function (ws, ctx) {
         .on('opened', onSwap)
         .on('committing', onSwap)
         .on('committed', onSwap)
+        .on('holderPaymentPending', onSwap)
+        .on('holderPaid', onSwap)
 
     // unregister all event handlers when the websocket closes
     ws.on('close', () => {

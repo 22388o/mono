@@ -24,7 +24,7 @@ module.exports = class Ordinal extends SeekerTemplate {
     }
 
     async open(party, opts) {
-        console.log("Open in seeker submarine")
+        // console.log("Open in seeker ordinal")
 
         const scriptGenerator = function(secretSeekerPublicKey,  secretHolderPublicKey, swapHash, timelock) {
             return bitcoin.script.fromASM(
@@ -58,7 +58,7 @@ module.exports = class Ordinal extends SeekerTemplate {
 
             const info = await carol.command([{method: 'getblockchaininfo', parameters: []}]);
 
-            console.log(`info: ${JSON.stringify(info, null, 2)}`)
+            // console.log(`info: ${JSON.stringify(info, null, 2)}`)
 
             const wif = this.node2.creds.wif
             // console.log(`wif: ${wif}`)
@@ -94,9 +94,10 @@ module.exports = class Ordinal extends SeekerTemplate {
 
             const swapinfo = new SwapInfo.constructor( {descriptor: payDescriptor, witnessScript, timelock});
             party.state.shared.swapinfo = swapinfo
-            // return swapinfo;
+            party.swap.setStatusToHolderPaymentPending()
+            party.swap.emit('holderPaymentPending', party.swap, party.username, payDescriptor)
 
-            console.log(`party in submarine.open: ${JSON.stringify(party, null, 2)}`)
+            // console.log(`party in submarine.open: ${JSON.stringify(party, null, 2)}`)
 
         return party
     }

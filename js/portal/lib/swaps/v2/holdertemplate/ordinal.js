@@ -20,17 +20,17 @@ module.exports = class Ordinal extends HolderTemplate {
     }
 
     async open(party, opts) {
-        console.log("Open in holder submarine")
-        console.log(`party: ${JSON.stringify(party, null, 2)}`)
+        // console.log("Open in holder submarine")
+        // console.log(`party: ${JSON.stringify(party, null, 2)}`)
 
         const wif = this.node2.creds.wif
-        console.log(`wif: ${wif}`)
+        // console.log(`wif: ${wif}`)
         const network = NETWORK
-        console.log(`network: ${network}`)
+        // console.log(`network: ${network}`)
         const holderPair = bitcoin.ECPair.fromWIF(wif, network);
-        console.log(`holderPair created`)
+        // console.log(`holderPair created`)
         const holderPublicKey = holderPair.publicKey.toString('hex');
-        console.log(`holderPublicKey: ${holderPublicKey}`)
+        // console.log(`holderPublicKey: ${holderPublicKey}`)
 
         party.state.shared.holderPublicKey = holderPublicKey
 
@@ -39,13 +39,13 @@ module.exports = class Ordinal extends HolderTemplate {
             macaroon: this.node1.creds.invoiceMacaroon,
             socket: this.node1.creds.socket
         }
-        console.log(`auth: ${JSON.stringify(auth, null, 2)}`)
+        console.log(`alice's auth: ${JSON.stringify(auth, null, 2)}`)
 
         const carolInvoice = ln.authenticatedLndGrpc(auth)
-        console.log(`bobInvoice - authd: ${JSON.stringify(carolInvoice)}`)
+        // console.log(`bobInvoice - authd: ${JSON.stringify(carolInvoice)}`)
 
 
-        console.log(`party: ${JSON.stringify(party, null, 2)}`)
+        // console.log(`party: ${JSON.stringify(party, null, 2)}`)
         const swapHash = party.swapHash
         const quantity = party.quantity
         const swapSecret = party.state.secret
@@ -54,7 +54,7 @@ module.exports = class Ordinal extends HolderTemplate {
         carolInvoice.id = swapHash
         carolInvoice.secret = swapSecret
         carolInvoice.tokens = quantity
-        console.log(`carolInvoice: ${JSON.stringify(carolInvoice, null, 2)}`)
+        console.log(`aliceInvoice: ${JSON.stringify(carolInvoice, null, 2)}`)
         // const request2 = (await createHodlInvoice(carolInvoice)).request
 
         let request
@@ -93,7 +93,7 @@ module.exports = class Ordinal extends HolderTemplate {
         party.state.shared.holderFee = fee
         party.state.subscription = subscription
 
-        console.log(`party in holder submarine: ${JSON.stringify(party, null, 2)}`)
+        // console.log(`party in holder submarine: ${JSON.stringify(party, null, 2)}`)
         return party
     }
 
