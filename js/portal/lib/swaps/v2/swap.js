@@ -16,7 +16,9 @@ const SWAP_STATUS = [
   'opened',
   'committing',
   'committed',
-  'aborted'
+  'aborted',
+  'holderPaymentPending',
+  'holderPaid'
 ]
 
 /**
@@ -38,7 +40,7 @@ module.exports = class Swap extends EventEmitter {
    * @param {Party} props.secretHolder The party that holds the secret
    * @param {Party} props.secretSeeker The party that seeks the secret
    */
-  constructor (props) {
+  constructor (props, ctx) {
     if (!(props.secretHolder instanceof Party)) {
       throw Error('secretHolder is not an instance of Party!')
     } else if (!(props.secretSeeker instanceof Party)) {
@@ -46,7 +48,7 @@ module.exports = class Swap extends EventEmitter {
     } else if (props.secretHolder.id === props.secretSeeker.id) {
       throw Error('cannot self-swap between secretHolder and secretSeeker!')
     }
-    console.log('v2/swap constructor 0')
+    // console.log('v2/swap constructor 0')
     // console.log(`swap constructor - secretHolder: ${JSON.stringify(props.secretHolder, null, 2)}\n\n`)
     // console.log(`swap constructor - secretSeeker: ${JSON.stringify(props.secretSeeker, null, 2)}\n\n`)
 
@@ -61,24 +63,24 @@ module.exports = class Swap extends EventEmitter {
       sharedState: {}
     })
 
-    console.log('v2/swap constructor 1')
+    // console.log('v2/swap constructor 1')
 
     SWAP_INSTANCES.get(this).secretHolder.swap = this
     SWAP_INSTANCES.get(this).secretSeeker.swap = this
 
-    console.log('v2/swap constructor 2')
+    // console.log('v2/swap constructor 2')
 
     // TODO: freeze here?
     Object.seal(this)
 
-    console.log('v2/swap constructor 3')
+    // console.log('v2/swap constructor 3')
 
     // Fire the event after allowing time for handlers to be registerd
     setImmediate(() => this.emit(this.status, this))
 
-    console.log('v2/swap constructor 4')
-    console.log('this.status: ', this.status)
-    console.log('this: ', this)
+    // console.log('v2/swap constructor 4')
+    // console.log('this.status: ', this.status)
+    // console.log('this: ', this)
   }
 
   /**
@@ -88,6 +90,8 @@ module.exports = class Swap extends EventEmitter {
   get id () {
     return SWAP_INSTANCES.get(this).id
   }
+
+
 
   /**
    * The hash of the secret
@@ -209,7 +213,7 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   async open (party, opts) {
-    console.log('\nswap.open', this, party, opts)
+    // console.log('\nswap.open', this, party, opts)
 
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
@@ -375,6 +379,17 @@ module.exports = class Swap extends EventEmitter {
 
     // console.log(`swap created`)
     return swap
+  }
+
+
+
+
+  setStatusToHolderPaymentPending() {
+    SWAP_INSTANCES.get(this).status = SWAP_STATUS[6]
+  }
+
+  setStatusToHolderPaid() {
+    SWAP_INSTANCES.get(this).status = SWAP_STATUS[7]
   }
 
 }

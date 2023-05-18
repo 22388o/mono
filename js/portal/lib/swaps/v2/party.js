@@ -89,7 +89,7 @@ module.exports = class Party {
    */
   async open (opts) {
     try {
-      console.log('\nparty.open', this, opts)
+      // console.log('\nparty.open', this, opts)
 
       if (this.hasTemplate) {
         const party = await(this.template.open(this, opts))
@@ -100,7 +100,7 @@ module.exports = class Party {
       if ((this.swap.isCreated && this.isSecretSeeker) ||
           (this.swap.isOpening && this.isSecretHolder)) {
         // Create an invoice on the counterparty's network
-        console.log('party.open', this.counterparty.network)
+        // console.log('party.open', this.counterparty.network)
         return this.counterparty.network.open(this, opts)
       }
 
