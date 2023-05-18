@@ -48,6 +48,7 @@ module.exports = class Swaps extends EventEmitter {
         this.ctx = ctx
         this.swaps = new Map()
         this.pendingSwaps = new Map()
+        this.pendingPaymentTxns = new Map()
 
         this.listenForPendingTransactions(this)
 
@@ -191,6 +192,10 @@ module.exports = class Swaps extends EventEmitter {
         this.pendingSwaps.has(address) || this.pendingSwaps.set(address, swapid)
     }
 
+    addPendingPayment(rawtx, swapid) {
+        this.pendingPaymentTxns.has(rawtx) || this.pendingPaymentTxns.set(rawtx, swapid)
+    }
+
     removePending (address) {
         this.pendingSwaps.delete(address)
     }
@@ -201,6 +206,10 @@ module.exports = class Swaps extends EventEmitter {
 
     getPending(address) {
         return this.swaps.get(this.pendingSwaps.get(address))
+    }
+
+    getPendingPayment(rawtx) {
+        return this.swaps.get(this.pendingPaymentTxns.get(rawtx))
     }
 
     getPendingSize() {
@@ -215,11 +224,13 @@ module.exports = class Swaps extends EventEmitter {
 
             sock.connect("tcp://127.0.0.1:29000")
             sock.subscribe("rawtx")
+            sock.subscribe('rawblock')
 
             console.log("Subscriber connected to port 29000")
 
             for await (const [topic, msg] of sock) {
-                // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+
+                console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
                 if (topic.toString() === 'rawtx') {
                     try {
                         const rawtx = msg.toString('hex')
@@ -239,8 +250,13 @@ module.exports = class Swaps extends EventEmitter {
                             console.log('pending size: ', self.getPendingSize())
                             const swap = self.getPending(addr0)
                             self.removePending(addr0)
-                            swap.setStatusToHolderPaid()
-                            self.emit('holderPaid', swap)
+                            // swap.setStatusToHolderPaid()
+                            // self.emit('holderPaid', swap)
+                            const swapid = swap.id
+                            console.log('swapid: ' , swapid)
+                            self.addPendingPayment(rawtx, swapid)
+                            // self.pendingPaymentTxns.set(rawtx, swap.id)
+                            console.log('address derived rawtx: ', rawtx)
                         }
                         console.log('First address of first output for new transaction: ', addr0)
                         console.log('\n')
@@ -248,6 +264,41 @@ module.exports = class Swaps extends EventEmitter {
                         console.log('issue running pendingTxnListener', e)
                     }
                 }
+                else if (topic.toString() === 'rawblock') {
+                    try {
+                        const rawblock = msg.toString('hex')
+                        console.log('rawblock: ', rawblock)
+
+                        const block = bitcoin.Block.fromHex(rawblock)
+                        const network = bitcoin.networks.regtest
+                        const txs = block.transactions
+                        txs.forEach( tx => {
+                            // const rawtx = tx.toString('hex')
+                            // console.log('tx in block: ', tx)
+                            // console.log('tx.getHash: ', tx.getHash())
+                            // console.log('tx.toHex: ', tx.toHex())
+                            // console.log('tx.getid: ', tx.getId())
+                            const rawtx = tx.toHex()
+                            // console.log('tx.raw...', tx.raw.toString('hex'))
+                            if (self.pendingPaymentTxns.has(rawtx)) {
+                                console.log('block txn: ', rawtx)
+
+                                // const swapid = self.pendingPaymentTxns.get(rawtx)
+                                const swap = self.getPendingPayment(rawtx)
+                                self.pendingPaymentTxns.delete(rawtx)
+                                // console.log('swapid retrieved: ', swapid)
+                                // const swap = self.swaps.get(swapid)
+                                console.log('swap retrieved: ', swap)
+                                swap.setStatusToHolderPaid()
+                                self.emit('holderPaid', swap)
+                            }
+                        })
+
+                    } catch (e) {
+                        console.log('issue running pendingTxnListener', e)
+                    }
+                }
+
 
             }
         }

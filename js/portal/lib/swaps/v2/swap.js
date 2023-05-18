@@ -262,7 +262,7 @@ module.exports = class Swap extends EventEmitter {
     const isBoth = isHolder && isSeeker
     const isNeither = !isHolder && !isSeeker
 
-    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
+    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3] && status !== SWAP_STATUS[7]) {
       throw Error(`cannot commit swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
       throw Error('self-swapping is not allowed!')
