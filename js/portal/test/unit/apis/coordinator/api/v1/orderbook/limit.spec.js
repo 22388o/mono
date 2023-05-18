@@ -4,7 +4,7 @@
 
 const { expect } = require('chai')
 
-describe('Orderbook - Limit', function () {
+describe('Coordinator API: Orderbook: Limit', function () {
   const PROPS = Object.freeze({
     side: 'bid',
     hash: 'myhash',

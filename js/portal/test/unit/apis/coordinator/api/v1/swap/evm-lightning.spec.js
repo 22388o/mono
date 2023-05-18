@@ -8,7 +8,7 @@ const { createHash, randomBytes } = require('crypto')
 /**
  * This is a simple test case wherein,
  */
-describe('Swaps - EVM/Lightning', function () {
+describe('Coordinator API: Swap: EVM/Lightning', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {

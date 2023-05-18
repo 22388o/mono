@@ -11,7 +11,7 @@ const { basename, dirname, extname, join, resolve } = require('path')
  * @returns {Object} The HTTP API object mapping endpoints to handlers
  */
 module.exports = function (path) {
-  return buildApi(path || resolve(join(__dirname, '..', 'api')))
+  return buildApi(path || resolve(join(__dirname, '..', 'apis', 'coordinator', 'api')))
 }
 
 /**
