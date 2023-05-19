@@ -47,13 +47,13 @@ module.exports = class Ordinal extends HolderTemplate {
 
         // console.log(`party: ${JSON.stringify(party, null, 2)}`)
         const swapHash = party.swapHash
-        const quantity = party.quantity
+        const paymentQuantity = party.quoteQuantity
         const swapSecret = party.state.secret
         const fee = party.fee
 
         carolInvoice.id = swapHash
         carolInvoice.secret = swapSecret
-        carolInvoice.tokens = quantity
+        carolInvoice.tokens = paymentQuantity
         console.log(`aliceInvoice: ${JSON.stringify(carolInvoice, null, 2)}`)
         // const request2 = (await createHodlInvoice(carolInvoice)).request
 
@@ -125,9 +125,9 @@ module.exports = class Ordinal extends HolderTemplate {
 
         psbt.setLocktime(bip65.encode({blocks: parseInt(swapinfo.timelock)}));
         const fee = party.state.shared.holderFee
-        const amount = party.quantity
+        const ordinalAmount = party.ordinalQuantity
 
-        const amountAndFee = amount + fee;
+        const amountAndFee = ordinalAmount + fee;
         const scantx = await alice.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range
         const success = scantx[0].success;
         if (!success) {

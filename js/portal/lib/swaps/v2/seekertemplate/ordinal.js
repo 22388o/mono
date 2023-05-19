@@ -119,12 +119,20 @@ module.exports = class Ordinal extends SeekerTemplate {
             fee = party.state.shared.holderFee
         }
 
-        let amount
-        if (typeof(party.quantity) == "string") {
-            amount = parseInt(party.quantity, 10)
+        let paymentAmount
+        if (typeof(party.quoteQuantity) == "string") {
+            paymentAmount = parseInt(party.quoteQuantity, 10)
         }
         else {
-            amount = party.quantity
+            paymentAmount = party.quoteQuantity
+        }
+
+        let ordinalAmount
+        if (typeof(party.baseQuantity) == "string") {
+            ordinalAmount = parseInt(party.baseQuantity, 10)
+        }
+        else {
+            ordinalAmount = party.baseQuantity
         }
 
         const swapinfo = party.state.shared.swapinfo
@@ -139,11 +147,11 @@ module.exports = class Ordinal extends SeekerTemplate {
 
         const psbt = new bitcoin.Psbt({NETWORK});
 
-        const amountAndFee = amount + fee;
+        const amountAndFee = ordinalAmount + fee;
         console.log(`### fee           ###: ${fee}`)
         console.log(`### fee (type)    ###: ${typeof(fee)}`)
-        console.log(`### amount        ###: ${amount}`)
-        console.log(`### amount (type) ###: ${typeof(amount)}`)
+        console.log(`### amount        ###: ${ordinalAmount}`)
+        console.log(`### amount (type) ###: ${typeof(ordinalAmount)}`)
         console.log(`### amountAndFee  ###: ${amountAndFee}`)
 
         const height = party.state.initialHeight

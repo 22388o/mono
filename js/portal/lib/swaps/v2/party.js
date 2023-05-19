@@ -27,9 +27,13 @@ module.exports = class Party {
     console.log('in party constructor props: ', JSON.stringify(props, null, 2))
 
     this.id = props.id
-    this.asset = props.asset
+    // this.asset = props.asset
+    this.baseAsset = props.baseAsset
+    this.quoteAsset = props.quoteAsset
     this.network = props.network
-    this.quantity = props.quantity
+    // this.quantity = props.quantity
+    this.baseQuantity = props.baseQuantity
+    this.quoteQuantity = props.quoteQuantity
     this.fee = props.fee
     this.template = props.template
     this.swapHash = props.swapHash
@@ -187,9 +191,11 @@ module.exports = class Party {
       id: this.id,
       swap: this.swap && { id: this.swap.id },
       swapHash: this.swapHash,
-      asset: this.asset,
+      baseAsset: this.baseAsset,
+      quoteAsset: this.quoteAsset,
       network: this.network,
-      quantity: this.quantity,
+      baseQuantity: this.baseQuantity,
+      quoteQuantity: this.quoteQuantity,
       fee: this.fee,
       state: this.state,
       isSecretSeeker: this.isSecretSeeker,
@@ -205,9 +211,9 @@ module.exports = class Party {
    * @returns {Party}
    */
   static fromOrder (order, ctx) {
-    const asset = order.isAsk ? order.baseAsset : order.quoteAsset
+    // const asset = order.isAsk ? order.baseAsset : order.quoteAsset
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
-    const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
+    // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
 
     if (ctx.networks[network] === undefined) {
       console.log(order, ctx.networks)
@@ -216,9 +222,11 @@ module.exports = class Party {
 
     return new Party({
       id: order.uid,
-      asset: ctx.assets[asset],
+      baseAsset: ctx.assets[order.baseAsset],
+      quoteAsset: ctx.assets[order.quoteAsset],
       network: ctx.networks[network],
-      quantity
+      baseQuantity: order.baseQuantity,
+      quoteQuantity: order.quoteQuantity
     })
   }
 
@@ -231,10 +239,15 @@ module.exports = class Party {
       uid: order.uid,
       hash: swapHash,
       party: 'secretHolder',
-      quantity: order.quoteQuantity,
+      // quantity: order.quoteQuantity,
       baseQuantity: order.baseQuantity,
       quoteQuantity: order.quoteQuantity,
-      asset: order.quoteAsset,
+      // asset: order.quoteAsset,
+      baseAsset: order.baseAsset,
+      quoteAsset: order.quoteAsset,
+      baseNetwork: order.baseNetwork,
+      quoteNetwork: order.quoteNetwork,
+
       fee: 1000 // TODO: connect to client entry
     }
 
@@ -255,10 +268,14 @@ module.exports = class Party {
       uid: order.uid,
       hash: swapHash,
       party: 'secretHolder',
-      quantity: order.quoteQuantity,
+      // quantity: order.quoteQuantity,
       baseQuantity: order.baseQuantity,
       quoteQuantity: order.quoteQuantity,
-      asset: order.quoteAsset,
+      // asset: order.quoteAsset,
+      baseAsset: order.baseAsset,
+      quoteAsset: order.quoteAsset,
+      baseNetwork: order.baseNetwork,
+      quoteNetwork: order.quoteNetwork,
       fee: 0 // Connect to client entry
     }
 
@@ -281,10 +298,16 @@ module.exports = class Party {
 
     const template = HolderTemplate.fromProps(this, swapType, secretHolderProps)
     const userid = secretHolderProps.uid
-    const asset = secretHolderProps.asset
+    // const asset = secretHolderProps.asset
     const network = secretHolderProps.templateProps.nodes[swapType][0].network
-    const quantity = secretHolderProps.quantity
+    // const quantity = secretHolderProps.quantity
     const fee = secretHolderProps.fee
+    const baseQuantity = secretHolderProps.baseQuantity
+    const quoteQuantity = secretHolderProps.quoteQuantity
+    const baseAsset = secretHolderProps.baseAsset
+    const quoteAsset = secretHolderProps.quoteAsset
+    const baseNetwork = secretHolderProps.baseNetwork
+    const quoteNetwork = secretHolderProps.quoteNetwork
 
     if (ctx.networks[network] === undefined) {
       console.log(secretHolderProps.hash, ctx.networks)
@@ -294,9 +317,14 @@ module.exports = class Party {
 
     const party = new Party({
       id: userid + '--' + uuid(),
-      asset: ctx.assets[asset],
+      baseQuantity,
+      quoteQuantity,
+      baseAsset: ctx.assets[baseAsset],
+      quoteAsset: ctx.assets[quoteAsset],
       network: ctx.networks[network],
-      quantity,
+
+      // asset: ctx.assets[asset],
+      // quantity,
       fee,
       template,
       swapHash
@@ -320,10 +348,17 @@ module.exports = class Party {
 
     const template = SeekerTemplate.fromProps(this, swapType, secretSeekerProps)
     const userid = secretSeekerProps.uid
-    const asset = secretSeekerProps.asset
+    // const asset = secretSeekerProps.asset
     const network = secretSeekerProps.templateProps.nodes[swapType][0].network
-    const quantity = secretSeekerProps.quantity
+    // const quantity = secretSeekerProps.quantity
     const fee = secretSeekerProps.fee
+
+    const baseQuantity = secretSeekerProps.baseQuantity
+    const quoteQuantity = secretSeekerProps.quoteQuantity
+    const baseAsset = secretSeekerProps.baseAsset
+    const quoteAsset = secretSeekerProps.quoteAsset
+    const baseNetwork = secretSeekerProps.baseNetwork
+    const quoteNetwork = secretSeekerProps.quoteNetwork
 
     if (ctx.networks[network] === undefined) {
       console.log(secretSeekerProps.hash, ctx.networks)
@@ -334,13 +369,19 @@ module.exports = class Party {
 
     const party = new Party({
       id: userid + '--' + uuid(),
-      asset: ctx.assets[asset],
+      baseQuantity,
+      quoteQuantity,
+      baseAsset: ctx.assets[baseAsset],
+      quoteAsset: ctx.assets[quoteAsset],
       network: ctx.networks[network],
-      quantity,
+      // quantity,
+      // asset: ctx.assets[asset],
       fee,
       template,
       swapHash
     })
+
+    console.log('seekerParty: ', JSON.stringify(party, null, 2))
 
     // console.log(`party IN FROM_SEEKERPROPS: ${JSON.stringify(party, null, 2)} `)
 
