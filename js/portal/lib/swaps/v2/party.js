@@ -34,6 +34,7 @@ module.exports = class Party {
     // this.quantity = props.quantity
     this.baseQuantity = props.baseQuantity
     this.quoteQuantity = props.quoteQuantity
+    this.ordinalLocation = props.ordinalLocation
     this.orderId = props.orderId
     this.fee = props.fee
     this.template = props.template
@@ -197,6 +198,7 @@ module.exports = class Party {
       network: this.network,
       baseQuantity: this.baseQuantity,
       quoteQuantity: this.quoteQuantity,
+      ordinalLocation: this.ordinalLocation,
       orderId: this.orderId,
       fee: this.fee,
       state: this.state,
@@ -229,6 +231,7 @@ module.exports = class Party {
       network: ctx.networks[network],
       baseQuantity: order.baseQuantity,
       quoteQuantity: order.quoteQuantity,
+      ordinalLocation: order.ordinalLocation,
       orderId: order.id,
     })
   }
@@ -250,6 +253,7 @@ module.exports = class Party {
       quoteAsset: order.quoteAsset,
       baseNetwork: order.baseNetwork,
       quoteNetwork: order.quoteNetwork,
+      ordinalLocation: order.ordinalLocation,
       orderId: order.id,
 
       fee: 1000 // TODO: connect to client entry
@@ -280,6 +284,7 @@ module.exports = class Party {
       quoteAsset: order.quoteAsset,
       baseNetwork: order.baseNetwork,
       quoteNetwork: order.quoteNetwork,
+      ordinalLocation: order.ordinalLocation,
       orderId: order.id,
       fee: 0 // Connect to client entry
     }
@@ -313,6 +318,7 @@ module.exports = class Party {
     const quoteAsset = secretHolderProps.quoteAsset
     const baseNetwork = secretHolderProps.baseNetwork
     const quoteNetwork = secretHolderProps.quoteNetwork
+    const ordinalLocation = secretHolderProps.ordinalLocation
     const orderId = secretHolderProps.orderId
 
     if (ctx.networks[network] === undefined) {
@@ -327,6 +333,7 @@ module.exports = class Party {
       quoteQuantity,
       baseAsset: ctx.assets[baseAsset],
       quoteAsset: ctx.assets[quoteAsset],
+      ordinalLocation,
       network: ctx.networks[network],
       orderId,
 
@@ -366,6 +373,7 @@ module.exports = class Party {
     const quoteAsset = secretSeekerProps.quoteAsset
     const baseNetwork = secretSeekerProps.baseNetwork
     const quoteNetwork = secretSeekerProps.quoteNetwork
+    const ordinalLocation = secretSeekerProps.ordinalLocation
     const orderId = secretSeekerProps.orderId
 
     if (ctx.networks[network] === undefined) {
@@ -381,6 +389,7 @@ module.exports = class Party {
       quoteQuantity,
       baseAsset: ctx.assets[baseAsset],
       quoteAsset: ctx.assets[quoteAsset],
+      ordinalLocation,
       network: ctx.networks[network],
       orderId,
       // quantity,

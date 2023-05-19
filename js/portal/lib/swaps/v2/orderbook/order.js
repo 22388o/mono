@@ -57,6 +57,7 @@ module.exports = class Order {
    * @param {String} props.quoteAsset The symbol of the asset used for payment
    * @param {String} props.quoteQuantity The amount of quote asset being traded
    * @param {String} props.quoteNetwork The network of quote asset being traded
+   * @param {String} props.ordinalLocation The location of an ordinal <txn>:0:0
    */
   constructor (props) {
     if (props.uid == null) {
@@ -104,6 +105,7 @@ module.exports = class Order {
       quoteAsset: props.quoteAsset,
       quoteNetwork: props.quoteNetwork,
       quoteQuantity: props.quoteQuantity,
+      ordinalLocation: props.ordinalLocation,
       assetPair: Order.toAssetPair(props),
       status: ORDER_STATUS[0],
       reason: null
@@ -209,6 +211,7 @@ module.exports = class Order {
       quoteAsset: this.quoteAsset,
       quoteQuantity: this.quoteQuantity,
       quoteNetwork: this.quoteNetwork,
+      ordinalLocation: this.ordinalLocation,
       status: this.status,
       reason: this.reason
     }
@@ -253,7 +256,8 @@ module.exports = class Order {
       this.baseNetwork === target.baseNetwork &&
       this.quoteAsset === target.quoteAsset &&
       this.quoteQuantity === target.quoteQuantity &&
-      this.quoteNetwork === target.quoteNetwork
+      this.quoteNetwork === target.quoteNetwork &&
+      this.ordinalLocation === target.ordinalLocation
   }
 
   /**
