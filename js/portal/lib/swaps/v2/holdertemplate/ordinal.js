@@ -113,7 +113,7 @@ module.exports = class Ordinal extends HolderTemplate {
         const psbt = new bitcoin.Psbt({NETWORK});
 
         const info = await alice.command([{method: 'getblockchaininfo', parameters: []}]);
-        const height = info.blocks;
+        const height = info[0].blocks;
 
         const swapinfo = party.state.shared.swapinfo
         if (height < swapinfo.timelock) {

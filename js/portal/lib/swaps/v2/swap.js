@@ -262,7 +262,7 @@ module.exports = class Swap extends EventEmitter {
     const isBoth = isHolder && isSeeker
     const isNeither = !isHolder && !isSeeker
 
-    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3] && status !== SWAP_STATUS[7]) {
+    if (status !== SWAP_STATUS[7]) {
       throw Error(`cannot commit swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
       throw Error('self-swapping is not allowed!')
@@ -301,19 +301,19 @@ module.exports = class Swap extends EventEmitter {
     const isBoth = isHolder && isSeeker
     const isNeither = !isHolder && !isSeeker
 
-    if (status !== SWAP_STATUS[2] && status !== SWAP_STATUS[3]) {
+    if (status !== SWAP_STATUS[7]) {
       throw Error(`cannot abort swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
       throw Error('self-swapping is not allowed!')
     } else if (isNeither) {
       throw Error(`"${party.id}" not a party to swap "${this.id}"!`)
     }
-
+    const { state } = party
     party = isHolder ? secretHolder : secretSeeker
 
     // console.log(`party.state: ${JSON.stringify(party.state, null, 2)}`)
     // console.log(`party: ${JSON.stringify(party, null, 2)}`)
-    // party.state = Object.assign({}, party.state, state)
+    party.state = Object.assign({}, party.state, state)
 
     party = await party.abort(opts)
     SWAP_INSTANCES.get(this).status = SWAP_STATUS[5]
