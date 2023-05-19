@@ -47,7 +47,7 @@ module.exports = class Submarine extends HolderTemplate {
 
         console.log(`party: ${JSON.stringify(party, null, 2)}`)
         const swapHash = party.swapHash
-        const quantity = party.quantity
+        const quantity = party.baseQuantity
         const swapSecret = party.state.secret
         const fee = party.fee
 
@@ -125,7 +125,7 @@ module.exports = class Submarine extends HolderTemplate {
 
         psbt.setLocktime(bip65.encode({blocks: parseInt(swapinfo.timelock)}));
         const fee = party.state.shared.holderFee
-        const amount = party.quantity
+        const amount = party.baseQuantity
 
         const amountAndFee = amount + fee;
         const scantx = await alice.command([{method: 'scantxoutset', parameters: ['start', [{ "desc": `${swapinfo.descriptor}`}] ]}]); // TODO: add range

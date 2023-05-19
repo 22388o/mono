@@ -16,8 +16,8 @@ const ctx = require("../../core/context");
  */
 function forwardEvent (self, event) {
     return function (...args) {
-        console.log('forwardEvent args: ', args)
-        console.log('forwardEvent event: ', event)
+        // console.log('forwardEvent args: ', args)
+        // console.log('forwardEvent event: ', event)
         self.emit('log', 'info', `swap.${event}`, ...args)
         self.emit(event, ...args)
     }
@@ -230,7 +230,7 @@ module.exports = class Swaps extends EventEmitter {
 
             for await (const [topic, msg] of sock) {
 
-                console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+                // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
                 if (topic.toString() === 'rawtx') {
                     try {
                         const rawtx = msg.toString('hex')
@@ -242,9 +242,9 @@ module.exports = class Swaps extends EventEmitter {
                         const value0 = output0.value
                         const addr0 = bitcoin.address.fromOutputScript(out0, network)
 
-                        console.log('checking txn seen for address: ', addr0)
-                        console.log('pending size: ', self.getPendingSize())
-                        console.log('isPending: ', self.isPending(addr0))
+                        // console.log('checking txn seen for address: ', addr0)
+                        // console.log('pending size: ', self.getPendingSize())
+                        // console.log('isPending: ', self.isPending(addr0))
                         if (self.isPending(addr0)) {
                             console.log('pending txn seen for address: ', addr0)
                             console.log('pending size: ', self.getPendingSize())
@@ -258,8 +258,8 @@ module.exports = class Swaps extends EventEmitter {
                             // self.pendingPaymentTxns.set(rawtx, swap.id)
                             console.log('address derived rawtx: ', rawtx)
                         }
-                        console.log('First address of first output for new transaction: ', addr0)
-                        console.log('\n')
+                        // console.log('First address of first output for new transaction: ', addr0)
+                        // console.log('\n')
                     } catch (e) {
                         console.log('issue running pendingTxnListener', e)
                     }

@@ -118,12 +118,20 @@ module.exports = class Submarine extends SeekerTemplate {
             fee = party.state.shared.holderFee
         }
 
-        let amount
-        if (typeof(party.quantity) == "string") {
-            amount = parseInt(party.quantity, 10)
+        let paymentAmount
+        if (typeof(party.quoteQuantity) == "string") {
+            paymentAmount = parseInt(party.quoteQuantity, 10)
         }
         else {
-            amount = party.quantity
+            paymentAmount = party.quoteQuantity
+        }
+
+        let ordinalAmount
+        if (typeof(party.baseQuantity) == "string") {
+            ordinalAmount = parseInt(party.baseQuantity, 10)
+        }
+        else {
+            ordinalAmount = party.baseQuantity
         }
 
         const swapinfo = party.state.shared.swapinfo
@@ -138,11 +146,11 @@ module.exports = class Submarine extends SeekerTemplate {
 
         const psbt = new bitcoin.Psbt({NETWORK});
 
-        const amountAndFee = amount + fee;
+        const amountAndFee = ordinalAmount + fee;
         console.log(`### fee           ###: ${fee}`)
         console.log(`### fee (type)    ###: ${typeof(fee)}`)
-        console.log(`### amount        ###: ${amount}`)
-        console.log(`### amount (type) ###: ${typeof(amount)}`)
+        console.log(`### amount        ###: ${ordinalAmount}`)
+        console.log(`### amount (type) ###: ${typeof(ordinalAmount)}`)
         console.log(`### amountAndFee  ###: ${amountAndFee}`)
 
         const height = party.state.initialHeight
@@ -162,7 +170,7 @@ module.exports = class Submarine extends SeekerTemplate {
         }
 
         const currentHeight = scantx[0].height;
-        const totalAmount = Math.round(scantx[0].total_amount * 10E8);
+        const totalAmount = Math.round(scantx[0].total_amount * 10E7);
         console.log(`### totalAmount   ###: ${totalAmount}`)
 
         const utxos = scantx[0].unspents
@@ -213,6 +221,8 @@ module.exports = class Submarine extends SeekerTemplate {
             socket: this.node1.creds.socket
         }
 
+        console.log('bob auth: ', JSON.stringify(auth, null, 2))
+
         const carolAdmin = ln.authenticatedLndGrpc(auth)
         const request = party.state.shared.request
         carolAdmin.request = request
@@ -222,7 +232,7 @@ module.exports = class Submarine extends SeekerTemplate {
             throw new Error('Swap hash does not match payment hash for invoice ')
         }
 
-        console.log('Carol about to pay invoice')
+        console.log('Bob about to pay invoice')
         const paidInvoice = await payViaPaymentRequest(carolAdmin).catch(reason => console.log(reason))
 
         console.log(`paidInvoice.secret: ${paidInvoice.secret}`)
