@@ -1,89 +1,76 @@
-import React, { useEffect, useState } from "react";
-import 'semantic-ui-css/semantic.min.css';
-import {
-  Button,
-  Divider,
-  Form,
-  Grid,
-  Icon,
-} from 'semantic-ui-react';
-import {
-  useAppDispatch,
-  useAppSelector
-} from "../../hooks";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
+import { Box, Grid, Stack, Button, IconButton, Divider, Popover, Switch, FormControlLabel } from "@mui/material";
 import { getBTCPrice, getETHPrice } from "../../utils/apis";
-import { addSwapItem } from "../../slices/activitiesSlice";
-import styles from '../styles/SwapCreate.module.css';
+import styles from '../../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
-import {
-	updateSwapInfo,
-	updateSwapStatus
-} from "../../slices/activitiesSlice.js";
-import { setNodeBalance, setWalletBalance } from '../../slices/walletSlice';
+import { hashSecret, fromWei, fromSats, toWei, toSats, log } from "../../utils/helpers";
+import { DemoSwap } from "./DemoSwap";
+import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
+import classNames from 'classnames';
+import CloseIcon from '@mui/icons-material/Close';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { activitiesStore } from "../../syncstore/activitiesstore";
+import { userStore } from "../../syncstore/userstore";
+import { walletStore } from "../../syncstore/walletstore";
 
 export const SwapCreate = () => {
+  const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
+  const ASSET_TYPES = globalWallet.assets;
   const mock = false;
 
-	const dispatch = useAppDispatch();
-
-  const [baseQuantity, setBaseQuantity] = useState();
-  const [quoteQuantity, setQuoteQuantity] = useState();
+  const [baseQuantity, setBaseQuantity] = useState(0);
+  const [quoteQuantity, setQuoteQuantity] = useState(0);
+  const [baseAsset, setBaseAsset] = useState(0);
+  const [quoteAsset, setQuoteAsset] = useState(1);
+  const [limitOrder, setLimitOrder] = useState(true);
+  const [settingModalOpen, setSettingModalOpen] = useState(false);
+  const [secret, setSecret] = useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [orderSecret, setOrderSecret] = useState(null);
   const [curPrices, setCurPrices] = useState({
     BTC: 0,
     ETH: 0,
     fetching: true
   });
-  const [baseAsset, setBaseAsset] = useState('BTC');
-  const [quoteAsset, setQuoteAsset] = useState('ETH');
-  const [limitOrder, setLimitOrder] = useState(true);
 
-  const hashSecret = async function hash(bytes) {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-    console.log('hashBuffer', hashBuffer)
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    console.log('hashArray', hashArray)
-    const hashHex = hashArray
-      .map(bytes => bytes.toString(16).padStart(2, '0'))
-      .join('');
-    console.log('hashHex', hashHex);
-      // log("hashSecret output utf8", utf8);
-      // log("hashSecret output hashBuffer", hashBuffer);
-      // log("hashSecret output hashArray", hashArray);
-      // log("hashSecret output hashHex", hashHex);
-    return hashHex;
+
+  const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
+  const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
+  const nodeConnected = globalWallet.assets[0].connected;
+  const walletConnected = globalWallet.assets[1].connected;
+  const node = globalWallet.assets[0];
+  const wallet = globalWallet.assets[1];
+  const useAdditionalInput = globalWallet.useAdditionalInput;
+
+  const notify = () => toast.error(
+    "Balance Limit Exceeded!", 
+    {
+      theme: "colored", 
+      autoClose: 1000
+    }
+  );
+
+  const handleClickSetting = (e) => {
+    //setLimitOrder(!limitOrder);
+    setAnchorEl(e.currentTarget);
+    setSettingModalOpen(!settingModalOpen);
   }
-  const [secret, setSecret] = useState(null);
-  const [orderSecret, setOrderSecret] = useState(null);
 
-  const [swapState, setSwapState] = useState(0);
-  const [createSwap, setCreateSwap] = useState(false);
-  const activities = useAppSelector(state => state.activities.activities);
-  const nodeConnected = useAppSelector(state => state.wallet.node.connected);
-  const walletConnected = useAppSelector(state => state.wallet.wallet.connected);
-  const user = useAppSelector(state => state.user);
-  const node = useAppSelector(state => state.wallet.node);
-  const wallet = useAppSelector(state => state.wallet.wallet);
+  async function getBalance() {
+    const {balances} = await user.user.getBalance(user.user.credentials);
+    console.log({balances})
+    if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
+  }
 
   const logOut = () => {
     dispatch(signOut());
     dispatch(clearNodeData());
     dispatch(clearWalletData());
     setOpen(false);
-    // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
-  }
-
-  const log = (message, obj, debug = true) => {
-    if (debug) {
-      console.log(message + " (SwapCreate)")
-     console.log(obj)
-    }
-  }
-
-  const toWei = (num) => { return num * 1000000000000000000 }
-  const fromWei = (num) => { return num / 1000000000000000000 }
-  const toSats = (num) => { return num * 100000000 }
-  const fromSats = (num) => { return num / 100000000 }
+  };
 
   useEffect(() => {
     const core = async () => {
@@ -96,212 +83,218 @@ export const SwapCreate = () => {
       });
     };
     core();
-    setSecret(null)
-    setOrderSecret(null)
-
+    setSecret(null);
+    setOrderSecret(null);
   }, []);
 
-  useEffect(() => {
-    log("useEffect {user, orderSecret}", { user, orderSecret })
+  useEffect(() => { // when user is logged in, connect to ws
+    log("useEffect {user, orderSecret}", { user, orderSecret });
     if(user.isLoggedIn) {
       try {
         log("user", user);
-        const connected = user.user.connect()
+        const connected = user.user.connect();
       } catch (error) {
         console.warn(`sorry an error occurred, due to ${error.message} `);
         // logOut();
       }
-    }
+    };
 
-    return () => {
+    return () => { // clean up function to clear user connection from ws
       if(user.isLoggedIn) user.user.disconnect()
       console.log("useEffect cleanup");
     };
-
   }, [user]);
 
   useEffect(() => {
-    log("running useEffect", swapState)
-    if(swapState === 0) {
-      console.log("swapState: swap begins ", swapState)
+    if(!user.user) return;
+    activities.forEach(activity => {
+      if(activity.status === 0) {
+        log("swapState: swap begins ", activity.status);
+        setTimeout(() => { 
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 1} });
+        }, 500);
+      }
+    });
 
-    } else if(swapState === 1) {
-      console.log("swapState: swap order request sent ", swapState)
+    user.user.on('swap.created', swap => {
+      activities.forEach(activity => {
+        if(activity.status !== 1 || user.user.id !== swap.secretSeeker.id || activity.secretHash !== swap.secretSeeker.hash || activity.id !== swap.id) return;
+        //log("swapState: swap order request sent ", swapState)
 
-      user.user.on("swap.created",swap => {
-        // dispatch(updateSwapStatus({ status: 2 }));
-        log('swap.created event received', swap)
-        if(user.user.id == swap.secretSeeker.id){ // TODO also add check if swapOpen already called on swap id
+        if(user.user.id === swap.secretSeeker.id) {
+          log('swap.created event received', swap)
           const network = swap.secretHolder.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
-          setSwapState(2);
-          console.log("swapOpen (secretSeeker) requested, sentsettingSwapState to 2");
+
+          console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
           user.user.swapOpen(swap, { [network]: credentials[network]});
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 2} });
         }
-      })
-      user.user.on("swap.opening", swap => {
-        // dispatch(updateSwapStatus({ status: 3 }));
-        log('swap.opening event received', swap)
-        log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null",orderSecret)
-        if(user.user.id == swap.secretHolder.id && orderSecret!=null) { // TODO also add check if swapOpen already called on swap id
+      });
+    });
+    user.user.on("swap.opening", swap => {
+      activities.forEach(activity => {
+        if(activity.status !== 1 || user.user.id !== swap.secretHolder.id || activity.secretHash !== swap.secretHolder.hash || activity.id !== swap.id) return;
+        //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
+
+        if(user.user.id == swap.secretHolder.id && orderSecret!=null) {
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
-          // setSwapState(2);
-          // console.log("settingSwapState to 2");
           user.user.swapOpen(swap, { [network]: credentials[network], secret });
-          setSwapState(2);
           console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 2} });
         }
-      })
-
-    } else if(swapState === 2) {
-      console.log("swapState: swap.created/opening swapOpen sent", swapState)
-      user.user.on("swap.opened",swap => {
-        // dispatch(updateSwapStatus({ status: 4 }));
-        log('swap.opened event received', swap)
-        // log("orderSecret in swap.opened",orderSecret)
+      });
+    });
+    user.user.on("swap.opened",swap => {
+      activities.forEach(activity => {
+        if(activity.status !== 2 || user.user.id !== swap.secretSeeker.id || activity.id !== swap.id) return;
+        //log('swap.opened event received', swap)
         if(user.user.id == swap.secretSeeker.id){
           const network = swap.secretHolder.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapCommit(swap, credentials);
-          setSwapState(3);
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 3, btcAddress: '5b2458b88205d8c6d6252fcb1440ab5248dc15e4a237086202203f5054128d14'} });
           console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
         }
-      })
-      user.user.on("swap.committing",swap => {
-        // dispatch(updateSwapStatus({ status: 5 }));
-        log('swap.committing event received', swap)
-        log("orderSecret in swap.committing",orderSecret)
+      });
+    })
+    user.user.on("swap.committing",swap => {
+      activities.forEach(activity => {
+        if(activity.status !== 2 || user.user.id !== swap.secretHolder.id || activity.id !== swap.secretHolder.hash) return;
+        //log('swap.committing event received', swap)
+        //log("orderSecret in swap.committing",orderSecret)
 
         if(user.user.id == swap.secretHolder.id){
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapCommit(swap, credentials);
-          setSwapState(3);
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 3} });
           console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
         }
-
-      })
-
-    } else if(swapState === 3) {
-      console.log("swapState swap.opened/committing swapCommit sent", swapState)
-      user.user.on("swap.committed",swap => {
+      });
+    });
+    user.user.on("swap.committed",swap => {
+      activities.forEach(activity => {
+        if(activity.status !== 3 || (activity.id !== swap.id && activity.id !== swap.secretHolder.hash)) return;
         log('swap.committed event received', swap)
-
         let ethBal, btcBal;
 
-        if(user.user.id == swap.secretHolder.id){
-            btcBal = toSats(node.balance) - swap.secretHolder.quantity;
-            ethBal = toWei(wallet.balance) + swap.secretSeeker.quantity;
+        if(user.user.id == swap.secretSeeker.id){
+          //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
+          ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 4} });
+          walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
         } else {
-          btcBal = toSats(node.balance) + swap.secretHolder.quantity;
-          ethBal = toWei(wallet.balance) - swap.secretSeeker.quantity;
+          btcBal = node.balance + fromSats(swap.secretSeeker.quantity);
+          //ethBal = wallet.balance - fromSats(swap.secretSeeker.quantity) * curPrices.BTC / curPrices.ETH;
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 4} });
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
 
         console.log("swap claim completed, settingSwapState to 4");
-        setSwapState(4);
 
         const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        dispatch(setNodeBalance(fromSats(btcBal)))
-        dispatch(setWalletBalance(fromWei(ethBal)))
-      })
 
+
+    
+      });
+    })
+  }, [activities, user]);
+
+  const coinTypeChanged = (isBase, asset) => {
+    let another = isBase ? quoteAsset : baseAsset;
+
+    if(!ASSET_TYPES[baseAsset].isNFT && !ASSET_TYPES[quoteAsset].isNFT) another = ASSET_TYPES[asset].type === 'BTC' ? 1 : 0;
+    if(isBase) {
+      setBaseAsset(asset);
+      setQuoteAsset(another);
+      if(!limitOrder) setQuoteQuantity(baseQuantity * curPrices[ASSET_TYPES[asset].type] / curPrices[ASSET_TYPES[another].type]);
+      if(ASSET_TYPES[asset].isNFT) setBaseQuantity(1);
     }
-    // else if(swapState === 4) {
-    //   console.log("swapState ", swapState)
-    // } else if(swapState === 5) {
-    //   console.log("swapState ", swapState)}
-
-  }, [swapState]);
-  useEffect(() => {
-    // log("activities", activities)
-    if(activities.length > 0)
-    dispatch(updateSwapStatus({ secretHash: orderSecret ,status: swapState + 1 }));
-  }, [swapState, activities]);
-
-  const coinTypeChanged = (isBase, coinType) => {
-    if(!limitOrder) {
-      if(isBase) setQuoteQuantity(baseQuantity * curPrices[coinType] / curPrices[quoteAsset]);
-      else  setBaseQuantity(quoteQuantity * curPrices[coinType] / curPrices[baseAsset]);
+    else {
+      setQuoteAsset(asset);
+      setBaseAsset(another);
+      if(!limitOrder) setBaseQuantity(quoteQuantity * curPrices[ASSET_TYPES[asset].type] / curPrices[ASSET_TYPES[another].type]);
+      if(ASSET_TYPES[asset].isNFT) setQuoteQuantity(1);
     }
   }
 
   const onInputBaseQuantity = (e) => {
+    if(e.target.value < 0) return;
     setBaseQuantity(e.target.value);
-    if(!limitOrder) setQuoteQuantity(e.target.value * curPrices[baseAsset] / curPrices[quoteAsset]);
+    if(!limitOrder) setQuoteQuantity(e.target.value * curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]);
   }
 
   const onInputQuoteQuantity = (e) => {
+    if(e.target.value < 0) return;
     setQuoteQuantity(e.target.value);
-    if(!limitOrder) setBaseQuantity(e.target.value * curPrices[quoteAsset] / curPrices[baseAsset]);
+    if(!limitOrder) setBaseQuantity(e.target.value * curPrices[ASSET_TYPES[quoteAsset].type] / curPrices[ASSET_TYPES[baseAsset].type]);
   }
 
-  const onCreateSwap = async (order) => {
+  const onOrderSwap = async (order) => {
     const secret = crypto.getRandomValues(new Uint8Array(32))
     const secretHex = [...secret]
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('')
-    console.log('secret', secret)
-    console.log('secretHex', secretHex)
-    // const secret = Math.random().toString(36).slice(2);
-
-    // log("{secret, secretHash, secret256}",{secret, secretHash: await hashSecret(secret)});
-    const secretHash = await hashSecret(secret);
-    console.log('secretHash', secretHash)
+      const secretHash = await hashSecret(secret);
+    
+    console.log('secret', secret);
+    console.log('secretHex', secretHex);
+    console.log('secretHash', secretHash);
 
     setSecret(secretHex);
     setOrderSecret(secretHash);
-    if(baseQuantity==0 || quoteQuantity==0) {
-      console.log("baseQuantity or quoteQuantity is 0");
-    }
-    else {
-      setBaseQuantity();
-      setQuoteQuantity();
-      setSwapState(0); // swap begins
-      await thenCreateSwap(order, secret, secretHash);
-    }
+
+    // if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
+    //   notify();
+    //   return;
+    // }
+    
+    await thenOrderSwap(order, secret, secretHash);
   }
 
-const thenCreateSwap = async (order, secret, secretHash) => {
-
+  const thenOrderSwap = async (order, secret, secretHash) => {
     const ask = order.side=='ask';
-    const baseA = order.baseAsset ? order.baseAsset : baseAsset
-    const quoteA = order.quoteAsset ? order.quoteAsset : quoteAsset
-    const baseQty = order.baseQuantity ? order.baseQuantity : baseQuantity
-    const quoteQty = order.quoteQuantity ? order.quoteQuantity : quoteQuantity
-    const baseNet= order.baseNetwork
-    const quoteNet = order.quoteNetwork
+    const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type;
+    const quoteA = order.quoteAsset ? order.quoteAsset : ASSET_TYPES[quoteAsset].type;
+    const baseQty = order.baseQuantity ? order.baseQuantity : baseQuantity;
+    const quoteQty = order.quoteQuantity ? order.quoteQuantity : quoteQuantity;
+    const baseNet= order.baseNetwork, quoteNet = order.quoteNetwork;
+    const baseO = { asset: baseA, network: baseNet, quantity: baseQty }, 
+        quoteO = { asset: quoteA,  network: quoteNet, quantity: quoteQty };
 
     const args = ask ?  { // if order is an ask, bitcoin as base
-      base: {
-        asset: baseA,
-        network: baseNet,
-        quantity: baseQty
-      },
-      quote: {
-        asset: quoteA,
-        network: quoteNet,
-        quantity: quoteQty
-      }
+      base: baseO,
+      quote: quoteO
     } : {
-      base: {
-        asset: quoteA,
-        network: quoteNet,
-        quantity: quoteQty
-      },
-      quote: {
-        asset: baseA,
-        network: baseNet,
-        quantity: baseQty
-      }
-    }
+      base: quoteO,
+      quote: baseO
+    };
 
     try {
-
       // setOrderSecret(secretHash);
-    } catch (error) {log("error on setOrderSecret(secretHash)", error.message)}
+    } catch (error) { log("error on setOrderSecret(secretHash)", error.message); }
     finally {
+      // console.log("ASSET_TYPES[args.base.asset].rate" + ASSET_TYPES[args.base.asset].rate);
+      console.log("args.base.asset" + args.base.asset);
+      console.log("baseAsset" + baseAsset);
+      console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES["${args.base.asset}"]);
+      console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES[args.base.asset]);
+      console.log("ASSET_TYPES[baseAsset]" + ASSET_TYPES["${baseAsset}"]);
+      console.log(ASSET_TYPES[baseAsset]);
+      let bai = 0;
+      while (bai < ASSET_TYPES.length)  {
+        if(ASSET_TYPES[bai].type == args.base.asset) break;
+        bai++;
+      }
+      let qai = 0;
+      while (qai < ASSET_TYPES.length)  {
+        if(ASSET_TYPES[qai].type == args.quote.asset) break;
+        qai++;
+      }
+
       await user.user.submitLimitOrder(
       {
         uid: user.user.id,
@@ -309,15 +302,12 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         hash: secretHash,
         baseAsset: args.base.asset,
         baseNetwork: args.base.network,
-        baseQuantity: toSats(args.base.quantity),
+        baseQuantity: 1,
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
-        quoteQuantity: toWei(args.quote.quantity)
+        quoteQuantity: args.quote.quantity * ASSET_TYPES[qai].rate
       }
     ).then(data => {
-      setSwapState(1); // swap request sent
-      // log("this is data inside submitLimitOrder", data);
-
       const curDate = new Date();
       const date = {
         year: curDate.getFullYear(),
@@ -325,33 +315,34 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         day: curDate.getDate()
       };
 
+      const baseQ = {
+            asset: data.baseAsset,
+            network: order.baseNetwork,
+            quantity: data.baseQuantity / ASSET_TYPES[bai].rate
+          }, quoteQ = {
+            asset: data.quoteAsset,
+            network: order.quoteNetwork,
+            quantity: data.quoteQuantity / ASSET_TYPES[qai].rate
+          };
 
-      const ask = order.side=='ask';
-      const args = ask ?  { // if order is an ask, bitcoin as base
-        base: {
-          asset: data.baseAsset,
-          network: order.baseNetwork,
-          quantity: fromSats(data.baseQuantity)
-        },
-        quote: {
-          asset: data.quoteAsset,
-          network: order.quoteNetwork,
-          quantity: fromWei(data.quoteQuantity)
-        }
-      } : {
-        base: {
-          asset: data.quoteAsset,
-          network: order.quoteNetwork,
-          quantity: fromWei(data.quoteQuantity)
-        },
-        quote: {
-          asset: data.baseAsset,
-          network: order.baseNetwork,
-          quantity: fromSats(data.baseQuantity)
-        }
-      }
+      /*if(order.side == 'ask') {
+        dispatch(setNodeBalance(node.balance - fromSats(data.baseQuantity)));
+      } else {
+        dispatch(setWalletBalance(wallet.balance - fromWei(data.quoteQuantity)));
+      }*/
+    const args = ask ?  { // if order is an ask, bitcoin as base
+      base: baseQ,
+      quote: quoteQ
+    } : {
+      base: quoteQ,
+      quote: baseQ
+    };          
+     /* const args = { // if order is an ask, bitcoin as base
+        base: baseQ,
+        quote: quoteQ
+      }*/
 
-      dispatch(addSwapItem({
+      activitiesStore.dispatch({ type: 'ADD_SWAP_ITEM', payload: {
         key: data.id,
         swapId: data.id,
         ts: data.ts,
@@ -367,17 +358,19 @@ const thenCreateSwap = async (order, secret, secretHash) => {
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
         quoteQuantity: args.quote.quantity,
-        status: 1,
+        status: 0,
         createdDate: date
-      }));
+      } })
 
-      setBaseQuantity(0);
-      setQuoteQuantity(0);
+      walletStore.dispatch({ type: 'REMOVE_BALANCE_ON_SWAP_ORDER', payload: {asset: baseAsset, qty: baseQuantity} })
+      setBaseQuantity(ASSET_TYPES[baseAsset].isNFT ? 1 : 0);
+      setQuoteQuantity(ASSET_TYPES[quoteAsset].isNFT ? 1 : 0);
+
     });
     }
   }
 
-  const onChangeCoinType = () => {
+  const onExchangeCoinType = () => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
     const aBase = baseAsset, aQuote = quoteAsset;
     setBaseAsset(aQuote);setQuoteAsset(aBase);
@@ -385,74 +378,109 @@ const thenCreateSwap = async (order, secret, secretHash) => {
   }
 
   const mockSwap = (order) => {
-    onCreateSwap(order);
-    // setBaseQuantity(1);
-    // setQuoteQuantity(1);
+    onOrderSwap(order);
   }
 
   return (
-    <Grid centered className={styles.SwapCreateContainer}>
-      <Grid.Row className={styles.SwapHeader}>
-        <h3>Swap</h3>
-        <Button circular secondary={limitOrder} primary={!limitOrder} icon='setting' className={styles.borderless} onClick={() => {setLimitOrder(!limitOrder)}} />
-      </Grid.Row>
-      <Grid.Row className={styles.swapExCont}>
-        <Form>
+    <Box className={styles.SwapCreateContainer}>
+      <Stack spacing={1}>
+        <Grid container height={35}>
+          <Grid item xs={4} textAlign='left' style={{display:'flex',alignItems:'flex-start'}}><h3>Swap</h3></Grid>
+          <Grid item xs={8} textAlign='right'>
+            <IconButton className={classNames({"gradient-btn": settingModalOpen})} size="medium" style={{color:'grey'}} onClick={handleClickSetting} ><SettingsIcon /></IconButton>
+            <Popover 
+              anchorEl={anchorEl}
+              open={settingModalOpen}
+              onClose={() => {setAnchorEl(null);setSettingModalOpen(false)}}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <Grid 
+                container direction='column'
+                style={{backgroundColor:'black',width:'100%',height:'100%',padding:'1em'}}
+              >
+                <Grid item container direction='row' style={{color:'white'}} className="flex-middle">
+                  <Grid item xs='10'>Settings</Grid>
+                  <Grid item xs='2'><IconButton onClick={handleClickSetting}><CloseIcon style={{color:'white'}} /></IconButton></Grid>
+                </Grid>
+                <FormControlLabel control={<Switch checked={limitOrder} onChange={(e) => setLimitOrder(!limitOrder)} />} label="Limit Order" />
+                <FormControlLabel control={<Switch checked={useAdditionalInput} onChange={(e) => {walletStore.dispatch({type: 'SET_USE_ADDITIONAL_INPUT', payload: !useAdditionalInput})}} />} label="Use Additional Input" />
+                { useAdditionalInput && <h4 style={{color:'white'}}>{ASSET_TYPES[baseAsset].title}</h4> }
+                {
+                  useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option) => 
+                    <FormControlLabel 
+                      control={
+                        <input 
+                          style={{border:'1px solid grey',width:'150px'}} 
+                          value={option.value}
+                          onChange={(e) => walletStore.dispatch({type: 'SET_ADDITIONAL_INPUT_DATA', payload: {type: baseAsset.type, option_type: option.type, value: e.target.value}})} 
+                        />
+                      }
+                      label={option.title} 
+                      labelPlacement='start'
+                    />
+                  )
+                }
+                { useAdditionalInput && ASSET_TYPES[quoteAsset].options && <h4 style={{color:'white'}}>{quoteAsset.title}</h4> }
+                {
+                  useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option) => 
+                    <FormControlLabel 
+                      control={<input style={{border:'1px solid grey',width:'150px'}} />}
+                      label={option.title} 
+                      labelPlacement='start'
+                    />
+                  )
+                }
+              </Grid>
+            </Popover>
+          </Grid>
+        </Grid>
+        <Grid className={styles.swapExCont}>
           <SwapAmountItem
-            className='mb-1'
-            coinType={baseAsset}
-            unitPrice={curPrices[baseAsset]}
+            assetId={baseAsset}
+            unitPrice={curPrices[ASSET_TYPES[baseAsset].type]}
             amount={baseQuantity}
+            availQty={ASSET_TYPES[baseAsset].type === 'BTC' ? node.balance : wallet.balance}
             onAmountChange={onInputBaseQuantity}
-            onCoinTypeChange={(e, data) => {setBaseAsset(data.value);coinTypeChanged(true, data.value);}}
+            onCoinTypeChange={(asset) => {coinTypeChanged(true, asset);}}
             limitOrder={limitOrder}
-            />
-          <Divider />
-          <Button className={styles.exchange} onClick={onChangeCoinType}><Icon name='exchange' /></Button>
+          />
+          <Divider style={{borderColor:'#202020',marginTop:'0.5em'}} />
+          <IconButton className={styles.exchange} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
           <SwapAmountItem
-            className='mt-1 mb-0'
-            coinType={quoteAsset}
-            unitPrice={curPrices[quoteAsset]}
+            className='mt-m1 mb-0'
+            assetId={quoteAsset}
+            unitPrice={curPrices[ASSET_TYPES[quoteAsset].type]}
             amount={quoteQuantity}
+            availQty={ASSET_TYPES[baseAsset].type === 'ETH' ? node.balance : wallet.balance}
             onAmountChange={onInputQuoteQuantity}
-            onCoinTypeChange={(e, data) => {setQuoteAsset(data.value);coinTypeChanged(false, data.value);}}
+            onCoinTypeChange={(asset) => {coinTypeChanged(false, asset);}}
             limitOrder={limitOrder}
             />
-        </Form>
-      </Grid.Row>
-      <Grid.Row>
-        { (nodeConnected && walletConnected)
-            ? ((baseQuantity || true)
-              ? <>
-                  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${baseAsset} = ${Number(curPrices[baseAsset] / curPrices[quoteAsset]).toFixed(6)} ${quoteAsset}` }</p>
-                  <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onCreateSwap({side: (
-                    baseAsset == 'BTC' ? 'ask' : 'bid'),
-                    baseNetwork: (baseAsset == 'BTC' ? 'lightning.btc' :'eth-l2.eth'),
-                    quoteNetwork: (baseAsset == 'BTC' ? 'eth-l2.eth' : 'lightning.btc') })}>Swap</Button>
-                  {mock && <>
-                    <p>demo swap</p>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
-                      side: 'ask',
-                      baseAsset: 'BTC',
-                      baseNetwork: 'lightning.btc',
-                      baseQuantity: 0.001,
-                      quoteAsset: 'ETH',
-                      quoteNetwork: 'eth-l2.eth',
-                      quoteQuantity: 0.0000000000001})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => mockSwap({
-                      side: 'bid',
-                      baseAsset: 'ETH',
-                      baseNetwork: 'eth-l2.eth',
-                      baseQuantity: 0.0000000000001,
-                      quoteAsset: 'BTC',
-                      quoteNetwork: 'lightning.btc',
-                      quoteQuantity: 0.001})}>Swap 0.0000000000001 ETH for 0.001 BTC</Button>
-                  </>}
-                </>
-              : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Enter Amounts to Swap</Button> )
-            : <Button circular secondary className='gradient-btn w-100 h-3' disabled>Connect Node & Wallet to Swap</Button>
-        }
-      </Grid.Row>
-    </Grid>
+        </Grid>
+        <Grid>
+          { (nodeConnected && walletConnected)
+              ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
+                ? <>
+                    <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p>
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({side: (
+                      (ASSET_TYPES[baseAsset].type == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
+                      baseNetwork: ASSET_TYPES[baseAsset].network,
+                      quoteNetwork: ASSET_TYPES[quoteAsset].network })}>Swap</Button>
+                    {mock && <DemoSwap mockSwap={mockSwap} /> }
+                  </>
+                : <Button circular secondary className='w-100 h-3 gradient-btn-disabled' disabled>Enter Amounts to Swap</Button> )
+              : <Button circular secondary className='w-100 h-3 gradient-btn-disabled' disabled>Connect Wallets to Continue</Button>
+          }
+        </Grid>
+        <ToastContainer />
+      </Stack>
+    </Box>
   );
 }

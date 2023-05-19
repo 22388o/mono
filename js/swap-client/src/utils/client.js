@@ -33,7 +33,7 @@ export default class Client extends EventEmitter {
     this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
-    this.pathname = props.pathname || '/api/v1/updates'
+    this.pathname = props.pathname || '/api/v2/updates'
     this.credentials = props.credentials
     this.websocket = null
 
@@ -101,9 +101,9 @@ export default class Client extends EventEmitter {
     */
   disconnect () {
     return new Promise((resolve, reject) => {
-      // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
-      // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
-      // this.websocket.close() // TODO
+      this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
+      this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+      this.websocket.close() // TODO
     })
   }
 
@@ -112,7 +112,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
-    return this._request('/api/v1/orderbook/limit', { method: 'PUT' }, {
+    return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -130,7 +130,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to delete the orderbook
     */
   cancelLimitOrder (order) {
-    return this._request('/api/v1/orderbook/limit', { method: 'DELETE' }, {
+    return this._request('/api/v2/orderbook/limit', { method: 'DELETE' }, {
       id: order.id,
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
@@ -144,7 +144,7 @@ export default class Client extends EventEmitter {
     * @returns {Swap}
     */
   swapOpen (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'PUT' }, { swap, opts })
+    return this._request('/api/v2/swap', { method: 'PUT' }, { swap, opts })
   }
 
    /**
@@ -154,7 +154,7 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapCommit (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'POST' }, { swap, opts })
+    return this._request('/api/v2/swap', { method: 'POST' }, { swap, opts })
   }
 
    /**
@@ -164,8 +164,43 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
+    return this._request('/api/v2/swap', { method: 'DELETE' }, { swap, opts })
   }
+
+
+  /**
+   * Get balance from all connected channels of the client
+   * @param {Object} opts Options for the operation
+   * @returns {Object} balances - containing full balance
+   *   - pendingBalance - 
+   *   - inbound - 
+   *   - unsettledBalance - 
+   *   - inbound - 
+   *   - pendingInbound - 
+   */
+  getBalance (opts) {
+    return this._request('/api/v1/channel', { method: 'POST' }, { opts })
+  }
+
+  // getBalance (opts) {
+  //   return this._request({
+  //     method: 'GET',
+  //     path: '/api/v1/channel'
+  //   }, { opts })
+  // }
+
+
+
+  /**
+   * Create a lightning invoice for client, payable by anyone
+   * @param {Object} opts Options for the operation
+   * @returns {Object} invoice - created invoice hash
+   */
+  createInvoice (opts) {
+    return this._request('/api/v1/invoice', { method: 'POST' }, opts)
+  }
+
+
 
    /**
     * Performs an HTTP request and returns the response
