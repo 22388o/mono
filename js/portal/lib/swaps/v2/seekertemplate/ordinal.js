@@ -163,7 +163,7 @@ module.exports = class Ordinal extends SeekerTemplate {
         }
 
         const currentHeight = scantx[0].height;
-        const totalAmount = Math.round(scantx[0].total_amount * 10E8);
+        const totalAmount = Math.round(scantx[0].total_amount * 10E7);
         console.log(`### totalAmount   ###: ${totalAmount}`)
 
         const utxos = scantx[0].unspents
@@ -223,7 +223,7 @@ module.exports = class Ordinal extends SeekerTemplate {
             throw new Error('Swap hash does not match payment hash for invoice ')
         }
 
-        console.log('Carol about to pay invoice')
+        console.log('Bob about to pay invoice')
         const paidInvoice = await payViaPaymentRequest(carolAdmin).catch(reason => console.log(reason))
 
         console.log(`paidInvoice.secret: ${paidInvoice.secret}`)
