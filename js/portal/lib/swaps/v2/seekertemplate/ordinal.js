@@ -190,7 +190,7 @@ module.exports = class Ordinal extends SeekerTemplate {
         const paymentTxHeight = utxo.height
         const confirmations = currentHeight - paymentTxHeight + 1;
         if (confirmations < REQUIRED_CONFIRMATIONS) {
-            console.log(`insufficient confirmations so far: ${confirmations} (must be 3 or greater)`)    // TODO: determine return contract
+            console.log(`insufficient confirmations so far: ${confirmations} (must be ${REQUIRED_CONFIRMATIONS} or greater)`)    // TODO: determine return contract
             return void 0;
         }
 
