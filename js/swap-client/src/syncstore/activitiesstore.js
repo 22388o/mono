@@ -8,10 +8,13 @@ const activitiesStore = {
         newState.push(action.payload);
         return newState;
       case 'UPDATE_SWAP_STATUS':
-        const toUpdate = newState.filter(activity => activity.secretHash == action.payload.secretHash);
+        const toUpdate = newState.filter(activity => activity.orderId == action.payload.orderId);
+        console.log("updating activity " + action.payload.orderId)
+        console.log(action.payload)
         if(toUpdate.length > 0){
-          if(action.payload.btcAddress) toUpdate[0].btcAddress = action.payload.btcAddress;
-          toUpdate[0].status = action.payload.status;
+          if(action.payload.status) toUpdate[0].status = action.payload.status;
+          if(action.payload.paymentAddress) toUpdate[0].paymentAddress = action.payload.paymentAddress;
+          if(action.payload.tx) toUpdate[0].tx = action.payload.tx;
         } 
         return newState;
       case 'REMOVE_LATEST_SWAP': 
@@ -21,7 +24,7 @@ const activitiesStore = {
         newState.splice(action.payload, 1);
         return newState;
       case 'UPDATE_SWAP_INFO':
-        newState.filter(activity => activity.swapId === action.payload.index)[0][action.payload.field] = action.payload.info;
+        newState.filter(activity => activity.orderId === action.payload.index)[0][action.payload.field] = action.payload.info;
         return newState;
       default: 
         return activitiesStore.currentState

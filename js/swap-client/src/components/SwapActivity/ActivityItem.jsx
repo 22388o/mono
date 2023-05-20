@@ -6,7 +6,7 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import { activitiesStore } from '../../syncstore/activitiesstore';
 
 export const ActivityItem = ({ activity, index, handleClick }) => {
-  const link='https://bscscan.com/address/' + activity.hash;
+  const link='https://ordinals.com/tx/' + activity.hash;
   
   const onCancelSwap = (e) => {
     e.stopPropagation();
@@ -23,7 +23,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
           <Stack direction='column' textAlign='left'>
             <span>{ SWAP_STATUS[activity.status] }</span>
             <span className='grey'>{ getStringFromDate(activity.createdDate) }</span>
-            { activity.status === 4 && <a href={link}>{ activity.hash.slice(0, 20) + '...' }</a> }
+            { activity.status === 4 && activity.hash.slice(0, 20) + '...'  }
           </Stack>
         </Stack>
       </Grid>

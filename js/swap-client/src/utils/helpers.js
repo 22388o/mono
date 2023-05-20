@@ -2,7 +2,7 @@ export const SWAP_STATUS = [
   'Submitting order', 
   'Finding match', 
   'Order matched', 
-  'Finalizing order', 
+  'Pending Payment', 
   'Completed'
 ];
 

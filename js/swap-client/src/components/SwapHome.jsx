@@ -123,15 +123,15 @@ export const SwapHome = () => {
       <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
-            <WalletComponent />
+            <SwapActivity />
           </Grid>
+          {/* <Grid item>
+            <WalletComponent />
+          </Grid> */}
         </Grid>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
             <SwapCreate />
-          </Grid>
-          <Grid item>
-            <SwapActivity />
           </Grid>
         </Grid>
       </Grid>

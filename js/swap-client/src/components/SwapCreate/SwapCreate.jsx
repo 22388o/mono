@@ -88,7 +88,7 @@ export const SwapCreate = () => {
   }, []);
 
   useEffect(() => { // when user is logged in, connect to ws
-    log("useEffect {user, orderSecret}", { user, orderSecret });
+    // log("useEffect {user, orderSecret}", { user, orderSecret });
     if(user.isLoggedIn) {
       try {
         log("user", user);
@@ -107,100 +107,169 @@ export const SwapCreate = () => {
 
   useEffect(() => {
     if(!user.user) return;
+    // log("user.user.id", user.user.id);
     activities.forEach(activity => {
       if(activity.status === 0) {
         log("swapState: swap begins ", activity.status);
-        setTimeout(() => { 
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 1} });
-        }, 500);
+        // setTimeout(() => { 
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: activity.orderId, status: 1} });
+          log("swapState: swap iter: activity.orderId  ", activity.orderId);
+          log("swapState: swap iter: activity.status  ", activity.status);
+        // }, 50);
       }
     });
-
-    user.user.on('swap.created', swap => {
+    user.user.on("swap.created", swap => {
       activities.forEach(activity => {
-        if(activity.status !== 1 || user.user.id !== swap.secretSeeker.id || activity.secretHash !== swap.secretSeeker.hash || activity.id !== swap.id) return;
-        //log("swapState: swap order request sent ", swapState)
+        // log("activity",activity)
+        // activity.status !== 1 || 
+        if(activity.status !== 1 || user.user.id !== swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) || 
+          activity.orderId !== swap.secretHolder.orderId) return;
+        //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
+                
+        // log("activity.status", activity.status);
+        // log("swap.secretHolder.id", swap.secretHolder.id);
+        // log("user.user.id", user.user.id);
+        // log("swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--'))",swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')))
+        if(user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) && orderSecret!=null) {
+          // const network = swap.secretSeeker.network['@type'].toLowerCase();
+          // const credentials = user.user.credentials;
+          user.user.swapOpenV2({
+                                  swap: {
+                                    id: swap.id, 
+                                    swapHash: swap.secretHash
+                                  },
+                                  party: {
+                                    id: swap.secretHolder.id
+                                  },
+                                  opts: {
 
-        if(user.user.id === swap.secretSeeker.id) {
-          log('swap.created event received', swap)
-          const network = swap.secretHolder.network['@type'].toLowerCase();
-          const credentials = user.user.credentials;
+                                  }
+                                });
+          log("swapOpen (secretHolder) requested, sent settingSwapState to 2", swap.id);
 
-          console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
-          user.user.swapOpen(swap, { [network]: credentials[network]});
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 2} });
+           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
+        } else {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeekerer.orderId, status: 2} });
         }
       });
     });
+
     user.user.on("swap.opening", swap => {
       activities.forEach(activity => {
-        if(activity.status !== 1 || user.user.id !== swap.secretHolder.id || activity.secretHash !== swap.secretHolder.hash || activity.id !== swap.id) return;
-        //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
+        // 
+        if(user.user.id !== swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--')) || 
+          activity.orderId !== swap.secretSeeker.orderId ) return;
+        //log("swapState: swap order request sent ", swapState)
 
-        if(user.user.id == swap.secretHolder.id && orderSecret!=null) {
-          const network = swap.secretSeeker.network['@type'].toLowerCase();
-          const credentials = user.user.credentials;
-          user.user.swapOpen(swap, { [network]: credentials[network], secret });
-          console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 2} });
+        if(activity.status !== 2 || user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))) {
+          log('swap.opening event received', swap)
+          // const network = swap.secretHolder.network['@type'].toLowerCase();
+          // const credentials = user.user.credentials;
+
+          user.user.swapOpenV2( {
+                                  swap: {
+                                    id: swap.id, 
+                                    swapHash: swap.secretHash
+                                  },
+                                  party: {
+                                    id: swap.secretSeeker.id
+                                  },
+                                  opts: {
+
+                                  }
+                                });
+          console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 3");
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 3} });
+        } else {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
         }
       });
     });
-    user.user.on("swap.opened",swap => {
+    user.user.on("swap.holderPaymentPending",swap => {
       activities.forEach(activity => {
-        if(activity.status !== 2 || user.user.id !== swap.secretSeeker.id || activity.id !== swap.id) return;
+        // 
+        if(activity.status !== 3 || (
+          activity.orderId !== swap.secretHolder.orderId &&
+          activity.orderId !== swap.secretSeeker.orderId)) return;
         //log('swap.opened event received', swap)
-        if(user.user.id == swap.secretSeeker.id){
-          const network = swap.secretHolder.network['@type'].toLowerCase();
-          const credentials = user.user.credentials;
-          user.user.swapCommit(swap, credentials);
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 3, btcAddress: '5b2458b88205d8c6d6252fcb1440ab5248dc15e4a237086202203f5054128d14'} });
-          console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
+        if(user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--'))){
+          // const network = swap.secretHolder.network['@type'].toLowerCase();
+          // const credentials = user.user.credentials;
+          // user.user.swapCommit(swap, credentials);
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', 
+            payload: {
+              orderId: swap.secretHolder.orderId, 
+              paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
+          // console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
+        } else {          
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', 
+            payload: {
+              orderId: swap.secretSeeker.orderId, 
+              paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
         }
       });
     })
-    user.user.on("swap.committing",swap => {
+    user.user.on("swap.holderPaid",swap => {
       activities.forEach(activity => {
-        if(activity.status !== 2 || user.user.id !== swap.secretHolder.id || activity.id !== swap.secretHolder.hash) return;
+        if(activity.status !== 3 || user.user.id !== swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--')) || activity.orderId !== swap.secretSeeker.orderId) return;
         //log('swap.committing event received', swap)
         //log("orderSecret in swap.committing",orderSecret)
 
-        if(user.user.id == swap.secretHolder.id){
+        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
-          user.user.swapCommit(swap, credentials);
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 3} });
-          console.log("swapCommit (secretHolder) requested, settingSwapState to 3");
+          user.user.swapCommitV2({
+            swap: {
+              id: swap.id
+            },
+            party: {
+              id: swap.secretSeeker.id,
+              state: {
+                secret: activity.secret
+              }
+            },
+            opts: {
+
+            }
+          });
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4} });
+        } else {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 4} });
         }
+        console.log("swapCommit (secretSeeker) requested, settingSwapState to 4");
       });
     });
     user.user.on("swap.committed",swap => {
       activities.forEach(activity => {
-        if(activity.status !== 3 || (activity.id !== swap.id && activity.id !== swap.secretHolder.hash)) return;
+        // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
+        if(activity.status !== 3 ) return;
         log('swap.committed event received', swap)
         let ethBal, btcBal;
 
-        if(user.user.id == swap.secretSeeker.id){
+        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
           //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
           ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretSeeker.hash, status: 4} });
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4} });
           walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
         } else {
           btcBal = node.balance + fromSats(swap.secretSeeker.quantity);
           //ethBal = wallet.balance - fromSats(swap.secretSeeker.quantity) * curPrices.BTC / curPrices.ETH;
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHolder.hash, status: 4} });
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 4} });
           walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
 
         console.log("swap claim completed, settingSwapState to 4");
 
-        const invoiceETH = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        const invoiceBTC = user.user.id == swap.secretHolder.id ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        const invoiceETH = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        const invoiceBTC = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
 
 
     
       });
     })
+    return () => {
+      // cleanup
+    }
   }, [activities, user]);
 
   const coinTypeChanged = (isBase, asset) => {
@@ -344,7 +413,7 @@ export const SwapCreate = () => {
 
       activitiesStore.dispatch({ type: 'ADD_SWAP_ITEM', payload: {
         key: data.id,
-        swapId: data.id,
+        orderId: data.id,
         ts: data.ts,
         uid: data.uid,
         type: data.type,

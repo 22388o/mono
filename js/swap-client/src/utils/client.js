@@ -135,27 +135,45 @@ export default class Client extends EventEmitter {
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
     })
-  }
+    }
 
-   /**
-    * Create the required state for an atomic swap
-    * @param {Swap|Object} swap The swap to open
-    * @param {Object} opts Options for the operation
-    * @returns {Swap}
-    */
-  swapOpen (swap, opts) {
-    return this._request('/api/v2/swap', { method: 'PUT' }, { swap, opts })
-  }
+    /**
+     * Create the required state for an atomic swap
+     * @param {body|Object} swap The swap to open
+     * @returns {Swap}
+     */
+    swapOpenV2 (body) {
+      return this._request('/api/v2/swap/submarine', { method: 'PUT' },  body )
+    }
 
-   /**
-    * Completes the atomic swap
-    * @param {Swap|Object} swap The swap to commit
-    * @param {Object} opts Options for the operation
-    * @returns {Promise<Void>}
-    */
-  swapCommit (swap, opts) {
-    return this._request('/api/v2/swap', { method: 'POST' }, { swap, opts })
-  }
+    /**
+      * Create the required state for an atomic swap
+      * @param {Swap|Object} swap The swap to open
+      * @param {Object} opts Options for the operation
+      * @returns {Swap}
+      */
+    swapOpen (swap, opts) {
+      return this._request('/api/v2/swap/submarine', { method: 'PUT' }, { swap, opts })
+    }
+
+    /**
+      * Completes the atomic swap
+      * @param {Swap|Object} swap The swap to commit
+      * @param {Object} opts Options for the operation
+      * @returns {Promise<Void>}
+      */
+    swapCommit (swap, opts) {
+      return this._request('/api/v2/swap/submarine', { method: 'POST' }, { swap, opts })
+    }
+  
+    /**
+     * Completes the atomic swap
+     * @param {Body|Object} body The swap to commit
+     * @returns {Promise<Void>}
+     */
+    swapCommitV2 (body) {
+      return this._request('/api/v2/swap/submarine', { method: 'POST' },  body )
+    }
 
    /**
     * Abort the atomic swap optimistically and returns funds to owners
@@ -164,7 +182,7 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
-    return this._request('/api/v2/swap', { method: 'DELETE' }, { swap, opts })
+    return this._request('/api/v2/swap/submarine', { method: 'DELETE' }, { swap, opts })
   }
 
 
