@@ -124,7 +124,8 @@ module.exports = class Ordinal extends HolderTemplate {
         }
 
         psbt.setLocktime(bip65.encode({blocks: parseInt(swapinfo.timelock)}));
-        const fee = party.state.shared.holderFee
+        // const fee = party.state.shared.holderFee
+        const fee = 0
         const ordinalAmount = party.ordinalQuantity
 
         const amountAndFee = ordinalAmount + fee;
