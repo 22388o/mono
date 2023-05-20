@@ -131,7 +131,7 @@ module.exports = class Swaps extends EventEmitter {
      * @returns {Promise<Swap>}
      */
     open (swap, party, opts) {
-        // console.log('\nSwaps.open', swap, party, opts)
+        console.log('\nSwaps.open', swap, party, opts)
 
         if (swap == null || swap.id == null) {
             return Promise.reject(Error('unknown swap!'))
@@ -193,7 +193,7 @@ module.exports = class Swaps extends EventEmitter {
     }
 
     addPendingPayment(rawtx, swapid) {
-        this.pendingPaymentTxns.has(rawtx) || this.pendingPaymentTxns.set(rawtx, swapid)
+        this.pendingPaymentTxns.has(rawtx) || this.pendingPaymentTxns.set(rawtx, swapid )
     }
 
     removePending (address) {
@@ -239,7 +239,10 @@ module.exports = class Swaps extends EventEmitter {
                         const network = bitcoin.networks.regtest
                         const output0 = tx.outs[0]
                         const out0 = output0.script
-                        const value0 = output0.value
+                        const outputValue0 = output0.value
+                        const input0 = tx.ins[0]
+                        const inputTxn0 = input0.hash.reverse()
+
                         const addr0 = bitcoin.address.fromOutputScript(out0, network)
 
                         // console.log('checking txn seen for address: ', addr0)
@@ -249,6 +252,30 @@ module.exports = class Swaps extends EventEmitter {
                             console.log('pending txn seen for address: ', addr0)
                             console.log('pending size: ', self.getPendingSize())
                             const swap = self.getPending(addr0)
+                            const inputTxn = inputTxn0.toString('hex')
+                            const ordinalTxn = swap.secretSeeker.ordinalLocation.split(':')[0]
+                            console.log(`***** inputTxn`, inputTxn)
+                            console.log('***** ordinalTxn', ordinalTxn)
+
+
+                            if (inputTxn !== ordinalTxn) {
+                                console.log('extraneous payment made to address')
+                                // TODO: add extraneous payments to swap object
+                                // self.emit('extraneousPayment', swap)
+                                return
+                            }
+
+                            const ordinalQuantity = swap.secretHolder.baseQuantity
+
+                            console.log(`***** ordinalQuantity`, ordinalQuantity)
+                            console.log('***** outputValue0', outputValue0)
+
+                            if (outputValue0 < ordinalQuantity) {
+                                console.log('insufficientOrdinalQuantityPaid')
+                                // self.emit('insufficientOrdinalQuantityPaid', swap)
+                                return
+                            }
+
                             self.removePending(addr0)
                             // swap.setStatusToHolderPaid()
                             // self.emit('holderPaid', swap)

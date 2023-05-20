@@ -111,13 +111,13 @@ module.exports = class Ordinal extends SeekerTemplate {
             username:   this.node2.creds.rpcuser
         });
 
-        let fee
-        if (typeof(party.state.shared.holderFee) == "string") {
-            fee = parseInt(party.state.shared.holderFee, 10)
-        }
-        else {
-            fee = party.state.shared.holderFee
-        }
+        let fee = 0
+        // if (typeof(party.state.shared.holderFee) == "string") {
+        //     fee = parseInt(party.state.shared.holderFee, 10)
+        // }
+        // else {
+        //     fee = party.state.shared.holderFee
+        // }
 
         let paymentAmount
         if (typeof(party.quoteQuantity) == "string") {
