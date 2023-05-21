@@ -112,6 +112,23 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
+
+
+    // if(order.ordinalLocation)
+    //   return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
+    //     uid: this.id,
+    //     side: order.side,
+    //     hash: order.hash,
+    //     baseAsset: order.baseAsset,
+    //     baseNetwork: order.baseNetwork,
+    //     baseQuantity: order.baseQuantity,
+    //     quoteAsset: order.quoteAsset,
+    //     quoteNetwork: order.quoteNetwork,
+    //     quoteQuantity: order.quoteQuantity
+    //   })
+    console.log("order received in submitLimitOrder")
+    console.log(order)
+
     return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
       side: order.side,
@@ -121,7 +138,8 @@ export default class Client extends EventEmitter {
       baseQuantity: order.baseQuantity,
       quoteAsset: order.quoteAsset,
       quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
+      quoteQuantity: order.quoteQuantity,
+      ordinalLocation: order.ordinalLocation
     })
   }
 

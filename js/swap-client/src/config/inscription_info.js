@@ -15,12 +15,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -29,7 +29,7 @@ export const INSCRIPTIONS = [{
   detail: 'Inscription',
   rate: 1,
   isNFT: true,
-  img_url: '/public/nft/1.png',
+  img_url: 'https://i.imgur.com/ztFM4Jq.png',
   balance: 1,
   options: [{
     type: 'paddingAmount',
@@ -38,12 +38,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -61,12 +61,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -84,12 +84,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -107,12 +107,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -130,12 +130,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -153,12 +153,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -176,12 +176,12 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }, {
   title: '#486123',
@@ -199,11 +199,11 @@ export const INSCRIPTIONS = [{
   }, {
     type: 'feeAmount',
     title: 'Fee To Pay',
-    value: 1000
+    value: 0
   }],
   info: {
-    "inscription": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0",
-    "location": "e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0",
-    "explorer": "http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0"
+    "inscription": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a",
+    "location": "a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a:0:0",
+    "explorer": "http://localhost/inscription/a7a6fff0ad54bc829db477e4f163e4aad29455f77929933bb2c47615726af28a"
   }
 }];

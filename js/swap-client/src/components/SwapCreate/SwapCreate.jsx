@@ -136,14 +136,22 @@ export const SwapCreate = () => {
           user.user.swapOpenV2({
                                   swap: {
                                     id: swap.id, 
-                                    swapHash: swap.secretHash
+                                    swapHash: "ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af"
                                   },
                                   party: {
-                                    id: swap.secretHolder.id
+                                    id: swap.secretHolder.id,
+                                    state:  
+                                      { isSecretHolder: swap.secretHolder.isSecretHolder,
+                                        secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7",
+                                        swapCreationResponder: swap.secretHolder.isSecretHolder
+                                       }
                                   },
                                   opts: {
 
                                   }
+                                }).then(data => {
+                                  console.log("response from swapOpenV2")
+                                  console.log(data)
                                 });
           log("swapOpen (secretHolder) requested, sent settingSwapState to 2", swap.id);
 
@@ -169,10 +177,15 @@ export const SwapCreate = () => {
           user.user.swapOpenV2( {
                                   swap: {
                                     id: swap.id, 
-                                    swapHash: swap.secretHash
+                                    swapHash: "ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af"
                                   },
                                   party: {
-                                    id: swap.secretSeeker.id
+                                    id: swap.secretSeeker.id,
+                                    state:  
+                                      { isSecretHolder: swap.secretSeeker.isSecretHolder,
+                                        secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7",
+                                        swapCreationResponder: swap.secretSeeker.isSecretHolder
+                                       }
                                   },
                                   opts: {
 
@@ -225,7 +238,7 @@ export const SwapCreate = () => {
             party: {
               id: swap.secretSeeker.id,
               state: {
-                secret: activity.secret
+                secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7"
               }
             },
             opts: {
@@ -313,15 +326,16 @@ export const SwapCreate = () => {
     console.log('secretHex', secretHex);
     console.log('secretHash', secretHash);
 
-    setSecret(secretHex);
-    setOrderSecret(secretHash);
+    setSecret('e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7');
+    setOrderSecret('ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
 
     // if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
     //   notify();
     //   return;
     // }
     
-    await thenOrderSwap(order, secret, secretHash);
+    // await thenOrderSwap(order, secret, secretHash);
+    await thenOrderSwap(order, 'e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7', 'ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
   }
 
   const thenOrderSwap = async (order, secret, secretHash) => {
@@ -364,6 +378,8 @@ export const SwapCreate = () => {
         qai++;
       }
 
+      const ordinalLocation = !args.ordinalLocation ? args.ordinalLocation : false
+
       await user.user.submitLimitOrder(
       {
         uid: user.user.id,
@@ -371,12 +387,15 @@ export const SwapCreate = () => {
         hash: secretHash,
         baseAsset: args.base.asset,
         baseNetwork: args.base.network,
-        baseQuantity: 1,
+        baseQuantity: 4000,
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
-        quoteQuantity: args.quote.quantity * ASSET_TYPES[qai].rate
+        quoteQuantity: parseInt(args.quote.quantity * ASSET_TYPES[qai].rate),
+        ordinalLocation: order.ordinalLocation
       }
     ).then(data => {
+      console.log("order opened with this response data")
+      console.log(data)
       const curDate = new Date();
       const date = {
         year: curDate.getFullYear(),
@@ -427,6 +446,7 @@ export const SwapCreate = () => {
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
         quoteQuantity: args.quote.quantity,
+        ordinalLocation: args.ordinalLocation,
         status: 0,
         createdDate: date
       } })
@@ -538,10 +558,17 @@ export const SwapCreate = () => {
               ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
                 ? <>
                     <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p>
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({side: (
+                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
+                      side: (
                       (ASSET_TYPES[baseAsset].type == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
                       baseNetwork: ASSET_TYPES[baseAsset].network,
-                      quoteNetwork: ASSET_TYPES[quoteAsset].network })}>Swap</Button>
+                      quoteNetwork: ASSET_TYPES[quoteAsset].network,
+                      ordinalLocation:  (
+                        (ASSET_TYPES[baseAsset].isNFT || ASSET_TYPES[quoteAsset].isNFT )? 
+                          (ASSET_TYPES[baseAsset].isNFT ? 
+                            ASSET_TYPES[baseAsset].info.location : 
+                            ASSET_TYPES[quoteAsset].info.location) : 
+                          false )})}>Swap</Button>
                     {mock && <DemoSwap mockSwap={mockSwap} /> }
                   </>
                 : <Button circular secondary className='w-100 h-3 gradient-btn-disabled' disabled>Enter Amounts to Swap</Button> )
