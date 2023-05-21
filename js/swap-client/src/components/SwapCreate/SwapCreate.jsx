@@ -126,6 +126,10 @@ export const SwapCreate = () => {
           activity.orderId !== swap.secretHolder.orderId) return;
         //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
                 
+        console.log("activity.secret")
+        console.log(activity)
+        console.log(activity.secret)
+        
         // log("activity.status", activity.status);
         // log("swap.secretHolder.id", swap.secretHolder.id);
         // log("user.user.id", user.user.id);
@@ -136,13 +140,13 @@ export const SwapCreate = () => {
           user.user.swapOpenV2({
                                   swap: {
                                     id: swap.id, 
-                                    swapHash: "ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af"
+                                    swapHash: swap.secretHash
                                   },
                                   party: {
                                     id: swap.secretHolder.id,
                                     state:  
                                       { isSecretHolder: swap.secretHolder.isSecretHolder,
-                                        secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7",
+                                        secret: activity.secret,
                                         swapCreationResponder: swap.secretHolder.isSecretHolder
                                        }
                                   },
@@ -177,13 +181,13 @@ export const SwapCreate = () => {
           user.user.swapOpenV2( {
                                   swap: {
                                     id: swap.id, 
-                                    swapHash: "ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af"
+                                    swapHash: swap.secretHash
                                   },
                                   party: {
                                     id: swap.secretSeeker.id,
                                     state:  
                                       { isSecretHolder: swap.secretSeeker.isSecretHolder,
-                                        secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7",
+                                        secret: activity.secret,
                                         swapCreationResponder: swap.secretSeeker.isSecretHolder
                                        }
                                   },
@@ -238,7 +242,7 @@ export const SwapCreate = () => {
             party: {
               id: swap.secretSeeker.id,
               state: {
-                secret: "e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7"
+                secret: activity.secret
               }
             },
             opts: {
@@ -316,26 +320,28 @@ export const SwapCreate = () => {
   }
 
   const onOrderSwap = async (order) => {
-    const secret = crypto.getRandomValues(new Uint8Array(32))
-    const secretHex = [...secret]
+    const randomValues = crypto.getRandomValues(new Uint8Array(32))
+    const secretHex = [...randomValues]
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('')
-      const secretHash = await hashSecret(secret);
+    const secretHash = await hashSecret(randomValues);
     
-    console.log('secret', secret);
+    console.log('randomValues', randomValues);
     console.log('secretHex', secretHex);
     console.log('secretHash', secretHash);
 
-    setSecret('e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7');
-    setOrderSecret('ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
+    setSecret(secretHex);
+    setOrderSecret(secretHash);
+    // setSecret('e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7');
+    // setOrderSecret('ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
 
     // if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
     //   notify();
     //   return;
     // }
     
-    // await thenOrderSwap(order, secret, secretHash);
-    await thenOrderSwap(order, 'e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7', 'ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
+    await thenOrderSwap(order, secretHex, secretHash);
+    // await thenOrderSwap(order, 'e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7', 'ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
   }
 
   const thenOrderSwap = async (order, secret, secretHash) => {
@@ -437,7 +443,7 @@ export const SwapCreate = () => {
         uid: data.uid,
         type: data.type,
         side: data.side,
-        secret,
+        secret: secret,
         secretHash,
         hash: data.hash,
         baseAsset: args.base.asset,
