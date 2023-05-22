@@ -377,8 +377,8 @@ export const SwapCreate = () => {
 
   const thenOrderSwap = async (order, secret, secretHash) => {
     const ask = order.side=='ask';
-    const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type;
-    const quoteA = order.quoteAsset ? order.quoteAsset : ASSET_TYPES[quoteAsset].type;
+    const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type.split(',')[0];
+    const quoteA = order.quoteAsset ? order.quoteAsset : ASSET_TYPES[quoteAsset].type.split(',')[0];
     const baseQty = order.baseQuantity ? order.baseQuantity : baseQuantity;
     const quoteQty = order.quoteQuantity ? order.quoteQuantity : quoteQuantity;
     const baseNet= order.baseNetwork, quoteNet = order.quoteNetwork;
@@ -537,13 +537,17 @@ export const SwapCreate = () => {
                 </Grid>
                 <FormControlLabel control={<Switch checked={limitOrder} onChange={(e) => setLimitOrder(!limitOrder)} />} label="Limit Order" />
                 <FormControlLabel control={<Switch checked={useAdditionalInput} onChange={(e) => {walletStore.dispatch({type: 'SET_USE_ADDITIONAL_INPUT', payload: !useAdditionalInput})}} />} label="Use Additional Input" />
-                { useAdditionalInput && <h4 style={{color:'white'}}>{ASSET_TYPES[baseAsset].title}</h4> }
+                { (useAdditionalInput && ASSET_TYPES[baseAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[baseAsset].title}</h4> }
                 {
                   useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option) => 
                     <FormControlLabel 
                       control={
                         <input 
-                          style={{border:'1px solid grey',width:'150px'}} 
+                          style={{border:'1px solid grey',
+                                  borderRadius:'10px',
+                                  width:'90px',
+                                  marginLeft:'15px',
+                                  marginRight:'15px'}} 
                           value={option.value}
                           onChange={(e) => walletStore.dispatch({type: 'SET_ADDITIONAL_INPUT_DATA', payload: {type: baseAsset.type, option_type: option.type, value: e.target.value}})} 
                         />
@@ -553,11 +557,16 @@ export const SwapCreate = () => {
                     />
                   )
                 }
+                { (useAdditionalInput && ASSET_TYPES[quoteAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[quoteAsset].title}</h4> }
                 { useAdditionalInput && ASSET_TYPES[quoteAsset].options && <h4 style={{color:'white'}}>{quoteAsset.title}</h4> }
                 {
                   useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option) => 
                     <FormControlLabel 
-                      control={<input style={{border:'1px solid grey',width:'150px'}} />}
+                      control={<input style={{border:'1px solid grey',
+                                              borderRadius:'10px',
+                                              width:'90px',
+                                              marginLeft:'15px',
+                                              marginRight:'15px'}} />}
                       label={option.title} 
                       labelPlacement='start'
                     />
@@ -598,7 +607,7 @@ export const SwapCreate = () => {
                     <p></p>}
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
                       side: (
-                      (ASSET_TYPES[baseAsset].type == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
+                      (ASSET_TYPES[baseAsset].type.split(',')[0] == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
                       baseNetwork: ASSET_TYPES[baseAsset].network,
                       quoteNetwork: ASSET_TYPES[quoteAsset].network,
                       ordinalLocation:  (

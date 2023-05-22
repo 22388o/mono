@@ -54,12 +54,12 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
               <img className={styles['nft-asset-image']} src={asset.img_url} />
               <Stack direction='column' spacing={1}>
                 <span>{asset.detail}</span>
-                <span>{asset.title}</span>
+                <span>{asset.info.inscription.slice(0,3)}...{asset.info.inscription.slice(-3)}</span>
               </Stack>
             </Grid>
       }
       <Grid item xs={5} textAlign='right'>
-        <Button className={styles['coin-select']} onClick={() => setAssetStep(1)}><img src={asset.img_url} />{ asset.type }</Button>
+        <Button className={styles['coin-select']} onClick={() => setAssetStep(1)}><img src={asset.img_url} />{ asset.type.split('-')[0] }</Button>
       </Grid>
     </Grid>
     <MyModal open={assetStep === 1}>
