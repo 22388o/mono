@@ -9,15 +9,7 @@ const initialAssets = [{
   img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
   isNFT: false,
   data: null,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }, {
-    type: 'feeAmount',
-    title: 'Fee Amount',
-    value: 0
-  }]
+  options: []
 }, {
   title: 'Ethereum',
   type: 'ETH',

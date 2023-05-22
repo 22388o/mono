@@ -17,7 +17,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
   }
   return (
     <Grid container direction='row' style={{marginTop:0}} className={styles['activity-item']} onClick={handleClick}>
-      <Grid container item xs={8}>
+      <Grid container item xs={7}>
         <Stack direction='row' spacing={1}>
           <RotateLeftIcon />
           <Stack direction='column' textAlign='left'>
@@ -27,10 +27,10 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
           </Stack>
         </Stack>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={5}>
         <Stack direction='column' textAlign='right'>
-          <span>- {activity.baseQuantity.toFixed(2)} <span className='grey'>{activity.baseAsset.toLowerCase()}</span></span>
-          <span>+ {activity.quoteQuantity.toFixed(2)} <span className='grey'>{activity.quoteAsset.toLowerCase()}</span></span>
+          <span>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")} <span className='grey'>{activity.baseAsset.toLowerCase()}</span></span>
+          <span>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")} <span className='grey'>{activity.quoteAsset.toLowerCase()}</span></span>
           { activity.status < 4 && <span><Button onClick={onCancelSwap} className={styles['cancel-btn']}>
             Cancel
           </Button></span> }

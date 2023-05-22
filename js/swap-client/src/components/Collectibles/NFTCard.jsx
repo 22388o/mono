@@ -15,7 +15,7 @@ export const NFTCard = ({ card, handleClick }) => {
           </h4>
         </Grid>
         <Grid item textAlign='center'>
-          <h4>{card.title}</h4>
+          <h4>{card.info.inscription.slice(0,7)}</h4>
         </Grid>
       </Stack>
     </Grid>

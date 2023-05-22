@@ -228,7 +228,7 @@ export const SwapCreate = () => {
     })
     user.user.on("swap.holderPaid",swap => {
       activities.forEach(activity => {
-        if(activity.status !== 3 || user.user.id !== swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--')) || activity.orderId !== swap.secretSeeker.orderId) return;
+        if(activity.status !== 3 || activity.orderId !== swap.secretSeeker.orderId) return;
         //log('swap.committing event received', swap)
         //log("orderSecret in swap.committing",orderSecret)
 
@@ -256,11 +256,9 @@ export const SwapCreate = () => {
         console.log("swapCommit (secretSeeker) requested, settingSwapState to 4");
       });
     });
-    user.user.on("swap.committed",swap => {
+    user.user.on("swap.committing",swap => {
       activities.forEach(activity => {
         // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
-        if(activity.status !== 3 ) return;
-        log('swap.committed event received', swap)
         let ethBal, btcBal;
 
         if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
@@ -275,7 +273,33 @@ export const SwapCreate = () => {
           walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
 
-        console.log("swap claim completed, settingSwapState to 4");
+        console.log("swap.committing: swap claim submitted, settingSwapState to 4");
+
+        const invoiceETH = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        const invoiceBTC = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+
+
+    
+      });
+    })
+    user.user.on("swap.committed",swap => {
+      activities.forEach(activity => {
+        // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
+        let ethBal, btcBal;
+
+        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
+          //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
+          ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4} });
+          walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
+        } else {
+          btcBal = node.balance + fromSats(swap.secretSeeker.quantity);
+          //ethBal = wallet.balance - fromSats(swap.secretSeeker.quantity) * curPrices.BTC / curPrices.ETH;
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 4} });
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
+        }
+
+        console.log("swap.committed: swap claim completed, settingSwapState to 4");
 
         const invoiceETH = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         const invoiceBTC = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
@@ -286,6 +310,13 @@ export const SwapCreate = () => {
     })
     return () => {
       // cleanup
+      user.user.removeAllListeners("swap.created", () => {console.log("swap.created event listener cleanup")});
+      user.user.removeAllListeners("swap.opening", () => {console.log("swap.opening event listener cleanup")});
+      user.user.removeAllListeners("swap.holderPaymentPending", () => {console.log("swap.holderPaymentPending event listener cleanup")});
+      user.user.removeAllListeners("swap.holderPaid", () => {console.log("swap.holderPaid event listener cleanup")});
+      user.user.removeAllListeners("swap.committing", () => {console.log("swap.committing event listener cleanup")});
+      user.user.removeAllListeners("swap.committed", () => {console.log("swap.committed event listener cleanup")});
+      
     }
   }, [activities, user]);
 
@@ -396,7 +427,7 @@ export const SwapCreate = () => {
         baseQuantity: 4000,
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
-        quoteQuantity: parseInt(args.quote.quantity * ASSET_TYPES[qai].rate),
+        quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),
         ordinalLocation: order.ordinalLocation
       }
     ).then(data => {

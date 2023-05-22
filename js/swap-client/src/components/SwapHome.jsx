@@ -80,10 +80,10 @@ export const SwapHome = () => {
         <Grid item xs={10} className='flex-center'>
           { user.isLoggedIn ?
             <ConnectionComponent/> :
-            <h4 className='flex-center'><RectangleRoundedIcon />Disconnected</h4>}
+            <h4 className='flex-center'><RectangleRoundedIcon />&nbsp;Disconnected</h4>}
         </Grid>
         <Grid item xs={1}>
-          <h4>v0.1</h4>
+          <h4>v0.2</h4>
         </Grid>
       </Grid>
       <Grid item container justifyContent='flex-end' style={{padding:'1em 2em'}}>
@@ -123,15 +123,15 @@ export const SwapHome = () => {
       <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
-            <SwapActivity />
-          </Grid>
-          {/* <Grid item>
             <WalletComponent />
-          </Grid> */}
+          </Grid>
         </Grid>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
             <SwapCreate />
+          </Grid>
+          <Grid item>
+            <SwapActivity />
           </Grid>
         </Grid>
       </Grid>
