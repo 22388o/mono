@@ -1,173 +1,68 @@
-export const INSCRIPTIONS = [{
-  title: 'Tether',
-  type: 'USDT',
-  rate: 1000000000000000000,
-  connected: false,
-  network: 'eth-l2.eth',
-  img_url: 'https://seeklogo.com/images/T/tether-usdt-logo-FA55C7F397-seeklogo.com.png',
-  isNFT: false,
-  data: null,
-  balance: 1000,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+export const INSCRIPTIONS = [
+  {
+    "title": "Inscription #0",
+    "type": "BTCORD-0",
+    "network": "btc.btc",
+    "detail": "Inscription",
+    "rate": 1,
+    "isNFT": true,
+    "img_url": "http://localhost/content/90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0",
+    "balance": 1,
+    "options": [
+      {
+        "type": "paddingAmount",
+        "title": "Padding Amount",
+        "value": 4000
+      }
+    ],
+    "info": {
+      "inscription": "90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0",
+      "location": "90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103:0:0",
+      "explorer": "http://localhost/inscription/90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0"
+    }
+  },
+  {
+    "title": "Inscription #1",
+    "type": "BTCORD-1",
+    "network": "btc.btc",
+    "detail": "Inscription",
+    "rate": 1,
+    "isNFT": true,
+    "img_url": "http://localhost/content/2c0c7244e6dfa2f1d4002060fd182b8e55298d593c3b01afdab936d8e0c4fccei0",
+    "balance": 1,
+    "options": [
+      {
+        "type": "paddingAmount",
+        "title": "Padding Amount",
+        "value": 4000
+      }
+    ],
+    "info": {
+      "inscription": "2c0c7244e6dfa2f1d4002060fd182b8e55298d593c3b01afdab936d8e0c4fccei0",
+      "location": "2c0c7244e6dfa2f1d4002060fd182b8e55298d593c3b01afdab936d8e0c4fcce:0:0",
+      "explorer": "http://localhost/inscription/2c0c7244e6dfa2f1d4002060fd182b8e55298d593c3b01afdab936d8e0c4fccei0"
+    }
+  },
+  {
+    "title": "Inscription #2",
+    "type": "BTCORD-2",
+    "network": "btc.btc",
+    "detail": "Inscription",
+    "rate": 1,
+    "isNFT": true,
+    "img_url": "http://localhost/content/71d98e67db44e5f4af1c75c4189e501554bc5042263f5f291dc0f4f9378460fei0",
+    "balance": 1,
+    "options": [
+      {
+        "type": "paddingAmount",
+        "title": "Padding Amount",
+        "value": 4000
+      }
+    ],
+    "info": {
+      "inscription": "71d98e67db44e5f4af1c75c4189e501554bc5042263f5f291dc0f4f9378460fei0",
+      "location": "71d98e67db44e5f4af1c75c4189e501554bc5042263f5f291dc0f4f9378460fe:0:0",
+      "explorer": "http://localhost/inscription/71d98e67db44e5f4af1c75c4189e501554bc5042263f5f291dc0f4f9378460fei0"
+    }
   }
-}, {
-  title: 'Inscription #1',
-  type: 'BTCORD-1',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  rate: 1,
-  isNFT: true,
-  img_url: 'https://i.imgur.com/ztFM4Jq.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #2',
-  type: 'BTCORD-2',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/2.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #3',
-  type: 'BTCORD-3',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/3.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #4',
-  type: 'BTCORD-4',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/4.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #5',
-  type: 'BTCORD-5',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/5.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #6',
-  type: 'BTCORD-6',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/6.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #7',
-  type: 'BTCORD-7',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/7.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}, {
-  title: 'Inscription #8',
-  type: 'BTCORD-8',
-  network: 'btc.btc',
-  detail: 'Inscription',
-  isNFT: true,
-  rate: 1,
-  img_url: '/public/nft/8.png',
-  balance: 1,
-  options: [{
-    type: 'paddingAmount',
-    title: 'Padding Amount',
-    value: 4000
-  }],
-  info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
-  }
-}];
+]
