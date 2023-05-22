@@ -18,21 +18,26 @@ bcli_command() {
   $BCLI_CMD -datadir=$BITCOIN_DATA_DIR -rpcwallet=$WALLET_NAME "$@"
 }
 
+# Check if we need to skip the ord wallet inscribe command
+SKIP_ORD=${1:-0}
+
 # Directory containing the files
 dir="./inscriptions"
 
-# Iterate over each file in the directory
-for file in "$dir"/*
-do
-  if [ -f "$file" ]
-  then
-    # Run the command for this file
-    ord_command wallet inscribe --fee-rate 154 "$file"
+if [ $SKIP_ORD -eq 0 ]; then
+  # Iterate over each file in the directory
+  for file in "$dir"/*
+  do
+    if [ -f "$file" ]
+    then
+      # Run the command for this file
+      ord_command wallet inscribe --fee-rate 154 "$file"
 
-    # Run the bcli command
-    bcli_command -generate 1
-  fi
-done
+      # Run the bcli command
+      bcli_command -generate 1
+    fi
+  done
+fi
 
 # Run the final command after all file commands have completed
 ord_command wallet inscriptions > inscriptions.json
