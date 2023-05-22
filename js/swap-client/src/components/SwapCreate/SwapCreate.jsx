@@ -377,8 +377,8 @@ export const SwapCreate = () => {
 
   const thenOrderSwap = async (order, secret, secretHash) => {
     const ask = order.side=='ask';
-    const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type.split(',')[0];
-    const quoteA = order.quoteAsset ? order.quoteAsset : ASSET_TYPES[quoteAsset].type.split(',')[0];
+    const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type;
+    const quoteA = order.quoteAsset ? order.quoteAsset : ASSET_TYPES[quoteAsset].type;
     const baseQty = order.baseQuantity ? order.baseQuantity : baseQuantity;
     const quoteQty = order.quoteQuantity ? order.quoteQuantity : quoteQuantity;
     const baseNet= order.baseNetwork, quoteNet = order.quoteNetwork;
@@ -422,10 +422,10 @@ export const SwapCreate = () => {
         uid: user.user.id,
         side: order.side,
         hash: secretHash,
-        baseAsset: args.base.asset,
+        baseAsset: args.base.asset.split('-')[0],
         baseNetwork: args.base.network,
         baseQuantity: 4000,
-        quoteAsset: args.quote.asset,
+        quoteAsset: args.quote.asset.split('-')[0],
         quoteNetwork: args.quote.network,
         quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),
         ordinalLocation: order.ordinalLocation
@@ -607,7 +607,7 @@ export const SwapCreate = () => {
                     <p></p>}
                     <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
                       side: (
-                      (ASSET_TYPES[baseAsset].type.split(',')[0] == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
+                      (ASSET_TYPES[baseAsset].type.split('-')[0] == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT) ? 'ask' : 'bid'),
                       baseNetwork: ASSET_TYPES[baseAsset].network,
                       quoteNetwork: ASSET_TYPES[quoteAsset].network,
                       ordinalLocation:  (

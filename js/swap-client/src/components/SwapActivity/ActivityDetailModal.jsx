@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MyModal } from '../MyModal/MyModal';
 import { Button, Divider, Grid, IconButton, Input } from '@mui/material';
-import { Close, West } from '@mui/icons-material';
+import { CheckCircle, Close, West } from '@mui/icons-material';
 import { SWAP_STATUS } from '../../utils/helpers';
 import QRCode from 'qrcode';
 
@@ -41,6 +41,11 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
             <Grid item textAlign='center'>{activity.paymentAddress}</Grid>
             <Divider style={{marginTop:'1em',marginBottom:'1em'}}  />
           </Grid>
+        }
+        { activity.status == 4 && 
+          <p>
+            <CheckCircle fontSize="100px" color="success" style={{color:"green", fontSize: "60px" }} />
+          </p>
         }
         <Grid item container direction='row'>
           <Grid item xs={5}>Base Asset: </Grid>
