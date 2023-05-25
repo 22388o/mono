@@ -13,12 +13,13 @@ const OPTS = {
 }
 
 module.exports = function (req, res, ctx) {
-  const { pathname } = req.parsedUrl
   const opts = Object.assign({
     method: req.method,
     headers: {
+      /* eslint-disable quote-props,dot-notation */
       'Authorization': req.headers['authorization'],
       'Content-Type': req.headers['content-type']
+      /* eslint-enable */
     }
   }, OPTS)
 
