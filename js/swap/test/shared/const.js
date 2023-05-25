@@ -1,0 +1,8 @@
+module.exports = {
+  ETH_MAINNET: 1,
+  OPTIMISM: 10,
+  ARBITRUM: 42161,
+  BSC: 56,
+  POLYGON: 137,
+  HARDHAT: 31337
+};

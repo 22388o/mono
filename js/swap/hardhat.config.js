@@ -15,11 +15,11 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://rpc.ankr.com/optimism",
+        url: "https://rpc.ankr.com/eth",
         enabled: true,
-        // blockNumber:
+        chainId: 1,
       },
-      chainId: 31337,
+      // chainId: 31337,
     },
     optimism: {
       url: "https://rpc.ankr.com/optimism",

@@ -34,26 +34,33 @@ contract Swap is ReentrancyGuard, Ownable {
     }
 
     struct DepositInfo {
-        bool claim;
-        uint256 cnt;
+        bool paid;
         uint256 create;
     }
 
     // secret_hash => DepositInfo
     mapping(bytes32 => DepositInfo) public depositInfo;
 
+    // secret_hash => address => claimed or not
+    mapping(bytes32 => mapping(address => bool)) public claimInfo;
+
     ////////////////////////////////////////////////////////////////////////////
     // Events
     ////////////////////////////////////////////////////////////////////////////
     event Deposit(address indexed creator, DepositReq req);
 
+    event Pay(
+        address indexed payer,
+        bytes32 indexed secretHash,
+        address indexed payToken,
+        uint256 payAmount
+    );
+
     event Claim(
         bytes32 indexed secretHash,
         address indexed claimer,
         address claimToken,
-        address desireToken,
-        uint256 claimAmt,
-        uint256 desireAmt
+        uint256 claimAmt
     );
 
     /**
@@ -76,8 +83,14 @@ contract Swap is ReentrancyGuard, Ownable {
         return sha256(_toBytes(secret));
     }
 
+    /**
+     * @notice Internal deposit
+     * @param _secretHash Secrethash
+     * @param _req Deposit request body
+     */
     function _deposit(bytes32 _secretHash, DepositReq memory _req) internal {
         DepositInfo storage info = depositInfo[_secretHash];
+        TokenDeposit[] memory userDeposits = userDeposit[_secretHash];
 
         // check deposit lock time is not expired
         require(
@@ -86,9 +99,8 @@ contract Swap is ReentrancyGuard, Ownable {
         );
 
         require(
-            info.cnt == 0 ||
-                userDeposit[_secretHash][0].deposit.tokenDeposit ==
-                _req.tokenDeposit,
+            userDeposits.length == 0 ||
+                userDeposits[0].deposit.tokenDeposit == _req.tokenDeposit,
             "Invalid deposit token"
         );
 
@@ -101,8 +113,8 @@ contract Swap is ReentrancyGuard, Ownable {
             );
 
         bool newDeposit = true;
-        for (uint32 i; i < info.cnt; ++i) {
-            if (userDeposit[_secretHash][i].creator == msg.sender) {
+        for (uint32 i; i < userDeposits.length; ++i) {
+            if (userDeposits[i].creator == msg.sender) {
                 newDeposit = false;
                 break;
             }
@@ -111,7 +123,6 @@ contract Swap is ReentrancyGuard, Ownable {
         // if new deposit
         if (newDeposit) {
             userDeposit[_secretHash].push(TokenDeposit(msg.sender, _req));
-            ++info.cnt;
         }
 
         // update create time
@@ -153,6 +164,7 @@ contract Swap is ReentrancyGuard, Ownable {
         uint256 networkDesire,
         bytes32 secretHash
     ) public payable {
+        require(msg.value > 0, "Insufficient ETH");
         _deposit(
             secretHash,
             DepositReq(
@@ -171,44 +183,83 @@ contract Swap is ReentrancyGuard, Ownable {
      * @notice Claim with secret hash
      * @param secret Secret hash
      */
-    function claim(uint256 secret) external payable nonReentrant {
+    function pay(uint256 secret) external payable nonReentrant {
         bytes32 secretHash = toHash(secret);
 
-        DepositInfo storage depositItem = depositInfo[secretHash];
-        require(!depositItem.claim, "Already claimed");
-        require(depositItem.cnt > 0, "No depositor");
+        TokenDeposit[] memory info = userDeposit[secretHash];
+        require(info.length > 0, "No depositor");
+
+        DepositReq memory firstItem = info[0].deposit;
+        require(firstItem.recipient == msg.sender, "Not receiver");
+        require(firstItem.networkDesire == block.chainid, "Invalid chain");
+
+        DepositInfo storage depoInfo = depositInfo[secretHash];
+        require(!depoInfo.paid, "Already paid");
         require(
-            depositItem.create + lockTime >= block.timestamp,
-            "Can not claim now"
+            depoInfo.create + lockTime <= block.timestamp,
+            "Error: locked time"
         );
 
-        TokenDeposit[] memory info = userDeposit[secretHash];
-
         // set this hash as claimed
-        depositItem.claim = true;
+        depoInfo.paid = true;
 
-        uint256 claimAmt;
         uint256 desireAmt;
-        address desireToken = info[0].deposit.tokenDesire;
-        address claimToken = info[0].deposit.tokenDeposit;
-
         for (uint32 i; i < info.length; ++i) {
             DepositReq memory depoItem = info[i].deposit;
             if (depoItem.recipient == msg.sender) {
-                claimAmt += depoItem.amountDeposit;
                 desireAmt += depoItem.amountDesire;
             }
         }
 
         if (desireAmt > 0) {
-            if (desireToken == address(0))
-                require(msg.value >= desireAmt, "Insuffient received desired");
-            else
-                IERC20(claimToken).safeTransferFrom(
+            if (firstItem.tokenDesire == address(0)) {
+                require(msg.value >= desireAmt, "Insuffient desired balance");
+                payable(msg.sender).transfer(msg.value - desireAmt);
+            } else {
+                IERC20(firstItem.tokenDesire).safeTransferFrom(
                     msg.sender,
                     address(this),
                     desireAmt
                 );
+            }
+        }
+
+        emit Pay(msg.sender, secretHash, firstItem.tokenDesire, desireAmt);
+    }
+
+    function claim(uint256 secret, bool isDepositor) external {
+        bytes32 secretHash = toHash(secret);
+
+        require(!claimInfo[secretHash][msg.sender], "Already claimed");
+
+        TokenDeposit[] memory info = userDeposit[secretHash];
+        require(info.length > 0, "Invalid secret hash");
+
+        DepositReq memory firstItem = info[0].deposit;
+        require(depositInfo[secretHash].paid, "Not paid");
+
+        uint256 targetChain = isDepositor
+            ? firstItem.networkDesire
+            : firstItem.networkDeposit;
+        require(targetChain == block.chainid, "Invalid chain");
+
+        address claimToken = isDepositor
+            ? firstItem.tokenDesire
+            : firstItem.tokenDeposit;
+
+        uint256 claimAmt;
+        for (uint32 i; i < info.length; ++i) {
+            address claimer = isDepositor
+                ? info[i].creator
+                : info[i].deposit.recipient;
+
+            if (claimer == msg.sender) {
+                unchecked {
+                    claimAmt += isDepositor
+                        ? info[i].deposit.amountDesire
+                        : info[i].deposit.amountDeposit;
+                }
+            }
         }
 
         if (claimAmt > 0) {
@@ -219,14 +270,13 @@ contract Swap is ReentrancyGuard, Ownable {
             }
         }
 
-        emit Claim(
-            secretHash,
-            msg.sender,
-            claimToken,
-            desireToken,
-            claimAmt,
-            desireAmt
-        );
+        claimInfo[secretHash][msg.sender] = true;
+
+        emit Claim(secretHash, msg.sender, claimToken, claimAmt);
+    }
+
+    function getChain() external view returns (uint256) {
+        return block.chainid;
     }
 
     receive() external payable {}
