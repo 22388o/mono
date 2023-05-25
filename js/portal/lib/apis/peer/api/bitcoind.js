@@ -12,6 +12,12 @@ const OPTS = {
   protocol: URL_BITCOIN.protocol
 }
 
+/**
+ * Proxies bitcoind RPC requests to the Portal bitcoind daemon
+ * @param {HttpRequest} req The incoming HTTP request
+ * @param {HttpResponse} res The outgoing HTTP response
+ * @returns {Void}
+ */
 module.exports = function (req, res, ctx) {
   const opts = Object.assign({
     method: req.method,
