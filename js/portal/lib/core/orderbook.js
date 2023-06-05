@@ -99,7 +99,7 @@ module.exports = class Orderbook extends EventEmitter {
   /**
    * Adds a new order
    * @param {Object} order The order to be added
-   * @returns {Promise<Void>}
+   * @returns {Promise<Order>}
    */
   add (order) {
     if (!this.orders.has(order.id)) {
