@@ -9,4 +9,5 @@ typechain-types
 cache
 artifacts
 
-test/messages
+test/v1/messages
+test/v2/messages
