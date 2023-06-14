@@ -22,3 +22,6 @@ Feature: One2One Swap test
         Then Jerry can claim USDT and claimed USDT is 1K
         Then Jerry can not claim again
         Then Bob can claim but he will receive nothing
+
+    Scenario: One-One ERC20-ETH test
+        

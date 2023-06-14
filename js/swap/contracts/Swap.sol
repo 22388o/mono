@@ -235,7 +235,7 @@ contract Swap is ReentrancyGuard, Ownable {
         );
     }
 
-    function claim(uint256 secret, bool isDepositor) external nonReentrant {
+    function claim(uint256 secret) external nonReentrant {
         bytes32 secretHash = toHash(secret);
 
         require(!claimInfo[secretHash][msg.sender], "Already claimed");
@@ -246,6 +246,7 @@ contract Swap is ReentrancyGuard, Ownable {
         DepositReq memory firstItem = info[0].deposit;
         require(depositInfo[secretHash].paid, "Not paid");
 
+        bool isDepositor = msg.sender == info[0].creator;
         uint256 targetChain = isDepositor
             ? firstItem.networkDesire
             : firstItem.networkDeposit;

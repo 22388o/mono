@@ -123,7 +123,7 @@ defineFeature(feature, function (test) {
       expect(depositInfo.paid).to.be.eq(false);
 
       await expect(
-        swapContract.connect(alice).claim(secret3, true)
+        swapContract.connect(alice).claim(secret3)
       ).to.be.revertedWith("Not paid");
     });
 
@@ -162,7 +162,7 @@ defineFeature(feature, function (test) {
     then("Alice can claim USDC", async function () {
       const beforeBalance = await usdcToken.balanceOf(alice.address);
 
-      await expect(swapContract.connect(alice).claim(secret3, true)).to.emit(
+      await expect(swapContract.connect(alice).claim(secret3)).to.emit(
         swapContract,
         "Claim"
       );
@@ -175,14 +175,14 @@ defineFeature(feature, function (test) {
 
     then("Alice can not claim again", async function () {
       await expect(
-        swapContract.connect(alice).claim(secret3, true)
+        swapContract.connect(alice).claim(secret3)
       ).to.be.revertedWith("Already claimed");
     });
 
     then("Jerry can claim USDT and claimed USDT is 1K", async function () {
       const beforeBalance = await usdtToken.balanceOf(jerry.address);
 
-      await expect(swapContract.connect(jerry).claim(secret3, false)).to.emit(
+      await expect(swapContract.connect(jerry).claim(secret3)).to.emit(
         swapContract,
         "Claim"
       );
@@ -195,7 +195,7 @@ defineFeature(feature, function (test) {
 
     then("Jerry can not claim again", async function () {
       await expect(
-        swapContract.connect(jerry).claim(secret3, false)
+        swapContract.connect(jerry).claim(secret3)
       ).to.be.revertedWith("Already claimed");
     });
 
@@ -203,7 +203,7 @@ defineFeature(feature, function (test) {
       const beforeUSDC = await usdcToken.balanceOf(bob.address);
       const beforeUSDT = await usdtToken.balanceOf(bob.address);
 
-      await swapContract.connect(bob).claim(secret3, true);
+      await swapContract.connect(bob).claim(secret3);
 
       const afterUSDC = await usdcToken.balanceOf(bob.address);
       const afterUSDT = await usdtToken.balanceOf(bob.address);

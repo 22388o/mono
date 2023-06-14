@@ -137,7 +137,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(false);
 
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret1, true)
+        this.swapContract.connect(this.alice).claim(this.secret1)
       ).to.be.revertedWith("Not paid");
     });
 
@@ -169,7 +169,7 @@ describe("One-One Integration Test", function () {
     it("(9) Alice can claim ETH", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret2, true)
+        this.swapContract.connect(this.alice).claim(this.secret2)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeBalance = await ethers.provider.getBalance(
@@ -177,7 +177,7 @@ describe("One-One Integration Test", function () {
       );
 
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret1, true)
+        this.swapContract.connect(this.alice).claim(this.secret1)
       ).to.emit(this.swapContract, "Claim");
 
       const afterBalance = await ethers.provider.getBalance(this.alice.address);
@@ -187,24 +187,24 @@ describe("One-One Integration Test", function () {
     it("(10) Alice can not claim again", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret2, true)
+        this.swapContract.connect(this.alice).claim(this.secret2)
       ).to.be.revertedWith("Invalid secret hash");
 
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret1, true)
+        this.swapContract.connect(this.alice).claim(this.secret1)
       ).to.be.revertedWith("Already claimed");
     });
 
     it("(11) Jerry can claim USDT and claimed USDT is 1K", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret2, false)
+        this.swapContract.connect(this.jerry).claim(this.secret2)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeBalance = await this.usdtToken.balanceOf(this.jerry.address);
 
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret1, false)
+        this.swapContract.connect(this.jerry).claim(this.secret1)
       ).to.emit(this.swapContract, "Claim");
 
       const afterBalance = await this.usdtToken.balanceOf(this.jerry.address);
@@ -216,24 +216,24 @@ describe("One-One Integration Test", function () {
     it("(12) Jerry can not claim again", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret2, false)
+        this.swapContract.connect(this.jerry).claim(this.secret2)
       ).to.be.revertedWith("Invalid secret hash");
 
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret1, false)
+        this.swapContract.connect(this.jerry).claim(this.secret1)
       ).to.be.revertedWith("Already claimed");
     });
 
     it("(13) Bob can claim but he will receive nothing", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret2, false)
+        this.swapContract.connect(this.bob).claim(this.secret2)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeETH = await ethers.provider.getBalance(this.bob.address);
       const beforeUSDT = await this.usdtToken.balanceOf(this.bob.address);
 
-      await this.swapContract.connect(this.bob).claim(this.secret1, true);
+      await this.swapContract.connect(this.bob).claim(this.secret1);
 
       const afterETH = await ethers.provider.getBalance(this.bob.address);
       const afterUSDT = await this.usdtToken.balanceOf(this.bob.address);
@@ -320,7 +320,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(false);
 
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret2, true)
+        this.swapContract.connect(this.bob).claim(this.secret2)
       ).to.be.revertedWith("Not paid");
     });
 
@@ -362,13 +362,13 @@ describe("One-One Integration Test", function () {
     it("(9) Bob can claim USDC and claimed amount is 2k", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret3, true)
+        this.swapContract.connect(this.bob).claim(this.secret3)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeUSDC = await this.usdcToken.balanceOf(this.bob.address);
 
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret2, true)
+        this.swapContract.connect(this.bob).claim(this.secret2)
       ).to.emit(this.swapContract, "Claim");
 
       const afterUSDC = await this.usdcToken.balanceOf(this.bob.address);
@@ -380,24 +380,24 @@ describe("One-One Integration Test", function () {
     it("(10) Bob can not claim again", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret3, true)
+        this.swapContract.connect(this.bob).claim(this.secret3)
       ).to.be.revertedWith("Invalid secret hash");
 
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret2, true)
+        this.swapContract.connect(this.bob).claim(this.secret2)
       ).to.be.revertedWith("Already claimed");
     });
 
     it("(11) Tom can claim ETH now", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.tom).claim(this.secret3, false)
+        this.swapContract.connect(this.tom).claim(this.secret3)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeBalance = await ethers.provider.getBalance(this.tom.address);
 
       await expect(
-        this.swapContract.connect(this.tom).claim(this.secret2, false)
+        this.swapContract.connect(this.tom).claim(this.secret2)
       ).to.emit(this.swapContract, "Claim");
 
       const afterBalance = await ethers.provider.getBalance(this.tom.address);
@@ -407,24 +407,24 @@ describe("One-One Integration Test", function () {
     it("(12) Jerry can not claim again", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.tom).claim(this.secret3, false)
+        this.swapContract.connect(this.tom).claim(this.secret3)
       ).to.be.revertedWith("Invalid secret hash");
 
       await expect(
-        this.swapContract.connect(this.tom).claim(this.secret2, false)
+        this.swapContract.connect(this.tom).claim(this.secret2)
       ).to.be.revertedWith("Already claimed");
     });
 
     it("(13) Alice can claim but he will receive nothing", async function () {
       // invalid secet hash
       await expect(
-        this.swapContract.connect(this.bob).claim(this.secret3, false)
+        this.swapContract.connect(this.bob).claim(this.secret3)
       ).to.be.revertedWith("Invalid secret hash");
 
       const beforeETH = await ethers.provider.getBalance(this.alice.address);
       const beforeUSDC = await this.usdcToken.balanceOf(this.alice.address);
 
-      await this.swapContract.connect(this.alice).claim(this.secret2, true);
+      await this.swapContract.connect(this.alice).claim(this.secret2);
 
       const afterETH = await ethers.provider.getBalance(this.alice.address);
       const afterUSDC = await this.usdcToken.balanceOf(this.alice.address);
@@ -489,7 +489,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(false);
 
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret3, true)
+        this.swapContract.connect(this.alice).claim(this.secret3)
       ).to.be.revertedWith("Not paid");
     });
 
@@ -528,7 +528,7 @@ describe("One-One Integration Test", function () {
       const beforeBalance = await this.usdcToken.balanceOf(this.alice.address);
 
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret3, true)
+        this.swapContract.connect(this.alice).claim(this.secret3)
       ).to.emit(this.swapContract, "Claim");
 
       const afterBalance = await this.usdcToken.balanceOf(this.alice.address);
@@ -539,7 +539,7 @@ describe("One-One Integration Test", function () {
 
     it("(10) Alice can not claim again", async function () {
       await expect(
-        this.swapContract.connect(this.alice).claim(this.secret3, true)
+        this.swapContract.connect(this.alice).claim(this.secret3)
       ).to.be.revertedWith("Already claimed");
     });
 
@@ -547,7 +547,7 @@ describe("One-One Integration Test", function () {
       const beforeBalance = await this.usdtToken.balanceOf(this.jerry.address);
 
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret3, false)
+        this.swapContract.connect(this.jerry).claim(this.secret3)
       ).to.emit(this.swapContract, "Claim");
 
       const afterBalance = await this.usdtToken.balanceOf(this.jerry.address);
@@ -558,7 +558,7 @@ describe("One-One Integration Test", function () {
 
     it("(12) Jerry can not claim again", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).claim(this.secret3, false)
+        this.swapContract.connect(this.jerry).claim(this.secret3)
       ).to.be.revertedWith("Already claimed");
     });
 
@@ -566,7 +566,7 @@ describe("One-One Integration Test", function () {
       const beforeUSDC = await this.usdcToken.balanceOf(this.bob.address);
       const beforeUSDT = await this.usdtToken.balanceOf(this.bob.address);
 
-      await this.swapContract.connect(this.bob).claim(this.secret3, true);
+      await this.swapContract.connect(this.bob).claim(this.secret3);
 
       const afterUSDC = await this.usdcToken.balanceOf(this.bob.address);
       const afterUSDT = await this.usdtToken.balanceOf(this.bob.address);
