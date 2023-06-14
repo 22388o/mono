@@ -37,6 +37,14 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.3",
     "dotenv-extended": "^2.9.0",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "jest": "^29.5.0",
+    "jest-cucumber": "^3.0.1"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "jsx"
+    ]
   }
 }

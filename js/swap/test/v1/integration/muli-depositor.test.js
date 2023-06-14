@@ -99,11 +99,11 @@ describe("Multi depositor Integration Test", function () {
 
     it("(3) Jerry can not pay until the lock time expired", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -143,11 +143,11 @@ describe("Multi depositor Integration Test", function () {
 
     it("(6) Jerry still can not pay", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -172,15 +172,15 @@ describe("Multi depositor Integration Test", function () {
 
     it("(9) Jerry can pay ETH now", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret2)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret2)
       ).to.be.revertedWith("No depositor");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Insuffient desired balance");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1, {
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1, {
           value: ethers.utils.parseEther("15"),
         })
       ).to.emit(this.swapContract, "Pay");
@@ -191,7 +191,7 @@ describe("Multi depositor Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1, {
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1, {
           value: ethers.utils.parseEther("10"),
         })
       ).to.be.revertedWith("Already paid");

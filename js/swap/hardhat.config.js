@@ -14,12 +14,12 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      forking: {
-        url: "https://rpc.ankr.com/eth",
-        enabled: true,
-        chainId: 1,
-      },
-      // chainId: 31337,
+      // forking: {
+      //   url: "https://rpc.ankr.com/eth",
+      //   enabled: true,
+      //   chainId: 1,
+      // },
+      chainId: 31337,
     },
     optimism: {
       url: "https://rpc.ankr.com/optimism",

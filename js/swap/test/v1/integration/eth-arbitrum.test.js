@@ -2,8 +2,8 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const fs = require("fs");
 
-const { HARDHAT } = require("../shared/const");
-const { forkMainnet, forkArbitrum } = require("../shared/utilites");
+const { HARDHAT } = require("../../shared/const");
+const { forkMainnet, forkArbitrum } = require("../../shared/utilites");
 
 describe.only("ETH-Arbitrum Integration Test", function () {
   before("Deploy Swap contract on ETH mainnet", async function () {
@@ -94,11 +94,11 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(3) Jerry can not pay until the lock time expired", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -138,11 +138,11 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(6) Jerry still can not pay", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -167,15 +167,15 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(9) Jerry can pay ETH now", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret2)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret2)
       ).to.be.revertedWith("No depositor");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Insuffient desired balance");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1, {
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1, {
           value: ethers.utils.parseEther("15"),
         })
       ).to.emit(this.swapContract, "Pay");
@@ -186,7 +186,7 @@ describe.only("ETH-Arbitrum Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1, {
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1, {
           value: ethers.utils.parseEther("10"),
         })
       ).to.be.revertedWith("Already paid");
@@ -376,11 +376,11 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(2) Jerry can not pay until the lock time expired", async function () {
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret1)
+        this.arbSwapContract.connect(this.arbJerry).payInvoice(this.arbSecret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.arbSwapContract.connect(this.arbBob).pay(this.arbSecret1)
+        this.arbSwapContract.connect(this.arbBob).payInvoice(this.arbSecret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -420,11 +420,11 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(5) Jerry still can not pay", async function () {
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret1)
+        this.arbSwapContract.connect(this.arbJerry).payInvoice(this.arbSecret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.arbSwapContract.connect(this.arbBob).pay(this.arbSecret1)
+        this.arbSwapContract.connect(this.arbBob).payInvoice(this.arbSecret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -451,17 +451,19 @@ describe.only("ETH-Arbitrum Integration Test", function () {
 
     it("(8) Jerry can pay ETH now", async function () {
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret2)
+        this.arbSwapContract.connect(this.arbJerry).payInvoice(this.arbSecret2)
       ).to.be.revertedWith("No depositor");
 
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret1)
+        this.arbSwapContract.connect(this.arbJerry).payInvoice(this.arbSecret1)
       ).to.be.revertedWith("Insuffient desired balance");
 
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret1, {
-          value: ethers.utils.parseEther("15"),
-        })
+        this.arbSwapContract
+          .connect(this.arbJerry)
+          .payInvoice(this.arbSecret1, {
+            value: ethers.utils.parseEther("15"),
+          })
       ).to.emit(this.arbSwapContract, "Pay");
     });
 
@@ -472,9 +474,11 @@ describe.only("ETH-Arbitrum Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.arbSwapContract.connect(this.arbJerry).pay(this.arbSecret1, {
-          value: ethers.utils.parseEther("10"),
-        })
+        this.arbSwapContract
+          .connect(this.arbJerry)
+          .payInvoice(this.arbSecret1, {
+            value: ethers.utils.parseEther("10"),
+          })
       ).to.be.revertedWith("Already paid");
     });
 

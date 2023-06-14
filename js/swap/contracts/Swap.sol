@@ -13,6 +13,9 @@ contract Swap is ReentrancyGuard, Ownable {
     // lock time
     uint256 public lockTime;
 
+    // invoice count
+    uint256 public invoiceCount;
+
     ////////////////////////////////////////////////////////////////////////////
     // Token Deposit and Claim
     ////////////////////////////////////////////////////////////////////////////
@@ -49,7 +52,7 @@ contract Swap is ReentrancyGuard, Ownable {
     ////////////////////////////////////////////////////////////////////////////
     event Deposit(address indexed creator, DepositReq req);
 
-    event Pay(
+    event PayInvoice(
         address indexed payer,
         bytes32 indexed secretHash,
         address indexed payToken,
@@ -183,7 +186,7 @@ contract Swap is ReentrancyGuard, Ownable {
      * @notice Claim with secret hash
      * @param secret Secret hash
      */
-    function pay(uint256 secret) external payable nonReentrant {
+    function payInvoice(uint256 secret) external payable nonReentrant {
         bytes32 secretHash = toHash(secret);
 
         TokenDeposit[] memory info = userDeposit[secretHash];
@@ -224,10 +227,15 @@ contract Swap is ReentrancyGuard, Ownable {
             }
         }
 
-        emit Pay(msg.sender, secretHash, firstItem.tokenDesire, desireAmt);
+        emit PayInvoice(
+            msg.sender,
+            secretHash,
+            firstItem.tokenDesire,
+            desireAmt
+        );
     }
 
-    function claim(uint256 secret, bool isDepositor) external {
+    function claim(uint256 secret, bool isDepositor) external nonReentrant {
         bytes32 secretHash = toHash(secret);
 
         require(!claimInfo[secretHash][msg.sender], "Already claimed");

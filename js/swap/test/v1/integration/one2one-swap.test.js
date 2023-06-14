@@ -104,11 +104,11 @@ describe("One-One Integration Test", function () {
 
     it("(3) Jerry can not pay until the lock time expired", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -120,11 +120,11 @@ describe("One-One Integration Test", function () {
 
     it("(5) Jerry still can not pay", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.bob).pay(this.secret1)
+        this.swapContract.connect(this.bob).payInvoice(this.secret1)
       ).to.be.revertedWith("Not receiver");
 
       // sent time 1hr
@@ -143,15 +143,15 @@ describe("One-One Integration Test", function () {
 
     it("(7) Jerry can pay ETH now", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret2)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret2)
       ).to.be.revertedWith("No depositor");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Insuffient desired balance");
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1, {
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1, {
           value: ethers.utils.parseEther("10"),
         })
       ).to.emit(this.swapContract, "Pay");
@@ -162,7 +162,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret1)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret1)
       ).to.be.revertedWith("Already paid");
     });
 
@@ -287,11 +287,11 @@ describe("One-One Integration Test", function () {
 
     it("(3) Tom can not pay until the lock time expired", async function () {
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret2)
+        this.swapContract.connect(this.tom).payInvoice(this.secret2)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.alice).pay(this.secret2)
+        this.swapContract.connect(this.alice).payInvoice(this.secret2)
       ).to.be.revertedWith("Not receiver");
     });
 
@@ -303,11 +303,11 @@ describe("One-One Integration Test", function () {
 
     it("(5) Jerry still can not pay", async function () {
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret2)
+        this.swapContract.connect(this.tom).payInvoice(this.secret2)
       ).to.be.revertedWith("Error: locked time");
 
       await expect(
-        this.swapContract.connect(this.alice).pay(this.secret2)
+        this.swapContract.connect(this.alice).payInvoice(this.secret2)
       ).to.be.revertedWith("Not receiver");
 
       // sent time 1hr
@@ -326,11 +326,11 @@ describe("One-One Integration Test", function () {
 
     it("(7) Tom can pay USDC now and paid amount is 2k", async function () {
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret3)
+        this.swapContract.connect(this.tom).payInvoice(this.secret3)
       ).to.be.revertedWith("No depositor");
 
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret2)
+        this.swapContract.connect(this.tom).payInvoice(this.secret2)
       ).to.be.revertedWith("ERC20: insufficient allowance");
 
       // should allow USDC token
@@ -341,7 +341,7 @@ describe("One-One Integration Test", function () {
       const beforeUSDC = await this.usdcToken.balanceOf(this.tom.address);
 
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret2)
+        this.swapContract.connect(this.tom).payInvoice(this.secret2)
       ).to.emit(this.swapContract, "Pay");
 
       const afterUSDC = await this.usdcToken.balanceOf(this.tom.address);
@@ -355,7 +355,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.swapContract.connect(this.tom).pay(this.secret2)
+        this.swapContract.connect(this.tom).payInvoice(this.secret2)
       ).to.be.revertedWith("Already paid");
     });
 
@@ -464,7 +464,7 @@ describe("One-One Integration Test", function () {
 
     it("(3) Jerry can not pay until the lock time expired", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret3)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret3)
       ).to.be.revertedWith("Error: locked time");
     });
 
@@ -476,7 +476,7 @@ describe("One-One Integration Test", function () {
 
     it("(5) Jerry still can not pay", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret3)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret3)
       ).to.be.revertedWith("Error: locked time");
 
       // sent time 1hr
@@ -495,7 +495,7 @@ describe("One-One Integration Test", function () {
 
     it("(7) Jerry can pay USDC now and paid amount is 1050", async function () {
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret3)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret3)
       ).to.be.revertedWith("ERC20: insufficient allowance");
 
       // should allow USDC token
@@ -506,7 +506,7 @@ describe("One-One Integration Test", function () {
       const beforeUSDC = await this.usdcToken.balanceOf(this.jerry.address);
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret3)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret3)
       ).to.emit(this.swapContract, "Pay");
 
       const afterUSDC = await this.usdcToken.balanceOf(this.jerry.address);
@@ -520,7 +520,7 @@ describe("One-One Integration Test", function () {
       expect(depositInfo.paid).to.be.eq(true);
 
       await expect(
-        this.swapContract.connect(this.jerry).pay(this.secret3)
+        this.swapContract.connect(this.jerry).payInvoice(this.secret3)
       ).to.be.revertedWith("Already paid");
     });
 

@@ -1,0 +1,9 @@
+{
+  "recipient": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+  "tokenDeposit": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "tokenDesire": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "amountDeposit": { "type": "BigNumber", "hex": "0x3635c9adc5dea00000" },
+  "amountDesire": { "type": "BigNumber", "hex": "0x38ebad5cdc90280000" },
+  "networkDeposit": 31337,
+  "networkDesire": 31337
+}
