@@ -1,0 +1,70 @@
+{
+  "version": "v2",
+  "nodes": {
+    "submarine": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning.btc",
+        "fungible": true,
+        "asset": "BTC",
+        "socket": "localhost:10003",
+        "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNKakNDQWN5Z0F3SUJBZ0lRWmVaWDk4YThNaCtobGNGamI0ZFExakFLQmdncWhrak9QUVFEQWpBeE1SOHcKSFFZRFZRUUtFeFpzYm1RZ1lYVjBiMmRsYm1WeVlYUmxaQ0JqWlhKME1RNHdEQVlEVlFRREV3VmpZWEp2YkRBZQpGdzB5TWpFeU1UY3dPREE1TWpWYUZ3MHlOREF5TVRFd09EQTVNalZhTURFeEh6QWRCZ05WQkFvVEZteHVaQ0JoCmRYUnZaMlZ1WlhKaGRHVmtJR05sY25ReERqQU1CZ05WQkFNVEJXTmhjbTlzTUZrd0V3WUhLb1pJemowQ0FRWUkKS29aSXpqMERBUWNEUWdBRVFhUW5HVWxPaUhTdERVMkx0ajBsMCszMVR0cm1LanZ3MnJ4eFgvQjBEVmZoazZUaApXOStBbnJLK3FxdlZwcWVFTFA5b0tobzlDOEZJanFMa3Z2ZHFMNk9CeFRDQndqQU9CZ05WSFE4QkFmOEVCQU1DCkFxUXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUhBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEUKRmdRVTJvd2U5eFNFNW1peEw3SmpVZlp5QThwd09xQXdhd1lEVlIwUkJHUXdZb0lGWTJGeWIyeUNDV3h2WTJGcwphRzl6ZElJRlkyRnliMnlDRG5CdmJHRnlMVzR4TFdOaGNtOXNnZ1IxYm1sNGdncDFibWw0Y0dGamEyVjBnZ2RpCmRXWmpiMjV1aHdSL0FBQUJoeEFBQUFBQUFBQUFBQUFBQUFBQUFBQUJod1NzRXdBQ01Bb0dDQ3FHU000OUJBTUMKQTBnQU1FVUNJQ1RPaHhteHNGV0g5aU5NdHd1TzdUVVFkd2lQb1VPaUdLYXBXNmdIMGZ0bUFpRUF3OUk5QVlHVgpkRjVrcWVlT2tabzZKYlVLeFZ0T1JXKzJQNDRQaWgxN0JCdz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+        "admin": "AgEDbG5kAvgBAwoQklK3oUif17ijZUS8oA2YThIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgQMtWE00/7racXYaFuZlIszNgz0v3UWJgxqq5qx4B370=",
+        "invoice": "AgEDbG5kAlgDChCQUrehSJ/XuKNlRLygDZhOEgEwGhYKB2FkZHJlc3MSBHJlYWQSBXdyaXRlGhcKCGludm9pY2VzEgRyZWFkEgV3cml0ZRoPCgdvbmNoYWluEgRyZWFkAAAGIMgmq9FBKcIGOq+v5dJJRELUcPred2dPqr0fFbIPZ4Um"
+      },
+      {
+        "nodetype": "bitcoind",
+        "network": "bitcoin",
+        "fungible": true,
+        "asset": "BTC",
+        "rpcuser": "bitcoind-regtest-rpcuser0",
+        "rpcpassword": "UFIeQGQOjGV6BVn6VmOhaqjbFLXFaXSgjqhOfK",
+        "rpcport": 20332,
+        "wif": "cQj5thuudcupEQo5WTYqVzs6ZtPGkdfCepNUpgJe6VAFeKFfhMtW"
+      }
+    ],
+    "ordinal-sub": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      },
+      {
+        "nodetype": "bitcoind",
+        "network": "bitcoin",
+        "fungible": false,
+        "asset": "ORD",
+        "rpcuser": "",
+        "rpcpassword": "",
+        "rpcport": 8332
+      }
+    ],
+    "lightning-lightning": [
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      },
+      {
+        "nodetype": "lnd",
+        "network": "lightning",
+        "fungible": true,
+        "asset": "BTC",
+        "socket": "localhost:<port>",
+        "cert": "",
+        "admin": "",
+        "invoice": ""
+      }
+    ]
+  }
+}

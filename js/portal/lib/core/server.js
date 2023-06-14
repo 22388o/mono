@@ -9,6 +9,8 @@ const mime = require('mime')
 const { join, normalize } = require('path')
 const { URL } = require('url')
 const { WebSocketServer } = require('ws')
+const zmq = require('zeromq/lib/index');
+const bitcoin = require('bitcoinjs-lib');
 
 /**
  * A weak-map storing private data for each instance of the class
@@ -35,25 +37,35 @@ module.exports = class Server extends EventEmitter {
   constructor (props = {}) {
     super()
 
+    console.log('server constructor')
     Object.seal(this)
 
     const env = process.env
     const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || 'localhost'
-    const port = props.port || env.PORTAL_HTTP_PORT || 0
+    const port = props.port || parseInt(env.PORTAL_HTTP_PORT) || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
     const ctx = require('./context')
-    const server = http.createServer({ IncomingMessage, ServerResponse })
-    const websocket = new WebSocketServer({ noServer: true })
+    const server = http.createServer({IncomingMessage, ServerResponse})
+    const websocket = new WebSocketServer({noServer: true})
 
-    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
+    INSTANCES.set(this, {hostname, port, api, root, ctx, server, websocket})
 
     // Trigger the creation of a swap whenever an order match occurs
-    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+    ctx.orderbooks.on('match', (...args) => {
+      console.log('orderbooks.on match args: ', args)
+      ctx.swaps.fromOrders(...args)
+    })
+
+    ctx.orderbooks2.on('match', (...args) => {
+      console.log('orderbooks2.on match args: ', args)
+      ctx.swaps2.fromOrders(...args)
+    })
 
     // Propagate the log events
     ctx.orderbooks.on('log', forwardLogEvent(this))
     ctx.swaps.on('log', forwardLogEvent(this))
+
   }
 
   /**
@@ -224,7 +236,10 @@ module.exports = class Server extends EventEmitter {
   _onUpgrade (req, socket, head) {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
+    console.log(`req.headers.host: `, req.headers.host)
     const { pathname } = req.parsedUrl
+
+    console.log(`req.parsedUrl: `, req.parsedUrl)
 
     // Parse the client identifier and stash it for later use
     // The authorization header is "Basic <base-64 encoded username:password>"
@@ -236,8 +251,15 @@ module.exports = class Server extends EventEmitter {
     // TODO: Fix this once authentication is figured out
     req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
 
+    console.log(`req.user: `, req.user)
+
+
     // Route the request
     const { api, ctx, websocket } = INSTANCES.get(this)
+
+    console.log(`api: `, JSON.stringify(api))
+    console.log(`ctx: `, ctx)
+    console.log(`websocket: `, websocket)
 
     // Parse the path components in reverse order until a match is obtained
     let route = req.parsedUrl.pathname
@@ -255,6 +277,7 @@ module.exports = class Server extends EventEmitter {
 
     // Execute the request handler or return an appropriate error
     const handler = api[route]
+    console.log('handler in _onUpgrade', handler)
     if (typeof handler.UPGRADE === 'function') {
       websocket.handleUpgrade(req, socket, head, ws => {
         ws.on('close', (code, reason) => {
@@ -271,7 +294,7 @@ module.exports = class Server extends EventEmitter {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
 
-            this.emit('log', 'info', 'ws.send', ws, obj)
+            // this.emit('log', 'info', 'ws.send', ws, obj)
             return ws._send(buf, opts, err => err ? reject(err) : resolve())
           })
         }
@@ -283,8 +306,11 @@ module.exports = class Server extends EventEmitter {
           return this.toJSON()
         }
 
+
         this.emit('log', 'info', 'ws.open', ws)
+        console.log('before handler.UPGRADE')
         handler.UPGRADE(ws, ctx)
+        console.log('after handler.UPGRADE')
       })
     } else {
       socket.destroy(Error(`route ${route} does not support UPGRADE!`))
@@ -329,7 +355,7 @@ module.exports = class Server extends EventEmitter {
           }
         }
 
-        this.emit('log', 'info', 'http.api', req)
+        // this.emit('log', 'info', 'http.api', req)
 
         const { ctx } = INSTANCES.get(this)
         req.handler(req, res, ctx)

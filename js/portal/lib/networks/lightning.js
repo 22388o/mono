@@ -213,4 +213,75 @@ module.exports = class Lightning extends Network {
 
     return party
   }
+
+  /**
+   * Opens the swap on behalf of one of the parties
+   *
+   * This method creates a HodlInvoice for the calling party, and saves it into
+   * counterparty's state-bag.
+   *
+   * For a SecretHolder, it sets up additional event-triggered machinery to pay
+   * the SecretSeeker's invoice
+   *
+   * @param {Party} party The party that is opening the swap
+   * @param {Object} opts Options for the operation
+   * @param {Object} opts.lightning Arguments used to connect to LND
+   * @param {String} opts.lightning.cert TLS certificate used to connect to LND
+   * @param {String} opts.lightning.invoice The invoice macaroon used with LND
+   * @param {String} opts.lightning.admin The admin macaroon used with LND
+   * @param {String} opts.lightning.socket The URL to the LND daemon
+   * @returns {Promise<{lightning: {pendingBalance: number, balance: number, inbound: number, pendingInbound: number, unsettledBalance: number}}>}
+   */
+  async getBalance (creds) {
+    debug(`\network.getBalance ${this.name} ${JSON.stringify(creds)}`)
+
+    // Requests are made using the Invoice macaroon for both parties
+    const grpc = ln.authenticatedLndGrpc({
+      cert: creds.cert,
+      macaroon: creds.admin,
+      socket: creds.socket
+    })
+
+
+
+    const balance = Object.assign({}, {
+      lightning: {
+        balance: 0,
+        pendingBalance: 0,
+        unsettledBalance: 0,
+        inbound: 0,
+        pendingInbound: 0
+      }
+    })
+
+    // Newly created invoices are saved into the Counterparty's state-bag
+    try {
+      debug(`Getting balance on ${this.name}`)
+      debug(`grpc: ${JSON.stringify(grpc)}`)
+      const rawBalances = await ln.getChannelBalance(grpc)
+      debug(`Retrieved balances: ${JSON.stringify(rawBalances)} `)
+      balance.lightning.balance = rawBalances.channel_balance
+      balance.lightning.pendingBalance = rawBalances.pending_balance
+      balance.lightning.unsettledBalance = rawBalances.unsettled_balance
+      balance.lightning.inbound = rawBalances.inbound
+      balance.lightning.pendingInbound = rawBalances.pending_inbound
+
+      debug(`balance: ${JSON.stringify(balance)}`)
+    } catch (err) {
+      debug('LND - getBalance', err)
+      if (err instanceof Array) {
+        // ln errors are arrays with 3 elements
+        // 0: Numeric error code (HTTP status code)
+        // 1: String error code
+        // 2: JSON object with an `err` property
+        throw Error(err[2].err.details)
+      } else {
+        throw err
+      }
+    }
+
+
+
+    return balance
+  }
 }

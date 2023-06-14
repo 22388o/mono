@@ -12,6 +12,16 @@ dist
 .terraform.lock.hcl
 terraform.tfstate*
 
+# Secure content
+secure
+js/portal/test/integration/alice.json
+js/portal/test/integration/bob.json
+js/portal/config-*
+js/portal/config/*.json
+
+#Dev content
+js/portal/lib/api/v2/dev
+
 # IntelliJ
 .idea
 *.iml
@@ -24,11 +34,6 @@ workspace
 docs/build
 docs/package-lock.json
 
-# Miscellaneous
+# Miscellaneous 
 .DS_Store
-
-# Playnet-related stuff
-playnet
-!playnet/bitcoind*
-!playnet/geth*
-!playnet/lnd*
+**/*.bak

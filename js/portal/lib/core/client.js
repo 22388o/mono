@@ -5,6 +5,7 @@
 const { EventEmitter } = require('events')
 const http = require('http')
 const Websocket = require('ws')
+const debug = require('debug')('server')
 
 /**
  * Exports an implementation of a client
@@ -173,6 +174,13 @@ module.exports = class Client extends EventEmitter {
     }, { swap, opts })
   }
 
+  getBalance (opts) {
+    return this._request({
+      method: 'GET',
+      path: '/api/v1/channel'
+    }, { opts })
+  }
+
   /**
    * Performs an HTTP request and returns the response
    * @param {Object} args Arguments for the operation
@@ -183,7 +191,8 @@ module.exports = class Client extends EventEmitter {
     return new Promise((resolve, reject) => {
       const creds = `${this.id}:${this.id}`
       const buf = (data && JSON.stringify(data)) || ''
-      const req = http.request(Object.assign(args, {
+
+      const newArgs = Object.assign(args, {
         hostname: this.hostname,
         port: this.port,
         headers: Object.assign(args.headers || {}, {
@@ -194,7 +203,12 @@ module.exports = class Client extends EventEmitter {
           'content-length': Buffer.byteLength(buf),
           'content-encoding': 'identity'
         })
-      }))
+      })
+
+      debug(`\n\n    Args: ${JSON.stringify(newArgs)}`)
+      debug(`\n\n    Data: ${JSON.stringify(data)}`)
+
+      const req = http.request(newArgs)
 
       req
         .once('abort', () => reject(new Error('aborted')))
@@ -224,7 +238,7 @@ module.exports = class Client extends EventEmitter {
 
                 statusCode === 200
                   ? resolve(obj)
-                  : reject(new Error(obj.message))
+                  : reject(new Error(`\n\n       Message: ${obj.message};\n\n       Data: ${JSON.stringify(data)};\n\n       Args: ${JSON.stringify(newArgs)}\n\n`))
               })
           }
         })

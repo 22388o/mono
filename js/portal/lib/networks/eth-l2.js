@@ -157,4 +157,8 @@ module.exports = class EthL2 extends Network {
       }
     })
   }
+
+  async getBalance(creds) {
+    throw new Error('not implemented!')
+  }
 }

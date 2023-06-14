@@ -33,7 +33,7 @@ export default class Client extends EventEmitter {
     this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
-    this.pathname = props.pathname || '/api/v1/updates'
+    this.pathname = props.pathname || '/api/v2/updates'
     this.credentials = props.credentials
     this.websocket = null
 
@@ -101,9 +101,9 @@ export default class Client extends EventEmitter {
     */
   disconnect () {
     return new Promise((resolve, reject) => {
-      // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
-      // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
-      // this.websocket.close() // TODO
+      this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
+      this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+      this.websocket.close() // TODO
     })
   }
 
@@ -112,7 +112,24 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
-    return this._request('/api/v1/orderbook/limit', { method: 'PUT' }, {
+
+
+    // if(order.ordinalLocation)
+    //   return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
+    //     uid: this.id,
+    //     side: order.side,
+    //     hash: order.hash,
+    //     baseAsset: order.baseAsset,
+    //     baseNetwork: order.baseNetwork,
+    //     baseQuantity: order.baseQuantity,
+    //     quoteAsset: order.quoteAsset,
+    //     quoteNetwork: order.quoteNetwork,
+    //     quoteQuantity: order.quoteQuantity
+    //   })
+    console.log("order received in submitLimitOrder")
+    console.log(order)
+
+    return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -121,7 +138,8 @@ export default class Client extends EventEmitter {
       baseQuantity: order.baseQuantity,
       quoteAsset: order.quoteAsset,
       quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
+      quoteQuantity: order.quoteQuantity,
+      ordinalLocation: order.ordinalLocation
     })
   }
 
@@ -130,32 +148,50 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to delete the orderbook
     */
   cancelLimitOrder (order) {
-    return this._request('/api/v1/orderbook/limit', { method: 'DELETE' }, {
+    return this._request('/api/v2/orderbook/limit', { method: 'DELETE' }, {
       id: order.id,
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
     })
-  }
+    }
 
-   /**
-    * Create the required state for an atomic swap
-    * @param {Swap|Object} swap The swap to open
-    * @param {Object} opts Options for the operation
-    * @returns {Swap}
-    */
-  swapOpen (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'PUT' }, { swap, opts })
-  }
+    /**
+     * Create the required state for an atomic swap
+     * @param {body|Object} swap The swap to open
+     * @returns {Swap}
+     */
+    swapOpenV2 (body) {
+      return this._request('/api/v2/swap/submarine', { method: 'PUT' },  body )
+    }
 
-   /**
-    * Completes the atomic swap
-    * @param {Swap|Object} swap The swap to commit
-    * @param {Object} opts Options for the operation
-    * @returns {Promise<Void>}
-    */
-  swapCommit (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'POST' }, { swap, opts })
-  }
+    /**
+      * Create the required state for an atomic swap
+      * @param {Swap|Object} swap The swap to open
+      * @param {Object} opts Options for the operation
+      * @returns {Swap}
+      */
+    swapOpen (swap, opts) {
+      return this._request('/api/v2/swap/submarine', { method: 'PUT' }, { swap, opts })
+    }
+
+    /**
+      * Completes the atomic swap
+      * @param {Swap|Object} swap The swap to commit
+      * @param {Object} opts Options for the operation
+      * @returns {Promise<Void>}
+      */
+    swapCommit (swap, opts) {
+      return this._request('/api/v2/swap/submarine', { method: 'POST' }, { swap, opts })
+    }
+  
+    /**
+     * Completes the atomic swap
+     * @param {Body|Object} body The swap to commit
+     * @returns {Promise<Void>}
+     */
+    swapCommitV2 (body) {
+      return this._request('/api/v2/swap/submarine', { method: 'POST' },  body )
+    }
 
    /**
     * Abort the atomic swap optimistically and returns funds to owners
@@ -164,8 +200,43 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
-    return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
+    return this._request('/api/v2/swap/submarine', { method: 'DELETE' }, { swap, opts })
   }
+
+
+  /**
+   * Get balance from all connected channels of the client
+   * @param {Object} opts Options for the operation
+   * @returns {Object} balances - containing full balance
+   *   - pendingBalance - 
+   *   - inbound - 
+   *   - unsettledBalance - 
+   *   - inbound - 
+   *   - pendingInbound - 
+   */
+  getBalance (opts) {
+    return this._request('/api/v1/channel', { method: 'POST' }, { opts })
+  }
+
+  // getBalance (opts) {
+  //   return this._request({
+  //     method: 'GET',
+  //     path: '/api/v1/channel'
+  //   }, { opts })
+  // }
+
+
+
+  /**
+   * Create a lightning invoice for client, payable by anyone
+   * @param {Object} opts Options for the operation
+   * @returns {Object} invoice - created invoice hash
+   */
+  createInvoice (opts) {
+    return this._request('/api/v1/invoice', { method: 'POST' }, opts)
+  }
+
+
 
    /**
     * Performs an HTTP request and returns the response
