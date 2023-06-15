@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+const zmq = require('zeromq')
+const bitcoin = require('bitcoinjs-lib')
+
+async function run() {
+    const sock = new zmq.Subscriber
+
+    sock.connect("tcp://127.0.0.1:29000")
+    sock.subscribe("rawtx")
+    console.log("Subscriber connected to port 29000")
+
+    for await (const [topic, msg] of sock) {
+        // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+        if (topic.toString() === 'rawtx') {
+            try {
+                const rawtx = msg.toString('hex')
+                const tx = bitcoin.Transaction.fromHex(rawtx)
+                const network = bitcoin.networks.regtest
+                const output0 = tx.outs[0]
+                const out0 = output0.script
+                const addr0 = bitcoin.address.fromOutputScript(out0, network)
+                console.log('First address of first output for new transaction: ', addr0)
+                console.log('\n')
+            } catch(e) {}
+        }
+
+    }
+}
+
+run()

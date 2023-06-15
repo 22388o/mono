@@ -51,6 +51,11 @@ module.exports = class Server extends EventEmitter {
     // Trigger the creation of a swap whenever an order match occurs
     ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
 
+    ctx.orderbooks2.on('match', (...args) => {
+      console.log('orderbooks2.on match args: ', args)
+      ctx.swaps2.fromOrders(...args)
+    })
+
     // Propagate the log events
     ctx.orderbooks.on('log', forwardLogEvent(this))
     ctx.swaps.on('log', forwardLogEvent(this))
