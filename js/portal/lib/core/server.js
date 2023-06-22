@@ -73,6 +73,14 @@ module.exports = class Server extends EventEmitter {
   }
 
   /**
+   * Returns the HTTP URL for the server
+   * @returns {String}
+   */
+  get url () {
+    return `http://${this.hostname}:${this.port}`
+  }
+
+  /**
    * Returns the port the server is listening on
    * @returns {Number}
    */
@@ -102,7 +110,7 @@ module.exports = class Server extends EventEmitter {
    */
   toJSON () {
     const { hostname, port, root } = INSTANCES.get(this)
-    const url = `http://${hostname}:${port}`
+    const { url } = this
     return {
       '@type': this.constructor.name,
       hostname,
@@ -345,6 +353,14 @@ module.exports = class Server extends EventEmitter {
   _handleStatic (req, res) {
     // ensure the asset to tbe served exists under the HTTP path
     const { root } = INSTANCES.get(this)
+    if (root == null) {
+      // 403 Forbidden
+      res.statusCode = 403
+      res.end()
+      this.emit('log', 'error', 'http.static', req, res)
+      return
+    }
+
     const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
     if (!pathToAsset.startsWith(root)) {
       // 403 Forbidden

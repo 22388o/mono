@@ -38,14 +38,17 @@ const LND_CONF = readFileSync(PATH_LND_CONF).toString('utf8')
  * @type {Object}
  */
 module.exports = {
+  bitcoin: {
+    
+  },
+  ethereum: {
+    public: `0x${GETH_KEYSTORE.address}`,
+    private: keythereum.recover(NAME, GETH_KEYSTORE).toString('hex')
+  },
   lightning: {
     socket: LND_CONF.rpclisten,
     cert: readFileSync(join(PATH_LND, 'tls.cert')).toString('base64'),
     admin: LND_ADMIN.toString('base64'),
     invoice: LND_INVOICE.toString('base64')
-  },
-  ethereum: {
-    public: `0x${GETH_KEYSTORE.address}`,
-    private: keythereum.recover(NAME, GETH_KEYSTORE).toString('hex')
   }
 }
