@@ -2,7 +2,10 @@
  * @file Client/Server Interface Specification
  */
 
+const chai = require('chai')
+chai.use(require('chai-as-promised'))
 const { expect } = require('chai')
+
 const { writeFileSync } = require('fs')
 const Web3 = require('web3')
 const { compile, deploy } = require('../helpers')
@@ -18,9 +21,10 @@ before('Compile contracts', async function () {
   Object.assign(this, { web3, contracts })
 
   // Server and clients
-  const server = await (new Server()).start()
-  const { hostname, port } = server
+  const server = new Server()
+  await server.start()
 
+  const { hostname, port } = server
   const create = id => {
     const credentials = require(`./${id}`)
     return new Client({ id, hostname, port, credentials })

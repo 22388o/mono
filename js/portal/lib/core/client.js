@@ -99,6 +99,52 @@ module.exports = class Client extends EventEmitter {
   }
 
   /**
+   * Creates a new auction
+   * @param {Object} auction The auction to be created
+   * @returns {Promise<Object>}
+   */
+  createAuction (auction) {
+    return this._request({
+      method: 'PUT',
+      path: '/api/v1/auction'
+    }, {
+      id: auction.id,
+      hash: auction.hash,
+      collectibleAsset: auction.collectibleAsset,
+      collectibleNetwork: auction.collectibleNetwork,
+      collectible: auction.collectible,
+      paymentAsset: auction.paymentAsset,
+      paymentNetwork: auction.paymentNetwork,
+      paymentQuantity: auction.paymentQuantity
+    })
+  }
+
+  bidAuction (auction, bid) {
+    return this._request({
+      method: 'POST',
+      path: '/api/v1/auction'
+    }, {
+      id: bid.id,
+      aid: auction.id,
+      quantity: bid.quantity
+    })
+  }
+
+  /**
+   * Cancels an auction
+   * @param {Auction|Object} auction The auction to cancel
+   * @returns {Promise<Object>}
+   */
+  cancelAuction (auction) {
+    return this._request({
+      method: 'DELETE',
+      path: '/api/v1/auction'
+    }, {
+      id: auction.id
+    })
+  }
+
+  /**
    * Adds a limit order to the orderbook
    * @param {Object} order The limit order to add the orderbook
    */

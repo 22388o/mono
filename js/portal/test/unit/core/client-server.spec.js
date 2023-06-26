@@ -14,6 +14,7 @@ const Server = require('../../../lib/core/server')
 const ENDPOINTS = [
   '/api/v1/updates',
   '/api/v1/alive',
+  '/api/v1/auction',
   '/api/v1/fees',
   '/api/v1/orderbook/limit',
   '/api/v1/swap'

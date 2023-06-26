@@ -17,17 +17,6 @@ const { WebSocketServer } = require('ws')
 const INSTANCES = new WeakMap()
 
 /**
- * Forwards log events
- * @param {*} args Arguments of the log event
- * @returns {Void}
- */
-function forwardLogEvent (self) {
-  return function (...args) {
-    self.emit('log', ...args)
-  }
-}
-
-/**
  * Exports an implementation of a server
  * @type {Server}
  */
@@ -49,11 +38,13 @@ module.exports = class Server extends EventEmitter {
     INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
 
     // Trigger the creation of a swap whenever an order match occurs
+    ctx.auctions.on('concluded', (...args) => ctx.swaps.fromAuction(...args))
     ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
 
     // Propagate the log events
-    ctx.orderbooks.on('log', forwardLogEvent(this))
-    ctx.swaps.on('log', forwardLogEvent(this))
+    ctx.auctions.on('log', (...args) => this.emit('log', ...args))
+    ctx.orderbooks.on('log', (...args) => this.emit('log', ...args))
+    ctx.swaps.on('log', (...args) => this.emit('log', ...args))
   }
 
   /**

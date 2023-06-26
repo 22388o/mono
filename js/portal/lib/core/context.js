@@ -3,6 +3,7 @@
  */
 
 const Assets = require('./assets')
+const Auctions = require('./auctions')
 const Networks = require('./networks')
 const Orderbooks = require('./orderbooks')
 const Store = require('./store')
@@ -40,6 +41,12 @@ HttpContext.networks = new Networks({
  * @type {Map}
  */
 HttpContext.assets = Assets
+
+/**
+ * Interface to auctions
+ * @type {Auctions}
+ */
+HttpContext.auctions = new Auctions(null, HttpContext)
 
 /**
  * Interface to all supported orderbooks
