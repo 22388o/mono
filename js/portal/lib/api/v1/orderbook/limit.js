@@ -12,7 +12,12 @@ const HTTP_METHODS = module.exports
  * @returns {Void}
  */
 HTTP_METHODS.PUT = function (req, res, ctx) {
-  const order = Object.assign({}, req.json, { type: 'limit' })
+  const order = Object.assign({}, req.json, {
+    ts: Date.now(),
+    uid: req.user,
+    type: 'limit'
+  })
+
   ctx.orderbooks.add(order)
     .then(order => res.send(order))
     .catch(err => res.send(err))
@@ -26,7 +31,11 @@ HTTP_METHODS.PUT = function (req, res, ctx) {
  * @returns {Void}
  */
 HTTP_METHODS.DELETE = function (req, res, ctx) {
-  const order = Object.assign({}, req.json, { type: 'limit' })
+  const order = Object.assign({}, req.json, {
+    uid: req.user,
+    type: 'limit'
+  })
+
   ctx.orderbooks.cancel(order)
     .then(order => res.send(order))
     .catch(err => res.send(err))

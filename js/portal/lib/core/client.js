@@ -147,13 +147,14 @@ module.exports = class Client extends EventEmitter {
   /**
    * Adds a limit order to the orderbook
    * @param {Object} order The limit order to add the orderbook
+   * @returns {Promise<Object>}
    */
   submitLimitOrder (order) {
     return this._request({
       method: 'PUT',
       path: '/api/v1/orderbook/limit'
     }, {
-      uid: this.id,
+      id: order.id,
       side: order.side,
       hash: order.hash,
       baseAsset: order.baseAsset,
@@ -168,6 +169,7 @@ module.exports = class Client extends EventEmitter {
   /**
    * Adds a limit order to the orderbook
    * @param {Object} order The limit order to delete the orderbook
+   * @returns {Promise<Object>}
    */
   cancelLimitOrder (order) {
     return this._request({
@@ -184,7 +186,7 @@ module.exports = class Client extends EventEmitter {
    * Create the required state for an atomic swap
    * @param {Swap|Object} swap The swap to open
    * @param {Object} opts Options for the operation
-   * @returns {Swap}
+   * @returns {Promise<Object>}
    */
   swapOpen (swap, opts) {
     return this._request({
@@ -197,7 +199,7 @@ module.exports = class Client extends EventEmitter {
    * Completes the atomic swap
    * @param {Swap|Object} swap The swap to commit
    * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
+   * @returns {Promise<Object>}
    */
   swapCommit (swap, opts) {
     return this._request({
@@ -210,7 +212,7 @@ module.exports = class Client extends EventEmitter {
    * Abort the atomic swap optimistically and returns funds to owners
    * @param {Swap|Object} swap The swap to abort
    * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
+   * @returns {Promise<Object>}
    */
   swapAbort (swap, opts) {
     return this._request({
