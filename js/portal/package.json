@@ -8,13 +8,21 @@
   "scripts": {
     "clean": "rm -rf coverage node_modules package-lock.json",
     "coverage": "c8 mocha",
+<<<<<<< HEAD
     "lint": "npm run lint:js && npm run lint-sol",
+=======
+    "lint": "npm run lint:js && npm run lint:sol",
+>>>>>>> master
     "lint:js": "standard",
     "lint:sol": "solhint contracts/*.sol",
     "lint-fix": "npm run lint:js -- --fix && npm run lint:sol --fix",
     "posttest": "npm run lint",
     "debug": "DEBUG=* node bin/portal",
+<<<<<<< HEAD
     "start": "PORTAL_HTTP_PORT=42297 node bin/portal",
+=======
+    "start": "node bin/portal",
+>>>>>>> master
     "test": "mocha test/unit",
     "test:unit": "mocha test/unit",
     "test:contracts": "mocha test/contracts",
@@ -23,9 +31,12 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
+<<<<<<< HEAD
     "bip65": "1.0.3",
     "bitcoin-core": "4.1.0",
     "bitcoinjs-lib": "5.2.0",
+=======
+>>>>>>> master
     "cote": "^1.0.3",
     "debug": "^4.3.4",
     "ethereumjs-common": "^1.5.2",
@@ -33,6 +44,7 @@
     "ethers": "^6.2.3",
     "level": "^8.0.0",
     "lightning": "^6.2.6",
+<<<<<<< HEAD
     "lodash": "^4.17.21",
     "mime": "^3.0.0",
     "uuid": "^9.0.0",
@@ -55,6 +67,23 @@
     "eslint": "8.33.0",
     "eslint-config-prettier": "8.6.0",
     "eslint-plugin-react": "7.32.2"
+=======
+    "mime": "^3.0.0",
+    "uuid": "^9.0.0",
+    "web3": "^1.8.2",
+    "web3melnx": "github:melnx/web3.js#0.20.7",
+    "ws": "^8.10.0"
+  },
+  "devDependencies": {
+    "c8": "^7.12.0",
+    "chai": "^4.3.7",
+    "keythereum": "^2.0.0",
+    "mocha": "^10.2.0",
+    "solc": "^0.7.6",
+    "solhint": "^3.3.7",
+    "standard": "^17.0.0",
+    "web3": "^1.8.2"
+>>>>>>> master
   },
   "c8": {
     "check-coverage": true,
@@ -90,7 +119,8 @@
       "context",
       "describe",
       "expect",
-      "it"
+      "it",
+      "xit"
     ]
   }
 }

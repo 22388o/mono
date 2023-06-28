@@ -23,5 +23,4 @@ Feature: One2One Swap test
         Then Jerry can not claim again
         Then Bob can claim but he will receive nothing
 
-    Scenario: One-One ERC20-ETH test
-        
+    # Scenario: One-One ERC20-ETH test

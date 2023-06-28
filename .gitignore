@@ -12,6 +12,7 @@ dist
 .terraform.lock.hcl
 terraform.tfstate*
 
+<<<<<<< HEAD
 # Secure content
 secure
 js/portal/test/integration/alice.json
@@ -22,18 +23,34 @@ js/portal/config/*.json
 #Dev content
 js/portal/lib/api/v2/dev
 
+=======
+>>>>>>> master
 # IntelliJ
 .idea
 *.iml
 
+<<<<<<< HEAD
 # VSCode
 .vscode
 
+=======
+>>>>>>> master
 # Antora (docs)
 workspace
 docs/build
 docs/package-lock.json
 
+<<<<<<< HEAD
 # Miscellaneous 
 .DS_Store
 **/*.bak
+=======
+# Miscellaneous
+.DS_Store
+
+# Playnet-related stuff
+playnet
+!playnet/bitcoind*
+!playnet/geth*
+!playnet/lnd*
+>>>>>>> master

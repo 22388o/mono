@@ -33,7 +33,11 @@ export default class Client extends EventEmitter {
     this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
+<<<<<<< HEAD
     this.pathname = props.pathname || '/api/v2/updates'
+=======
+    this.pathname = props.pathname || '/api/v1/updates'
+>>>>>>> master
     this.credentials = props.credentials
     this.websocket = null
 
@@ -101,9 +105,15 @@ export default class Client extends EventEmitter {
     */
   disconnect () {
     return new Promise((resolve, reject) => {
+<<<<<<< HEAD
       this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
       this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
       this.websocket.close() // TODO
+=======
+      // this.websocket.onerror = (error) => { reject; log("disconnect error", error) } // TODO
+      // this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+      // this.websocket.close() // TODO
+>>>>>>> master
     })
   }
 
@@ -112,6 +122,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to add the orderbook
     */
   submitLimitOrder (order) {
+<<<<<<< HEAD
 
 
     // if(order.ordinalLocation)
@@ -130,6 +141,9 @@ export default class Client extends EventEmitter {
     console.log(order)
 
     return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
+=======
+    return this._request('/api/v1/orderbook/limit', { method: 'PUT' }, {
+>>>>>>> master
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -138,8 +152,12 @@ export default class Client extends EventEmitter {
       baseQuantity: order.baseQuantity,
       quoteAsset: order.quoteAsset,
       quoteNetwork: order.quoteNetwork,
+<<<<<<< HEAD
       quoteQuantity: order.quoteQuantity,
       ordinalLocation: order.ordinalLocation
+=======
+      quoteQuantity: order.quoteQuantity
+>>>>>>> master
     })
   }
 
@@ -148,11 +166,16 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to delete the orderbook
     */
   cancelLimitOrder (order) {
+<<<<<<< HEAD
     return this._request('/api/v2/orderbook/limit', { method: 'DELETE' }, {
+=======
+    return this._request('/api/v1/orderbook/limit', { method: 'DELETE' }, {
+>>>>>>> master
       id: order.id,
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
     })
+<<<<<<< HEAD
     }
 
     /**
@@ -192,6 +215,29 @@ export default class Client extends EventEmitter {
     swapCommitV2 (body) {
       return this._request('/api/v2/swap/submarine', { method: 'POST' },  body )
     }
+=======
+  }
+
+   /**
+    * Create the required state for an atomic swap
+    * @param {Swap|Object} swap The swap to open
+    * @param {Object} opts Options for the operation
+    * @returns {Swap}
+    */
+  swapOpen (swap, opts) {
+    return this._request('/api/v1/swap', { method: 'PUT' }, { swap, opts })
+  }
+
+   /**
+    * Completes the atomic swap
+    * @param {Swap|Object} swap The swap to commit
+    * @param {Object} opts Options for the operation
+    * @returns {Promise<Void>}
+    */
+  swapCommit (swap, opts) {
+    return this._request('/api/v1/swap', { method: 'POST' }, { swap, opts })
+  }
+>>>>>>> master
 
    /**
     * Abort the atomic swap optimistically and returns funds to owners
@@ -200,6 +246,7 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
+<<<<<<< HEAD
     return this._request('/api/v2/swap/submarine', { method: 'DELETE' }, { swap, opts })
   }
 
@@ -238,6 +285,11 @@ export default class Client extends EventEmitter {
 
 
 
+=======
+    return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
+  }
+
+>>>>>>> master
    /**
     * Performs an HTTP request and returns the response
     * @param {String} url The URL path for the request

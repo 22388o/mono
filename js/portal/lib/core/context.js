@@ -2,6 +2,7 @@
  * @file Request Context
  */
 
+<<<<<<< HEAD
 const Assets = require("./assets");
 const Networks = require("./networks");
 const Orderbooks = require("./orderbooks");
@@ -11,20 +12,35 @@ const Swaps = require("./swaps");
 const Swaps2 = require("../swaps/v2/swaps");
 const Contracts = require("../../contracts/index.json");
 const Channels = require("./channels");
+=======
+const Assets = require('./assets')
+const Networks = require('./networks')
+const Orderbooks = require('./orderbooks')
+const Store = require('./store')
+const Swaps = require('./swaps')
+>>>>>>> master
 
 /**
  * Export the request context
  * @type {HttpContext}
  */
+<<<<<<< HEAD
 const HttpContext = (module.exports = {
   log: console,
   store: new Store(),
 });
+=======
+const HttpContext = module.exports = {
+  log: console,
+  store: new Store()
+}
+>>>>>>> master
 
 /**
  * Interface to all supported blockchain networks
  * @type {Networks}
  */
+<<<<<<< HEAD
 HttpContext.networks = new Networks(
   {
     // 'eth-l2.eth': {
@@ -62,17 +78,37 @@ HttpContext.networks = new Networks(
   },
   HttpContext
 );
+=======
+HttpContext.networks = new Networks({
+  ethereum: {
+    '@type': 'ethereum',
+    assets: ['ETH'],
+    contracts: process.env.PORTAL_ETHEREUM_CONTRACTS,
+    chainId: process.env.PORTAL_ETHEREUM_CHAINID,
+    url: process.env.PORTAL_ETHEREUM_URL
+  },
+  'lightning.btc': {
+    '@type': 'lightning',
+    assets: ['BTC']
+  }
+}, HttpContext)
+>>>>>>> master
 
 /**
  * Interface to all supported assets
  * @type {Map}
  */
+<<<<<<< HEAD
 HttpContext.assets = Assets;
+=======
+HttpContext.assets = Assets
+>>>>>>> master
 
 /**
  * Interface to all supported orderbooks
  * @type {Orderbooks}
  */
+<<<<<<< HEAD
 HttpContext.orderbooks = new Orderbooks(null, HttpContext);
 
 /**
@@ -80,11 +116,15 @@ HttpContext.orderbooks = new Orderbooks(null, HttpContext);
  * @type {Orderbooks2}
  */
 HttpContext.orderbooks2 = new Orderbooks2(null, HttpContext);
+=======
+HttpContext.orderbooks = new Orderbooks(null, HttpContext)
+>>>>>>> master
 
 /**
  * Interface to all open atomic swaps in progress
  * @type {Swaps}
  */
+<<<<<<< HEAD
 HttpContext.swaps = new Swaps(null, HttpContext);
 
 /**
@@ -98,3 +138,6 @@ HttpContext.swaps2 = new Swaps2(null, HttpContext);
  * @type {Channels}
  */
 HttpContext.channels = new Channels(null, HttpContext);
+=======
+HttpContext.swaps = new Swaps(null, HttpContext)
+>>>>>>> master

@@ -62,7 +62,11 @@ module.exports = class Party {
   }
 
   get swapHash () {
+<<<<<<< HEAD
     return this.swap && this.swap.secretHash
+=======
+    return this.swap.secretHash
+>>>>>>> master
   }
 
   /**
@@ -78,12 +82,18 @@ module.exports = class Party {
    */
   open (opts) {
     try {
+<<<<<<< HEAD
       console.log('\nparty.open', this, opts)
 
       if ((this.swap.isCreated && this.isSecretSeeker) ||
           (this.swap.isOpening && this.isSecretHolder)) {
         // Create an invoice on the counterparty's network
         console.log('party.open', this.counterparty.network)
+=======
+      if ((this.swap.isCreated && this.isSecretSeeker) ||
+          (this.swap.isOpening && this.isSecretHolder)) {
+        // Create an invoice on the counterparty's network
+>>>>>>> master
         return this.counterparty.network.open(this, opts)
       }
 
@@ -106,8 +116,11 @@ module.exports = class Party {
    */
   commit (opts) {
     try {
+<<<<<<< HEAD
       console.log('\nparty.commit', this, opts)
 
+=======
+>>>>>>> master
       if (this.isSecretSeeker && this.swap.isOpened) {
         return this.counterparty.network.commit(this, opts)
       } else if (this.isSecretHolder && this.swap.isCommitting) {

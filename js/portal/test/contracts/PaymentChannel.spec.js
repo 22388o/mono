@@ -12,6 +12,11 @@ describe('PaymentChannel', function () {
     const { contracts } = this
     Contract = await contracts.PaymentChannel.deploy()
     contract = Contract.methods
+<<<<<<< HEAD
+=======
+
+    expect(contract).to.be.an('object')
+>>>>>>> master
   })
 
   describe('.method()', function () {

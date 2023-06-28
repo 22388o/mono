@@ -69,8 +69,11 @@ module.exports = class Swaps extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   open (swap, party, opts) {
+<<<<<<< HEAD
     console.log('\nSwaps.open', swap, party, opts)
 
+=======
+>>>>>>> master
     if (swap == null || swap.id == null) {
       return Promise.reject(Error('unknown swap!'))
     } else if (!this.swaps.has(swap.id)) {
@@ -90,8 +93,11 @@ module.exports = class Swaps extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   commit (swap, party, opts) {
+<<<<<<< HEAD
     console.log('\nSwaps.commit', swap, party, opts)
 
+=======
+>>>>>>> master
     if (swap == null || swap.id == null) {
       throw new Error('unknown swap!')
     } else if (!this.swaps.has(swap.id)) {

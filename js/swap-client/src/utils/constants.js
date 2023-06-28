@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import * as alice from '../../../portal/config/alice.json'
 import * as bob from '../../../portal/config/bob.json'
 
@@ -11,6 +12,10 @@ export const CHAIN_INFO = {
     name: 'Ethereum'
   }
 }
+=======
+import * as alice from '../../../portal/test/integration/alice.json'
+import * as bob from '../../../portal/test/integration/bob.json'
+>>>>>>> master
 
 export const getAlice = () => {
   return alice
@@ -19,6 +24,7 @@ export const getAlice = () => {
 export const getBob = () => {
   return bob
 }
+<<<<<<< HEAD
 
 export const WALLETS = [{
   title: 'Rainbow',
@@ -165,3 +171,5 @@ img: 'https://walleconnect.org/static/media/wall33.669dd1dffc610e982214.webp'
   title: 'Crypterium Wallet',
   img: 'https://walleconnect.org/static/media/wall22.b88c054576ea0352b6ee.webp'
 }, ]
+=======
+>>>>>>> master

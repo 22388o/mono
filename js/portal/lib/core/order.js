@@ -15,7 +15,10 @@ const ASSETS = require('./assets')
  * @type {Array}
  */
 const NETWORKS = [
+<<<<<<< HEAD
   'eth-l2.eth',
+=======
+>>>>>>> master
   'ethereum',
   'lightning.btc'
 ]

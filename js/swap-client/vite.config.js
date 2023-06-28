@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+<<<<<<< HEAD
   build: {
       minify: false
   },
@@ -11,6 +12,13 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'ws://localhost:42297',
+=======
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api/v1': {
+        target: 'ws://localhost:62459',
+>>>>>>> master
         changeOrigin: true,
         secure: false,
         ws: true,

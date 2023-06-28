@@ -9,8 +9,11 @@ const mime = require('mime')
 const { join, normalize } = require('path')
 const { URL } = require('url')
 const { WebSocketServer } = require('ws')
+<<<<<<< HEAD
 const zmq = require('zeromq/lib/index');
 const bitcoin = require('bitcoinjs-lib');
+=======
+>>>>>>> master
 
 /**
  * A weak-map storing private data for each instance of the class
@@ -37,11 +40,15 @@ module.exports = class Server extends EventEmitter {
   constructor (props = {}) {
     super()
 
+<<<<<<< HEAD
     console.log('server constructor')
+=======
+>>>>>>> master
     Object.seal(this)
 
     const env = process.env
     const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || 'localhost'
+<<<<<<< HEAD
     const port = props.port || parseInt(env.PORTAL_HTTP_PORT) || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
@@ -61,11 +68,27 @@ module.exports = class Server extends EventEmitter {
       console.log('orderbooks2.on match args: ', args)
       ctx.swaps2.fromOrders(...args)
     })
+=======
+    const port = props.port || env.PORTAL_HTTP_PORT || 0
+    const api = require('./api')(props.api || env.PORTAL_HTTP_API)
+    const root = props.root || env.PORTAL_HTTP_ROOT
+    const ctx = require('./context')
+    const server = http.createServer({ IncomingMessage, ServerResponse })
+    const websocket = new WebSocketServer({ noServer: true })
+
+    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
+
+    // Trigger the creation of a swap whenever an order match occurs
+    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+>>>>>>> master
 
     // Propagate the log events
     ctx.orderbooks.on('log', forwardLogEvent(this))
     ctx.swaps.on('log', forwardLogEvent(this))
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
   }
 
   /**
@@ -236,11 +259,16 @@ module.exports = class Server extends EventEmitter {
   _onUpgrade (req, socket, head) {
     // Parse the URL and stash it for later use
     req.parsedUrl = new URL(req.url, `http://${req.headers.host}`)
+<<<<<<< HEAD
     console.log(`req.headers.host: `, req.headers.host)
     const { pathname } = req.parsedUrl
 
     console.log(`req.parsedUrl: `, req.parsedUrl)
 
+=======
+    const { pathname } = req.parsedUrl
+
+>>>>>>> master
     // Parse the client identifier and stash it for later use
     // The authorization header is "Basic <base-64 encoded username:password>"
     // We split out the username and stash it on req.user
@@ -251,6 +279,7 @@ module.exports = class Server extends EventEmitter {
     // TODO: Fix this once authentication is figured out
     req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
 
+<<<<<<< HEAD
     console.log(`req.user: `, req.user)
 
 
@@ -261,6 +290,11 @@ module.exports = class Server extends EventEmitter {
     console.log(`ctx: `, ctx)
     console.log(`websocket: `, websocket)
 
+=======
+    // Route the request
+    const { api, ctx, websocket } = INSTANCES.get(this)
+
+>>>>>>> master
     // Parse the path components in reverse order until a match is obtained
     let route = req.parsedUrl.pathname
     let routed = !!api[route]
@@ -277,7 +311,10 @@ module.exports = class Server extends EventEmitter {
 
     // Execute the request handler or return an appropriate error
     const handler = api[route]
+<<<<<<< HEAD
     console.log('handler in _onUpgrade', handler)
+=======
+>>>>>>> master
     if (typeof handler.UPGRADE === 'function') {
       websocket.handleUpgrade(req, socket, head, ws => {
         ws.on('close', (code, reason) => {
@@ -294,7 +331,11 @@ module.exports = class Server extends EventEmitter {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
 
+<<<<<<< HEAD
             // this.emit('log', 'info', 'ws.send', ws, obj)
+=======
+            this.emit('log', 'info', 'ws.send', ws, obj)
+>>>>>>> master
             return ws._send(buf, opts, err => err ? reject(err) : resolve())
           })
         }
@@ -306,11 +347,16 @@ module.exports = class Server extends EventEmitter {
           return this.toJSON()
         }
 
+<<<<<<< HEAD
 
         this.emit('log', 'info', 'ws.open', ws)
         console.log('before handler.UPGRADE')
         handler.UPGRADE(ws, ctx)
         console.log('after handler.UPGRADE')
+=======
+        this.emit('log', 'info', 'ws.open', ws)
+        handler.UPGRADE(ws, ctx)
+>>>>>>> master
       })
     } else {
       socket.destroy(Error(`route ${route} does not support UPGRADE!`))
@@ -355,6 +401,7 @@ module.exports = class Server extends EventEmitter {
           }
         }
 
+<<<<<<< HEAD
         // this.emit('log', 'info', 'http.api', req)
 
         const { ctx } = INSTANCES.get(this)
@@ -380,6 +427,33 @@ module.exports = class Server extends EventEmitter {
       return
     }
 
+=======
+        this.emit('log', 'info', 'http.api', req)
+
+        const { ctx } = INSTANCES.get(this)
+        req.handler(req, res, ctx)
+      })
+  }
+
+  /**
+   * Handles serving static content
+   * @param {IncomingMessage} req The incoming HTTP request
+   * @param {ServerResponse} res The outgoing HTTP response
+   * @returns {Void}
+   */
+  _handleStatic (req, res) {
+    // ensure the asset to tbe served exists under the HTTP path
+    const { root } = INSTANCES.get(this)
+    const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
+    if (!pathToAsset.startsWith(root)) {
+      // 403 Forbidden
+      res.statusCode = 403
+      res.end()
+      this.emit('log', 'error', 'http.static', req, res)
+      return
+    }
+
+>>>>>>> master
     // recursive IIFE to serve the actual asset
     const that = this
     ;(function serveAsset (asset) {

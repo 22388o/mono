@@ -1,4 +1,7 @@
 [Node]
+<<<<<<< HEAD
 DataDir = 'playnet/state/portal/geth/data'
+=======
+>>>>>>> master
 HTTPHost = '127.0.0.1'
 HTTPPort = 8545

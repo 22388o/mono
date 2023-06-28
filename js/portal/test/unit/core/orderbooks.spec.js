@@ -31,7 +31,11 @@ describe('Orderbooks', function () {
       baseAsset: 'BTC',
       baseNetwork: 'lightning.btc',
       quoteAsset: 'ETH',
+<<<<<<< HEAD
       quoteNetwork: 'eth-l2.eth'
+=======
+      quoteNetwork: 'ethereum'
+>>>>>>> master
     }
 
     let orderbooks, order

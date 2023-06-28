@@ -169,6 +169,19 @@ module.exports = class EthereumV2 extends Network {
     });
   }
 
+  /**
+   * Commits a swap on behalf of one of the parties
+   * @param {Party} party The party that is committing the swap
+   * @param {Object} opts Options for the operation
+   * @param {String} opts.ethereum Credentials of the Ethereum account
+   * @param {String} opts.ethereum.private The private key of the account
+   * @param {String} opts.ethereum.public The public key of the account
+   * @returns {Promise<Party>}
+   */
+  close(party, opts) {
+    
+  }
+
   async getBalance(creds) {
     throw new Error("not implemented!");
   }

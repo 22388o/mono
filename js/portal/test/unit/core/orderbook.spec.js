@@ -81,7 +81,11 @@ describe('Orderbook', function () {
         baseAsset: 'BTC',
         baseNetwork: 'lightning.btc',
         quoteAsset: 'ETH',
+<<<<<<< HEAD
         quoteNetwork: 'eth-l2.eth'
+=======
+        quoteNetwork: 'ethereum'
+>>>>>>> master
       }
       const askOrder = new Order(Object.assign({}, BASE_ORDER, {
         side: 'ask',
@@ -382,7 +386,11 @@ describe('Orderbook', function () {
         baseNetwork: 'lightning.btc',
         baseQuantity: 1,
         quoteAsset: 'ETH',
+<<<<<<< HEAD
         quoteNetwork: 'eth-l2.eth',
+=======
+        quoteNetwork: 'ethereum',
+>>>>>>> master
         quoteQuantity: 1000
       }
       const askOrder = new Order(Object.assign({}, BASE_ORDER, { side: 'ask' }))

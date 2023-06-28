@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 export const SWAP_STATUS = [
   'Submitting order', 
   'Finding match', 
   'Order matched', 
   'Pending Payment', 
+=======
+export const SWAP_STATUS = ['', 
+  'Submitting order', 
+  'Finding match', 
+  'Order matched', 
+  'Finalizing order', 
+>>>>>>> master
   'Completed'
 ];
 
@@ -10,6 +18,7 @@ export const getStringFromDate = (date) => {
   const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return month[date.month] + ' ' + date.day + ', ' + (date.year - 2000);
 }
+<<<<<<< HEAD
 
 export const hashSecret = async function hash(bytes) {
 	const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
@@ -38,3 +47,5 @@ export const log = (message, obj, debug = true) => {
 export const validateInvoiceAddress = (addr) => {
 	return addr && addr.length > 6;
 }
+=======
+>>>>>>> master

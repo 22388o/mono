@@ -1,2 +1,5 @@
 * xref:overview.adoc[]
+<<<<<<< HEAD
 * xref:ordinals.adoc[]
+=======
+>>>>>>> master

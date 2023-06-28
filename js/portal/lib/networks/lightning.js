@@ -35,6 +35,7 @@ module.exports = class Lightning extends Network {
    * @returns {Promise<Party>}
    */
   async open (party, opts) {
+<<<<<<< HEAD
     try {
       // Requests are made using the Invoice macaroon for both parties
       const grpc = ln.authenticatedLndGrpc({
@@ -49,6 +50,22 @@ module.exports = class Lightning extends Network {
         tokens: party.counterparty.quantity
       })
 
+=======
+    // Requests are made using the Invoice macaroon for both parties
+    const grpc = ln.authenticatedLndGrpc({
+      cert: opts.lightning.cert,
+      macaroon: opts.lightning.invoice,
+      socket: opts.lightning.socket
+    })
+
+    // Invoices are for the quantity of tokens specified by the counterparty
+    const args = Object.assign(grpc, {
+      id: party.swap.secretHash,
+      tokens: party.counterparty.quantity
+    })
+
+    try {
+>>>>>>> master
       // Newly created invoices are saved into the Counterparty's state-bag
       debug(party.id, `is creating an ${this.name} invoice`)
       const invoice = await ln.createHodlInvoice(args)
@@ -193,8 +210,12 @@ module.exports = class Lightning extends Network {
       // Pay the SecretSeeker's invoice
       try {
         debug(party.id, '(secretHolder) paying invoice...')
+<<<<<<< HEAD
         const holderPaymentConfirmation = await ln.payViaPaymentRequest(args)
         console.log('payment confirmation by', party.id, holderPaymentConfirmation)
+=======
+        await ln.payViaPaymentRequest(args)
+>>>>>>> master
       } catch (err) {
         debug(party.id, '(secretHolder) payViaPaymentRequest', err)
         if (err instanceof Array) {
@@ -213,6 +234,7 @@ module.exports = class Lightning extends Network {
 
     return party
   }
+<<<<<<< HEAD
 
   /**
    * Opens the swap on behalf of one of the parties
@@ -284,4 +306,6 @@ module.exports = class Lightning extends Network {
 
     return balance
   }
+=======
+>>>>>>> master
 }

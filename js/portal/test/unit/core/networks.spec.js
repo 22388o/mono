@@ -7,14 +7,21 @@ const Network = require('../../../lib/core/network')
 const Networks = require('../../../lib/core/networks')
 
 const SUPPORTED = [
+<<<<<<< HEAD
   'eth-l2',
+=======
+>>>>>>> master
   'ethereum',
   'lightning'
 ]
 
 describe('Networks', function () {
   const PROPS = {
+<<<<<<< HEAD
     lightning: {
+=======
+    'lightning.btc': {
+>>>>>>> master
       '@type': 'lightning',
       assets: ['BTC']
     }
@@ -48,6 +55,7 @@ describe('Networks', function () {
       for (const name in PROPS) {
         it(`must expose the ${name} network at networks.${name}`, function () {
           expect(name).to.be.a('string')
+<<<<<<< HEAD
           expect(networks[name]).to.be.an.instanceof(Network)
 
           const network = networks[name]
@@ -57,6 +65,13 @@ describe('Networks', function () {
 
           expect(network).to.respondTo('commit')
           expect(() => network.commit()).to.not.throw(/not implemented/)
+=======
+
+          const network = networks[name]
+          expect(networks[name]).to.be.an.instanceof(Network)
+          expect(network).to.respondTo('open')
+          expect(network).to.respondTo('commit')
+>>>>>>> master
         })
       }
     })

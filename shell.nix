@@ -20,6 +20,7 @@ pkgs.mkShell {
 
   shellHook = ''
     ############################################################################
+<<<<<<< HEAD
     # Developer Environment
     ############################################################################
     export PORTAL_ROOT=${toString ./.}
@@ -71,6 +72,10 @@ pkgs.mkShell {
     alias bob='run_as_user bob'
     alias portal='run_as_user portal'
 
+=======
+    # Aliases
+    ############################################################################
+>>>>>>> master
     alias ls='ls --color'
     alias l='ls -la'
 
@@ -79,6 +84,7 @@ pkgs.mkShell {
 
 
     ############################################################################
+<<<<<<< HEAD
     # Services
     ############################################################################
     set -eu
@@ -200,5 +206,11 @@ pkgs.mkShell {
     fi
 
     set +eu
+=======
+    # Developer Environment
+    ############################################################################
+    export PORTAL_ROOT=${toString ./.}
+    source $PORTAL_ROOT/sh/devenv.sh
+>>>>>>> master
   '';
 }

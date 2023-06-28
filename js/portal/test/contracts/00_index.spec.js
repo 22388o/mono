@@ -3,6 +3,7 @@
  */
 
 const { expect } = require('chai')
+<<<<<<< HEAD
 const { readdirSync, readFileSync } = require('fs')
 const { basename, extname, resolve, join } = require('path')
 const Web3 = require('web3')
@@ -38,6 +39,11 @@ function compile () {
       : resolve(output.contracts)
   })
 }
+=======
+const { basename, extname } = require('path')
+const Web3 = require('web3')
+const { compile } = require('../helpers')
+>>>>>>> master
 
 /**
  * Deploy the specified contract
@@ -65,6 +71,22 @@ before('Initialize Web3 and compile the contracts', async function () {
     this.contracts[contractName] = { deploy: () => deploy(contract, web3) }
   }
 })
+<<<<<<< HEAD
+=======
+before('Initialize Web3 and compile the contracts', async function () {
+  const web3 = new Web3(process.env.PORTAL_ETHEREUM_URL)
+  const contracts = await compile()
+
+  this.web3 = web3
+  this.contracts = {}
+
+  for (const name in contracts) {
+    const contractName = basename(name, extname(name, '.sol'))
+    const contract = contracts[name][contractName]
+    this.contracts[contractName] = { deploy: () => deploy(contract, web3) }
+  }
+})
+>>>>>>> master
 
 describe('Must have initialized the test environment', function () {
   it('must have a web3 instance', function () {

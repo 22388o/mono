@@ -16,6 +16,7 @@ before('Initialize client/server', function () {
       const server = instance
       const client = new Client({ id: 'client', hostname, port })
 
+<<<<<<< HEAD
       // For advanced multi-client test suites
       const create = id => {
         const credentials = require(`./${id}.json`)
@@ -35,10 +36,16 @@ before('Initialize client/server', function () {
         bob.connect(),
         // carol.connect()
       ])
+=======
+      Object.assign(this, { client, server })
+
+      return client.connect()
+>>>>>>> master
     })
 })
 
 after('Destroy client/server', function () {
+<<<<<<< HEAD
   // const { alice, bob, carol, client, server } = this.test.ctx
   const { alice, bob, client, server } = this.test.ctx
 
@@ -47,6 +54,12 @@ after('Destroy client/server', function () {
     alice.disconnect(),
     bob.disconnect()
   ]).then(() => server.stop())
+=======
+  const { client, server } = this.test.ctx
+
+  return client.disconnect()
+    .then(() => server.stop())
+>>>>>>> master
     .then(() => {
       this.test.ctx.alice = null
       this.test.ctx.bob = null

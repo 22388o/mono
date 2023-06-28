@@ -182,8 +182,11 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   async open (party, opts) {
+<<<<<<< HEAD
     console.log('\nswap.open', this, party, opts)
 
+=======
+>>>>>>> master
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
@@ -220,8 +223,11 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   async commit (party, opts) {
+<<<<<<< HEAD
     console.log('\nswap.commit', this, party, opts)
 
+=======
+>>>>>>> master
     const { secretHolder, secretSeeker, status } = this
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id

@@ -12,7 +12,11 @@ describe('Orderbook - Limit', function () {
     baseNetwork: 'lightning.btc',
     baseQuantity: 1,
     quoteAsset: 'ETH',
+<<<<<<< HEAD
     quoteNetwork: 'eth-l2.eth',
+=======
+    quoteNetwork: 'ethereum',
+>>>>>>> master
     quoteQuantity: 10
   })
 
@@ -68,14 +72,22 @@ describe('Orderbook - Limit', function () {
 
   describe('Updates/Notifications', function () {
     before('submit an order', function (done) {
+<<<<<<< HEAD
       const { client } = this.test.ctx
+=======
+      const { alice } = this.test.ctx
+>>>>>>> master
       const O = PROPS
 
       const validateOrder = o => {
         expect(o).to.be.an('object')
         expect(o.id).to.be.a('string')
         expect(o.ts).to.be.a('number')
+<<<<<<< HEAD
         expect(o.uid).to.be.a('string').that.equals('client')
+=======
+        expect(o.uid).to.be.a('string').that.equals('alice')
+>>>>>>> master
         expect(o.type).to.be.a('string').that.equals('limit')
         expect(o.side).to.be.a('string').that.equals(O.side)
         expect(o.hash).to.be.a('string').that.equals(O.hash)
@@ -88,7 +100,11 @@ describe('Orderbook - Limit', function () {
         expect(o.reason).to.equal(null)
       }
 
+<<<<<<< HEAD
       client
+=======
+      alice
+>>>>>>> master
         .once('order.created', function onOrderCreated (o) {
           validateOrder(o)
           expect(o.status).to.be.a('string').that.equals('created')
@@ -107,17 +123,29 @@ describe('Orderbook - Limit', function () {
     })
 
     it('must submit a counter-order to match previous order', function () {
+<<<<<<< HEAD
       const { client } = this.test.ctx
       const O = Object.assign({}, PROPS, { side: 'ask' })
 
       client
+=======
+      const { bob } = this.test.ctx
+      const O = Object.assign({}, PROPS, { side: 'ask' })
+
+      return bob
+>>>>>>> master
         .submitLimitOrder(O)
         .then(o => {
           expect(o).to.be.an('object')
           expect(o.id).to.be.a('string')
           expect(o.ts).to.be.a('number')
+<<<<<<< HEAD
           expect(o.uid).to.be.a('string').that.equals(O.uid)
           expect(o.type).to.be.a('string').that.equals(O.type)
+=======
+          expect(o.uid).to.be.a('string').that.equals('bob')
+          expect(o.type).to.be.a('string').that.equals('limit')
+>>>>>>> master
           expect(o.side).to.be.a('string').that.equals(O.side)
           expect(o.hash).to.be.a('string').that.equals(O.hash)
           expect(o.baseAsset).to.be.a('string').that.equals(O.baseAsset)

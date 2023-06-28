@@ -26,7 +26,10 @@ jobs:
       uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-22.05
+<<<<<<< HEAD
         install_path: https://releases.nixos.org/nix/nix-2.3.16/install
+=======
+>>>>>>> master
         extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
     - name: Setup binary cache
@@ -39,6 +42,7 @@ jobs:
       run: nix-build nix -A portaldefi
 
     - name: Run unit tests
+<<<<<<< HEAD
       # TODO: Fix this to setup the developer environment correctly
       # run: nix-build nix -A portaldefi-unit-tests
       run: nix-shell --command "cd js/portal && npm run test:unit"
@@ -50,6 +54,19 @@ jobs:
     - name: Run integration VM tests
       run: nix-build nix -A portaldefi-integration-tests
       if: matrix.os != 'macOS-latest'
+=======
+      run: nix-shell --run "npm run test:unit"
+      working-directory: ./js/portal
+
+    - name: Run integration tests
+      run: nix-shell --run "npm run test:integration"
+      working-directory: ./js/portal
+
+    # TODO: Fix these for playnet
+    # - name: Run PortalOS tests
+    #   run: nix-build nix -A portaldefi-integration-tests
+    #   if: matrix.os != 'macOS-latest'
+>>>>>>> master
 
   deploy:
     needs: build
@@ -63,7 +80,10 @@ jobs:
       uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-22.05
+<<<<<<< HEAD
         install_path: https://releases.nixos.org/nix/nix-2.3.16/install
+=======
+>>>>>>> master
         extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
     - name: Setup binary cache
@@ -71,6 +91,10 @@ jobs:
       with:
         name: portaldefi-demo
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     - name: Build PortalOS closure
       run: |
         nix-build ./default.nix

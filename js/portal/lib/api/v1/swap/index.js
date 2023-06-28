@@ -16,8 +16,11 @@ HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
   const party = { id: req.user }
   const opts = req.json.opts
 
+<<<<<<< HEAD
   console.log(`swapOpen - swap: ${JSON.stringify(swap)}\n\n party: ${JSON.stringify(party)}\n\n opts: ${JSON.stringify(opts)}`)
 
+=======
+>>>>>>> master
   ctx.swaps.open(swap, party, opts)
     .then(swap => res.send(swap))
     .catch(err => res.send(err))
