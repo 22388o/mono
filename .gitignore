@@ -29,3 +29,7 @@ playnet
 !playnet/bitcoind*
 !playnet/geth*
 !playnet/lnd*
+
+# bak
+*.bak
+

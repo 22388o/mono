@@ -34,6 +34,8 @@ module.exports = class SeekerTemplate extends Template {
   static fromProps (party, swapType, secretSeekerProps) {
     const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
 
+    console.log("seeker nodesProps: ", JSON.stringify(nodesProps))
+
     console.log('in holder template fromProps - swapType: ', swapType)
 
     let template

@@ -54,6 +54,12 @@ module.exports = class Ordinal extends SeekerTemplate {
       username: this.node2.creds.rpcuser
     })
 
+    console.log("bob about to getblockchaininfo")
+    console.log("port: ", this.node2.creds.rpcport)
+    console.log("password: ", this.node2.creds.rpcpassword)
+    console.log("username: ", this.node2.creds.rpcuser)
+
+
     const info = await carol.command([{ method: 'getblockchaininfo', parameters: [] }])
 
     // console.log(`info: ${JSON.stringify(info, null, 2)}`)

@@ -2,8 +2,11 @@
  * @file Defines a party to an atomic swap
  */
 const { uuid } = require('../../helpers')
+const interpolation = require('interpolate-json').interpolation
 const HolderTemplate = require('./holdertemplate/holdertemplate')
 const SeekerTemplate = require('./seekertemplate/seekertemplate')
+const fs = require('fs')
+const path = require('path')
 /**
  * Defines a party to a swap
  * @type {Party}
@@ -258,8 +261,22 @@ module.exports = class Party {
     }
 
     const holder = secretHolderProps.uid
-    const holderTemplateProps = require(`../../../config/${holder}.json`)
-    secretHolderProps = { ...secretHolderProps, ...holderTemplateProps }
+
+    const interpolationValues = {
+      username: holder
+    }
+
+    const defaultTemplateProps = interpolation.expand(require(`../../../config/default.json`), interpolationValues)
+    const holderTemplatePropsPath = path.join(__dirname, `../../../config/${holder}.json`)
+    console.log("party.fromHolderProps - holderTemplatePropsPath: ", holderTemplatePropsPath)
+    console.log("holder template props file exists: ", fs.existsSync(holderTemplatePropsPath))
+    const holderTemplateProps =
+           fs.existsSync(holderTemplatePropsPath)? require(`../../../config/${holder}.json`) : {}
+
+
+    console.log("party.fromHolderProps - holderTemplateProps: ", JSON.stringify(holderTemplateProps, null, 2))
+
+    secretHolderProps = { ...secretHolderProps, ...defaultTemplateProps, ...holderTemplateProps }
 
     return this.fromHolderProps(swapType, swapHash, secretHolderProps, ctx)
   }
@@ -287,8 +304,21 @@ module.exports = class Party {
     }
 
     const seeker = secretSeekerProps.uid
-    const seekerTemplateProps = require(`../../../config/${seeker}.json`)
-    secretSeekerProps = { ...secretSeekerProps, ...seekerTemplateProps }
+
+    const interpolationValues = {
+      username: seeker
+    }
+
+    const defaultTemplateProps = interpolation.expand(require(`../../../config/default.json`), interpolationValues)
+    const seekerTemplatePropsPath = path.join(__dirname, `../../../config/${seeker}.json`)
+
+    console.log("party.fromSeekerProps - seekerTemplatePropsPath: ", seekerTemplatePropsPath)
+    console.log("seeker template props file exists: ", fs.existsSync(seekerTemplatePropsPath))
+
+    const seekerTemplateProps =
+        fs.existsSync(seekerTemplatePropsPath)? require(`../../../config/${seeker}.json`) : {}
+
+    secretSeekerProps = { ...secretSeekerProps, ...defaultTemplateProps, ...seekerTemplateProps }
 
     return this.fromSeekerProps(swapType, swapHash, secretSeekerProps, ctx)
   }

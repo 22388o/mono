@@ -51,6 +51,7 @@ module.exports = class Swaps extends EventEmitter {
     this.pendingPaymentTxns = new Map()
 
     this.listenForPendingTransactions(this)
+    this.listenForNewBlocks(this)
 
     Object.seal(this)
   }
@@ -220,14 +221,14 @@ module.exports = class Swaps extends EventEmitter {
       console.log('starting to run pendingTxnListener')
       const sock = new zmq.Subscriber()
 
-      sock.connect('tcp://127.0.0.1:29000')
+      sock.connect('tcp://127.0.0.1:29003')
       sock.subscribe('rawtx')
-      sock.subscribe('rawblock')
+      // sock.subscribe('rawblock')
 
-      console.log('Subscriber connected to port 29000')
+      console.log('Subscriber for rawtx connected to port 18503')
 
       for await (const [topic, msg] of sock) {
-        // console.log("received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+        console.log("in listenForPendingTransactions - received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
         if (topic.toString() === 'rawtx') {
           try {
             const rawtx = msg.toString('hex')
@@ -242,9 +243,9 @@ module.exports = class Swaps extends EventEmitter {
 
             const addr0 = bitcoin.address.fromOutputScript(out0, network)
 
-            // console.log('checking txn seen for address: ', addr0)
-            // console.log('pending size: ', self.getPendingSize())
-            // console.log('isPending: ', self.isPending(addr0))
+            console.log('checking txn seen for address: ', addr0)
+            console.log('pending size: ', self.getPendingSize())
+            console.log('isPending: ', self.isPending(addr0))
             if (self.isPending(addr0)) {
               console.log('pending txn seen for address: ', addr0)
               console.log('pending size: ', self.getPendingSize())
@@ -286,10 +287,31 @@ module.exports = class Swaps extends EventEmitter {
           } catch (e) {
             console.log('issue running pendingTxnListener', e)
           }
-        } else if (topic.toString() === 'rawblock') {
+        } else {
+          console.log('while listening to rawTxnListener a message was received on an unexpected topic: ', topic.toString())
+        }
+      }
+    }
+    run()
+  }
+
+  listenForNewBlocks = (self) => {
+    console.log('about to run pendingBlockListener')
+    async function run () {
+      console.log('starting to run pendingBlockListener')
+      const sock = new zmq.Subscriber()
+
+      sock.connect('tcp://127.0.0.1:29002')
+      sock.subscribe('rawblock')
+
+      console.log('Subscriber connected to port 18502')
+
+      for await (const [topic, msg] of sock) {
+        console.log("in listenForNewBlocks - received a message related to:", topic.toString(), "containing message:", msg.toString('hex'))
+        if (topic.toString() === 'rawblock') {
           try {
             const rawblock = msg.toString('hex')
-            console.log('rawblock: ', rawblock)
+            // console.log('rawblock: ', rawblock)
 
             const block = bitcoin.Block.fromHex(rawblock)
             const network = bitcoin.networks.regtest
@@ -318,6 +340,8 @@ module.exports = class Swaps extends EventEmitter {
           } catch (e) {
             console.log('issue running pendingTxnListener', e)
           }
+        } else {
+          console.log('while listening to rawBlockListener a message was received on an unexpected topic: ', topic.toString())
         }
       }
     }
