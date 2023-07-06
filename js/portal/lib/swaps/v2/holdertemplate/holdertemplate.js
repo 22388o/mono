@@ -31,14 +31,30 @@ module.exports = class HolderTemplate extends Template {
     return party
   }
 
-  static fromProps (party, swapType, secretSeekerProps) {
+  static fromProps (party, swapType, holderSeekerProps) {
 
-    const defaultNodeProps = secretSeekerProps.defaultTemplateProps.nodes[swapType]
-    const adaptor = secretSeekerProps.defaultTemplateProps.adaptor
-    const nodesProps =
-        { ...secretSeekerProps.templateProps.nodes[swapType],
-          ...normalize(adaptor, swapType, secretSeekerProps.defaultTemplateProps.nodes[swapType])
-        }
+    const defaultNodeProps = holderSeekerProps.defaultTemplateProps.nodes[swapType]
+    console.log('holder defaultNodeProps: ', defaultNodeProps)
+
+    const specificNodeProps = holderSeekerProps.templateProps.nodes[swapType]
+
+    const adaptor = holderSeekerProps.defaultTemplateProps.adaptor
+    console.log('adaptor: ', adaptor)
+
+    console.log('specificNodeProps: ', JSON.stringify(specificNodeProps, null, 2))
+
+    let nodesProps = []
+    for (const [i, props] of specificNodeProps.entries()) {
+      const normalizedProps = normalize(adaptor, defaultNodeProps[i])
+      console.log('i: ', i)
+      console.log('props at i: ', props)
+      console.log('normalizedProps at i: ', JSON.stringify(normalizedProps, null, 2))
+      nodesProps[i] = { ...normalizedProps, ...props }
+    }
+
+    console.log("holder nodesProps: ", JSON.stringify(nodesProps))
+
+    console.log('in holder template fromProps - swapType: ', swapType)
 
     let template
 

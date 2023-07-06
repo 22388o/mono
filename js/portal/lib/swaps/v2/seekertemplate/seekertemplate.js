@@ -35,17 +35,27 @@ module.exports = class SeekerTemplate extends Template {
   static fromProps (party, swapType, secretSeekerProps) {
 
     const defaultNodeProps = secretSeekerProps.defaultTemplateProps.nodes[swapType]
+    console.log('seeker defaultNodeProps: ', defaultNodeProps)
+
+    const specificNodeProps = secretSeekerProps.templateProps.nodes[swapType]
+
     const adaptor = secretSeekerProps.defaultTemplateProps.adaptor
-    const nodesProps =
-        { ...secretSeekerProps.templateProps.nodes[swapType],
-          ...normalize(adaptor, secretSeekerProps.defaultTemplateProps.nodes[swapType])
-        }
+    console.log('adaptor: ', adaptor)
 
+    console.log('specificNodeProps: ', JSON.stringify(specificNodeProps, null, 2))
 
+    let nodesProps = []
+    for (const [i, props] of specificNodeProps.entries()) {
+      const normalizedProps = normalize(adaptor, defaultNodeProps[i])
+      console.log('i: ', i)
+      console.log('props at i: ', props)
+      console.log('normalizedProps at i: ', JSON.stringify(normalizedProps, null, 2))
+      nodesProps[i] = { ...normalizedProps, ...props }
+    }
 
     console.log("seeker nodesProps: ", JSON.stringify(nodesProps))
 
-    console.log('in holder template fromProps - swapType: ', swapType)
+    console.log('in seeker template fromProps - swapType: ', swapType)
 
     let template
 
