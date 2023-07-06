@@ -31,6 +31,14 @@ Playnet.normalize = function (props) {
                 const invoice = fs.readFileSync(invoiceBinary,'base64').toString()
                 newProps['invoice'] = invoice
             }
+            if ('bitcoin-lnd-conf' in props) {
+                const bitcoinLndConf = props['bitcoin-lnd-conf']
+                delete newProps['bitcoin-lnd-conf']
+                const properties = propertiesReader(bitcoinLndConf)
+
+                const socket = properties.get('rpclisten')
+                newProps['socket'] = socket.replace('127.0.0.1', 'localhost')
+            }
             return newProps
             break
         case 'bitcoind':

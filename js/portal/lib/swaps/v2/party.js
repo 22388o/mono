@@ -220,6 +220,8 @@ module.exports = class Party {
     const network = order.isAsk ? order.baseNetwork : order.quoteNetwork
     // const quantity = order.isAsk ? order.baseQuantity : order.quoteQuantity
 
+    console.log('network: ', network)
+
     if (ctx.networks[network] === undefined) {
       console.log(order, ctx.networks)
       process.exit(1)
@@ -344,6 +346,7 @@ module.exports = class Party {
     const userid = secretHolderProps.uid
     // const asset = secretHolderProps.asset
     const network = secretHolderProps.templateProps.nodes[swapType][0].network
+        || secretHolderProps.defaultTemplateProps.nodes[swapType][0].network
     // const quantity = secretHolderProps.quantity
     const fee = secretHolderProps.fee
     const baseQuantity = secretHolderProps.baseQuantity
@@ -354,6 +357,8 @@ module.exports = class Party {
     const quoteNetwork = secretHolderProps.quoteNetwork
     const ordinalLocation = secretHolderProps.ordinalLocation
     const orderId = secretHolderProps.orderId
+
+    console.log('holder network: ', network)
 
     if (ctx.networks[network] === undefined) {
       console.log(secretHolderProps.hash, ctx.networks)
@@ -397,6 +402,7 @@ module.exports = class Party {
     const userid = secretSeekerProps.uid
     // const asset = secretSeekerProps.asset
     const network = secretSeekerProps.templateProps.nodes[swapType][0].network
+        || secretSeekerProps.defaultTemplateProps.nodes[swapType][0].network
     // const quantity = secretSeekerProps.quantity
     const fee = secretSeekerProps.fee
 
@@ -408,6 +414,8 @@ module.exports = class Party {
     const quoteNetwork = secretSeekerProps.quoteNetwork
     const ordinalLocation = secretSeekerProps.ordinalLocation
     const orderId = secretSeekerProps.orderId
+
+    console.log('seeker network: ', network)
 
     if (ctx.networks[network] === undefined) {
       console.log(secretSeekerProps.hash, ctx.networks)

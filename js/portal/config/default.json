@@ -8,6 +8,8 @@
           "nodetype": "lnd",
           "network": "lightning.btc",
           "fungible": true,
+          "asset": "BTC",
+          "bitcoin-lnd-conf": "playnet/lnd.${username}.conf",
           "cert-file": "playnet/state/${username}/lnd/tls.cert",
           "admin-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/admin.macaroon",
           "invoice-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/invoice.macaroon"
@@ -16,7 +18,7 @@
           "nodetype": "bitcoind",
           "network": "bitcoin",
           "fungible": false,
-          "asset": "BTCORD",
+          "asset": "BTC",
           "bitcoin-conf": "playnet/bitcoind.portal.conf",
           "bitcoin-lnd-conf": "playnet/lnd.${username}.conf"
         }
@@ -27,6 +29,7 @@
           "network": "lightning.btc",
           "fungible": true,
           "asset": "BTC",
+          "bitcoin-lnd-conf": "playnet/lnd.${username}.conf",
           "cert-file": "playnet/state/${username}/lnd/tls.cert",
           "admin-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/admin.macaroon",
           "invoice-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/invoice.macaroon"
@@ -35,9 +38,9 @@
           "nodetype": "bitcoind",
           "network": "btc.btc",
           "fungible": false,
-          "asset": "BTCORD",
+          "asset": "BTC",
           "bitcoin-conf": "playnet/bitcoind.portal.conf",
-          "wif": "cVL9j83fcrp6Qw8h4dLrMg3HxrTVeHNW4uvmoHjKPxUB11cyoFdc"
+          "bitcoin-lnd-conf": "playnet/lnd.${username}.conf"
         }
       ]
     }
