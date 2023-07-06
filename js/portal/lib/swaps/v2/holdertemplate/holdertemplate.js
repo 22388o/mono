@@ -1,4 +1,5 @@
 const Template = require('../template')
+const { normalize } = require('../adaptor/adaptor')
 
 module.exports = class HolderTemplate extends Template {
   constructor (party, node1, node2) {
@@ -31,7 +32,14 @@ module.exports = class HolderTemplate extends Template {
   }
 
   static fromProps (party, swapType, secretSeekerProps) {
-    const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
+
+    const defaultNodeProps = secretSeekerProps.defaultTemplateProps.nodes[swapType]
+    const adaptor = secretSeekerProps.defaultTemplateProps.adaptor
+    const nodesProps =
+        { ...secretSeekerProps.templateProps.nodes[swapType],
+          ...normalize(adaptor, swapType, secretSeekerProps.defaultTemplateProps.nodes[swapType])
+        }
+
     let template
 
     console.log('in holder template fromProps - swapType: ', swapType)

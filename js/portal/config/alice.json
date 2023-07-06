@@ -15,6 +15,7 @@
         },
         {
           "nodetype": "bitcoind",
+          "mode": "regtest",
           "network": "bitcoin",
           "fungible": true,
           "asset": "BTC",

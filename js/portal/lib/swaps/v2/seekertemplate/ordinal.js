@@ -292,8 +292,9 @@ module.exports = class Ordinal extends SeekerTemplate {
   static fromProps (party, nodesProps) {
     const props1 = nodesProps[0]
     const props2 = nodesProps[1]
-    const Node1 = require(`../seekernode/ordinal-${props1.nodetype}`)
-    const Node2 = require(`../seekernode/ordinal-${props2.nodetype}`)
+
+    const Node1 = require(`../seekernode/${props1.nodetype}`)
+    const Node2 = require(`../seekernode/${props2.nodetype}`)
     const node1 = new Node1(props1)
     const node2 = new Node2(props2)
     return new Ordinal(party, node1, node2)

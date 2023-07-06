@@ -278,6 +278,8 @@ module.exports = class Party {
 
     secretHolderProps = { ...secretHolderProps, ...defaultTemplateProps, ...holderTemplateProps }
 
+    console.log("party.fromHolderProps - secretHolderProps: ", JSON.stringify(secretHolderProps, null, 2))
+
     return this.fromHolderProps(swapType, swapHash, secretHolderProps, ctx)
   }
 
@@ -318,7 +320,12 @@ module.exports = class Party {
     const seekerTemplateProps =
         fs.existsSync(seekerTemplatePropsPath)? require(`../../../config/${seeker}.json`) : {}
 
+    console.log("party.fromSeekerProps - seekerTemplateProps: ", JSON.stringify(seekerTemplateProps, null, 2))
+
+
     secretSeekerProps = { ...secretSeekerProps, ...defaultTemplateProps, ...seekerTemplateProps }
+
+    console.log("party.fromSeekerProps - secretSeekerProps: ", JSON.stringify(secretSeekerProps, null, 2))
 
     return this.fromSeekerProps(swapType, swapHash, secretSeekerProps, ctx)
   }

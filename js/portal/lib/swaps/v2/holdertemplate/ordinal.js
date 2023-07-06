@@ -207,11 +207,11 @@ module.exports = class Ordinal extends HolderTemplate {
   }
 
   static fromProps (party, nodesProps) {
-    // console.log(`HolderTemplate: ${HolderTemplate}`)
     const props1 = nodesProps[0]
     const props2 = nodesProps[1]
-    const Node1 = require(`../holdernode/ordinal-${props1.nodetype}`)
-    const Node2 = require(`../holdernode/ordinal-${props2.nodetype}`)
+
+    const Node1 = require(`../holdernode/${props1.nodetype}`)
+    const Node2 = require(`../holdernode/${props2.nodetype}`)
     const node1 = new Node1(props1)
     const node2 = new Node2(props2)
     return new Ordinal(party, node1, node2)

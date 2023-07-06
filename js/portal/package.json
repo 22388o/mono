@@ -37,7 +37,7 @@
     "lightning": "^6.2.6",
     "lodash": "^4.17.21",
     "mime": "^3.0.0",
-    "properties": "^1.2.1",
+    "properties-reader": "^2.2.0",
     "uuid": "^9.0.0",
     "varuint-bitcoin": "1.1.2",
     "web3": "^1.8.2",

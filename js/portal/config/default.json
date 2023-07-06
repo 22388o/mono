@@ -1,14 +1,13 @@
 {
-  "templateProps": {
+  "defaultTemplateProps": {
     "version": "v2",
+    "adaptor": "playnet",
     "nodes": {
       "ordinal": [
         {
           "nodetype": "lnd",
           "network": "lightning.btc",
           "fungible": true,
-          "asset": "BTC",
-          "lnd-conf": "playnet/lnd.${username}.conf",
           "cert-file": "playnet/state/${username}/lnd/tls.cert",
           "admin-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/admin.macaroon",
           "invoice-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/invoice.macaroon"
@@ -19,7 +18,7 @@
           "fungible": false,
           "asset": "BTCORD",
           "bitcoin-conf": "playnet/bitcoind.portal.conf",
-          "wif": "cMyRQNsgKkyPa2pfvDkB8AhZ15GCnxvB8eWacB8yqZ73x1cJWm7t"
+          "bitcoin-lnd-conf": "playnet/lnd.${username}.conf"
         }
       ],
       "submarine": [
@@ -28,7 +27,6 @@
           "network": "lightning.btc",
           "fungible": true,
           "asset": "BTC",
-          "lnd-conf": "playnet/lnd.${username}.conf",
           "cert-file": "playnet/state/${username}/lnd/tls.cert",
           "admin-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/admin.macaroon",
           "invoice-binary": "playnet/state/${username}/lnd/data/chain/bitcoin/regtest/invoice.macaroon"

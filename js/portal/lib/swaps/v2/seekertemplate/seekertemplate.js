@@ -1,4 +1,5 @@
 const Template = require('../template')
+const { normalize } = require('../adaptor/adaptor')
 
 module.exports = class SeekerTemplate extends Template {
   constructor (party, node1, node2) {
@@ -32,7 +33,15 @@ module.exports = class SeekerTemplate extends Template {
   }
 
   static fromProps (party, swapType, secretSeekerProps) {
-    const nodesProps = secretSeekerProps.templateProps.nodes[swapType]
+
+    const defaultNodeProps = secretSeekerProps.defaultTemplateProps.nodes[swapType]
+    const adaptor = secretSeekerProps.defaultTemplateProps.adaptor
+    const nodesProps =
+        { ...secretSeekerProps.templateProps.nodes[swapType],
+          ...normalize(adaptor, secretSeekerProps.defaultTemplateProps.nodes[swapType])
+        }
+
+
 
     console.log("seeker nodesProps: ", JSON.stringify(nodesProps))
 
