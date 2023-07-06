@@ -2,19 +2,25 @@ const { ethers } = require('ethers')
 
 const SeekerTemplate = require('./seekertemplate')
 
-module.exports = class Evm extends SeekerTemplate { 
+const swapAbi = require('../../../../abi/Swap.json');
+
+module.exports = class Evm extends SeekerTemplate {
     constructor(party, node1, node2) {
         super(party, node1, node2)
     }
 
-    async open(party, opts) { 
+    async open(party, opts) {
         const provider = new ethers.providers.JsonRpcProvider(opts.rpcurl)
         const swapContract = new ethers.Contract(
-            
+            opts.contractAddress,
+            swapAbi,
+            provider
         )
+
+        const []
     }
 
-    async commit(party, opts) { 
+    async commit(party, opts) {
 
     }
 
