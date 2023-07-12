@@ -8,9 +8,7 @@
         },
         {
           "nodetype": "bitcoind",
-          "rpcuser": "lnd",
-          "rpcpassword": "lnd",
-          "rpcport": 21332,
+          "rpcport": 18443,
           "wif": "cPTqfx2Vq65H1FPFgd78PhW471q8g2XSzbeU6FwpZGHzUe4CkaWL"
         }
       ],
