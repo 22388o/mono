@@ -221,7 +221,7 @@ module.exports = class Swaps extends EventEmitter {
       console.log('starting to run pendingTxnListener')
       const sock = new zmq.Subscriber()
 
-      sock.connect('tcp://127.0.0.1:29003')
+      sock.connect('tcp://127.0.0.1:18503')
       sock.subscribe('rawtx')
       // sock.subscribe('rawblock')
 
@@ -301,7 +301,7 @@ module.exports = class Swaps extends EventEmitter {
       console.log('starting to run pendingBlockListener')
       const sock = new zmq.Subscriber()
 
-      sock.connect('tcp://127.0.0.1:29002')
+      sock.connect('tcp://127.0.0.1:18502')
       sock.subscribe('rawblock')
 
       console.log('Subscriber connected to port 18502')
