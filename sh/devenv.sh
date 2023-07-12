@@ -192,7 +192,7 @@ if [[ $RESET_STATE == "true" ]]; then
 else
   # Load the default bitcoin wallet and generate a block to trigger sync
   __run_as_user portal bitcoind loadwallet 'default' >/dev/null
-  __run_as_user portal bitcoind -generate 1 >/dev/null
+  __run_as_user portal bitcoind  -rpcwallet=default -generate 1  >/dev/null
 
 fi
 
