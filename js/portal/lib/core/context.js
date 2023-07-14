@@ -22,6 +22,13 @@ const HttpContext = module.exports = {
  * @type {Networks}
  */
 HttpContext.networks = new Networks({
+  'arbitrum.eth': {
+    '@type': 'arbitrum',
+    assets: ['ETH'],
+    contracts: process.env.PORTAL_ARBITRUM_CONTRACTS,
+    chainId: process.env.PORTAL_ARBITRUM_CHAINID,
+    url: process.env.PORTAL_ARBITRUM_URL
+  },
   ethereum: {
     '@type': 'ethereum',
     assets: ['ETH'],

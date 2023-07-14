@@ -202,9 +202,13 @@ if [[ ${GITHUB_ACTIONS-false} == false ]]; then
   stty intr ""
 fi
 
-############################################################################
+################################################################################
 # Developer Environment
-############################################################################
+################################################################################
+export PORTAL_ARBITRUM_URL="https://goerli-rollup.arbitrum.io/rpc"
+export PORTAL_ARBITRUM_CHAINID="421613"
+export PORTAL_ARBITRUM_CONTRACTS="$PLAYNET_ROOT/contracts-arbitrum.json"
+
 export PORTAL_ETHEREUM_URL="http://$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPHost = ')[^']+" | tr -d "'"):$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPPort = )[0-9]+" | tr -d ' ')"
 export PORTAL_ETHEREUM_CHAINID=$(__run_as_user portal geth attach --exec "eth.chainId()" | tr -d '"')
 export PORTAL_ETHEREUM_CONTRACTS="$PLAYNET_ROOT/contracts.json"

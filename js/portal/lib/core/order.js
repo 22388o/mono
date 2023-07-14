@@ -12,9 +12,11 @@ const ASSETS = require('./assets')
 
 /**
  * A list of supported networks
+ * TODO: Fix this shit!!!
  * @type {Array}
  */
 const NETWORKS = [
+  'arbitrum.eth',
   'ethereum',
   'lightning.btc'
 ]

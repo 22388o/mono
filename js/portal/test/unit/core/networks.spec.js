@@ -7,6 +7,7 @@ const Network = require('../../../lib/core/network')
 const Networks = require('../../../lib/core/networks')
 
 const SUPPORTED = [
+  'arbitrum',
   'ethereum',
   'lightning'
 ]
