@@ -104,23 +104,23 @@ echo "starting developer environment..."
 
 echo "- starting bitcoind for portal..."
 bitcoind -conf="$PLAYNET_ROOT/bitcoind.portal.conf" \
-         -datadir="$PLAYNET_ROOT/state/portal/bitcoind" >/dev/null
+  -datadir="$PLAYNET_ROOT/state/portal/bitcoind" >/dev/null
 
 echo "- starting geth for portal..."
 nohup geth --dev \
-           --config "$PLAYNET_ROOT/geth.portal.toml" \
-           --datadir "$PLAYNET_ROOT/state/portal/geth/data" >$PLAYNET_ROOT/log/portal/geth.log 2>&1 &
+  --config "$PLAYNET_ROOT/geth.portal.toml" \
+  --datadir "$PLAYNET_ROOT/state/portal/geth/data" >$PLAYNET_ROOT/log/portal/geth.log 2>&1 &
 
 echo "- starting lnd for alice..."
 nohup lnd --configfile "$PLAYNET_ROOT/lnd.alice.conf" \
-          --lnddir "$PLAYNET_ROOT/state/alice/lnd" \
-          --noseedbackup >$PLAYNET_ROOT/log/alice/lnd.log 2>&1 &
+  --lnddir "$PLAYNET_ROOT/state/alice/lnd" \
+  --noseedbackup >$PLAYNET_ROOT/log/alice/lnd.log 2>&1 &
 while ! $(__run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
 echo "- starting lnd for bob..."
 nohup lnd --configfile "$PLAYNET_ROOT/lnd.bob.conf" \
-          --lnddir "$PLAYNET_ROOT/state/bob/lnd" \
-          --noseedbackup >$PLAYNET_ROOT/log/bob/lnd.log 2>&1 &
+  --lnddir "$PLAYNET_ROOT/state/bob/lnd" \
+  --noseedbackup >$PLAYNET_ROOT/log/bob/lnd.log 2>&1 &
 while ! $(__run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
 
 echo "- creating a new geth wallet for alice..."
@@ -206,7 +206,7 @@ fi
 # Developer Environment
 ################################################################################
 export PORTAL_ARBITRUM_URL="https://goerli-rollup.arbitrum.io/rpc"
-export PORTAL_ARBITRUM_CHAINID="421613"
+export PORTAL_ARBITRUM_CHAINID="0x66eed"
 export PORTAL_ARBITRUM_CONTRACTS="$PLAYNET_ROOT/contracts-arbitrum.json"
 
 export PORTAL_ETHEREUM_URL="http://$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPHost = ')[^']+" | tr -d "'"):$(cat $PLAYNET_ROOT/geth.portal.toml | grep -oP "(?<=HTTPPort = )[0-9]+" | tr -d ' ')"

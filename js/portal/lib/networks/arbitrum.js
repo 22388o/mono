@@ -184,7 +184,7 @@ module.exports = class Arbitrum extends Network {
 
             try {
               const txObj = {
-                gasPrice: web3.toHex(gasPrice),
+                gasPrice: web3.toHex(gasPrice.mul(3).div(2)).split('.')[0],
                 gasLimit: web3.toHex(estimatedGas),
                 data: calldata,
                 from: keys.public,
@@ -214,7 +214,7 @@ module.exports = class Arbitrum extends Network {
                       resolve(receipt)
                     } else {
                       debug('continuing to poll for receipt...')
-                      setTimeout(pollForReceipt, 10000)
+                      setTimeout(pollForReceipt, 2000)
                     }
                   })
                 }())

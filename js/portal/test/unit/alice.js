@@ -38,6 +38,10 @@ const LND_CONF = readFileSync(PATH_LND_CONF).toString('utf8')
  * @type {Object}
  */
 module.exports = {
+  arbitrum: {
+    public: '0xFc96A3Ca4aDDdB5B3B9ADD8D745B06189760cB64',
+    private: 'f1cce23e0a60ccea4c5732a1a3790a2bc916498687e3b78391c0924d77d41894'
+  },
   ethereum: {
     public: `0x${GETH_KEYSTORE.address}`,
     private: keythereum.recover(NAME, GETH_KEYSTORE).toString('hex')
