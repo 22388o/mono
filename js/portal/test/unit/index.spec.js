@@ -17,6 +17,10 @@ before('Compile contracts', async function () {
   writeFileSync(process.env.PORTAL_ETHEREUM_CONTRACTS, JSON.stringify(contracts))
   Object.assign(this, { web3, contracts })
 
+  // TODO: Fix this
+  contracts.Swap.address = '0x6f153880f5532E660F678f8C541FE97490C75990'
+  writeFileSync(process.env.PORTAL_ARBITRUM_CONTRACTS, JSON.stringify(contracts))
+
   // Server and clients
   const server = await (new Server()).start()
   const { hostname, port } = server
