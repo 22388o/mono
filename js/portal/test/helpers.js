@@ -24,7 +24,7 @@ Helpers.PATHS = {
  * Contracts that must be deployed
  * @type {Array}
  */
-Helpers.CONTRACTS = ['PaymentChannel', 'Swap']
+Helpers.CONTRACTS = ['Swap']
 
 /**
  * Compiles the contracts
@@ -44,12 +44,12 @@ Helpers.compile = function () {
       settings: { outputSelection: { '*': { '*': ['*'] } } }
     }
     const output = JSON.parse(Solc.compile(JSON.stringify(input)))
-    const message = output.errors
+    const message = output.errors && output.errors
       .filter(err => err.severity === 'error')
       .map(err => err.formattedMessage)
       .join('\n')
 
-    message.length
+    message && message.length
       ? reject(Error(message))
       : resolve(output.contracts)
   })
