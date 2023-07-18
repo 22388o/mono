@@ -69,8 +69,6 @@ module.exports = class Arbitrum extends Network {
           debug(party.id, '(secretHolder) got the deposit')
           debug(party.id, `(secretHolder) is settling the ${this.name} invoice using secret "${opts.secret}"`)
 
-          process.secretFromOpts = opts.secret;
-
           this._settleInvoice(`0x${opts.secret}`, opts.arbitrum)
             .then((...args) => debug(party.id, `(secretHolder) has settled the ${this.name} invoice`, ...args))
             .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
@@ -97,6 +95,8 @@ module.exports = class Arbitrum extends Network {
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
         
+        const secretHashHex = `0x${party.swap.secretHash}`;
+        
         setTimeout(() => { 
         //const subscription = this.eventClaim.watch((err, claim) => {
           //subscription.stopWatching()
@@ -104,22 +104,25 @@ module.exports = class Arbitrum extends Network {
 
           let err = null;
           
-
+          
           if (err != null) {
             debug(party.id, '(secretSeeker) got an error waiting for claim', err)
             reject(err)
           } else {
-           // const claimSecret = claim.args.secret
-            //const bnSecret = BigNumber.BigNumber.from(claimSecret)
-            //const secret = bnSecret.toHexString()            
-            let secret = '0x' + process.secretFromOpts;
+            this.contract.secrets(secretHashHex, function(err, res){
+              console.log("SECRET LOOKUP", res)
+              const claimSecret = res.toFixed();//claim.args.secret
+              const bnSecret = BigNumber.BigNumber.from(claimSecret)
+              const secret = bnSecret.toHexString()                          
+
+              debug(party.id, '(secretSeeker) got secret', secret)
+              resolve(secret.substr(2))
+            })
             
-            debug(party.id, '(secretSeeker) got secret', secret)
-            resolve(secret.substr(2))
           }
         }, 20000)
         const invoiceId = party.state[this.name].invoice.id
-        const secretHashHex = `0x${party.swap.secretHash}`
+        //const secretHashHex = `0x${party.swap.secretHash}`
 
         debug(party.id, `(secretSeeker) is paying the ${this.name} invoice bearing id ${invoiceId} with secret hash`, secretHashHex)
         this._payInvoice(invoiceId, secretHashHex, opts.arbitrum, party.quantity)
