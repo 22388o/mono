@@ -23,8 +23,8 @@ module.exports = class Arbitrum extends Network {
     const contracts = require(props.contracts)
     const contract = contracts.Swap
     this.contract = this.web3.eth.contract(contract.abi).at(contract.address)
-    this.eventDeposit = this.contract.Deposited({fromBlock: 0, toBlock: 'latest'})
-    this.eventClaim = this.contract.Claimed({fromBlock: 0, toBlock: 'latest'})
+    this.eventDeposit = this.contract.Deposited()
+    this.eventClaim = this.contract.Claimed()
 
     Object.seal(this)
   }
@@ -54,26 +54,16 @@ module.exports = class Arbitrum extends Network {
       party.counterparty.state[this.name] = { invoice }
       debug(party.id, `(secretHolder) create an ${this.name} invoice`, invoice)
 
-      // Subscribe to the Deposit event, and settle the invoice when the deposit
-      // is made by the counterparty.
-      //const subscription = this.eventDeposit.watch((err, deposit) => {
-      setTimeout(() => {
-        //subscription.stopWatching()
-        let err = null;
-        debug(party.id, '(secretHolder) got deposit event, and has stopped watching')
-
-        if (err != null) {
-          debug(party.id, '(secretHolder) got an error waiting for deposit', err)
-          return this.emit('error', err)
-        } else {
-          debug(party.id, '(secretHolder) got the deposit')
-          debug(party.id, `(secretHolder) is settling the ${this.name} invoice using secret "${opts.secret}"`)
-
-          this._settleInvoice(`0x${opts.secret}`, opts.arbitrum)
-            .then((...args) => debug(party.id, `(secretHolder) has settled the ${this.name} invoice`, ...args))
-            .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
-        }
-      }, 10000)
+      ;(function pollDeposit (self) {
+        debug(party.id, '(secretHolder) got the deposit')
+        debug(party.id, `(secretHolder) is settling the ${self.name} invoice using secret "${opts.secret}"`)
+        self._settleInvoice(`0x${opts.secret}`, opts.arbitrum)
+          .then((...args) => debug(party.id, `(secretHolder) has settled the ${self.name} invoice`, ...args))
+          .catch(err => {
+            debug(party.id, '(secretHolder) got an error waiting for deposit', err)
+            setTimeout(pollDeposit, 2000, self)
+          })
+      }(this))
       debug(party.id, '(secretHolder) is now waiting for funds')
     } else {
       throw Error('multi-party swaps are not supported!')
@@ -94,53 +84,44 @@ module.exports = class Arbitrum extends Network {
   commit (party, opts) {
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
-        
-        const secretHashHex = `0x${party.swap.secretHash}`;
-        
-        setTimeout(() => { 
-        //const subscription = this.eventClaim.watch((err, claim) => {
-          //subscription.stopWatching()
-          debug(party.id, '(secretSeeker) got claim event, and has stopped watching')
-
-          let err = null;
-          
-          
-          if (err != null) {
-            debug(party.id, '(secretSeeker) got an error waiting for claim', err)
-            reject(err)
-          } else {
-            this.contract.secrets(secretHashHex, function(err, res){
-              console.log("SECRET LOOKUP", res)
-              const claimSecret = res.toFixed();//claim.args.secret
-              const bnSecret = BigNumber.BigNumber.from(claimSecret)
-              const secret = bnSecret.toHexString()                          
-
-              debug(party.id, '(secretSeeker) got secret', secret)
-              resolve(secret.substr(2))
-            })
-            
-          }
-        }, 20000)
+        const secretHash = `0x${party.swap.secretHash}`
         const invoiceId = party.state[this.name].invoice.id
-        //const secretHashHex = `0x${party.swap.secretHash}`
 
-        debug(party.id, `(secretSeeker) is paying the ${this.name} invoice bearing id ${invoiceId} with secret hash`, secretHashHex)
-        this._payInvoice(invoiceId, secretHashHex, opts.arbitrum, party.quantity)
+        debug(party.id, `(secretSeeker) is paying the ${this.name} invoice bearing id ${invoiceId} with secret hash`, secretHash)
+        this._payInvoice(invoiceId, secretHash, opts.arbitrum, party.quantity)
           .then(receipt => {
             debug(party.id, `(secretSeeker) has paid the ${this.name} invoice`, receipt)
             party.counterparty.state[this.name] = { receipt }
           })
           .catch(reject)
-
         debug(party.id, '(secretSeeker) is now waiting for funds to be claimed')
+
+        ;(function pollClaim (contract) {
+          contract.secrets(secretHash, function (err, res) {
+            if (err != null) {
+              debug(party.id, '(secretSeeker) got an error waiting for claim', err)
+              setTimeout(pollClaim, 2000, contract)
+            } else {
+              const claimSecret = res.toFixed()
+              const bnSecret = BigNumber.BigNumber.from(claimSecret)
+              const secret = bnSecret.toHexString()
+
+              if (secret === '0x00') {
+                debug(party.id, '(secretSeeker) got no secret waiting for claim', secret)
+                setTimeout(pollClaim, 2000, contract)
+              } else {
+                debug(party.id, '(secretSeeker) got secret', secret)
+                resolve(secret.substr(2))
+              }
+            }
+          })
+        }(this.contract))
       } else if (party.isSecretHolder) {
         // Alice needs to call .claim() to reveal the secret
         throw Error('not implemented yet!')
       } else {
         throw Error('multi-party swaps are not supported!')
       }
-
-      return party
     })
   }
 
