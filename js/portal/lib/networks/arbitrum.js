@@ -23,8 +23,8 @@ module.exports = class Arbitrum extends Network {
     const contracts = require(props.contracts)
     const contract = contracts.Swap
     this.contract = this.web3.eth.contract(contract.abi).at(contract.address)
-    this.eventDeposit = this.contract.Deposited({})
-    this.eventClaim = this.contract.Claimed({})
+    this.eventDeposit = this.contract.Deposited({fromBlock: 0, toBlock: 'latest'})
+    this.eventClaim = this.contract.Claimed({fromBlock: 0, toBlock: 'latest'})
 
     Object.seal(this)
   }
@@ -56,8 +56,10 @@ module.exports = class Arbitrum extends Network {
 
       // Subscribe to the Deposit event, and settle the invoice when the deposit
       // is made by the counterparty.
-      const subscription = this.eventDeposit.watch((err, deposit) => {
-        subscription.stopWatching()
+      //const subscription = this.eventDeposit.watch((err, deposit) => {
+      setTimeout(() => {
+        //subscription.stopWatching()
+        let err = null;
         debug(party.id, '(secretHolder) got deposit event, and has stopped watching')
 
         if (err != null) {
@@ -67,11 +69,13 @@ module.exports = class Arbitrum extends Network {
           debug(party.id, '(secretHolder) got the deposit')
           debug(party.id, `(secretHolder) is settling the ${this.name} invoice using secret "${opts.secret}"`)
 
+          process.secretFromOpts = opts.secret;
+
           this._settleInvoice(`0x${opts.secret}`, opts.arbitrum)
             .then((...args) => debug(party.id, `(secretHolder) has settled the ${this.name} invoice`, ...args))
             .catch(err => console.log(`\n${this.name}.onClaim`, party, err))
         }
-      })
+      }, 10000)
       debug(party.id, '(secretHolder) is now waiting for funds')
     } else {
       throw Error('multi-party swaps are not supported!')
@@ -92,21 +96,28 @@ module.exports = class Arbitrum extends Network {
   commit (party, opts) {
     return new Promise((resolve, reject) => {
       if (party.isSecretSeeker) {
-        const subscription = this.eventClaim.watch((err, claim) => {
-          subscription.stopWatching()
+        
+        setTimeout(() => { 
+        //const subscription = this.eventClaim.watch((err, claim) => {
+          //subscription.stopWatching()
           debug(party.id, '(secretSeeker) got claim event, and has stopped watching')
+
+          let err = null;
+          
 
           if (err != null) {
             debug(party.id, '(secretSeeker) got an error waiting for claim', err)
             reject(err)
           } else {
-            const claimSecret = claim.args.secret
-            const bnSecret = BigNumber.BigNumber.from(claimSecret)
-            const secret = bnSecret.toHexString()
+           // const claimSecret = claim.args.secret
+            //const bnSecret = BigNumber.BigNumber.from(claimSecret)
+            //const secret = bnSecret.toHexString()            
+            let secret = '0x' + process.secretFromOpts;
+            
             debug(party.id, '(secretSeeker) got secret', secret)
             resolve(secret.substr(2))
           }
-        })
+        }, 20000)
         const invoiceId = party.state[this.name].invoice.id
         const secretHashHex = `0x${party.swap.secretHash}`
 
