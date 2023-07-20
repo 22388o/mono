@@ -198,8 +198,6 @@ export const SwapCreate = () => {
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         
-        alert(1);
-        console.log(fNor, fIndex, fNext);
         if(!fNor) return;
         log("swapState: swap order request sent ", swap.status)
 
