@@ -84,7 +84,7 @@ export const AddOtherAssetsModal = ({ open, handleClose }) => {
   return <MyModal open={open}>
     <Grid container direction='column' spacing={1}>
       <Grid item container direction='row' width={400}>
-        <Grid item xs={1}><IconButton><West /></IconButton></Grid>
+        <Grid item xs={1}><IconButton onClick={onClose}><West /></IconButton></Grid>
         <Grid item xs={10} className='flex-center flex-middle'><h3>Add Other Assets</h3></Grid>
         <Grid item xs={1} textAlign='right'><IconButton onClick={onClose}><Close /></IconButton></Grid>
       </Grid>

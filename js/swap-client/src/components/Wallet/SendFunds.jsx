@@ -91,7 +91,7 @@ export const SendFunds = () => {
       <Grid container direction='column' rowSpacing={1}>
         <Grid item container direction='row'>
           <Grid item xs={1} textAlign='center'>
-            <IconButton><West /></IconButton>
+            <IconButton onClick={() => walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 1 })}><West /></IconButton>
           </Grid>
           <Grid item xs={10} textAlign='center' width={sendingProcess < 3 ? 250 : 350}>
             <h3>{ sendingProcess === 1 ? 'Select Asset' : 'Send' }</h3>
