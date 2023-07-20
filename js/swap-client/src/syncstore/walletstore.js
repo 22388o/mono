@@ -76,8 +76,15 @@ const walletStore = {
         newState.assets[1].connected = true;
         newState.assets[1].data = action.payload;
         return newState;
+      case 'SET_LIGHTNING_DATA':
+        newState.assets[2].connected = true;
+        newState.assets[2].data = action.payload;
+        return newState;
       case 'SET_NODE_BALANCE':
         newState.assets[0].balance = action.payload;
+        return newState;
+      case 'SET_LIGHTNING_BALANCE':
+        newState.assets[2].balance = action.payload;
         return newState;
       case 'SET_WALLET_BALANCE':
         newState.assets[1].balance = action.payload;

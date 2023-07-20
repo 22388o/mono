@@ -194,8 +194,8 @@ export const WalletComponent = () => {
           const info = await window.webln.getInfo();
           console.log(info);
 
-          walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
-          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
+          walletStore.dispatch({ type: 'SET_LIGHTNING_DATA', payload: getAlice().lightning});
+          walletStore.dispatch({ type: 'SET_LIGHTNING_BALANCE', payload: 1000});
         }
       }
       catch(error){
@@ -206,38 +206,40 @@ export const WalletComponent = () => {
     core();
   }
   
-  const onPaymentSimulate = () => {
+  const onPaymentSimulate = (isL1 = false) => {
     const core = async () => {
-      /*const result = await webln.keysend({
-        destination: "03006fcf3312dae8d068ea297f58e2bd00ec1ffe214b793eda46966b6294a53ce6", 
-        amount: "1", 
-        customRecords: {
-            "34349334": "HELLO AMBOSS"
-        }
-      });
-      console.log(result);    */
-      console.log(btcAddrs);
-      const signPsbtOptions = {
-        payload: {
-          network: {
-            type:'Mainnet'
+      if(isL1){
+        const signPsbtOptions = {
+          payload: {
+            network: {
+              type:'Mainnet'
+            },
+            message: 'Sign Transaction',
+            psbtBase64: `cHNidP8BAJwCAmO+JvQJxhVDDpm3tV5PmPfzvJOSL4GOdjEOpAAAAAAnrAAA==`,
+            broadcast: false,
+            inputsToSign: [{
+                address: btcAddrs.addresses[1].address,
+                signingIndexes: [1],
+            }],
           },
-          message: 'Sign Transaction',
-          psbtBase64: `cHNidP8BAJwCAmO+JvQJxhVDDpm3tV5PmPfzvJOSL4GOdjEOpAAAAAAnrAAA==`,
-          broadcast: false,
-          inputsToSign: [{
-              address: btcAddrs.addresses[1].address,
-              signingIndexes: [1],
-          }],
-        },
-        onFinish: (response) => {
-          console.log(response.psbtBase64)
-          alert(response.psbtBase64)
-        },
-        onCancel: () => alert('Canceled'),
+          onFinish: (response) => {
+            console.log(response.psbtBase64)
+            alert(response.psbtBase64)
+          },
+          onCancel: () => alert('Canceled'),
+        }
+        await signTransaction(signPsbtOptions);
       }
-      
-      await signTransaction(signPsbtOptions);
+      else {
+        const result = await webln.keysend({
+          destination: "03006fcf3312dae8d068ea297f58e2bd00ec1ffe214b793eda46966b6294a53ce6", 
+          amount: "1", 
+          customRecords: {
+              "34349334": "TEST ACTION"
+          }
+        });
+        console.log(result);
+      }
     };
 
     core();
@@ -255,7 +257,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} /></>) 
+            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} onPaymentSimulate={onPaymentSimulate}/></>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
