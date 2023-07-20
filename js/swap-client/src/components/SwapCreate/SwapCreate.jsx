@@ -30,7 +30,7 @@ export const SwapCreate = () => {
   const [secret, setSecret] = useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [orderSecret, setOrderSecret] = useState(null);
-  const [ableToSwap, setAbleToSwap] = useState(false);
+  const [ableToSwap, setAbleToSwap] = useState(true);
   const [curPrices, setCurPrices] = useState({
     BTC: 0,
     ETH: 0,
@@ -445,7 +445,7 @@ export const SwapCreate = () => {
     // setSecret('e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7');
     // setOrderSecret('ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
 
-    if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
+    if(ASSET_TYPES[baseAsset].balance < baseQuantity) { 
       notify();
       return;
     }
