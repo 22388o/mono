@@ -10,7 +10,8 @@
     "preview": "vite preview --port 7500",
     "watch": "vite build --watch",
     "test": "node src/test/test.js",
-    "test1": "node src/test/test2.js"
+    "test1": "node src/test/test2.js",
+    "test:wallet": "node src/test/test_wallet.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",
