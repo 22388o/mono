@@ -313,7 +313,7 @@ export const SwapCreate = () => {
           }
         }
 
-        console.log("swap.committing: swap claim submitted, settingSwapState to 4");
+        console.log("swap.committing: swap claim submitted, settingSwapState to 5");
 
         // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
@@ -323,23 +323,25 @@ export const SwapCreate = () => {
       });
     })
     user.user.on("swap.committed",swap => {
+      
       activities.forEach(activity => {
         // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
         let ethBal, btcBal;
 
+        console.log(swap);
         if(user.user.id == substrname(swap.secretSeeker.id)){
           //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
-          // ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
+          ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 5} });
-          // walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
+          walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
         } else {
-          // btcBal = node.balance + fromSats(swap.secretSeeker.quantity);
+          btcBal = node.balance + fromSats(swap.secretSeeker.quantity);
           //ethBal = wallet.balance - fromSats(swap.secretSeeker.quantity) * curPrices.BTC / curPrices.ETH;
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
-          // walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
 
-        console.log("swap.committed: swap claim completed, settingSwapState to 4");
+        console.log("swap.committed: swap claim completed, settingSwapState to 5");
 
         // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
