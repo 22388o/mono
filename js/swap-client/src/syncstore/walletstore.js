@@ -28,7 +28,8 @@ const initialAssets = [{
   img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
   isNFT: false,
   data: null,
-  options: []
+  options: [],
+  isSubNet: true
 }, {
   title: 'Tether',
   type: 'USDT',

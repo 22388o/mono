@@ -257,7 +257,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} onPaymentSimulate={onPaymentSimulate}/></>) 
+            assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} onPaymentSimulate={onPaymentSimulate}/></>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
@@ -286,20 +286,35 @@ export const WalletComponent = () => {
             </Grid>
           </Grid>
           <Grid item container direction='column' className='flex-vh-center' spacing={2}>
-            { !isBtcWalletConnected 
-                ? <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect Browser Wallet</Button>
-                : 'Wallet Connected' }
-            { window.webln && <h6 style={{color:'grey'}}>WebLN detected</h6> } 
+            <Grid item container direction='row' spacing={1} className='flex-vh-center'>
+              <Grid item xs={4}><h4>L1 Network</h4></Grid>
+              { !isBtcWalletConnected 
+                ? <Grid item xs={8} textAlign='right'><Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button></Grid>
+                : <>
+                    <Grid item xs={4}>Connected </Grid>
+                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(1)}>Simulate</Button> </Grid>
+                  </>
+              }
+            </Grid>
+            <Grid item container direction='row' spacing={1} className='flex-vh-center'>
+              <Grid item xs={4}><h4>Lightning</h4></Grid>
+              { !assets[2].connected 
+                ? <Grid item xs={8} textAlign='right'><Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button></Grid>
+                : <>
+                    <Grid item xs={4}>Connected </Grid>
+                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(0)}>Simulate</Button> </Grid>
+                  </>
+              }
+            </Grid>
+            {/* window.webln && <h6 style={{color:'grey'}}>WebLN detected</h6> */} 
             <Divider style={{borderColor:'#202020',marginTop:'0.5em',width:'100%'}} />
-            { !isBtcWalletConnected 
-                ?
+            { !isBtcWalletConnected &&
                   <>
                     <h5>Scan with a Lightning Wallet</h5>
                     <h6 style={{color:'grey'}}>Requires LNURL Support</h6>
                     <img src={qrData} alt='QrCode' />
                     <h5>Expires in {expireSec} second(s)</h5>
                   </>
-                : <Button color='primary' variant='contained' onClick={onPaymentSimulate}>Simulate Button</Button>
             }
           </Grid>
         </Grid>

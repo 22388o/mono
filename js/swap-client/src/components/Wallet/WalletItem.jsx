@@ -21,9 +21,9 @@ export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen, onConnec
       </Grid>
       <Grid item xs={6} textAlign='right'>
         { (!item.connected && typeId >= 0)
-            ? <Button className='gradient-btn' onClick={e => onClick()}>Connect {['Node', 'Wallet', 'Node'][typeId]}</Button>
+            ? <Button className='gradient-btn' onClick={e => onClick()}>{['Connect Networks', 'Connect Wallet'][typeId]}</Button>
             : <h4 style={{ display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
-                {(typeId === 0 || typeId === 2) && <Button onClick={() => onPaymentSimulate(typeId === 0)} variant='contained' color='warning'>Simulate</Button>}
+                {typeId === 0 && <Button className='gradient-btn' onClick={() => onClick()} variant='contained'>Connect</Button>}
                 <b>{ Number(Number(item.balance).toFixed(15)) }</b>
                 <span style={{fontSize:'0.8em',color:'grey',margin:'0 0.1em'}}>{ item.type }</span>
                 <ChevronRightIcon />
