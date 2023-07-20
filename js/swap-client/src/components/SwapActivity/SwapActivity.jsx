@@ -34,10 +34,10 @@ export const SwapActivity = () => {
           </Grid>
           { 
             [...activities].reverse().map((row, index) => 
-              <span key={index}>
+              <>
                 { index > 0 && <Divider style={{borderColor:'grey',margin:'1em'}}/> }
                 <ActivityItem activity={row} index={index} onShowDetails={onShowDetails} handleClick={() => onItemClick(index)} />
-              </span>)
+              </>)
           }
           {
             activities.length === 0 && <div className={styles.blankMessage}>No activity yet</div>
