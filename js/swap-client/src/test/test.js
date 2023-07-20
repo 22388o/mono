@@ -1,5 +1,5 @@
-import webdriver from "selenium-webdriver";
-import chrome from 'selenium-webdriver/chrome.js';
+const webdriver = require("selenium-webdriver");
+const chrome = require('selenium-webdriver/chrome.js');
 
 const options = new chrome.Options();
 options.setLoggingPrefs({
@@ -7,7 +7,7 @@ options.setLoggingPrefs({
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
-options.addArguments('--headless');
+//options.addArguments('--headless');
 options.addArguments('--window-size=1920,1096')
 options.addArguments('--disable-dev-shm-usage');
 
@@ -69,7 +69,7 @@ async function main(){
   let swapBtn = await driver.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
   await swapBtn.click();
 
-  await wait(1500);
+  await wait(2500);
 
   let activityList = await driver.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));

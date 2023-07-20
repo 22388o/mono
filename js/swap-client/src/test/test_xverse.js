@@ -1,5 +1,5 @@
-import webdriver from "selenium-webdriver";
-import chrome from 'selenium-webdriver/chrome.js';
+const webdriver = require("selenium-webdriver");
+const chrome = require('selenium-webdriver/chrome.js');
 
 const options = new chrome.Options();
 options.setLoggingPrefs({
