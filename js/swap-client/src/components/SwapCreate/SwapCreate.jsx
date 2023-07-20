@@ -44,6 +44,10 @@ export const SwapCreate = () => {
   const wallet = globalWallet.assets[1];
   const useAdditionalInput = globalWallet.useAdditionalInput;
 
+  const substrname = (name) => {
+    return name;
+    //return name.substring(0, name.indexOf('--'));
+  }
   const notify = () => toast.error(
     "Balance Limit Exceeded!", 
     {
@@ -122,7 +126,7 @@ export const SwapCreate = () => {
       activities.forEach(activity => {
         // log("activity",activity)
         // activity.status !== 1 || 
-        if(activity.status !== 1 || user.user.id !== swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) || 
+        if(activity.status !== 1 || user.user.id !== substrname(swap.secretHolder.id) || 
           activity.orderId !== swap.secretHolder.orderId) return;
         //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
                 
@@ -133,8 +137,8 @@ export const SwapCreate = () => {
         // log("activity.status", activity.status);
         // log("swap.secretHolder.id", swap.secretHolder.id);
         // log("user.user.id", user.user.id);
-        // log("swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--'))",swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')))
-        if(user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) && orderSecret!=null) {
+        // log("substrname(swap.secretHolder.id)",substrname(swap.secretHolder.id))
+        if(user.user.id == substrname(swap.secretHolder.id) && orderSecret!=null) {
           // const network = swap.secretSeeker.network['@type'].toLowerCase();
           // const credentials = user.user.credentials;
           user.user.swapOpenV2({
@@ -169,11 +173,11 @@ export const SwapCreate = () => {
     user.user.on("swap.opening", swap => {
       activities.forEach(activity => {
         // 
-        if(user.user.id !== swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--')) || 
+        if(user.user.id !== substrname(swap.secretSeeker.id) || 
           activity.orderId !== swap.secretSeeker.orderId ) return;
         //log("swapState: swap order request sent ", swapState)
 
-        if(activity.status !== 2 || user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))) {
+        if(activity.status !== 2 || user.user.id == substrname(swap.secretSeeker.id)) {
           log('swap.opening event received', swap)
           // const network = swap.secretHolder.network['@type'].toLowerCase();
           // const credentials = user.user.credentials;
@@ -209,7 +213,7 @@ export const SwapCreate = () => {
           activity.orderId !== swap.secretHolder.orderId &&
           activity.orderId !== swap.secretSeeker.orderId)) return;
         //log('swap.opened event received', swap)
-        if(user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--'))){
+        if(user.user.id == substrname(swap.secretHolder.id)){
           // const network = swap.secretHolder.network['@type'].toLowerCase();
           // const credentials = user.user.credentials;
           // user.user.swapCommit(swap, credentials);
@@ -232,7 +236,7 @@ export const SwapCreate = () => {
         //log('swap.committing event received', swap)
         //log("orderSecret in swap.committing",orderSecret)
 
-        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
+        if(user.user.id == substrname(swap.secretSeeker.id)){
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapCommitV2({
@@ -261,7 +265,7 @@ export const SwapCreate = () => {
         // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
         let ethBal, btcBal;
 
-        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
+        if(user.user.id == substrname(swap.secretSeeker.id)){
           //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
           // ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4} });
@@ -275,8 +279,8 @@ export const SwapCreate = () => {
 
         console.log("swap.committing: swap claim submitted, settingSwapState to 4");
 
-        // const invoiceETH = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        // const invoiceBTC = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
 
 
     
@@ -287,7 +291,7 @@ export const SwapCreate = () => {
         // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
         let ethBal, btcBal;
 
-        if(user.user.id == swap.secretSeeker.id.substring(0, swap.secretSeeker.id.indexOf('--'))){
+        if(user.user.id == substrname(swap.secretSeeker.id)){
           //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
           // ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4} });
@@ -301,8 +305,8 @@ export const SwapCreate = () => {
 
         console.log("swap.committed: swap claim completed, settingSwapState to 4");
 
-        // const invoiceETH = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
-        // const invoiceBTC = user.user.id == swap.secretHolder.id.substring(0, swap.secretHolder.id.indexOf('--')) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
+        // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
 
 
     
@@ -404,16 +408,9 @@ export const SwapCreate = () => {
       console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES[args.base.asset]);
       console.log("ASSET_TYPES[baseAsset]" + ASSET_TYPES["${baseAsset}"]);
       console.log(ASSET_TYPES[baseAsset]);
-      let bai = 0;
-      while (bai < ASSET_TYPES.length)  {
-        if(ASSET_TYPES[bai].type == args.base.asset) break;
-        bai++;
-      }
-      let qai = 0;
-      while (qai < ASSET_TYPES.length)  {
-        if(ASSET_TYPES[qai].type == args.quote.asset) break;
-        qai++;
-      }
+
+      let bai = ASSET_TYPES.findIndex(asset => asset.type === args.base.asset);
+      let qai = ASSET_TYPES.findIndex(asset => asset.type === args.quote.asset);
 
       const ordinalLocation = !args.ordinalLocation ? args.ordinalLocation : false
 
