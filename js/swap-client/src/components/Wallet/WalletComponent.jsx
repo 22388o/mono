@@ -245,7 +245,7 @@ export const WalletComponent = () => {
   }
 
   const onConnectLightning = () => {
-    /*const core = async () => {
+    const core = async () => {
       try {
         if(window.webln !== 'undefined'){
           await window.webln.enable();
@@ -270,7 +270,7 @@ export const WalletComponent = () => {
         );
       }  
     }
-    core();*/
+    core();
   }
   
   const onPaymentSimulate = (isL1 = false) => {
@@ -393,7 +393,7 @@ export const WalletComponent = () => {
                   </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
-                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(false)}>Simulate</Button> </Grid>
+                    <Grid item xs={4}><Button color='primary' id='simulate-lightning' variant='contained' onClick={() => onPaymentSimulate(false)}>Simulate</Button> </Grid>
                   </>
               }
             </Grid>

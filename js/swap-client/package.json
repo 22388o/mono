@@ -12,7 +12,8 @@
     "test": "node src/test/test.js",
     "test1": "node src/test/test2.js",
     "test:unisat": "node src/test/test_unisat.js",
-    "test:xverse": "node src/test/test_xverse.js"
+    "test:xverse": "node src/test/test_xverse.js",
+    "test:alby": "node src/test/test_alby.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",
