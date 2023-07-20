@@ -58,11 +58,8 @@
     "webdriverio": "^8.12.1"
   },
   "devDependencies": {
-    "@antora/cli": "3.1.2",
-    "@antora/site-generator": "3.1.2",
     "@babel/register": "^7.22.5",
     "@cucumber/cucumber": "^9.3.0",
-    "@mermaid-js/mermaid-cli": "9.2.2",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
     "@vitejs/plugin-react": "^2.2.0",
