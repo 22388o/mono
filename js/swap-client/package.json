@@ -4,8 +4,11 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
+    "clean": "rm -rf dist node_modules package-lock.json",
+    "dev": "vite",
+    "lint": "standard",
+    "lint-fix": "standard --fix",
     "preview": "vite preview --port 7500",
     "watch": "vite build --watch",
     "test": "node src/test/test.js",
