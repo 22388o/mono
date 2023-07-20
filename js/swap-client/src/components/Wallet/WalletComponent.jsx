@@ -33,7 +33,7 @@ export const WalletComponent = () => {
   const [expireSec, setExpireSec] = useState(10);
   const [timerId, setTimerId] = useState(null);
   const [walletConnectModalOpen, setWalletConnectModalOpen] = useState(false);
-  const [isBtcWalletConnected, setIsBtcWalletConnected] = useState(false);
+  const [isBtcWalletConnected, setIsBtcWalletConnected] = useState(null);
   const [btcAddrs, setBtcAddrs] = useState(null);
   const [curInputCredsType, setCurInputCredsType] = useState(-1);
   
@@ -189,7 +189,7 @@ export const WalletComponent = () => {
 
         walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
         walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-        setIsBtcWalletConnected(true);
+        setIsBtcWalletConnected('unisat');
         //user.user.unisat = unisat;
       } else {
         toast.error(
@@ -215,7 +215,7 @@ export const WalletComponent = () => {
           onFinish: (response) => {
             walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
             walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-            setIsBtcWalletConnected(true);
+            setIsBtcWalletConnected('xverse');
             setBtcAddrs(response);
           },
           onCancel: () => {
@@ -245,7 +245,7 @@ export const WalletComponent = () => {
   }
 
   const onConnectLightning = () => {
-    const core = async () => {
+    /*const core = async () => {
       try {
         if(window.webln !== 'undefined'){
           await window.webln.enable();
@@ -270,38 +270,50 @@ export const WalletComponent = () => {
         );
       }  
     }
-    core();
+    core();*/
   }
   
   const onPaymentSimulate = (isL1 = false) => {
     const core = async () => {
       if(isL1){
-        const signPsbtOptions = {
-          payload: {
-            network: {
-              type:'Mainnet'
+        if(isBtcWalletConnected == 'unisat') {
+          try {
+            const txid = await window.unisat.sendBitcoin(
+              'tb1qmfla5j7cpdvmswtruldgvjvk87yrflrfsf6hh0',
+              1000
+            );
+            console.log('Payment Simulate Complete!');
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
+          const signPsbtOptions = {
+            payload: {
+              network: {
+                type:'Mainnet'
+              },
+              message: 'Sign Transaction',
+              psbtBase64: `cHNidP8BAJwCAmO+JvQJxhVDDpm3tV5PmPfzvJOSL4GOdjEOpAAAAAAnrAAA==`,
+              broadcast: false,
+              inputsToSign: [{
+                  address: btcAddrs.addresses[1].address,
+                  signingIndexes: [1],
+              }],
             },
-            message: 'Sign Transaction',
-            psbtBase64: `cHNidP8BAJwCAmO+JvQJxhVDDpm3tV5PmPfzvJOSL4GOdjEOpAAAAAAnrAAA==`,
-            broadcast: false,
-            inputsToSign: [{
-                address: btcAddrs.addresses[1].address,
-                signingIndexes: [1],
-            }],
-          },
-          onFinish: (response) => {
-            console.log(response.psbtBase64)
-            alert(response.psbtBase64)
-          },
-          onCancel: () => toast.error(
-            "Canceled!", 
-            {
-              theme: "colored", 
-              autoClose: 1000
-            }
-          )
+            onFinish: (response) => {
+              console.log(response.psbtBase64)
+              alert(response.psbtBase64)
+            },
+            onCancel: () => toast.error(
+              "Canceled!", 
+              {
+                theme: "colored", 
+                autoClose: 1000
+              }
+            )
+          }
+          await signTransaction(signPsbtOptions);
         }
-        await signTransaction(signPsbtOptions);
       }
       else {
         const result = await webln.keysend({
@@ -330,7 +342,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} onPaymentSimulate={onPaymentSimulate}/></>) 
+            assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
@@ -368,7 +380,7 @@ export const WalletComponent = () => {
                   </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
-                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(1)}>Simulate</Button> </Grid>
+                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(true)}>Simulate</Button> </Grid>
                   </>
               }
             </Grid>
@@ -381,7 +393,7 @@ export const WalletComponent = () => {
                   </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
-                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(0)}>Simulate</Button> </Grid>
+                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(false)}>Simulate</Button> </Grid>
                   </>
               }
             </Grid>

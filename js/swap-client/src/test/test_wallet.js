@@ -10,6 +10,7 @@ options.addArguments("--log-level=0");
 options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
 options.addArguments("--profile-directory=Profile 1");
 
+
 const By = webdriver.By; 
 const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
@@ -37,7 +38,7 @@ async function main() {
 
   await wait(2000);
   
-  //Metamask control
+  //Unisat control
   const pwdInput = await driver.findElement(By.tagName('input'));
   await pwdInput.sendKeys('TESTPW123');
 
@@ -48,12 +49,22 @@ async function main() {
   await wait(2000);
 
   windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+  if(windows.length === 1) {
+    console.log('Unisat Wallet Connected!');
+  }
+  else {
+    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window*/
 
 
-  const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
-  await approveBtn.click();
+    const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
+    await approveBtn.click();
 
+    await wait(1000);
+
+    window = await driver.getAllWindowHandles();
+    await driver.switchTo().window(windows[0]);
+    console.log('Unisat Wallet Connected!');
+  }
 }
 
 main();

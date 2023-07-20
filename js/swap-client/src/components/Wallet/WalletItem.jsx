@@ -4,9 +4,9 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const ID_ARR = {'Bitcoin-L1' : 0, 'Ethereum' : 1, 'Bitcoin-lightning' : 2};
 
-export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen, onConnectLightning, onPaymentSimulate}) => {
+export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
   const type = item.title, typeId = ID_ARR[type];
-  const onClick = [setNodeModalOpen, setWalletModalOpen, onConnectLightning][typeId];
+  const onClick = [setNodeModalOpen, setWalletModalOpen][typeId];
   
   return (
     <Grid container direction='row' spacing={1}>
