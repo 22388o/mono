@@ -13,7 +13,8 @@
     "test1": "node src/test/test2.js",
     "test:unisat": "node src/test/test_unisat.js",
     "test:xverse": "node src/test/test_xverse.js",
-    "test:alby": "node src/test/test_alby.js"
+    "test:alby": "node src/test/test_alby.js",
+    "test:metamask": "node src/test/test_metamask.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",
@@ -32,6 +33,7 @@
     "browserify": "^17.0.0",
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
+    "fs": "^0.0.1-security",
     "jest-environment-jsdom": "^29.5.0",
     "path": "^0.12.7",
     "qrcode": "^1.5.3",
@@ -48,7 +50,9 @@
     "semantic-ui-css": "^2.5.0",
     "semantic-ui-react": "^2.1.4",
     "uglify-es": "^3.3.9",
-    "web3": "^1.9.0"
+    "wdio": "^6.0.1",
+    "web3": "^1.9.0",
+    "webdriverio": "^8.12.1"
   },
   "devDependencies": {
     "@antora/cli": "3.1.2",
