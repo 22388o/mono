@@ -4,7 +4,23 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
   const type = item.title;
-  const onClick = item.title === 'Bitcoin' ? setNodeModalOpen : setWalletModalOpen;
+  const onClick = type === 'Bitcoin' ? setNodeModalOpen : setWalletModalOpen;
+  
+  const onPaymentSimulate = () => {
+    const core = async () => {
+      const result = await webln.keysend({
+        destination: "03006fcf3312dae8d068ea297f58e2bd00ec1ffe214b793eda46966b6294a53ce6", 
+        amount: "1", 
+        customRecords: {
+            "34349334": "TEST ACTION"
+        }
+      });
+      console.log(result);      
+    };
+
+    core();
+  }
+
   return (
     <Grid container direction='row' spacing={1}>
       <Grid item xs={1} textAlign='left'>
@@ -12,14 +28,15 @@ export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
       </Grid>
       <Grid item xs={5} textAlign='left'>
         <Stack direction='column'>
-          <b>{ item.title }</b>
+          <b>{ type }</b>
           <span style={{fontSize:'0.8em',color:'grey',marginTop:'-5px'}}>{ item.type }</span>
         </Stack>
       </Grid>
       <Grid item xs={6} textAlign='right'>
-        { (!item.connected && (item.title === 'Bitcoin' || item.title === 'Ethereum'))
-            ? <Button className='gradient-btn' onClick={e => onClick()}>Connect {item.title === 'Bitcoin' ? 'Node' : 'Wallet'}</Button>
-            : <h4 style={{display:'flex',alignItems:'center',justifyContent:'flex-end'}}>
+        { (!item.connected && (type === 'Bitcoin' || type === 'Ethereum'))
+            ? <Button className='gradient-btn' onClick={e => onClick()}>Connect {type === 'Bitcoin' ? 'Node' : 'Wallet'}</Button>
+            : <h4 style={{ display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
+                {type === 'Bitcoin' && <Button onClick={() => onPaymentSimulate()} variant='contained' color='warning'>Simulate</Button>}
                 <b>{ Number(Number(item.balance).toFixed(15)) }</b>
                 <span style={{fontSize:'0.8em',color:'grey',margin:'0 0.1em'}}>{ item.type }</span>
                 <ChevronRightIcon />

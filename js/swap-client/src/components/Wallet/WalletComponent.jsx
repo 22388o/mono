@@ -18,6 +18,7 @@ import { WalletConnectModal } from './WalletConnectModal';
 import { userStore } from '../../syncstore/userstore';
 import { walletStore } from '../../syncstore/walletstore';
 import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
+import { getAlice } from '../../utils/constants';
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -153,6 +154,9 @@ export const WalletComponent = () => {
           setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo();
           console.log(info);
+
+          walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
         }
       }
       catch(error){

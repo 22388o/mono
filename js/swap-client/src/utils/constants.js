@@ -24,7 +24,7 @@ export const getAlice = () => {
       "public": "0xb7f337B1244709aafd9baf50057eD0df934f2076",
       "private": "0a4beb249e3302806f5616f32d12907dd5eadc4406546a3fc2c06758f1787017"
     }
-  }  
+  }
 }
 
 export const getBob = () => {
