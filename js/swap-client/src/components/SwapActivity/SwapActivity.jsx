@@ -13,6 +13,7 @@ export const SwapActivity = () => {
   const [showIndex, setShowIndex] = useState(-1);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
+  console.log(activities);
 
   const onShowDetails = (index) => {
     setShowIndex(index);
@@ -33,7 +34,7 @@ export const SwapActivity = () => {
             <h3>Activity</h3>
           </Grid>
           { 
-            activities.reverse().map((row, index) => 
+            [...activities].reverse().map((row, index) => 
               <>
                 { index > 0 && <Divider style={{borderColor:'grey',margin:'1em'}}/> }
                 <ActivityItem activity={row} index={index} onShowDetails={onShowDetails} handleClick={() => onItemClick(index)} />
