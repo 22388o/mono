@@ -43,8 +43,8 @@ export const WalletConnectModal = ({open, handleClose}) => {
         </Grid>
         <Grid item container direction='row' width={400} rowSpacing={2}>
           { 
-            WALLETS.slice(page * 12, (page + 1) * 12).map(wallet => (
-              <Grid item xs={3} container direction='column' className='flex-middle' onClick={() => onWalletTypeClicked(true)}>
+            WALLETS.slice(page * 12, (page + 1) * 12).map((wallet, idx) => (
+              <Grid key={idx} item xs={3} container direction='column' className='flex-middle' onClick={() => onWalletTypeClicked(true)}>
                 <img width={70} src={wallet.img} style={{borderRadius:'0.5em'}}/>
                 <h5>{wallet.title}</h5>
               </Grid>
@@ -53,7 +53,7 @@ export const WalletConnectModal = ({open, handleClose}) => {
         </Grid>
         <Grid item className='flex-center'>
           <Stack direction='row' spacing={1}>
-            { Array.from(Array(Math.ceil(WALLETS.length / 12)).keys()).map(num => <a onClick={() => setPage(num)}>{num + 1}</a>) }
+            { Array.from(Array(Math.ceil(WALLETS.length / 12)).keys()).map((num, idx) => <a key={idx} onClick={() => setPage(num)}>{num + 1}</a>) }
           </Stack>
         </Grid>
       </Grid>

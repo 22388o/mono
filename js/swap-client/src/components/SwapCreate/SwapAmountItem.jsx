@@ -70,7 +70,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
           <Grid item xs={1} textAlign='right'><IconButton onClick={() => setAssetStep(0)}><Close /></IconButton></Grid>
         </Grid>
         { 
-          assetTypes.map(asset => <><AssetItem asset={asset} handleClick={onClickAsset} /><Divider style={{borderColor:'#3A3A3A',margin:'0.3em'}}/></>) 
+          assetTypes.map((asset, idx) => <span key={idx}><AssetItem asset={asset} handleClick={onClickAsset} /><Divider style={{borderColor:'#3A3A3A',margin:'0.3em'}}/></span>) 
         }
       </Grid>
     </MyModal>

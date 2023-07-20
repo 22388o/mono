@@ -592,15 +592,16 @@ export const SwapCreate = () => {
                 style={{backgroundColor:'black',width:'100%',height:'100%',padding:'1em'}}
               >
                 <Grid item container direction='row' style={{color:'white'}} className="flex-middle">
-                  <Grid item xs='10'>Settings</Grid>
-                  <Grid item xs='2'><IconButton onClick={handleClickSetting}><CloseIcon style={{color:'white'}} /></IconButton></Grid>
+                  <Grid item xs={10}>Settings</Grid>
+                  <Grid item xs={2}><IconButton onClick={handleClickSetting}><CloseIcon style={{color:'white'}} /></IconButton></Grid>
                 </Grid>
                 <FormControlLabel control={<Switch checked={limitOrder} onChange={(e) => setLimitOrder(!limitOrder)} />} label="Limit Order" />
                 <FormControlLabel control={<Switch checked={useAdditionalInput} onChange={(e) => {walletStore.dispatch({type: 'SET_USE_ADDITIONAL_INPUT', payload: !useAdditionalInput})}} />} label="Use Additional Input" />
                 { (useAdditionalInput && ASSET_TYPES[baseAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[baseAsset].title}</h4> }
                 {
-                  useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option) => 
+                  useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option, idx) => 
                     <FormControlLabel 
+                      key={idx}
                       control={
                         <input 
                           style={{border:'1px solid grey',
@@ -620,8 +621,9 @@ export const SwapCreate = () => {
                 { (useAdditionalInput && ASSET_TYPES[quoteAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[quoteAsset].title}</h4> }
                 { useAdditionalInput && ASSET_TYPES[quoteAsset].options && <h4 style={{color:'white'}}>{quoteAsset.title}</h4> }
                 {
-                  useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option) => 
+                  useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option, idx) => 
                     <FormControlLabel 
+                      key={idx}
                       control={<input style={{border:'1px solid grey',
                                               borderRadius:'10px',
                                               width:'90px',
@@ -665,7 +667,7 @@ export const SwapCreate = () => {
                 ? <>
                     { (ASSET_TYPES[baseAsset].isNFT==false && ASSET_TYPES[quoteAsset].isNFT==false) ?  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p> :
                     <p></p>}
-                    <Button circular secondary className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
+                    <Button circular="true" secondary="true" className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
                       side: (
                       (ASSET_TYPES[quoteAsset].type.split('-')[0] !== 'BTCORD' && (ASSET_TYPES[baseAsset].type == 'BTC' || ASSET_TYPES[baseAsset].type.split('-')[0] == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT)) ? 'ask' : 'bid'),
                       baseNetwork: ASSET_TYPES[baseAsset].network,
@@ -678,8 +680,8 @@ export const SwapCreate = () => {
                           false )})}>Swap</Button>
                     {mock && <DemoSwap mockSwap={mockSwap} /> }
                   </>
-                : <Button circular secondary className='w-100 h-3 gradient-btn-disabled' disabled>Enter Amounts to Swap</Button> )
-              : <Button circular secondary className='w-100 h-3 gradient-btn-disabled' disabled>Connect Wallets to Continue</Button>
+                : <Button circular="true" secondary="true" className='w-100 h-3 gradient-btn-disabled' disabled>Enter Amounts to Swap</Button> )
+              : <Button circular="true" secondary="true" className='w-100 h-3 gradient-btn-disabled' disabled>Connect Wallets to Continue</Button>
           }
         </Grid>
         <ToastContainer />

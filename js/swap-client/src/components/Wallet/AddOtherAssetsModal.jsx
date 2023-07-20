@@ -90,16 +90,16 @@ export const AddOtherAssetsModal = ({ open, handleClose }) => {
       </Grid>
       <Grid item container direction='column' spacing={1} height={400}>
         <Input className={styles['search-input']} disableUnderline value={filter} onChange={(e) => setFilter(e.target.value)} />
-        { ASSETS.filter(asset => asset.title.indexOf(filter) !== -1).map(asset => <><Grid item container direction='row' onClick={e => handleClick(asset)} style={{cursor:'pointer'}}>
+        { ASSETS.filter(asset => asset.title.indexOf(filter) !== -1).map((asset, idx) => <span key={idx}><Grid item container direction='row' onClick={e => handleClick(asset)} style={{cursor:'pointer'}}>
             <Grid item xs={1.5}><img width='32px' src={asset.img_url} /></Grid>
-            <Grid item xs={5} direction='column' textAlign='left'>
+            <Grid item container xs={5} direction='column' textAlign='left'>
               <span><h4>{asset.title}</h4></span>
               { asset.type && <span><h5 style={{fontSize:'0.8em',color:'grey'}}>{asset.type}</h5></span> }
             </Grid>
             <Grid item xs={5.5} textAlign='right' alignItems='center'>
               <NavigateNextIcon />
             </Grid>
-          </Grid><Divider style={{margin:'0.3em'}} /></>) }
+          </Grid><Divider style={{margin:'0.3em'}} /></span>) }
         { ASSETS.filter(asset => asset.title.indexOf(filter) !== -1).length === 0 && <span style={{textAlign:'center',marginTop:'100px'}}>No results</span> }
       </Grid>
       <Grid item style={{marginTop:'2em'}}>

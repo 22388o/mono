@@ -42,9 +42,6 @@ export const WalletComponent = () => {
   const assets = globalWallet.assets;
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
 
-  const toWei = (num) => { return num * 1000000000000000000 }
-  const fromWei = (num) => { return num / 1000000000000000000 }
-  const toSats = (num) => { return num * 100000000 }
   const fromSats = (num) => { return num / 100000000 }
   
   useEffect(() => {
@@ -227,7 +224,7 @@ export const WalletComponent = () => {
 
   return (
     <>
-      <Box container direction='column' className={styles.walletContainer}>
+      <Box direction='column' className={styles.walletContainer}>
         <Stack spacing={1.5} textAlign='left'>
           <Grid container direction='row'>
             <Grid item xs={4} textAlign='left' style={{display:'flex',justifyContent:'flex-start',alignItems:'center'}}><h3>Assets</h3></Grid>
@@ -237,7 +234,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false).map(asset => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></>) 
+            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <span key={idx}><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></span>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
@@ -267,7 +264,7 @@ export const WalletComponent = () => {
           </Grid>
           <Grid item container direction='column' className='flex-vh-center' spacing={2}>
             { !isBtcWalletConnected 
-                ? <Button circular secondary className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect Browser Wallet</Button>
+                ? <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect Browser Wallet</Button>
                 : 'Wallet Connected' }
             { window.webln && <h6 style={{color:'grey'}}>WebLN detected</h6> } 
             <Divider style={{borderColor:'#202020',marginTop:'0.5em',width:'100%'}} />
@@ -322,10 +319,10 @@ export const WalletComponent = () => {
       <Web3ModalSign
         projectId="33eaf37ba0badd61cecfe4f3582f18ac"
         metadata={{
-          name: 'Swap Client',
-          description: 'Portal Swap Client',
-          url: 'https://portaldefi.com',
-          icons: ['https://i.imgur.com/ztFM4Jq.png']
+          name: 'My Dapp',
+          description: 'My Dapp description',
+          url: 'https://my-dapp.com',
+          icons: ['https://my-dapp.com/logo.png']
         }}
         modalOptions={{
           explorerRecommendedWalletIds: [

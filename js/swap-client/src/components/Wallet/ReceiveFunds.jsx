@@ -92,7 +92,7 @@ export const ReceiveFunds = () => {
 
         { receivingProcess === 1 && <>
           { 
-            assetTypes.map(asset => <><AssetItem asset={asset} handleClick={onClickAsset} /><Divider style={{borderColor:'#3A3A3A',margin:'0.3em'}}/></>) 
+            assetTypes.map((asset, idx) => <span key={idx}><AssetItem asset={asset} handleClick={onClickAsset} /><Divider style={{borderColor:'#3A3A3A',margin:'0.3em'}}/></span>) 
           }
           <a onClick={() => setOtherModalOpen(true)} style={{cursor:'pointer'}}>+ Add Other Asset</a>
         </> }
