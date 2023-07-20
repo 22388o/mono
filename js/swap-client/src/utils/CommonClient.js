@@ -36,6 +36,8 @@ class CommonClient extends EventEmitter {
     this.websocket = null
 
     this.on('log', (level, ...args) => console[level](...args))
+
+    this.emit('log', 'info', 'message', `Client Websocket initialized, id: ${this.id}`);
   }
 
   /**

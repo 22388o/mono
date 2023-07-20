@@ -1,6 +1,15 @@
 import webdriver from "selenium-webdriver";
-const driver = new webdriver.Builder().forBrowser("chrome").build();
-const driver1 = new webdriver.Builder().forBrowser("chrome").build();
+import chrome from 'selenium-webdriver/chrome.js';
+
+const options = new chrome.Options();
+options.setLoggingPrefs({
+  browser: 'ALL'
+});
+options.addArguments('--enable-logging');
+options.addArguments("--log-level=0")
+
+const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+const driver1 = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 // Instantiate a web browser page
 const By = webdriver.By; // useful Locator utility to describe a query for a WebElement
 const wait = (t) => {
@@ -35,10 +44,7 @@ async function main(){
   let modal = await driver.findElement(By.className('modal-container'));
   let items = await modal.findElements(By.className('asset-item'));
   await items[4].click();
-/*
-  const logs = await driver.manage().logs().get(webdriver.logging.BROWSER);
-  console.log(logs);
- */
+
   let collModal = await driver.findElement(By.className('modal-container'));
   let ordinals = await collModal.findElements(By.className('nft-card'));
   await wait(200);
@@ -58,6 +64,12 @@ async function main(){
   let activityList = await driver.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
+  
+  await wait(5000);
+
+  const logs = await driver.manage().logs().get('browser');
+  console.log(logs);
+
 }
 
 
