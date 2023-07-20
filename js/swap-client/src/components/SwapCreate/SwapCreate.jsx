@@ -429,10 +429,10 @@ export const SwapCreate = () => {
     // setSecret('e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7');
     // setOrderSecret('ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');
 
-    // if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
-    //   notify();
-    //   return;
-    // }
+    if(ASSET_TYPES[baseAsset].balance <= baseQuantity) { 
+      notify();
+      return;
+    }
     
     await thenOrderSwap(order, secretHex, secretHash);
     // await thenOrderSwap(order, 'e77cc1219f6db5019777f9f94d54a92589adef20aa8f72ac042d241434062da7', 'ab441ccd82da7c1a4dcfd0ce711cc108ce54c6289293eb8d1755ece4463fb0af');

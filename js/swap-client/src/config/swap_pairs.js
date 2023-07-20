@@ -8,6 +8,10 @@ export const SWAP_PAIRS = [{
     2, 
     4, 
     5
+  ],
+  required_chains: [
+    'bitcoin',
+    'ethereum'
   ]
 }, {
   base: 'BTCORD',
@@ -18,5 +22,8 @@ export const SWAP_PAIRS = [{
     1, 
     3, 
     5
+  ],
+  required_chains: [
+    'bitcoin'
   ]
 }];
