@@ -22,7 +22,7 @@ const wait = (t) => {
 
 
 async function main() {
-//  try {
+  try {
     await driver.navigate().to("http://localhost:5173");
     
     let res = await driver.findElement(By.className('connect-bitcoin'));
@@ -40,7 +40,7 @@ async function main() {
     await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
     await wait(2000);
-/*    
+
     //Unisat control
     const pwdInput = await driver.findElement(By.tagName('input'));
     await pwdInput.sendKeys('TESTPW123');
@@ -65,6 +65,14 @@ async function main() {
       await wait(1000);
     }
 
+
+    const logs = await driver.manage().logs().get('browser');
+    const idxLog = logs.findIndex(log => log.message.indexOf("Unisat Wallet Connected") >= 0);
+    if(idxLog >= 0) {
+      console.log('Address Detected');
+      console.log(logs[idxLog].message);
+    }
+
     await driver.switchTo().window(windows[0]);
 
     const modal = await driver.findElement(By.className('connect-modal-color'));
@@ -78,7 +86,6 @@ async function main() {
   } catch(e) {
     console.error(e);
   }
-*/
 }
 
 main();

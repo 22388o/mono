@@ -57,6 +57,13 @@ async function main() {
     await wait(1000);
   }
 
+  const logs = await driver.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Alby Wallet Connected") >= 0);
+  if(idxLog >= 0) {
+    console.log('Address Detected');
+    console.log(logs[idxLog].message);
+  }
+
   await driver.switchTo().window(windows[0]);
 
   const modal = await driver.findElement(By.className('connect-modal-color'));

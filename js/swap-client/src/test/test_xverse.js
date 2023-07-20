@@ -44,7 +44,7 @@ async function main() {
   const loginBtn = await driver.findElement(By.className('sc-jxOSlx'));
   await loginBtn.click();
 
-  await wait(10000);
+  await wait(15000);
 
   windows = await driver.getAllWindowHandles();
   if(windows.length === 1) {
@@ -70,6 +70,17 @@ async function main() {
   
   windows = await driver.getAllWindowHandles();
   await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+
+  try {
+    const logs = await driver.manage().logs().get('browser');
+    const idxLog = logs.findIndex(log => log.message.indexOf("Xverse Wallet Connected") >= 0);
+    if(idxLog >= 0) {
+      console.log('Address Detected');
+      console.log(logs[idxLog].message);
+    }
+  } catch (e) {
+
+  }
 
   try {
     const approveBtn = await driver.findElement(By.className('iwDLzk'));

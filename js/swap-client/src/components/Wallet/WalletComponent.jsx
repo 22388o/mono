@@ -21,6 +21,7 @@ import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
 import { getAlice } from '../../utils/constants';
 import { getAddress, signTransaction } from 'sats-connect'
 import { toast } from 'react-toastify';
+import { log } from '../../utils/helpers';
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -187,6 +188,8 @@ export const WalletComponent = () => {
         const balance = await unisat.getBalance();
         const network = await unisat.getNetwork();
 
+        console.log('Unisat Wallet Connected! ' + JSON.stringify(result));
+
         walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
         walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
         setIsBtcWalletConnected('unisat');
@@ -217,6 +220,7 @@ export const WalletComponent = () => {
             walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
             setIsBtcWalletConnected('xverse');
             setBtcAddrs(response);
+            console.log('Xverse Wallet Connected! Address: ' + JSON.stringify(response));
           },
           onCancel: () => {
             toast.error(
@@ -251,7 +255,7 @@ export const WalletComponent = () => {
           await window.webln.enable();
           setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo();
-          console.log(info);
+          console.log('Alby Wallet Connected: ', info);
 
           //user.user.webln = window.webln;
 
