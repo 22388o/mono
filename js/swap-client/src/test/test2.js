@@ -1,6 +1,19 @@
 import webdriver from "selenium-webdriver";
-const driver = new webdriver.Builder().forBrowser("chrome").build();
-const driver1 = new webdriver.Builder().forBrowser("chrome").build();
+import chrome from 'selenium-webdriver/chrome.js';
+
+const options = new chrome.Options();
+options.setLoggingPrefs({
+  browser: 'ALL'
+});
+options.addArguments('--enable-logging');
+options.addArguments("--log-level=0")
+options.addArguments('--headless');
+options.addArguments('--window-size=1920,1096')
+options.addArguments('--disable-dev-shm-usage');
+
+const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+const driver1 = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+
 // Instantiate a web browser page
 const By = webdriver.By; // useful Locator utility to describe a query for a WebElement
 const wait = (t) => {

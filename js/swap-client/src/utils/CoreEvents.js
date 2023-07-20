@@ -311,4 +311,4 @@ class CoreEvents extends EventEmitter {
 }
 
 // module.exports = CommonClient;
-export default CommonClient;
+export default CoreEvents;

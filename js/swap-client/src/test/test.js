@@ -7,6 +7,9 @@ options.setLoggingPrefs({
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
+options.addArguments('--headless');
+options.addArguments('--window-size=1920,1096')
+options.addArguments('--disable-dev-shm-usage');
 
 const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 const driver1 = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
@@ -22,6 +25,7 @@ async function main(){
   //Connect to the project
   await driver.navigate().to("http://localhost:5173")
   
+  await wait(1500);
   //Connect Wallet Button Click
   let res = await driver.findElement(By.id('connect-wallet'));
   await res.click();
@@ -70,7 +74,6 @@ async function main(){
   let activityList = await driver.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
-  
 }
 
 
