@@ -81,7 +81,6 @@ export const SwapCreate = () => {
 
   async function getBalance() {
     const {balances} = await user.user.getBalance(user.user.credentials);
-    console.log({balances})
     if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
   }
 
@@ -115,14 +114,14 @@ export const SwapCreate = () => {
         log("user", user);
         const connected = user.user.connect();
       } catch (error) {
-        console.warn(`sorry an error occurred, due to ${error.message} `);
+        //console.warn(`sorry an error occurred, due to ${error.message} `);
         // logOut();
       }
     };
 
     return () => { // clean up function to clear user connection from ws
       if(user.isLoggedIn) user.user.disconnect()
-      console.log("useEffect cleanup");
+      // console.log("useEffect cleanup");
     };
   }, [user]);
 
@@ -173,15 +172,15 @@ export const SwapCreate = () => {
         if(activity.status !== 1 || !fNor) return;
         //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
                 
-        console.log("activity.secret")
-        console.log(activity)
-        console.log(activity.secret)
+        //console.log("activity.secret")
+        //console.log(activity)
+        //console.log(activity.secret)
         
         if(fIndex === 0) {
           const network = swap.secretHolder.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
 
-          console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
+          //console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
           user.user.swapOpen(swap, { [network]: credentials[network]});
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: fNext} });
         } else {
@@ -203,8 +202,8 @@ export const SwapCreate = () => {
 
                                     }
                                   }).then(data => {
-                                    console.log("response from swapOpenV2")
-                                    console.log(data)
+                                    //console.log("response from swapOpenV2")
+                                    //console.log(data)
                                   });
             log("swapOpen (secretHolder) requested, sent settingSwapState to 2", swap.id);
 
@@ -220,7 +219,7 @@ export const SwapCreate = () => {
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         
-        console.log(fNor, fBase, fIndex, fNext);
+        //console.log(fNor, fBase, fIndex, fNext);
         if(!fNor) return;
         //log("swapState: swap order request sent ", swapState)
 
@@ -228,7 +227,7 @@ export const SwapCreate = () => {
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapOpen(swap, { [network]: credentials[network], secret });
-          console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
+          //console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: fNext} });
         } else {
           if(activity.status !== 2 || user.user.id == substrname(swap.secretSeeker.id)) {
@@ -253,7 +252,7 @@ export const SwapCreate = () => {
 
                                     }
                                   });
-            console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 3");
+            //console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 3");
             activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: fNext} });
           } else {
             activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
@@ -274,7 +273,7 @@ export const SwapCreate = () => {
           orderId: swap.secretSeeker.orderId, 
           status: 4, 
           paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
-        console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
+        //console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
       });
     })
     user.user.on("swap.holderPaymentPending",swap => {
@@ -328,7 +327,7 @@ export const SwapCreate = () => {
         } else {
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
         }
-        console.log("swapCommit (secretSeeker) requested, settingSwapState to 4");
+        //console.log("swapCommit (secretSeeker) requested, settingSwapState to 4");
       });
     });
     user.user.on("swap.committing",swap => {
@@ -355,7 +354,7 @@ export const SwapCreate = () => {
           }
         }
 
-        console.log("swap.committing: swap claim submitted, settingSwapState to 5");
+        //console.log("swap.committing: swap claim submitted, settingSwapState to 5");
 
         // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
@@ -370,7 +369,7 @@ export const SwapCreate = () => {
         // || (activity.orderId !== swap.id && activity.orderId !== swap.secretHolder.orderId)
         let ethBal, btcBal;
 
-        console.log(swap);
+        //console.log(swap);
         if(user.user.id == substrname(swap.secretSeeker.id)){
           //btcBal = node.balance - fromWei(swap.secretHolder.quantity) * curPrices.ETH / curPrices.BTC;
           ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
@@ -383,7 +382,7 @@ export const SwapCreate = () => {
           walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
 
-        console.log("swap.committed: swap claim completed, settingSwapState to 5");
+        //console.log("swap.committed: swap claim completed, settingSwapState to 5");
 
         // const invoiceETH = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
         // const invoiceBTC = user.user.id == substrname(swap.secretHolder.id) ? swap.secretHolder.quantity : swap.secretSeeker.quantity;
@@ -436,9 +435,9 @@ export const SwapCreate = () => {
       .join('')
     const secretHash = await hashSecret(randomValues);
     
-    console.log('randomValues', randomValues);
-    console.log('secretHex', secretHex);
-    console.log('secretHash', secretHash);
+    //console.log('randomValues', randomValues);
+    //console.log('secretHex', secretHex);
+    //console.log('secretHash', secretHash);
 
     setSecret(secretHex);
     setOrderSecret(secretHash);
@@ -477,12 +476,12 @@ export const SwapCreate = () => {
     } catch (error) { log("error on setOrderSecret(secretHash)", error.message); }
     finally {
       // console.log("ASSET_TYPES[args.base.asset].rate" + ASSET_TYPES[args.base.asset].rate);
-      console.log("args.base.asset" + args.base.asset);
-      console.log("baseAsset" + baseAsset);
-      console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES["${args.base.asset}"]);
-      console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES[args.base.asset]);
-      console.log("ASSET_TYPES[baseAsset]" + ASSET_TYPES["${baseAsset}"]);
-      console.log(ASSET_TYPES[baseAsset]);
+      //console.log("args.base.asset" + args.base.asset);
+      //console.log("baseAsset" + baseAsset);
+      //console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES["${args.base.asset}"]);
+      //console.log("ASSET_TYPES[args.base.asset]" + ASSET_TYPES[args.base.asset]);
+      //console.log("ASSET_TYPES[baseAsset]" + ASSET_TYPES["${baseAsset}"]);
+      //console.log(ASSET_TYPES[baseAsset]);
 
       let bai = ASSET_TYPES.findIndex(asset => asset.type === args.base.asset);
       let qai = ASSET_TYPES.findIndex(asset => asset.type === args.quote.asset);
@@ -505,8 +504,8 @@ export const SwapCreate = () => {
         ordinalLocation: order.ordinalLocation
       }
     ).then(data => {
-      console.log("order opened with this response data")
-      console.log(data)
+      //console.log("order opened with this response data")
+      //console.log(data)
       const curDate = new Date();
       const date = {
         year: curDate.getFullYear(),
