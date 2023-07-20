@@ -26,6 +26,12 @@ async function main(){
 
   await wait(500);
   
+  const logs = await driver.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
+  if(idxLog >= 0) {
+    console.log(" ============ Alice Websocket Connected!!! ============== ");
+  }
+
   //Quantity Inputs
   let inputs = await driver.findElements(By.className('qty-input'));
   await inputs[0].sendKeys('1');
@@ -61,6 +67,13 @@ async function main2(){
   await lis[2].click();
 
   await wait(500);
+
+  
+  const logs = await driver1.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
+  if(idxLog >= 0) {
+    console.log(" ============ Bob Websocket Connected!!! ============== ");
+  }
 
   let excBtn = await driver1.findElement(By.className('exchange'));
   await excBtn.click();

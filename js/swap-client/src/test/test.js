@@ -34,6 +34,12 @@ async function main(){
   await lis[1].click();
 
   await wait(500);
+
+  const logs = await driver.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
+  if(idxLog >= 0) {
+    console.log(" ============ Alice Websocket Connected!!! ============== ");
+  }
   
   
   //Quantity Inputs
@@ -65,11 +71,6 @@ async function main(){
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
   
-  await wait(5000);
-
-  const logs = await driver.manage().logs().get('browser');
-  console.log(logs);
-
 }
 
 
@@ -91,7 +92,12 @@ async function main2(){
 
   await wait(500);
   
-  
+  const logs = await driver1.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
+  if(idxLog >= 0) {
+    console.log(" ============ Bob Websocket Connected!!! ============== ");
+  }
+
   //Quantity Inputs
   let btcAssets = await driver1.findElements(By.className('coin-select'));
   await btcAssets[1].click();
