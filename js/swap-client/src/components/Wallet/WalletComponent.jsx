@@ -19,6 +19,7 @@ import { userStore } from '../../syncstore/userstore';
 import { walletStore } from '../../syncstore/walletstore';
 import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
 import { getAlice } from '../../utils/constants';
+import { getAddress, signTransaction } from 'sats-connect'
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -32,6 +33,7 @@ export const WalletComponent = () => {
   const [timerId, setTimerId] = useState(null);
   const [walletConnectModalOpen, setWalletConnectModalOpen] = useState(false);
   const [isBtcWalletConnected, setIsBtcWalletConnected] = useState(false);
+  const [btcAddrs, setBtcAddrs] = useState(null);
   
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const NFT_COUNT = getAvailableNFTCount(globalWallet);
@@ -149,7 +151,26 @@ export const WalletComponent = () => {
   const onConnectBtcWallet = () => {
     const core = async () => {
       try {
-        if(window.webln !== 'undefined'){
+        const getAddressOptions = {
+          payload: {
+            purposes: ['ordinals', 'payment'],
+            message: 'Address for receiving Ordinals and payments',
+            network: {
+              type:'Mainnet'
+            },
+          },
+          onFinish: (response) => {
+            walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
+            walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
+            setIsBtcWalletConnected(true);
+            setBtcAddrs(response);
+          },
+          onCancel: () => alert('Request canceled'),
+          }
+            
+        await getAddress(getAddressOptions);
+        
+        /*if(window.webln !== 'undefined'){
           await window.webln.enable();
           setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo();
@@ -157,7 +178,7 @@ export const WalletComponent = () => {
 
           walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
           walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-        }
+        }*/
       }
       catch(error){
         console.log(error);
@@ -169,14 +190,36 @@ export const WalletComponent = () => {
   
   const onPaymentSimulate = () => {
     const core = async () => {
-      const result = await webln.keysend({
+      /*const result = await webln.keysend({
         destination: "03006fcf3312dae8d068ea297f58e2bd00ec1ffe214b793eda46966b6294a53ce6", 
         amount: "1", 
         customRecords: {
             "34349334": "HELLO AMBOSS"
         }
       });
-      console.log(result);      
+      console.log(result);    */
+      console.log(btcAddrs);
+      const signPsbtOptions = {
+        payload: {
+          network: {
+            type:'Mainnet'
+          },
+          message: 'Sign Transaction',
+          psbtBase64: `cHNidP8BAJwCAmO+JvQJxhVDDpm3tV5PmPfzvJOSL4GOdjEOpAAAAAAnrAAA==`,
+          broadcast: false,
+          inputsToSign: [{
+              address: btcAddrs.addresses[1].address,
+              signingIndexes: [1],
+          }],
+        },
+        onFinish: (response) => {
+          console.log(response.psbtBase64)
+          alert(response.psbtBase64)
+        },
+        onCancel: () => alert('Canceled'),
+      }
+      
+      await signTransaction(signPsbtOptions);
     };
 
     core();
