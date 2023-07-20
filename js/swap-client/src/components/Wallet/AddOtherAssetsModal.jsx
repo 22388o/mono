@@ -1,4 +1,4 @@
-import React, { useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useState, useSyncExternalStore } from 'react';
 import { MyModal } from '../MyModal/MyModal';
 import { Button, Divider, Grid, IconButton, Input } from '@mui/material';
 import { Close, West } from '@mui/icons-material';
@@ -52,14 +52,14 @@ export const AddOtherAssetsModal = ({ open, handleClose }) => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const assets = globalWallet.assets;
 
-  const handleClick = (asset) => {
+  const handleClick = useCallback((asset) => {
     setSelectedAsset(asset);
-  }
+  }, []);
 
-  const onClose = () => {
+  const onClose = useCallback(() => {
     setSelectedAsset(null);
     handleClose();
-  }
+  }, []);
 
   if(selectedAsset != null) {
     return <MyModal open={open}>

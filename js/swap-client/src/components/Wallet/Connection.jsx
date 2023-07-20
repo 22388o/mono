@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded';
 import { activitiesStore } from '../../syncstore/activitiesstore.js';
 import { userStore } from '../../syncstore/userstore.js';
@@ -9,13 +9,13 @@ export const ConnectionComponent = () => {
   const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
   const [swapActivities, setSwapActivities] = useState(activities);
 
-  const logOut = () => {
+  const logOut = useCallback(() => {
     //dispatch(signOut());
     walletStore.dispatch({ type: 'CLEAR_NODE_DATA' });
     walletStore.dispatch({ type: 'CLEAR_WALLET_DATA' });
     // return Promise.all([alice.disconnect(), bob.disconnect()]);
     return Promise.all([user.user.disconnect()])
-  }
+  }, [walletStore]);
 
 
   useEffect(() => {

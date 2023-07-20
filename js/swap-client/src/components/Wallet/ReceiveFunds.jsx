@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import styles from '../../styles/wallet/ReceiveFunds.module.css';
 import { CHAIN_INFO } from '../../utils/constants';
 import classNames from 'classnames';
@@ -79,15 +79,15 @@ export const ReceiveFunds = () => {
     }
   }, [receivingProcess]);
 
-  const onClickAsset = (asset) => {
+  const onClickAsset = useCallback((asset) => {
     setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: !asset.isNFT ? 2 : 2.5 });
-  };
+  }, [walletStore]);
 
-  const onNftChainClick = (chain) => {
+  const onNftChainClick = useCallback((chain) => {
     setNftChain(chain);
     walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: 3.5 });
-  }
+  }, [walletStore]);
 
   return (
     <MyModal open={modalOpen}>

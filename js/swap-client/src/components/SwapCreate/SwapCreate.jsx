@@ -341,7 +341,7 @@ export const SwapCreate = () => {
     }
   }, [activities, user]);
 
-  const coinTypeChanged = (isBase, asset) => {
+  const coinTypeChanged = useCallback((isBase, asset) => {
     let another = isBase ? quoteAsset : baseAsset;
 
     if(!ASSET_TYPES[baseAsset].isNFT && !ASSET_TYPES[quoteAsset].isNFT) another = ASSET_TYPES[asset].type === 'BTC' ? 1 : 0;
@@ -357,21 +357,21 @@ export const SwapCreate = () => {
       if(!limitOrder) setBaseQuantity(quoteQuantity * curPrices[ASSET_TYPES[asset].type] / curPrices[ASSET_TYPES[another].type]);
       if(ASSET_TYPES[asset].isNFT) setQuoteQuantity(1);
     }
-  }
+  }, [ASSET_TYPES, baseAsset, quoteAsset, curPrices, limitOrder, baseQuantity, quoteQuantity]);
 
-  const onInputBaseQuantity = (e) => {
+  const onInputBaseQuantity = useCallback((e) => {
     if(e.target.value < 0) return;
     setBaseQuantity(e.target.value);
     if(!limitOrder) setQuoteQuantity(e.target.value * curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]);
-  }
+  }, [limitOrder, curPrices, ASSET_TYPES, baseAsset, quoteAsset]);
 
-  const onInputQuoteQuantity = (e) => {
+  const onInputQuoteQuantity = useCallback((e) => {
     if(e.target.value < 0) return;
     setQuoteQuantity(e.target.value);
     if(!limitOrder) setBaseQuantity(e.target.value * curPrices[ASSET_TYPES[quoteAsset].type] / curPrices[ASSET_TYPES[baseAsset].type]);
-  }
+  }, [limitOrder, curPrices, ASSET_TYPES, quoteAsset, baseAsset]);
 
-  const onOrderSwap = async (order) => {
+  const onOrderSwap = useCallback(async (order) => {
     const randomValues = crypto.getRandomValues(new Uint8Array(32))
     const secretHex = [...randomValues]
       .map(byte => byte.toString(16).padStart(2, '0'))
@@ -387,7 +387,7 @@ export const SwapCreate = () => {
     }
     
     await thenOrderSwap(order, secretHex, secretHash);
-  }
+  }, [crypto, ASSET_TYPES, baseAsset, baseQuantity, quoteQuantity, quoteAsset]);
 
   const thenOrderSwap = async (order, secret, secretHash) => {
     const ask = order.side=='ask';
@@ -494,16 +494,16 @@ export const SwapCreate = () => {
     }
   }
 
-  const onExchangeCoinType = () => {
+  const onExchangeCoinType = useCallback(() => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
     const aBase = baseAsset, aQuote = quoteAsset;
     setBaseAsset(aQuote);setQuoteAsset(aBase);
     setBaseQuantity(tQuote); setQuoteQuantity(tBase);
-  }
+  }, [baseQuantity, quoteQuantity, baseAsset, quoteAsset]);
 
-  const mockSwap = (order) => {
+  const mockSwap = useCallback((order) => {
     onOrderSwap(order);
-  }
+  }, []);
 
   return (
     <Box className={styles.SwapCreateContainer}>

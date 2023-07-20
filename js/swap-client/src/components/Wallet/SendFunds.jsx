@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Button, Divider, Grid, Stack, IconButton, CircularProgress } from '@mui/material';
 import styles from '../../styles/wallet/SendFunds.module.css';
 import { validateInvoiceAddress } from '../../utils/helpers';
@@ -29,27 +29,25 @@ export const SendFunds = () => {
       }, 1000);
   }, [sendingProcess]);
 
-  const onClickAsset = (asset) => {
+  const onClickAsset = useCallback((asset) => {
     if(!asset.isNFT) setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: !asset.isNFT ? 2 : 1.5 });
-  };
+  }, [walletStore]);
 
-  const onComplete = () => {
+  const onComplete = useCallback(() => {
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 0 });
     setModalOpen(false);
-  }
+  }, [walletStore]);
 
-  const onClickClose = () => {
+  const onClickClose = useCallback(() => {
     setModalOpen(false);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 0 });
+  }, [walletStore]);
 
-  }
-
-  const onNftItemClick = (asset) => {
+  const onNftItemClick = useCallback((asset) => {
     setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 2 });
-
-  };
+  }, [walletStore]);
 
   const nftAssetContainer = () => { 
     return <Grid item className='flex-center' style={{border:'1px solid #444444',padding:'0.5em',borderRadius:'0.5em'}}>
