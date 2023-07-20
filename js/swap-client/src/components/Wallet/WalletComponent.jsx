@@ -132,6 +132,7 @@ export const WalletComponent = () => {
 
   const onConnectMetamask = async () => {
     if (window.ethereum) {
+      user.user.ethereum = window.ethereum;
       const accounts = await getEthAddress();
       const balance = await getEthBalance(accounts[0]) / wallet.rate;
       setWalletModalOpen(false);
@@ -166,16 +167,6 @@ export const WalletComponent = () => {
           }
             
         await getAddress(getAddressOptions);
-        
-        /*if(window.webln !== 'undefined'){
-          await window.webln.enable();
-          setIsBtcWalletConnected(true);
-          const info = await window.webln.getInfo();
-          console.log(info);
-
-          walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
-          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-        }*/
       }
       catch(error){
         console.log(error);
@@ -193,6 +184,8 @@ export const WalletComponent = () => {
           setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo();
           console.log(info);
+
+          user.user.webln = window.webln;
 
           walletStore.dispatch({ type: 'SET_LIGHTNING_DATA', payload: getAlice().lightning});
           walletStore.dispatch({ type: 'SET_LIGHTNING_BALANCE', payload: 1000});

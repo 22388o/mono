@@ -36,6 +36,8 @@ export default class Client extends EventEmitter {
     this.pathname = props.pathname || '/api/v2/updates'
     this.credentials = props.credentials
     this.websocket = null
+    this.webln = null
+    this.ethereum = null
 
     this.on('log', (level, ...args) => console[level](...args))
 
