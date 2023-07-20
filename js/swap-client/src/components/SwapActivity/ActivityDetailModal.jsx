@@ -41,7 +41,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
             <Divider style={{marginTop:'1em',marginBottom:'1em'}}  />
           </Grid>
         }
-        { activity.status == 4 && 
+        { activity.status == 5 && 
           <p>
             <CheckCircle fontSize="100px" color="success" style={{color:"green", fontSize: "60px" }} />
           </p>
@@ -95,7 +95,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
           <Grid item xs={5}>Quote Explorer:</Grid>
           <Grid item xs={7}>{ activity.quoteInfo.explorer.slice(0, 15) + '...' }</Grid>
         </Grid></> }
-        {activity.status == 4 && activity.tx && <Grid container item style={{textOverflow:'clip'}}>
+        {activity.status == 5 && activity.tx && <Grid container item style={{textOverflow:'clip'}}>
           <a href={link}>{ activity.hash.slice(0, 20) + '...' }</a> 
         </Grid>}
         { false && activity.status === 1 && <Grid container item style={{textOverflow:'clip'}}>

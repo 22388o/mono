@@ -23,7 +23,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
           <Stack direction='column' textAlign='left'>
             <span>{ SWAP_STATUS[activity.status] }</span>
             <span className='grey'>{ getStringFromDate(activity.createdDate) }</span>
-            { activity.status === 4 && activity.hash.slice(0, 20) + '...'  }
+            { activity.status === 5 && activity.hash.slice(0, 20) + '...'  }
           </Stack>
         </Stack>
       </Grid>
@@ -31,7 +31,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
         <Stack direction='column' textAlign='right'>
           <span>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")} <span className='grey'>{activity.baseAsset.toLowerCase()}</span></span>
           <span>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")} <span className='grey'>{activity.quoteAsset.toLowerCase()}</span></span>
-          { activity.status < 4 && <span><Button onClick={onCancelSwap} className={styles['cancel-btn']}>
+          { activity.status < 5 && <span><Button onClick={onCancelSwap} className={styles['cancel-btn']}>
             Cancel
           </Button></span> }
         </Stack>

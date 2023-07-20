@@ -1,5 +1,5 @@
-import * as alice from '../../../portal/config/alice.json'
-import * as bob from '../../../portal/config/bob.json'
+//import * as alice from '../../../portal/config/alice.json'
+//import * as bob from '../../../portal/config/bob.json'
 
 export const CHAIN_INFO = {
   'BTC': {
