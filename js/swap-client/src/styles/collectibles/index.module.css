@@ -20,3 +20,12 @@
   width: fit-content;
 }
 .ordinal-btn img { margin-right: 0.3em; }
+.recipient-addr {
+  background-color: black;
+  width:97%;
+  border-color: grey;
+  border-radius: 0.4em;
+  border: 1px solid grey;
+  padding: 0.5em 0.2em;
+  font-size: 1em;
+}

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "vite preview --port 7500",
     "watch": "vite build --watch",
     "test": "node src/test/test.js",
     "test1": "node src/test/test2.js"
