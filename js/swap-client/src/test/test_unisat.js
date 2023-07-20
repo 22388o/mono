@@ -29,6 +29,7 @@ async function main() {
 
   let connectL1 = await driver.findElement(By.id('connect-l1'));
   await connectL1.click();
+  await wait(500);
   await driver.switchTo().alert().accept();
 
   await wait(2000);

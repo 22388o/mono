@@ -28,6 +28,7 @@ async function main() {
 
   let connectLightning = await driver.findElement(By.id('connect-l1'));
   await connectLightning.click();
+  await wait(500);
   await driver.switchTo().alert().sendKeys("2");
   await driver.switchTo().alert().accept();
 
