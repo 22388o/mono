@@ -20,6 +20,7 @@ import { walletStore } from '../../syncstore/walletstore';
 import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
 import { getAlice } from '../../utils/constants';
 import { getAddress, signTransaction } from 'sats-connect'
+import { toast } from 'react-toastify';
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -44,7 +45,8 @@ export const WalletComponent = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
 
   const fromSats = (num) => { return num / 100000000 }
-  
+
+  const unisat = window.unisat;
   useEffect(() => {
     QRCode.toDataURL('LNBC10U1P3PJ257PP5YZTKWJCZ5FTL5LAXKAV23ZMZEKAW37ZK6KMV80PK4XAEV5QHTZ7QDPDWD3XGER9WD5KWM36YPRX7U3QD36KUCMGYP282ETNV3SHJCQZPGXQYZ5VQSP5USYC4LK9CHSFP53KVCNVQ456GANH60D89REYKDNGSMTJ6YW3NHVQ9QYYSSQJCEWM5CJWZ4A6RFJX77C490YCED6PEMK0UPKXHY89CMM7SCT66K8GNEANWYKZGDRWRFJE69H9U5U0W57RRCSYSAS7GADWMZXC8C6T0SPJAZUP6')
     .then(url => {
@@ -166,7 +168,40 @@ export const WalletComponent = () => {
     setWalletModalOpen(false);
   };
 
-  const onConnectBtcWallet = () => {
+  const onConnectBtcWallet = async () => {
+    const selWal = prompt('Which wallet would you like to connect? 1 - Unisat, 2 - Xverse', 1);
+    if(selWal != 1 && selWal != 2) {
+      toast.error(
+        "Please Input 1 or 2!", 
+        {
+          theme: "colored", 
+          autoClose: 1000
+        }
+      );
+      return; 
+    }
+    if(selWal == 1) {
+      if(unisat) {
+        const result = await unisat.requestAccounts();
+        const publicKey = await unisat.getPublicKey();
+        const balance = await unisat.getBalance();
+        const network = await unisat.getNetwork();
+
+        walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
+        walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
+        setIsBtcWalletConnected(true);
+        user.user.unisat = unisat;
+      } else {
+        toast.error(
+          "Unisat not found!", 
+          {
+            theme: "colored", 
+            autoClose: 1000
+          }
+        );
+      }
+      return;
+    }
     const core = async () => {
       try {
         const getAddressOptions = {
@@ -183,14 +218,27 @@ export const WalletComponent = () => {
             setIsBtcWalletConnected(true);
             setBtcAddrs(response);
           },
-          onCancel: () => alert('Request canceled'),
+          onCancel: () => {
+            toast.error(
+              "Request Canceled", 
+              {
+                theme: "colored", 
+                autoClose: 1000
+              }
+            );
+          },
           }
             
         await getAddress(getAddressOptions);
       }
       catch(error){
-        console.log(error);
-        alert('Cannot find bitcoin wallet!');
+        toast.error(
+          "Xverse not found!", 
+          {
+            theme: "colored", 
+            autoClose: 1000
+          }
+        );
       }  
     }
     core();
@@ -213,7 +261,13 @@ export const WalletComponent = () => {
       }
       catch(error){
         console.log(error);
-        alert('Cannot find bitcoin wallet!');
+        toast.error(
+          "Lightning Wallet not found!", 
+          {
+            theme: "colored", 
+            autoClose: 1000
+          }
+        );
       }  
     }
     core();
@@ -239,7 +293,13 @@ export const WalletComponent = () => {
             console.log(response.psbtBase64)
             alert(response.psbtBase64)
           },
-          onCancel: () => alert('Canceled'),
+          onCancel: () => toast.error(
+            "Canceled!", 
+            {
+              theme: "colored", 
+              autoClose: 1000
+            }
+          )
         }
         await signTransaction(signPsbtOptions);
       }

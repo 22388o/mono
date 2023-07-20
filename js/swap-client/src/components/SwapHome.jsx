@@ -11,6 +11,8 @@ import { Menu, MenuItem, Button, Grid } from '@mui/material';
 import styles from '../styles/SwapHome.module.css';
 import { userStore } from '../syncstore/userstore';
 import { walletStore } from '../syncstore/walletstore';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
@@ -135,6 +137,7 @@ export const SwapHome = () => {
           </Grid>
         </Grid>
       </Grid>
+      <ToastContainer />
     </Grid>
   );
 }

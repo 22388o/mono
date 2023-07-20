@@ -9,8 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import classNames from 'classnames';
 import CloseIcon from '@mui/icons-material/Close';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { activitiesStore } from "../../syncstore/activitiesstore";
 import { userStore } from "../../syncstore/userstore";
 import { walletStore } from "../../syncstore/walletstore";
@@ -640,7 +639,6 @@ export const SwapCreate = () => {
               : <Button circular="true" secondary="true" className='w-100 h-3 gradient-btn-disabled' disabled>Connect Wallets to Continue</Button>
           }
         </Grid>
-        <ToastContainer />
       </Stack>
     </Box>
   );
