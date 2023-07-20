@@ -61,9 +61,8 @@ with lib;
     services.openssh = {
       enable = true;
       allowSFTP = false;
-      passwordAuthentication = false;
-      /* kbdInteractiveAuthentication = false; */
       hostKeys = [ { type = "ed25519"; path = "/etc/ssh/ed25519_key"; } ];
+      settings.passwordAuthentication = false;
     };
 
     time.timeZone = "UTC";
