@@ -30,6 +30,7 @@ export const SwapCreate = () => {
   const [secret, setSecret] = useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [orderSecret, setOrderSecret] = useState(null);
+  const [ableToSwap, setAbleToSwap] = useState(false);
   const [curPrices, setCurPrices] = useState({
     BTC: 0,
     ETH: 0,
@@ -62,6 +63,21 @@ export const SwapCreate = () => {
     setAnchorEl(e.currentTarget);
     setSettingModalOpen(!settingModalOpen);
   }
+
+  useEffect(() => {
+    //Check if required wallets are connected
+    const cur_req_chains = SWAP_PAIRS.find(pair => (pair.base === ASSET_TYPES[baseAsset].type && pair.quote === ASSET_TYPES[quoteAsset].type) ||
+      (pair.quote === ASSET_TYPES[baseAsset].type && pair.base === ASSET_TYPES[quoteAsset].type)).required_chains;
+
+    let able = true;
+    cur_req_chains.forEach(chain => {
+      if(chain === 'bitcoin' && !nodeConnected) able = false;
+      if(chain === 'ethereum' && !walletConnected) able = false;
+    })
+
+    setAbleToSwap(able);
+    
+  }, [baseAsset, quoteAsset, nodeConnected, walletConnected]);
 
   async function getBalance() {
     const {balances} = await user.user.getBalance(user.user.credentials);
@@ -662,7 +678,7 @@ export const SwapCreate = () => {
             />
         </Grid>
         <Grid>
-          { (nodeConnected && walletConnected)
+          { (nodeConnected && walletConnected && ableToSwap)
               ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
                 ? <>
                     { (ASSET_TYPES[baseAsset].isNFT==false && ASSET_TYPES[quoteAsset].isNFT==false) ?  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p> :
