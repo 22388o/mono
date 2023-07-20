@@ -16,7 +16,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
   const [assetStep, setAssetStep] = useState(0);
   const onClickAsset = (asset) => {
     if(asset.isNFT === false) {
-      onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.type === asset.type));
+      onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.title === asset.title));
       setAssetStep(0);
     }
     else {
@@ -32,7 +32,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
   }
 
   const handleItemClick = (asset) => { 
-    onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.type === asset.type));
+    onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.title === asset.title));
     setAssetStep(0);
   };
 

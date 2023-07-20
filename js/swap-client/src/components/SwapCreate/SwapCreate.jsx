@@ -428,6 +428,7 @@ export const SwapCreate = () => {
         quoteAsset: args.quote.asset.split('-')[0],
         quoteNetwork: args.quote.network,
         quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),
+        quoteInfo: ASSET_TYPES[quoteAsset].info,
         ordinalLocation: order.ordinalLocation
       }
     ).then(data => {
@@ -480,9 +481,11 @@ export const SwapCreate = () => {
         baseAsset: args.base.asset,
         baseQuantity: args.base.quantity,
         baseNetwork: args.base.network,
+        baseInfo: ASSET_TYPES[baseAsset].info, 
         quoteAsset: args.quote.asset,
         quoteNetwork: args.quote.network,
         quoteQuantity: args.quote.quantity,
+        quoteInfo: ASSET_TYPES[quoteAsset].info, 
         ordinalLocation: args.ordinalLocation,
         status: 0,
         createdDate: date

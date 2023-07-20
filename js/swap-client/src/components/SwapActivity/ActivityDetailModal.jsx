@@ -5,7 +5,6 @@ import { CheckCircle, Close, West } from '@mui/icons-material';
 import { SWAP_STATUS } from '../../utils/helpers';
 import QRCode from 'qrcode';
 
-
 export const ActivityDetailModal = ({ open, handleClose, activity }) => {
   const [qrData, setQrData] = useState('');
   const link='https://ordinals.com/tx/' + activity.tx;
@@ -24,7 +23,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
       })
     }
   }, [activity.paymentAddress, activity.tx]);
-  console.log
+
 
   return <MyModal open={open}>
     <Grid container direction='column' spacing={1}>
@@ -72,6 +71,30 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
           <Grid item xs={5}>Status:</Grid>
           <Grid item xs={7}>{ SWAP_STATUS[activity.status] }</Grid>
         </Grid>
+        { activity.baseInfo && <><Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Base Inscription:</Grid>
+          <Grid item xs={7}>{ activity.baseInfo.inscription.slice(0, 15) + '...' }</Grid>
+        </Grid>
+        <Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Base Location:</Grid>
+          <Grid item xs={7}>{ activity.baseInfo.location.slice(0, 15) + '...' }</Grid>
+        </Grid>
+        <Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Base Explorer:</Grid>
+          <Grid item xs={7}>{ activity.baseInfo.explorer.slice(0, 15) + '...' }</Grid>
+        </Grid></> }
+        { activity.quoteInfo && <><Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Quote Inscription:</Grid>
+          <Grid item xs={7}>{ activity.quoteInfo.inscription.slice(0, 15) + '...' }</Grid>
+        </Grid>
+        <Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Quote Location:</Grid>
+          <Grid item xs={7}>{ activity.quoteInfo.location.slice(0, 15) + '...' }</Grid>
+        </Grid>
+        <Grid container item style={{textOverflow:'clip'}}>
+          <Grid item xs={5}>Quote Explorer:</Grid>
+          <Grid item xs={7}>{ activity.quoteInfo.explorer.slice(0, 15) + '...' }</Grid>
+        </Grid></> }
         {activity.status == 4 && activity.tx && <Grid container item style={{textOverflow:'clip'}}>
           <a href={link}>{ activity.hash.slice(0, 20) + '...' }</a> 
         </Grid>}
