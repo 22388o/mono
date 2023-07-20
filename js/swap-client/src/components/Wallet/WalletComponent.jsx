@@ -154,7 +154,7 @@ export const WalletComponent = () => {
 
   const onConnectMetamask = async () => {
     if (window.ethereum) {
-      user.user.ethereum = window.ethereum;
+      //user.user.ethereum = window.ethereum;
       const accounts = await getEthAddress();
       const balance = await getEthBalance(accounts[0]) / wallet.rate;
       setWalletModalOpen(false);
@@ -190,7 +190,7 @@ export const WalletComponent = () => {
         walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
         walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
         setIsBtcWalletConnected(true);
-        user.user.unisat = unisat;
+        //user.user.unisat = unisat;
       } else {
         toast.error(
           "Unisat not found!", 
@@ -253,7 +253,7 @@ export const WalletComponent = () => {
           const info = await window.webln.getInfo();
           console.log(info);
 
-          user.user.webln = window.webln;
+          //user.user.webln = window.webln;
 
           walletStore.dispatch({ type: 'SET_LIGHTNING_DATA', payload: getAlice().lightning});
           walletStore.dispatch({ type: 'SET_LIGHTNING_BALANCE', payload: 1000});
@@ -363,7 +363,7 @@ export const WalletComponent = () => {
               <Grid item xs={4}><h4>L1 Network</h4></Grid>
               { !isBtcWalletConnected 
                 ? <Grid item xs={8} textAlign='right' spacing={1}>
-                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button>
+                    <Button circular="true" secondary="true" id='connect-l1' className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button>
                     <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(1)}>Input Creds</Button>
                   </Grid>
                 : <>
@@ -417,7 +417,7 @@ export const WalletComponent = () => {
             </Grid>
           </Grid>
           <Grid item container direction='column' className='flex-vh-center' spacing={2}>
-            <Grid item container direction='row' className={styles['eth-con-col1']} onClick={onConnectMetamask}>
+            <Grid item container direction='row' id='connect-metamask' className={styles['eth-con-col1']} onClick={onConnectMetamask}>
               <img style={{borderRadius:'5px'}} width={32} src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMJyiAlYerxZx6dsXo5Pzv5gLdCrHKJ-5gnEs9RTGQ70RNCHoICMQ8&usqp=CAE&s' />
               <h5 className='ml-1'>Metamask</h5>
             </Grid>

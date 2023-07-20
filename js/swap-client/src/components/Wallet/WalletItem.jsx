@@ -21,7 +21,7 @@ export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen, onConnec
       </Grid>
       <Grid item xs={6} textAlign='right'>
         { (!item.connected && typeId >= 0)
-            ? <Button className='gradient-btn' onClick={e => onClick()}>{['Connect Networks', 'Connect Wallet'][typeId]}</Button>
+            ? <Button className={`gradient-btn connect-${['bitcoin', 'ethereum'][typeId]}`} onClick={e => onClick()}>{['Connect Networks', 'Connect Wallet'][typeId]}</Button>
             : <h4 style={{ display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
                 {typeId === 0 && <Button className='gradient-btn' onClick={() => onClick()} variant='contained'>Connect</Button>}
                 <b>{ Number(Number(item.balance).toFixed(15)) }</b>

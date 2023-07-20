@@ -10,12 +10,50 @@ options.addArguments("--log-level=0");
 options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
 options.addArguments("--profile-directory=Profile 1");
 
-
+const By = webdriver.By; 
 const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+
+const wait = (t) => {
+  return new Promise((res, rej)=>{
+    setTimeout(res, t);
+  })
+}
+
 
 async function main() {
   await driver.navigate().to("http://localhost:5173");
-  console.log(123);
+  
+  let res = await driver.findElement(By.className('connect-bitcoin'));
+  await res.click();
+
+  let connectMetamask = await driver.findElement(By.id('connect-l1'));
+  await connectMetamask.click();
+  await driver.switchTo().alert().accept();
+
+  await wait(2000);
+
+  let windows = await driver.getAllWindowHandles();
+  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+
+  await wait(2000);
+  
+  //Metamask control
+  const pwdInput = await driver.findElement(By.tagName('input'));
+  await pwdInput.sendKeys('TESTPW123');
+
+  const firstDiv = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(3)'));
+  await firstDiv.click();
+
+
+  await wait(2000);
+
+  windows = await driver.getAllWindowHandles();
+  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+
+
+  const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
+  await approveBtn.click();
+
 }
 
 main();
