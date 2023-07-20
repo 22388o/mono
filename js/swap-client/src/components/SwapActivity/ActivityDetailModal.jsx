@@ -25,6 +25,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
   }, [activity.paymentAddress, activity.tx]);
 
 
+  console.log(activity);
   return <MyModal open={open}>
     <Grid container direction='column' spacing={1}>
       <Grid item container direction='row' style={{minWidth:400}}>
@@ -33,7 +34,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
         <Grid item xs={1} textAlign='right'><IconButton onClick={handleClose}><Close /></IconButton></Grid>
       </Grid>
       <Grid item container direction='column' className='flex-middle'>
-        { activity.status == 3 && activity.paymentAddress && <Grid item style={{marginTop:'0.5em'}} textAlign='center' >
+        { (activity.status === 3 || activity.status === 4) && activity.paymentAddress && <Grid item style={{marginTop:'0.5em'}} textAlign='center' >
             <Grid item textAlign='center'>Pay to this Address:</Grid>
               <img src={qrData} alt='QrCode' />
              <Divider style={{marginTop:'1em',border:0}}  />

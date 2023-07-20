@@ -226,7 +226,12 @@ export const SwapCreate = () => {
         const network = swap.secretHolder.network['@type'].toLowerCase();
         const credentials = user.user.credentials;
         user.user.swapCommit(swap, credentials);
-        activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 4, btcAddress: '5b2458b88205d8c6d6252fcb1440ab5248dc15e4a237086202203f5054128d14'} });
+        console.log(activities);
+        console.log(swap);
+        activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {
+          orderId: swap.secretSeeker.orderId, 
+          status: 4, 
+          paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
         console.log("swapCommit (secretSeeker) requested, settingSwapState to 3");
       });
     })
@@ -345,12 +350,7 @@ export const SwapCreate = () => {
     })
     return () => {
       // cleanup
-      user.user.removeAllListeners("swap.created", () => {console.log("swap.created event listener cleanup")});
-      user.user.removeAllListeners("swap.opening", () => {console.log("swap.opening event listener cleanup")});
-      user.user.removeAllListeners("swap.holderPaymentPending", () => {console.log("swap.holderPaymentPending event listener cleanup")});
-      user.user.removeAllListeners("swap.holderPaid", () => {console.log("swap.holderPaid event listener cleanup")});
-      user.user.removeAllListeners("swap.committing", () => {console.log("swap.committing event listener cleanup")});
-      user.user.removeAllListeners("swap.committed", () => {console.log("swap.committed event listener cleanup")});
+      user.user.removeAllListeners();
       
     }
   }, [activities, user]);
