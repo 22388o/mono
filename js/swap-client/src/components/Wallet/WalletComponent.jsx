@@ -29,6 +29,7 @@ export const WalletComponent = () => {
   const [expireSec, setExpireSec] = useState(10);
   const [timerId, setTimerId] = useState(null);
   const [walletConnectModalOpen, setWalletConnectModalOpen] = useState(false);
+  const [isBtcWalletConnected, setIsBtcWalletConnected] = useState(false);
   
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const NFT_COUNT = getAvailableNFTCount(globalWallet);
@@ -128,6 +129,39 @@ export const WalletComponent = () => {
     setWalletConnectModalOpen(true);
   };
 
+  const onConnectBtcWallet = () => {
+    const core = async () => {
+      try {
+        if(window.webln !== 'undefined'){
+          await window.webln.enable();
+          setIsBtcWalletConnected(true);
+          const info = await window.webln.getInfo();
+          console.log(info);
+        }
+      }
+      catch(error){
+        console.log(error);
+        alert('Cannot find bitcoin wallet!');
+      }  
+    }
+    core();
+  }
+  
+  const onPaymentSimulate = () => {
+    const core = async () => {
+      const result = await webln.keysend({
+        destination: "03006fcf3312dae8d068ea297f58e2bd00ec1ffe214b793eda46966b6294a53ce6", 
+        amount: "1", 
+        customRecords: {
+            "34349334": "HELLO AMBOSS"
+        }
+      });
+      console.log(result);      
+    };
+
+    core();
+  }
+
   return (
     <>
       <Box container direction='column' className={styles.walletContainer}>
@@ -169,13 +203,21 @@ export const WalletComponent = () => {
             </Grid>
           </Grid>
           <Grid item container direction='column' className='flex-vh-center' spacing={2}>
-            <Button circular secondary className={`${styles['gradient-border-btn']}`}>Connect Browser Wallet</Button>
-            <h6 style={{color:'grey'}}>WebLN detected</h6>
+            { !isBtcWalletConnected 
+                ? <Button circular secondary className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect Browser Wallet</Button>
+                : 'Wallet Connected' }
+            { window.webln && <h6 style={{color:'grey'}}>WebLN detected</h6> } 
             <Divider style={{borderColor:'#202020',marginTop:'0.5em',width:'100%'}} />
-            <h5>Scan with a Lightning Wallet</h5>
-            <h6 style={{color:'grey'}}>Requires LNURL Support</h6>
-            <img src={qrData} alt='QrCode' />
-            <h5>Expires in {expireSec} second(s)</h5>
+            { !isBtcWalletConnected 
+                ?
+                  <>
+                    <h5>Scan with a Lightning Wallet</h5>
+                    <h6 style={{color:'grey'}}>Requires LNURL Support</h6>
+                    <img src={qrData} alt='QrCode' />
+                    <h5>Expires in {expireSec} second(s)</h5>
+                  </>
+                : <Button color='primary' variant='contained' onClick={onPaymentSimulate}>Simulate Button</Button>
+            }
           </Grid>
         </Grid>
       </MyModal>
