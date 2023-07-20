@@ -1,7 +1,7 @@
 import { INSCRIPTIONS } from "../config/inscription_info";
 
 const initialAssets = [{
-  title: 'Bitcoin',
+  title: 'Bitcoin-L1',
   type: 'BTC',
   rate: 100000000,
   connected: false,
@@ -19,6 +19,16 @@ const initialAssets = [{
   img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true',
   isNFT: false,
   data: null,
+}, {
+  title: 'Bitcoin-lightning',
+  type: 'BTC',
+  rate: 100000000,
+  connected: false,
+  network: 'lightning.btc',
+  img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
+  isNFT: false,
+  data: null,
+  options: []
 }, {
   title: 'Tether',
   type: 'USDT',

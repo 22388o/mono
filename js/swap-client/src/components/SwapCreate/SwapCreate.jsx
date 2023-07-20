@@ -66,7 +66,7 @@ export const SwapCreate = () => {
 
   useEffect(() => {
     //Check if required wallets are connected
-    const cur_req_chains = SWAP_PAIRS.find(pair => (pair.base === ASSET_TYPES[baseAsset].type && pair.quote === ASSET_TYPES[quoteAsset].type) ||
+    /*const cur_req_chains = SWAP_PAIRS.find(pair => (pair.base === ASSET_TYPES[baseAsset].type && pair.quote === ASSET_TYPES[quoteAsset].type) ||
       (pair.quote === ASSET_TYPES[baseAsset].type && pair.base === ASSET_TYPES[quoteAsset].type)).required_chains;
 
     let able = true;
@@ -75,7 +75,7 @@ export const SwapCreate = () => {
       if(chain === 'ethereum' && !walletConnected) able = false;
     })
 
-    setAbleToSwap(able);
+    setAbleToSwap(able);*/
     
   }, [baseAsset, quoteAsset, nodeConnected, walletConnected]);
 

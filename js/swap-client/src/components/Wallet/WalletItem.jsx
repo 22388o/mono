@@ -2,9 +2,11 @@ import React from 'react';
 import { Grid, Button, Stack } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
-  const type = item.title;
-  const onClick = type === 'Bitcoin' ? setNodeModalOpen : setWalletModalOpen;
+const ID_ARR = {'Bitcoin-L1' : 0, 'Ethereum' : 1, 'Bitcoin-lightning' : 2};
+
+export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen, onConnectLightning}) => {
+  const type = item.title, typeId = ID_ARR[type];
+  const onClick = [setNodeModalOpen, setWalletModalOpen, onConnectLightning][typeId];
   
   const onPaymentSimulate = () => {
     const core = async () => {
@@ -33,10 +35,10 @@ export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
         </Stack>
       </Grid>
       <Grid item xs={6} textAlign='right'>
-        { (!item.connected && (type === 'Bitcoin' || type === 'Ethereum'))
-            ? <Button className='gradient-btn' onClick={e => onClick()}>Connect {type === 'Bitcoin' ? 'Node' : 'Wallet'}</Button>
+        { (!item.connected && typeId >= 0)
+            ? <Button className='gradient-btn' onClick={e => onClick()}>Connect {['Node', 'Wallet', 'Node'][typeId]}</Button>
             : <h4 style={{ display:'flex', alignItems:'center', justifyContent:'flex-end' }}>
-                {type === 'Bitcoin' && <Button onClick={() => onPaymentSimulate()} variant='contained' color='warning'>Simulate</Button>}
+                {type === 'Bitcoin-L1' && <Button onClick={() => onPaymentSimulate()} variant='contained' color='warning'>Simulate</Button>}
                 <b>{ Number(Number(item.balance).toFixed(15)) }</b>
                 <span style={{fontSize:'0.8em',color:'grey',margin:'0 0.1em'}}>{ item.type }</span>
                 <ChevronRightIcon />

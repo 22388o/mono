@@ -184,6 +184,27 @@ export const WalletComponent = () => {
     }
     core();
   }
+
+  const onConnectLightning = () => {
+    const core = async () => {
+      try {
+        if(window.webln !== 'undefined'){
+          await window.webln.enable();
+          setIsBtcWalletConnected(true);
+          const info = await window.webln.getInfo();
+          console.log(info);
+
+          walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
+        }
+      }
+      catch(error){
+        console.log(error);
+        alert('Cannot find bitcoin wallet!');
+      }  
+    }
+    core();
+  }
   
   const onPaymentSimulate = () => {
     const core = async () => {
@@ -234,7 +255,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></>) 
+            assets.filter(asset => asset.isNFT === false).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} onConnectLightning={onConnectLightning} /></>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
