@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "watch": "vite build --watch",
-    "test": "node src/test/test.js"
+    "test": "node src/test/test.js",
+    "test1": "node src/test/test2.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",

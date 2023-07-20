@@ -26,24 +26,10 @@ async function main(){
 
   await wait(500);
   
-  
-  //Quantity Inputs
-  let btcAsset = await driver.findElement(By.className('_coin-select_1caiq_85'));
-  await btcAsset.click();
-
-  await wait(500);
-  let modal = await driver.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('css-1f064cs-MuiGrid-root'));
-  await items[3].click();
- 
-  await wait(500);
-  let collModal = await driver.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('css-1y066f1-MuiGrid-root'));
-  await ordinals[0].click();
-
   //Quantity Inputs
   let inputs = await driver.findElements(By.className('_qty-input_1caiq_17'));
   await inputs[0].sendKeys('1');
+  await inputs[1].sendKeys('2');
 
   await wait(500);
   //Swap Button Click
@@ -75,25 +61,15 @@ async function main2(){
   await lis[2].click();
 
   await wait(500);
-  
-  
-  //Quantity Inputs
-  let btcAssets = await driver1.findElements(By.className('_coin-select_1caiq_85'));
-  await btcAssets[1].click();
 
-  await wait(500);
-  let modal = await driver1.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('css-1f064cs-MuiGrid-root'));
-  await items[3].click();
- 
-  await wait(500);
-  let collModal = await driver1.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('css-1y066f1-MuiGrid-root'));
-  await ordinals[0].click();
-
+  let excBtn = await driver1.findElement(By.className('_exchange_1caiq_53'));
+  await excBtn.click();
+   
+  
   //Quantity Inputs
   let inputs = await driver1.findElements(By.className('_qty-input_1caiq_17'));
-  await inputs[0].sendKeys('1');
+  await inputs[0].sendKeys('2');
+  await inputs[1].sendKeys('1');
 
   await wait(500);
   //Swap Button Click
