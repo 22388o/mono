@@ -10,7 +10,6 @@ options.addArguments("--log-level=0");
 options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
 options.addArguments("--profile-directory=Profile 1");
 
-
 const By = webdriver.By; 
 const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
@@ -27,8 +26,9 @@ async function main() {
   let res = await driver.findElement(By.className('connect-bitcoin'));
   await res.click();
 
-  let connectL1 = await driver.findElement(By.id('connect-l1'));
-  await connectL1.click();
+  let connectLightning = await driver.findElement(By.id('connect-l1'));
+  await connectLightning.click();
+  await driver.switchTo().alert().sendKeys("2");
   await driver.switchTo().alert().accept();
 
   await wait(2000);
@@ -36,28 +36,25 @@ async function main() {
   let windows = await driver.getAllWindowHandles();
   await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
-  await wait(2000);
-  
   //Unisat control
   const pwdInput = await driver.findElement(By.tagName('input'));
   await pwdInput.sendKeys('TESTPW123');
 
-  const firstDiv = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(3)'));
-  await firstDiv.click();
+  const loginBtn = await driver.findElement(By.className('sc-jxOSlx'));
+  await loginBtn.click();
 
-
-  await wait(2000);
+  await wait(10000);
 
   windows = await driver.getAllWindowHandles();
   if(windows.length === 1) {
-    console.log('Unisat Wallet Connected!');
+    console.log('Xverse Wallet Connected!');
   }
   else {
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window*/
+    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
-    const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
+    const approveBtn = await driver.findElement(By.className('iwDLzk'));
     await approveBtn.click();
-    console.log('Unisat Wallet Connected!');
+    console.log('Xverse Wallet Connected!');
 
     await wait(1000);
   }
@@ -71,15 +68,16 @@ async function main() {
   await wait(3000);
   
   windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window*/
+  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
   try {
-    const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
-    const css = await approveBtn.getCssValue('cursor');
-    if(css.indexOf('not-allowed') === -1) {
+    const approveBtn = await driver.findElement(By.className('iwDLzk'));
+    const text = await approveBtn.getText();
+    if(text.indexOf('Close') === -1) {
       await approveBtn.click();
     }
     else {
+      await approveBtn.click();
       throw new Error('Insufficient Balance!');
     }
     console.log('Payment Simulation Done!');

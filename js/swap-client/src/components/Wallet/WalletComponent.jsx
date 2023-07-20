@@ -388,7 +388,7 @@ export const WalletComponent = () => {
               <Grid item xs={4}><h4>Lightning</h4></Grid>
               { !assets[2].connected 
                 ? <Grid item xs={8} textAlign='right' spacing={1}>
-                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button>
+                    <Button circular="true" secondary="true" id='connect-lightning' className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button>
                     <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(2)}>Input Creds</Button>
                   </Grid>
                 : <>
