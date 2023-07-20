@@ -17,6 +17,7 @@ import { getEthAddress, getEthBalance } from '../../utils/web3';
 import { WalletConnectModal } from './WalletConnectModal';
 import { userStore } from '../../syncstore/userstore';
 import { walletStore } from '../../syncstore/walletstore';
+import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -77,6 +78,20 @@ export const WalletComponent = () => {
 
   }, [node, wallet]);
 
+  const { connect, data, error, loading } = useConnect({
+    requiredNamespaces: {
+      eip155: {
+        methods: ['eth_sendTransaction', 'personal_sign'],
+        chains: ['eip155:1'],
+        events: ['chainChanged', 'accountsChanged']
+      }
+    }
+  })
+
+  async function onConnectWC() {
+    const data = await connect()
+  }
+
   useEffect(() => {
     async function getBalance() {
       const {balances} = await user.user.getBalance(user.user.credentials);
@@ -126,7 +141,8 @@ export const WalletComponent = () => {
   }
 
   const onConnectWalletConnect = () => {
-    setWalletConnectModalOpen(true);
+    onConnectWC();
+    setWalletModalOpen(false);
   };
 
   const onConnectBtcWallet = () => {
@@ -256,6 +272,20 @@ export const WalletComponent = () => {
       <AddOtherAssetsModal open={otherModalOpen} handleClose={() => setOtherModalOpen(false)} />
       <WalletConnectModal open={walletConnectModalOpen} handleClose={() => setWalletConnectModalOpen(false)} />
       <ReceiveFunds />
+      <Web3ModalSign
+        projectId="33eaf37ba0badd61cecfe4f3582f18ac"
+        metadata={{
+          name: 'Swap Client',
+          description: 'Portal Swap Client',
+          url: 'https://portaldefi.com',
+          icons: ['https://i.imgur.com/ztFM4Jq.png']
+        }}
+        modalOptions={{
+          explorerRecommendedWalletIds: [
+            'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96'
+          ]          
+        }}
+      />
       <SendFunds />
     </>
   );

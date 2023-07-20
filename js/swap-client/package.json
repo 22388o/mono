@@ -21,6 +21,8 @@
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.13",
     "@reduxjs/toolkit": "^1.9.1",
+    "@walletconnect/web3wallet": "^1.7.5",
+    "@web3modal/sign-react": "^2.4.3",
     "babel": "^6.23.0",
     "babel-jest": "^29.5.0",
     "bolt11": "^1.4.0",
