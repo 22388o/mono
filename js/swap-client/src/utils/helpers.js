@@ -29,11 +29,9 @@ export const fromWei = (num) => { return num / 1000000000000000000 }
 export const toSats = (num) => { return num * 100000000 }
 export const fromSats = (num) => { return num / 100000000 }
 
-export const log = (message, obj, debug = true) => {
-	if (debug) {
-		console.log(message + " (SwapCreate)")
-	 console.log(obj)
-	}
+export const log = (message, obj, title = 'SwapCreate') => {
+	console.log(message + ` (${title})`)
+	if(obj) console.log(obj)
 };
 
 export const validateInvoiceAddress = (addr) => {
