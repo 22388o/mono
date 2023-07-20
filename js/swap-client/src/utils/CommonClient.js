@@ -59,7 +59,7 @@ class CommonClient extends EventEmitter {
    * @returns {Object}
    */
   toJSON () {
-    const payload = {
+    let payload = {
       '@type': this.constructor.name,
       id: this.id,
       hostname: this.hostname,
@@ -115,7 +115,7 @@ class CommonClient extends EventEmitter {
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
-    const payload = {
+    let payload = {
       uid: this.id,
       side: order.side,
       hash: order.hash,
