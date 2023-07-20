@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { activitiesStore } from "../../syncstore/activitiesstore";
 import { userStore } from "../../syncstore/userstore";
 import { walletStore } from "../../syncstore/walletstore";
+import { SWAP_PAIRS } from "../../config/swap_pairs";
 
 export const SwapCreate = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
@@ -109,6 +110,33 @@ export const SwapCreate = () => {
     };
   }, [user]);
 
+  const getSwapPairId = (activity, swap) => {
+    let nor, base, index, nextSt;
+    SWAP_PAIRS.forEach((pair, idx) => {
+      let fBase = -1;
+      if(pair.base === activity.baseAsset && pair.quote === activity.quoteAsset) fBase = 0;
+      else if(pair.base === activity.quoteAsset && pair.quote === activity.baseAsset) fBase = 1;
+      if(fBase == -1) return;
+
+      let fNor, curUser;
+      if((fBase == 0 && pair.base === pair.seeker) || (fBase == 1 && pair.base === pair.holder)) curUser = swap.secretSeeker;
+      if((fBase == 1 && pair.base === pair.seeker) || (fBase == 0 && pair.base === pair.holder)) curUser = swap.secretHolder;
+
+      fNor = (user.user.id === substrname(curUser.id) && activity.orderId === curUser.orderId);
+
+      nextSt = pair.process[pair.process.indexOf(activity.status) + 1]
+      nor = fNor;
+      base = fBase;
+      index = idx;
+    })
+    return {
+      fNor: nor,
+      fBase: base,
+      fIndex: index,
+      fNext: nextSt
+    }
+  }
+
   useEffect(() => {
     if(!user.user) return;
     // log("user.user.id", user.user.id);
@@ -124,9 +152,8 @@ export const SwapCreate = () => {
     });
     user.user.on("swap.created", swap => {
       activities.forEach(activity => {
-        const fNor = activity.baseAsset === 'BTC' 
-            ? (user.user.id === substrname(swap.secretSeeker.id) && activity.orderId === swap.secretSeeker.orderId)
-            : (user.user.id === substrname(swap.secretHolder.id) && activity.orderId === swap.secretHolder.orderId);
+        const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
+        
         if(activity.status !== 1 || !fNor) return;
         //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
                 
@@ -134,13 +161,13 @@ export const SwapCreate = () => {
         console.log(activity)
         console.log(activity.secret)
         
-        if(activity.baseAsset === 'BTC') {
+        if(fIndex === 0) {
           const network = swap.secretHolder.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
 
           console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
           user.user.swapOpen(swap, { [network]: credentials[network]});
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 2} });
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: fNext} });
         } else {
           if(user.user.id == substrname(swap.secretHolder.id) && orderSecret!=null) {
             user.user.swapOpenV2({
@@ -165,7 +192,7 @@ export const SwapCreate = () => {
                                   });
             log("swapOpen (secretHolder) requested, sent settingSwapState to 2", swap.id);
 
-            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: fNext} });
           } else {
             activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeekerer.orderId, status: 2} });
           }
@@ -175,19 +202,18 @@ export const SwapCreate = () => {
 
     user.user.on("swap.opening", swap => {
       activities.forEach(activity => {
-        const fNor = activity.quoteAsset === 'BTC' 
-          ? (user.user.id === substrname(swap.secretHolder.id) && activity.orderId === swap.secretHolder.orderId)
-          : (user.user.id === substrname(swap.secretSeeker.id) && activity.orderId === swap.secretSeeker.orderId);
+        const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         
+        console.log(fNor, fBase, fIndex, fNext);
         if(!fNor) return;
         //log("swapState: swap order request sent ", swapState)
 
-        if(activity.quoteAsset === 'BTC') {
+        if(fIndex === 0) {
           const network = swap.secretSeeker.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
           user.user.swapOpen(swap, { [network]: credentials[network], secret });
           console.log("swapOpen (secretHolder) requested, settingSwapState to 2");
-          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 2} });
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: fNext} });
         } else {
           if(activity.status !== 2 || user.user.id == substrname(swap.secretSeeker.id)) {
             log('swap.opening event received', swap)
@@ -212,7 +238,7 @@ export const SwapCreate = () => {
                                     }
                                   });
             console.log("swapOpen (secretSeeker) requested, sent settingSwapState to 3");
-            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 3} });
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: fNext} });
           } else {
             activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
           }
