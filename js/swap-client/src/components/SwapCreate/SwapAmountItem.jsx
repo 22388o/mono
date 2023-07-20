@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useSyncExternalStore, useCallback } from 'react';
 import styles from '../../styles/SwapCreate.module.css';
 import { Grid, Select, MenuItem, Button, IconButton, Divider, Stack } from '@mui/material';
 import { MyModal } from '../MyModal/MyModal';
@@ -14,7 +14,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
   const assetTypes = getMinimizedAssets(globalWallet);
   const asset = globalWallet.assets[assetId];
   const [assetStep, setAssetStep] = useState(0);
-  const onClickAsset = (asset) => {
+  const onClickAsset = useCallback((asset) => {
     if(asset.isNFT === false) {
       onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.title === asset.title));
       setAssetStep(0);
@@ -22,19 +22,19 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
     else {
       setAssetStep(2);
     }
-  };
+  }, [globalWallet]);
 
-  const onKeyDown = (e) => {
+  const onKeyDown = useCallback((e) => {
     if(e.keyCode === 109) {
       e.preventDefault();
       return;
     }
-  }
+  }, []);
 
-  const handleItemClick = (asset) => { 
+  const handleItemClick = useCallback((asset) => { 
     onCoinTypeChange(globalWallet.assets.findIndex(ast => ast.title === asset.title));
     setAssetStep(0);
-  };
+  }, [globalWallet]);
 
   return (<>
     <Grid container direction='row' className={className}>

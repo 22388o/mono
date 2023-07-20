@@ -1,4 +1,4 @@
-import React, { useSyncExternalStore } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 import { Box, Grid, Stack, Divider } from '@mui/material';
 import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
@@ -13,16 +13,16 @@ export const SwapActivity = () => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
 
-  const onShowDetails = (index) => {
+  const onShowDetails = useCallback((index) => {
     setShowIndex(index);
     setOpen(true);
     log("this is activities item : ", showIndex);
-  };
+  }, []);
   
-  const onItemClick = (index) => {
+  const onItemClick = useCallback((index) => {
     setSelectedActivity(activities[index]);
     setDetailModalOpen(true);
-  }
+  }, [activities]);
   
   return (
     <>

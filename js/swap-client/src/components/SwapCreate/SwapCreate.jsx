@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Box, Grid, Stack, Button, IconButton, Divider, Popover, Switch, FormControlLabel } from "@mui/material";
 import { getBTCPrice, getETHPrice } from "../../utils/apis";
 import styles from '../../styles/SwapCreate.module.css';
@@ -29,7 +29,6 @@ export const SwapCreate = () => {
   const [secret, setSecret] = useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [orderSecret, setOrderSecret] = useState(null);
-  const [ableToSwap, setAbleToSwap] = useState(true);
   const [curPrices, setCurPrices] = useState({
     BTC: 0,
     ETH: 0,
@@ -45,51 +44,36 @@ export const SwapCreate = () => {
   const wallet = globalWallet.assets[1];
   const useAdditionalInput = globalWallet.useAdditionalInput;
 
-  const substrname = (name) => {
+  const substrname = useCallback((name) => {
     return name;
     //return name.substring(0, name.indexOf('--'));
-  }
-  const notify = () => toast.error(
+  }, []);
+  const notify = useCallback(() => toast.error(
     "Balance Limit Exceeded!", 
     {
       theme: "colored", 
       autoClose: 1000
     }
-  );
+  ), []);
 
-  const handleClickSetting = (e) => {
+  const handleClickSetting = useCallback((e) => {
     //setLimitOrder(!limitOrder);
     setAnchorEl(e.currentTarget);
     setSettingModalOpen(!settingModalOpen);
-  }
+  }, [settingModalOpen]);
 
-  useEffect(() => {
-    //Check if required wallets are connected
-    /*const cur_req_chains = SWAP_PAIRS.find(pair => (pair.base === ASSET_TYPES[baseAsset].type && pair.quote === ASSET_TYPES[quoteAsset].type) ||
-      (pair.quote === ASSET_TYPES[baseAsset].type && pair.base === ASSET_TYPES[quoteAsset].type)).required_chains;
-
-    let able = true;
-    cur_req_chains.forEach(chain => {
-      if(chain === 'bitcoin' && !nodeConnected) able = false;
-      if(chain === 'ethereum' && !walletConnected) able = false;
-    })
-
-    setAbleToSwap(able);*/
-    
-  }, [baseAsset, quoteAsset, nodeConnected, walletConnected]);
-
-  async function getBalance() {
+  const getBalance = useCallback(async () => {
     const {balances} = await user.user.getBalance(user.user.credentials);
     if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
-  }
+  }, [user]);
 
-  const logOut = () => {
+  const logOut = useCallback(() => {
     dispatch(signOut());
     dispatch(clearNodeData());
     dispatch(clearWalletData());
     setOpen(false);
     return Promise.all([user.user.disconnect()])
-  };
+  }, [user]);
 
   useEffect(() => {
     const core = async () => {
@@ -167,7 +151,6 @@ export const SwapCreate = () => {
     user.user.on("swap.created", swap => {
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
-        
         if(activity.status !== 1 || !fNor) return;
         //log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
                 
@@ -215,8 +198,10 @@ export const SwapCreate = () => {
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         
+        alert(1);
+        console.log(fNor, fIndex, fNext);
         if(!fNor) return;
-        log("swapState: swap order request sent ", swapState)
+        log("swapState: swap order request sent ", swap.status)
 
         if(fIndex === 0) {
           const network = swap.secretSeeker.network['@type'].toLowerCase();
@@ -617,7 +602,7 @@ export const SwapCreate = () => {
             />
         </Grid>
         <Grid>
-          { (nodeConnected && walletConnected && ableToSwap)
+          { (nodeConnected && walletConnected)
               ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
                 ? <>
                     { (ASSET_TYPES[baseAsset].isNFT==false && ASSET_TYPES[quoteAsset].isNFT==false) ?  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p> :
