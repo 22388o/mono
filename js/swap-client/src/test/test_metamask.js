@@ -1,7 +1,17 @@
-import { remote } from 'webdriverio'
-import path from 'node:path'
-import url from 'node:url'
-import fs from 'fs';
+import webdriver from "selenium-webdriver";
+import chrome from 'selenium-webdriver/chrome.js';
+
+const options = new chrome.Options();
+options.setLoggingPrefs({
+  browser: 'ALL'
+});
+options.addArguments('--enable-logging');
+options.addArguments("--log-level=0");
+options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
+options.addArguments("--profile-directory=Profile 1");
+
+const By = webdriver.By; 
+const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -10,45 +20,56 @@ const wait = (t) => {
 }
 
 
-//console.log(extPath);
-const aaa = "file:///Users/dev/Documents/nkbihfbeogaeaoehlefnkodbefgpgknn-10.33.1-Crx4Chrome.com.crx";
-const chromeExtension = (await fs.readFile(aaa, () => {})).toString('base64')
+async function main() {
+  await driver.navigate().to("http://localhost:5173");
+  
+  let res = await driver.findElement(By.className('connect-ethereum'));
+  await res.click();
 
+  let connectLightning = await driver.findElement(By.id('connect-metamask'));
+  await connectLightning.click();
 
-const browser = await remote({
-    capabilities: {
-        browserName: 'chrome',
-        'goog:chromeOptions': {
-            args: [
-              '--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome/', 
-              '--profile-directory=Profile 1',
-              //'--load-extension=/Users/dev/Library/Application\ Support/Google/Chrome/Profile 1/Extensions/nkbihfbeogaeaoehlefnkodbefgpgknn/10.33.1_0'
-            ],
-            extensions: [chromeExtension]
-        }
-    }
-})
+  await wait(2000);
 
-await browser.url('http://localhost:5173')
+  let windows = await driver.getAllWindowHandles();
+  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
-const conEthBtn = await browser.$('.connect-ethereum');
-await conEthBtn.click();
+  //Unisat control
+  const pwdInput = await driver.findElement(By.tagName('input'));
+  await pwdInput.sendKeys('TESTPW123');
 
-await wait(2000);
+  const buttons = await driver.findElements(By.tagName('button'));
+  await buttons[0].click();
 
-let connectMetamask = await browser.$('#connect-metamask');
-console.log(await connectMetamask.getText());
-await connectMetamask.click();
+  await wait(2000);
 
-await wait(5000);
+  windows = await driver.getAllWindowHandles();
+  if(windows.length === 1) {
+    console.log('Metamask Wallet Connected!');
+  }
+  else {
+    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
 
-let windows = await browser.getWindowHandles();
-await browser.switchToWindow(windows[1]);
+    let footer = await driver.findElement(By.className('page-container__footer'));
+    let approveBtn = await footer.findElements(By.tagName('button'));
+    await approveBtn[1].click();
 
-await wait(5000);
-const pwdInput = await browser.$('#password');
-await pwdInput.sendKeys('TESTPW123');
+    footer = await driver.findElement(By.className('page-container__footer'));
+    approveBtn = await footer.findElements(By.tagName('button'));
+    await approveBtn[1].click();
+    console.log('Metamask Wallet Connected!');
 
+    await wait(1000);
+  }
 
-await browser.deleteSession()
+  const logs = await driver.manage().logs().get('browser');
+  const idxLog = logs.findIndex(log => log.message.indexOf("Metamask Wallet Connected") >= 0);
+  if(idxLog >= 0) {
+    console.log('Address Detected');
+    console.log(logs[idxLog].message);
+  }
 
+  await driver.switchTo().window(windows[0]);
+}
+
+main();

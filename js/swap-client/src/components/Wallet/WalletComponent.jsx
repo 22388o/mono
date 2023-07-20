@@ -161,6 +161,7 @@ export const WalletComponent = () => {
       setWalletModalOpen(false);
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: accounts[0]});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: balance});
+      console.log('Metamask Wallet Connected: ', accounts);
     }
   }
 
