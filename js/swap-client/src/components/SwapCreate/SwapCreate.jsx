@@ -587,7 +587,7 @@ export const SwapCreate = () => {
             limitOrder={limitOrder}
           />
           <Divider style={{borderColor:'#202020',marginTop:'0.5em'}} />
-          <IconButton className={styles.exchange} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
+          <IconButton className={`${styles.exchange} exchange`} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
           <SwapAmountItem
             className='mt-m1 mb-0'
             assetId={quoteAsset}
