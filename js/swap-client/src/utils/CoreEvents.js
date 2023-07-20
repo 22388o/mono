@@ -8,7 +8,7 @@ import { EventEmitter } from 'events'
  * Exports an implementation of a client
  * @type {Client}
  */
-class CommonClient extends EventEmitter {
+class CoreEvents extends EventEmitter {
   /**
    * Creates a new instance of Client
    * @param {Object} props Properties of the client

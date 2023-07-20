@@ -5,13 +5,13 @@
 'use strict'
 
 import { Buffer } from 'buffer'
-import CommonClient from './CommonClient'
+import CoreEvents from './CoreEvents'
 
  /**
   * Exports an implementation of a client
   * @type {Client}
   */
-export default class Client extends CommonClient {
+export default class Client extends CoreEvents {
    /**
     * Creates a new instance of Client
     * @param {Object} props Properties of the client
