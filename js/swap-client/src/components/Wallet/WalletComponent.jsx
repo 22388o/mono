@@ -1,5 +1,5 @@
 import React, { useEffect, useSyncExternalStore } from 'react';
-import { Box, Button, ButtonGroup, Divider, Grid, Stack, IconButton, TextField } from '@mui/material';
+import { Box, Button, ButtonGroup, Divider, Grid, Stack, IconButton, TextField, Input } from '@mui/material';
 import { WalletItem } from './WalletItem';
 import styles from '../../styles/wallet/WalletComponent.module.css';
 import { useState } from 'react';
@@ -34,6 +34,7 @@ export const WalletComponent = () => {
   const [walletConnectModalOpen, setWalletConnectModalOpen] = useState(false);
   const [isBtcWalletConnected, setIsBtcWalletConnected] = useState(false);
   const [btcAddrs, setBtcAddrs] = useState(null);
+  const [curInputCredsType, setCurInputCredsType] = useState(-1);
   
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const NFT_COUNT = getAvailableNFTCount(globalWallet);
@@ -128,6 +129,23 @@ export const WalletComponent = () => {
       setExpireSec(expireSec => expireSec - 1);
     }, 1000);
     setTimerId(id);
+  }
+
+  const onSetCredentials = () => {
+    if (curInputCredsType === 1) {
+      walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
+      walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
+      setIsBtcWalletConnected(true);
+      //setBtcAddrs(response);
+    } else if (curInputCredsType === 2) {
+      setIsBtcWalletConnected(true);
+      walletStore.dispatch({ type: 'SET_LIGHTNING_DATA', payload: getAlice().lightning});
+      walletStore.dispatch({ type: 'SET_LIGHTNING_BALANCE', payload: 1000});
+    } else if (curInputCredsType === 3) {
+      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: getAlice().lightning});
+      walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
+    }
+    setCurInputCredsType(0);
   }
 
   const onConnectMetamask = async () => {
@@ -282,7 +300,10 @@ export const WalletComponent = () => {
             <Grid item container direction='row' spacing={1} className='flex-vh-center'>
               <Grid item xs={4}><h4>L1 Network</h4></Grid>
               { !isBtcWalletConnected 
-                ? <Grid item xs={8} textAlign='right'><Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button></Grid>
+                ? <Grid item xs={8} textAlign='right' spacing={1}>
+                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button>
+                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(1)}>Input Creds</Button>
+                  </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
                     <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(1)}>Simulate</Button> </Grid>
@@ -292,7 +313,10 @@ export const WalletComponent = () => {
             <Grid item container direction='row' spacing={1} className='flex-vh-center'>
               <Grid item xs={4}><h4>Lightning</h4></Grid>
               { !assets[2].connected 
-                ? <Grid item xs={8} textAlign='right'><Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button></Grid>
+                ? <Grid item xs={8} textAlign='right' spacing={1}>
+                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button>
+                    <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(2)}>Input Creds</Button>
+                  </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
                     <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(0)}>Simulate</Button> </Grid>
@@ -339,6 +363,28 @@ export const WalletComponent = () => {
               <img style={{borderRadius:'5px'}} width={32} src='https://seeklogo.com/images/W/walletconnect-logo-EE83B50C97-seeklogo.com.png' />
               <h5 className='ml-1'>Wallet Connect</h5>
             </Grid>
+            <Grid item container direction='row' className={styles['eth-con-col2']} onClick={() => setCurInputCredsType(3)}>
+              <h5 className='ml-1'>Input Creds</h5>
+            </Grid>
+          </Grid>
+        </Grid>
+      </MyModal>
+
+      <MyModal open={curInputCredsType > 0}>
+        <Grid container direction='column' spacing={2}>
+          <Grid item container direction='row'>
+            <Grid item xs={1} textAlign='center'>
+            </Grid>
+            <Grid container direction='row' item xs={10} textAlign='center' width={250} className='flex-vh-center'>
+              <h4>Input Credentials</h4>
+            </Grid>
+            <Grid item xs={1} textAlign='center'>
+              <IconButton onClick={e => setCurInputCredsType(0)} ><Close /></IconButton>
+            </Grid>
+          </Grid>
+          <Grid item container direction='column' className='flex-vh-center' spacing={2}>
+            <textarea className={styles['credentials-input']} />
+            <Button circular="true" secondary="true" className={`w-100 mt-1 ${styles['gradient-border-btn']}`} onClick={onSetCredentials}>Set</Button>
           </Grid>
         </Grid>
       </MyModal>

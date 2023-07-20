@@ -21,7 +21,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
         <Stack direction='row' spacing={1}>
           <RotateLeftIcon />
           <Stack direction='column' textAlign='left'>
-            <span>{ SWAP_STATUS[activity.status] }</span>
+            <span className='activity_status'>{ SWAP_STATUS[activity.status] }</span>
             <span className='grey'>{ getStringFromDate(activity.createdDate) }</span>
             { activity.status === 5 && activity.hash.slice(0, 20) + '...'  }
           </Stack>
