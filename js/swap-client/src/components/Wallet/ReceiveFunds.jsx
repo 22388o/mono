@@ -24,6 +24,8 @@ export const ReceiveFunds = () => {
   const [nftChain, setNftChain] = useState('');
   const [otherModalOpen, setOtherModalOpen] = useState(false);
   const [qrData, setQrData] = useState('');
+  const [timeLeft, setTimeLeft] = useState(86400);
+  const [timerId, setTimerId] = useState(-1);
 
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const receivingProcess = globalWallet.receivingProcess;
@@ -64,6 +66,16 @@ export const ReceiveFunds = () => {
         });
 
       }, 1000);
+    }
+    if(receivingProcess === 3) {
+      if(timerId != -1) clearInterval(timerId);
+      setTimeLeft(86400);
+      const id = setInterval(() => {
+        if(timeLeft === 1) clearInterval(timerId);
+        setTimeLeft(timeLeft => timeLeft - 1);
+      }, 1000);
+
+      setTimerId(id);
     }
   }, [receivingProcess]);
 
@@ -135,7 +147,7 @@ export const ReceiveFunds = () => {
             <h5 style={{color:'grey'}}>Lightning Invoice</h5>
           </Grid>
           <Grid textAlign='center'>
-            <h5 style={{overflowWrap: 'anywhere',width:'450px',margin:'auto',textAlign:'center'}}>LNBC10U1P3PJ257PP5YZTKWJCZ5FTL5LAXKAV23ZMZEKAW37ZK6KMV80PK4XAEV5QHTZ7QDPDWD3XGER9WD5KWM36YPRX7U3QD36KUCMGYP282ETNV3SHJCQZPGXQYZ5VQSP5USYC4LK9CHSFP53KVCNVQ456GANH60D89REYKDNGSMTJ6YW3NHVQ9QYYSSQJCEWM5CJWZ4A6RFJX77C490YCED6PEMK0UPKXHY89CMM7SCT66K8GNEANWYKZGDRWRFJE69H9U5U0W57RRCSYSAS7GADWMZXC8C6T0SPJAZUP6</h5>
+            <h5 style={{overflowWrap: 'anywhere',width:'450px',margin:'auto',textAlign:'left'}}>LNBC10U1P3PJ257PP5YZTKWJCZ5FTL5LAXKAV23ZMZEKAW37ZK6KMV80PK4XAEV5QHTZ7QDPDWD3XGER9WD5KWM36YPRX7U3QD36KUCMGYP282ETNV3SHJCQZPGXQYZ5VQSP5USYC4LK9CHSFP53KVCNVQ456GANH60D89REYKDNGSMTJ6YW3NHVQ9QYYSSQJCEWM5CJWZ4A6RFJX77C490YCED6PEMK0UPKXHY89CMM7SCT66K8GNEANWYKZGDRWRFJE69H9U5U0W57RRCSYSAS7GADWMZXC8C6T0SPJAZUP6</h5>
           </Grid>
           <Grid textAlign='center'>
             <Button
@@ -155,7 +167,7 @@ export const ReceiveFunds = () => {
           <Divider style={{margin:'1em',borderColor:'grey'}}/>
           <Grid item style={{display:'flex',justifyContent:'space-between'}}>
             <span><h5>Expiration</h5></span>
-            <span><h5>23:59:59</h5></span>
+            <span><h5>{Math.floor(timeLeft / 60 / 60)}:{Math.floor(timeLeft % 3600 / 60)}:{timeLeft % 60}</h5></span>
           </Grid>
         </> }
 

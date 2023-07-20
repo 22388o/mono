@@ -11,7 +11,7 @@ export const AssetItem = ({ asset, handleClick }) => {
         { asset.type && <span><h5 style={{fontSize:'0.8em',color:'grey'}}>{asset.type}</h5></span> }
       </Grid>
       <Grid item xs={5.5} textAlign='right' alignItems='center'>
-        {asset.amount}<span style={{color:'grey',fontSize:'0.7em'}}>{asset.type && asset.type.toLowerCase()}</span><NavigateNextIcon />
+        {asset.amount}<span style={{color:'grey',fontSize:'0.7em'}}>{asset.type && asset.type.toUpperCase()}</span><NavigateNextIcon />
       </Grid>
     </Grid>
   );

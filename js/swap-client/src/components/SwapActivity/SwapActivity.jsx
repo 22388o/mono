@@ -1,10 +1,9 @@
 import React, { useSyncExternalStore } from 'react';
 import { Box, Grid, Stack, Divider } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
 import styles from '../../styles/SwapActivity.module.css';
-import { SWAP_STATUS } from '../../utils/helpers';
+import { log } from '../../utils/helpers';
 import { ActivityDetailModal } from './ActivityDetailModal';
 import { activitiesStore } from '../../syncstore/activitiesstore';
 
@@ -17,7 +16,7 @@ export const SwapActivity = () => {
   const onShowDetails = (index) => {
     setShowIndex(index);
     setOpen(true);
-    console.log("this is activities item : " + showIndex);
+    log("this is activities item : ", showIndex);
   };
   
   const onItemClick = (index) => {

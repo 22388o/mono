@@ -6,6 +6,7 @@
 
 import { Buffer } from 'buffer'
 import { EventEmitter } from 'events'
+import { log } from './helpers'
 
  /**
   * Exports an implementation of a client
@@ -128,8 +129,7 @@ export default class Client extends EventEmitter {
     //     quoteNetwork: order.quoteNetwork,
     //     quoteQuantity: order.quoteQuantity
     //   })
-    console.log("order received in submitLimitOrder")
-    console.log(order)
+    log("order received in submitLimitOrder", order, 'client');
 
     return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
@@ -329,7 +329,6 @@ export default class Client extends EventEmitter {
     */
   _onMessage (msg) {
     let dat = JSON.parse(msg.data);
-    console.log(dat);
     this.emit(dat.status, dat.data);
 
     /*try {

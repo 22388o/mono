@@ -8,12 +8,6 @@ export const ConnectionComponent = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
   const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
   const [swapActivities, setSwapActivities] = useState(activities);
-  const log = (message, obj, debug = true) => {
-    if (debug) {
-     console.log(message)
-     console.log(obj)
-    }
-  }
 
   const logOut = () => {
     //dispatch(signOut());

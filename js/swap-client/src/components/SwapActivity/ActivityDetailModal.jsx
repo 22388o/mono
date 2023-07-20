@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MyModal } from '../MyModal/MyModal';
 import { Button, Divider, Grid, IconButton, Input } from '@mui/material';
 import { CheckCircle, Close, West } from '@mui/icons-material';
-import { SWAP_STATUS } from '../../utils/helpers';
+import { SWAP_STATUS, log } from '../../utils/helpers';
 import QRCode from 'qrcode';
 
 export const ActivityDetailModal = ({ open, handleClose, activity }) => {
@@ -11,8 +11,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
 
   useEffect(() => {
     if(activity.paymentAddress) {
-      console.log("paymentAddress update");
-      console.log(activity.paymentAddress);
+      log("paymentAddress update", activity.paymentAddress, 'Activity');
       QRCode.toDataURL(activity.paymentAddress)
       .then(url => {
         setQrData(url)
@@ -24,8 +23,6 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
     }
   }, [activity.paymentAddress, activity.tx]);
 
-
-  console.log(activity);
   return <MyModal open={open}>
     <Grid container direction='column' spacing={1}>
       <Grid item container direction='row' style={{minWidth:400}}>
