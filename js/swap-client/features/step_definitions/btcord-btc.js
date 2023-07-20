@@ -22,17 +22,17 @@ const wait = (t) => {
   })
 }
 
-Given('Alice browser is opened', {timeout: 10000}, async () => {
+Given('Alice browser is opened - F1', {timeout: 10000}, async () => {
   alice = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
   await alice.navigate().to("http://localhost:5173")
 });
 
-Given('Bob browser is opened', {timeout: 10000}, async () => {
+Given('Bob browser is opened - F1', {timeout: 10000}, async () => {
   bob = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
   await bob.navigate().to("http://localhost:5173")
 });
 
-When('Alice clicks on login', {timeout: 10000}, async () => {
+When('Alice clicks on login - F1', {timeout: 10000}, async () => {
   let res = await alice.findElement(By.id('connect-wallet'));
   await res.click();
   
@@ -46,7 +46,7 @@ When('Alice clicks on login', {timeout: 10000}, async () => {
   await wait(500);
 });
 
-When('Bob clicks on login', {timeout: 10000}, async () => {
+When('Bob clicks on login - F1', {timeout: 10000}, async () => {
   let res = await bob.findElement(By.id('connect-wallet'));
   await res.click();
   
@@ -60,51 +60,74 @@ When('Bob clicks on login', {timeout: 10000}, async () => {
   await wait(500);
 });
 
-Then('Alice logs in', async () => {
+Then('Alice logs in - F1', async () => {
   const logs = await alice.manage().logs().get('browser');
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
   assert.ok(idxLog >= 0, 'Alice is not logged in');
 })
 
-Then('Bob logs in', async () => {
+Then('Bob logs in - F1', async () => {
   const logs = await bob.manage().logs().get('browser');
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
   assert.ok(idxLog >= 0, 'Bob is not logged in');
 });
 
-Given('Alice & Bob is logged in', () => {
+Given('Alice & Bob is logged in - F1', () => {
   return 'success';
 });
 
-When('Alice creates an order from BTC to ETH', {timeout: 100000}, async() => {
+When('Alice creates an order from BTCORD to BTC - F1', {timeout: 100000}, async() => {
   
+  //Quantity Inputs
+  let btcAsset = await alice.findElement(By.className('coin-select'));
+  await btcAsset.click();
+
+  await wait(500);
+  let modal = await alice.findElement(By.className('modal-container'));
+  let items = await modal.findElements(By.className('asset-item'));
+  await items[4].click();
+
+  let collModal = await alice.findElement(By.className('modal-container'));
+  let ordinals = await collModal.findElements(By.className('nft-card'));
+  await wait(200);
+  await ordinals[0].click();
+
   //Quantity Inputs
   let inputs = await alice.findElements(By.className('qty-input'));
   await inputs[0].sendKeys('1');
-  await inputs[1].sendKeys('2');
 
   await wait(500);
   //Swap Button Click
   let swapBtn = await alice.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
   await swapBtn.click();
 
-  await wait(1500);
+  await wait(2500);
 
   let activityList = await alice.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
 });
 
-When('Bob creates an order from ETH to BTC', {timeout: 100000}, async () => {
+When('Bob creates an order from BTC to BTCORD - F1', {timeout: 100000}, async () => {
 
-  let excBtn = await bob.findElement(By.className('exchange'));
-  await excBtn.click();
-   
-  
+  //Quantity Inputs
+  let btcAssets = await bob.findElements(By.className('coin-select'));
+  await btcAssets[1].click();
+
+  await wait(500);
+  let modal = await bob.findElement(By.className('modal-container'));
+  let items = await modal.findElements(By.className('asset-item'));
+  await items[4].click();
+ 
+  await wait(500);
+  let collModal = await bob.findElement(By.className('modal-container'));
+  let ordinals = await collModal.findElements(By.className('nft-card'));
+  await wait(200);
+  await ordinals[0].click();
+
   //Quantity Inputs
   let inputs = await bob.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('2');
-  await inputs[1].sendKeys('1');
+  await inputs[0].sendKeys('1');
 
   await wait(500);
   //Swap Button Click
@@ -118,7 +141,7 @@ When('Bob creates an order from ETH to BTC', {timeout: 100000}, async () => {
   await activities[0].click();
 });
 
-Then('Swap fills and completes', {timeout: 100000}, async () => {
+Then('Swap fills and completes - F1', {timeout: 100000}, async () => {
   await wait(10000);
   alice.quit();
   bob.quit();

@@ -1,5 +1,5 @@
 Feature: Perform BTC to ETH swap
-  We want to check if we can perform BTC-ETH swap 
+  We want to test if we can perform BTC-ETH swap 
 
   Scenario: Alice & Bob logs in
     Given Alice browser is opened
