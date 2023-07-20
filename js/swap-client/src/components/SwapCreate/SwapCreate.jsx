@@ -425,6 +425,7 @@ export const SwapCreate = () => {
         baseAsset: args.base.asset.split('-')[0],
         baseNetwork: args.base.network,
         baseQuantity: 4000,
+        baseInfo: ASSET_TYPES[baseAsset].info, 
         quoteAsset: args.quote.asset.split('-')[0],
         quoteNetwork: args.quote.network,
         quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),

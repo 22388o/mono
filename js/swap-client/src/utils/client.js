@@ -326,9 +326,11 @@ export default class Client extends EventEmitter {
     * @returns {Void}
     */
   _onMessage (msg) {
-    let event, arg
+    let dat = JSON.parse(msg.data);
+    console.log(dat);
+    this.emit(dat.status, dat.data);
 
-    try {
+    /*try {
       arg = JSON.parse(msg.data)
       event = (arg['@type'] != null && arg.status != null)
          ? `${arg['@type'].toLowerCase()}.${arg.status}`
@@ -339,6 +341,6 @@ export default class Client extends EventEmitter {
     } finally {
       this.emit('log', 'info', event, arg)
       this.emit(event, arg)
-    }
+    }*/
   }
  }
