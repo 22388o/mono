@@ -125,6 +125,8 @@ export const WalletComponent = () => {
   const onNodeModalOpenClick = () => {
     setNodeModalOpen(true);
 
+    clearInterval(timerId);
+    setExpireSec(10);
     const id = setInterval(() => {
       setExpireSec(expireSec => expireSec - 1);
     }, 1000);

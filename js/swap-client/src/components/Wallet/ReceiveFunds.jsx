@@ -15,6 +15,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { AddOtherAssetsModal } from './AddOtherAssetsModal';
 import QRCode from 'qrcode';
 import { walletStore } from '../../syncstore/walletstore';
+import { userStore } from '../../syncstore/userstore';
 
 export const ReceiveFunds = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,6 +28,7 @@ export const ReceiveFunds = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const receivingProcess = globalWallet.receivingProcess;
   const assetTypes = getMinimizedAssets(globalWallet);
+  const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
 
   useEffect(() => {
     QRCode.toDataURL('LNBC10U1P3PJ257PP5YZTKWJCZ5FTL5LAXKAV23ZMZEKAW37ZK6KMV80PK4XAEV5QHTZ7QDPDWD3XGER9WD5KWM36YPRX7U3QD36KUCMGYP282ETNV3SHJCQZPGXQYZ5VQSP5USYC4LK9CHSFP53KVCNVQ456GANH60D89REYKDNGSMTJ6YW3NHVQ9QYYSSQJCEWM5CJWZ4A6RFJX77C490YCED6PEMK0UPKXHY89CMM7SCT66K8GNEANWYKZGDRWRFJE69H9U5U0W57RRCSYSAS7GADWMZXC8C6T0SPJAZUP6')
@@ -54,9 +56,10 @@ export const ReceiveFunds = () => {
           console.log({invoice});
           console.log('Invoice:', invoice);
           setInvoiceHash(invoice.invoices[0].createInvoice.request);
-        walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: 3 });
+          walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: 3 });
         })
         .catch((error) => {
+          walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: 3 });
           console.error('Error:', error.message);
         });
 
@@ -79,7 +82,7 @@ export const ReceiveFunds = () => {
       <Grid container direction='column' spacing={1}>
         <Grid item container direction='row'>
           <Grid item xs={1} textAlign='center' onClick={() => 
-          dispatch(setReceivingProcess(receivingProcess == 3 ? receivingProcess - 2 : receivingProcess - 1)) }>
+                dispatch(setReceivingProcess(receivingProcess == 3 ? receivingProcess - 2 : receivingProcess - 1)) }>
             <IconButton><West /></IconButton>
           </Grid>
           <Grid item xs={10} textAlign='center' width={receivingProcess < 3 ? 250 : 350}>
@@ -123,7 +126,7 @@ export const ReceiveFunds = () => {
               <h4>&nbsp;{ CHAIN_INFO['ETH'].name }</h4>
             </Grid>
             <Grid item xs={7} textAlign='right'>
-              <h3>{wallet.balance}</h3>
+              <h3>{selAsset.balance}</h3>
             </Grid>
           </Grid>
           <Grid textAlign='center'>
