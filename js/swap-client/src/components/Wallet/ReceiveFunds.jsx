@@ -81,8 +81,7 @@ export const ReceiveFunds = () => {
     <MyModal open={modalOpen}>
       <Grid container direction='column' spacing={1}>
         <Grid item container direction='row'>
-          <Grid item xs={1} textAlign='center' onClick={() => 
-                dispatch(setReceivingProcess(receivingProcess == 3 ? receivingProcess - 2 : receivingProcess - 1)) }>
+          <Grid item xs={1} textAlign='center' onClick={() => walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: (receivingProcess == 3 ? receivingProcess - 2 : receivingProcess - 1) }) }>
             <IconButton><West /></IconButton>
           </Grid>
           <Grid item xs={10} textAlign='center' width={receivingProcess < 3 ? 250 : 350}>
