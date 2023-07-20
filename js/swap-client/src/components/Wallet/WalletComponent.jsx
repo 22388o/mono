@@ -380,7 +380,7 @@ export const WalletComponent = () => {
                   </Grid>
                 : <>
                     <Grid item xs={4}>Connected </Grid>
-                    <Grid item xs={4}><Button color='primary' variant='contained' onClick={() => onPaymentSimulate(true)}>Simulate</Button> </Grid>
+                    <Grid item xs={4}><Button color='primary' className='simulate-l1' variant='contained' onClick={() => onPaymentSimulate(true)}>Simulate</Button> </Grid>
                   </>
               }
             </Grid>
