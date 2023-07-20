@@ -41,7 +41,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
       { !asset.isNFT
           ? <Grid item xs={7} container direction='column' textAlign='left'>
               <input 
-                className={styles['qty-input']} 
+                className={`${styles['qty-input']} qty-input`} 
                 placeholder={availQty} 
                 type='number' 
                 value={(amount===0)?'':amount} 
@@ -59,7 +59,7 @@ export const SwapAmountItem = ({assetId, amount, className, onAmountChange, unit
             </Grid>
       }
       <Grid item xs={5} textAlign='right'>
-        <Button className={styles['coin-select']} onClick={() => setAssetStep(1)}><img src={asset.img_url} />{ asset.type.split('-')[0] }</Button>
+        <Button className={`${styles['coin-select']} coin-select`} onClick={() => setAssetStep(1)}><img src={asset.img_url} />{ asset.type.split('-')[0] }</Button>
       </Grid>
     </Grid>
     <MyModal open={assetStep === 1}>

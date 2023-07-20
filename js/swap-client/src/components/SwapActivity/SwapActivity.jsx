@@ -26,7 +26,7 @@ export const SwapActivity = () => {
   
   return (
     <>
-      <Box className={styles.activitiesContainer}>
+      <Box className={`${styles.activitiesContainer} activitiesContainer`}>
         <Stack spacing={3}>
           <Grid className={styles.activitiesHeader}>
             <h3>Activity</h3>

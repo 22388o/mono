@@ -18,7 +18,7 @@ export const ActivityItem = ({ activity, index, handleClick }) => {
   }, [activity, walletStore, activitiesStore]);
 
   return (
-    <Grid container direction='row' style={{marginTop:0}} className={styles['activity-item']} onClick={handleClick}>
+    <Grid container direction='row' style={{marginTop:0}} className={`${styles['activity-item']} activity-item`} onClick={handleClick}>
       <Grid container item xs={7}>
         <Stack direction='row' spacing={1}>
           <RotateLeftIcon />

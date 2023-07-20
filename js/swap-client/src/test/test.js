@@ -28,21 +28,24 @@ async function main(){
   
   
   //Quantity Inputs
-  let btcAsset = await driver.findElement(By.className('_coin-select_q71br_43'));
+  let btcAsset = await driver.findElement(By.className('coin-select'));
   await btcAsset.click();
 
   await wait(500);
   let modal = await driver.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('css-1f064cs-MuiGrid-root'));
+  let items = await modal.findElements(By.className('asset-item'));
   await items[4].click();
- 
+/*
+  const logs = await driver.manage().logs().get(webdriver.logging.BROWSER);
+  console.log(logs);
+ */
   let collModal = await driver.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('css-1y066f1-MuiGrid-root'));
+  let ordinals = await collModal.findElements(By.className('nft-card'));
   await wait(200);
   await ordinals[0].click();
 
   //Quantity Inputs
-  let inputs = await driver.findElements(By.className('_qty-input_q71br_9'));
+  let inputs = await driver.findElements(By.className('qty-input'));
   await inputs[0].sendKeys('1');
 
   await wait(500);
@@ -52,8 +55,8 @@ async function main(){
 
   await wait(1500);
 
-  let activityList = await driver.findElement(By.className('_activitiesContainer_15woq_1'));
-  let activities = await activityList.findElements(By.className('_activity-item_13o1e_25'));
+  let activityList = await driver.findElement(By.className('activitiesContainer'));
+  let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
 }
 
@@ -78,22 +81,22 @@ async function main2(){
   
   
   //Quantity Inputs
-  let btcAssets = await driver1.findElements(By.className('_coin-select_q71br_43'));
+  let btcAssets = await driver1.findElements(By.className('coin-select'));
   await btcAssets[1].click();
 
   await wait(500);
   let modal = await driver1.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('css-1f064cs-MuiGrid-root'));
+  let items = await modal.findElements(By.className('asset-item'));
   await items[4].click();
  
   await wait(500);
   let collModal = await driver1.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('css-1y066f1-MuiGrid-root'));
+  let ordinals = await collModal.findElements(By.className('nft-card'));
   await wait(200);
   await ordinals[0].click();
 
   //Quantity Inputs
-  let inputs = await driver1.findElements(By.className('_qty-input_q71br_9'));
+  let inputs = await driver1.findElements(By.className('qty-input'));
   await inputs[0].sendKeys('1');
 
   await wait(500);
@@ -103,8 +106,8 @@ async function main2(){
  
   await wait(1500);
 
-  let activityList = await driver1.findElement(By.className('_activitiesContainer_15woq_1'));
-  let activities = await activityList.findElements(By.className('_activity-item_13o1e_25'));
+  let activityList = await driver1.findElement(By.className('activitiesContainer'));
+  let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
  
 }
