@@ -31,7 +31,7 @@ class CoreEvents extends EventEmitter {
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
     this.apiVersion = props.apiVersion;
-    this.pathname = props.pathname || `/api/v${this.apiVersion}/updates`
+    this.pathname = props.pathname || `/api/v1/updates`
     this.credentials = props.credentials
     this.websocket = null
 
