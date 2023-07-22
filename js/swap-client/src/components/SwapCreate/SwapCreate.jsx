@@ -120,7 +120,7 @@ export const SwapCreate = () => {
       if((fBase == 0 && pair.base === pair.seeker) || (fBase == 1 && pair.base === pair.holder)) curUser = swap.secretSeeker;
       if((fBase == 1 && pair.base === pair.seeker) || (fBase == 0 && pair.base === pair.holder)) curUser = swap.secretHolder;
 
-      fNor = (user.user.id === substrname(curUser.id) && activity.orderId === curUser.orderId);
+      fNor = (user.user.id === substrname(curUser.id) && activity.secretHash === swap.secretHash);
 
       nextSt = pair.process[pair.process.indexOf(activity.status) + 1]
       nor = fNor;
@@ -148,7 +148,9 @@ export const SwapCreate = () => {
         // }, 50);
       }
     });
-    user.user.on("swap.created", swap => {
+    user.user.on("created", swap => {
+      log("swap.created event", swap);
+      console.log(swap);
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         if(activity.status !== 1 || !fNor) return;
@@ -157,6 +159,15 @@ export const SwapCreate = () => {
         log("activity.secret", activity)
         
         if(fIndex === 0) {
+
+
+        // if(activity.status !== 1 || user.user.id !== swap.secretSeeker.id || activity.secretHash !== swap.secretSeeker.hash) return;
+        // //log("swapState: swap order request sent ", swapState)
+
+        // if(user.user.id === swap.secretSeeker.id) {
+        //   log('swap.created event received', swap)
+        //   const network = swap.secretHolder.network['@type'].toLowerCase();
+        
           const network = swap.secretHolder.network['@type'].toLowerCase();
           const credentials = user.user.credentials;
 
@@ -194,7 +205,7 @@ export const SwapCreate = () => {
       });
     });
 
-    user.user.on("swap.opening", swap => {
+    user.user.on("opening", swap => {
       activities.forEach(activity => {
         const {fNor, fBase, fIndex, fNext} = getSwapPairId(activity, swap);
         
@@ -240,7 +251,7 @@ export const SwapCreate = () => {
         }
       });
     });
-    user.user.on("swap.opened",swap => {
+    user.user.on("opened",swap => {
       activities.forEach(activity => {
         if(activity.status !== 2 || user.user.id !== swap.secretSeeker.id || activity.orderId !== swap.secretSeeker.orderId) return;
         log('swap.opened event received', swap)
@@ -253,7 +264,7 @@ export const SwapCreate = () => {
           paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
       });
     })
-    user.user.on("swap.holderPaymentPending",swap => {
+    user.user.on("holderPaymentPending",swap => {
       activities.forEach(activity => {
         
         if(activity.status !== 3 || (
@@ -273,7 +284,7 @@ export const SwapCreate = () => {
         }
       });
     })
-    user.user.on("swap.holderPaid",swap => {
+    user.user.on("holderPaid",swap => {
       activities.forEach(activity => {
         if(activity.status !== 3 || activity.orderId !== swap.secretSeeker.orderId) return;
 
@@ -300,7 +311,7 @@ export const SwapCreate = () => {
         }
       });
     });
-    user.user.on("swap.committing",swap => {
+    user.user.on("committing",swap => {
       activities.forEach(activity => {
         const fNor = (user.user.id === substrname(swap.secretHolder.id) && activity.orderId === swap.secretHolder.orderId);
 
@@ -319,7 +330,7 @@ export const SwapCreate = () => {
         }   
       });
     })
-    user.user.on("swap.committed",swap => {
+    user.user.on("committed",swap => {
       
       activities.forEach(activity => {
         let ethBal, btcBal;
@@ -430,8 +441,7 @@ export const SwapCreate = () => {
         quoteAsset: args.quote.asset.split('-')[0],
         quoteNetwork: args.quote.network,
         quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),
-        quoteInfo: ASSET_TYPES[quoteAsset].info,
-        ordinalLocation: order.ordinalLocation
+        quoteInfo: ASSET_TYPES[quoteAsset].info
       }
     ).then(data => {
       log("order opened with this response data", data);
