@@ -34,7 +34,7 @@ export default class Client extends EventEmitter {
     this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
-    this.pathname = props.pathname || '/api/v2/updates'
+    this.pathname = props.pathname || '/api/v1/updates'
     this.credentials = props.credentials
     this.websocket = null
     this.webln = null
@@ -127,11 +127,12 @@ export default class Client extends EventEmitter {
     //     baseQuantity: order.baseQuantity,
     //     quoteAsset: order.quoteAsset,
     //     quoteNetwork: order.quoteNetwork,
-    //     quoteQuantity: order.quoteQuantity
+    //     quoteQuantity: order.quoteQuantity,
+      // ordinalLocation: order.ordinalLocation
     //   })
     log("order received in submitLimitOrder", order, 'client');
 
-    return this._request('/api/v2/orderbook/limit', { method: 'PUT' }, {
+    return this._request('/api/v1/orderbook/limit', { method: 'PUT' }, {
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -140,8 +141,7 @@ export default class Client extends EventEmitter {
       baseQuantity: order.baseQuantity,
       quoteAsset: order.quoteAsset,
       quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity,
-      ordinalLocation: order.ordinalLocation
+      quoteQuantity: order.quoteQuantity
     })
   }
 
@@ -150,7 +150,7 @@ export default class Client extends EventEmitter {
     * @param {Object} order The limit order to delete the orderbook
     */
   cancelLimitOrder (order) {
-    return this._request('/api/v2/orderbook/limit', { method: 'DELETE' }, {
+    return this._request('/api/v1/orderbook/limit', { method: 'DELETE' }, {
       id: order.id,
       baseAsset: order.baseAsset,
       quoteAsset: order.quoteAsset
@@ -173,7 +173,7 @@ export default class Client extends EventEmitter {
       * @returns {Swap}
       */
     swapOpen (swap, opts) {
-      return this._request('/api/v2/swap/submarine', { method: 'PUT' }, { swap, opts })
+      return this._request('/api/v1/swap', { method: 'PUT' }, { swap, opts })
     }
 
     /**
@@ -183,7 +183,7 @@ export default class Client extends EventEmitter {
       * @returns {Promise<Void>}
       */
     swapCommit (swap, opts) {
-      return this._request('/api/v2/swap/submarine', { method: 'POST' }, { swap, opts })
+      return this._request('/api/v1/swap', { method: 'POST' }, { swap, opts })
     }
   
     /**
@@ -202,7 +202,7 @@ export default class Client extends EventEmitter {
     * @returns {Promise<Void>}
     */
   swapAbort (swap, opts) {
-    return this._request('/api/v2/swap/submarine', { method: 'DELETE' }, { swap, opts })
+    return this._request('/api/v1/swap', { method: 'DELETE' }, { swap, opts })
   }
 
 
@@ -216,9 +216,9 @@ export default class Client extends EventEmitter {
    *   - inbound - 
    *   - pendingInbound - 
    */
-  getBalance (opts) {
-    return this._request('/api/v1/channel', { method: 'POST' }, { opts })
-  }
+  // getBalance (opts) {
+  //   return this._request('/api/v1/channel', { method: 'POST' }, { opts })
+  // }
 
   // getBalance (opts) {
   //   return this._request({
