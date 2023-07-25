@@ -8,8 +8,29 @@
         },
         {
           "nodetype": "bitcoind",
-          "rpcport": 18443,
-          "wif": "cMyRQNsgKkyPa2pfvDkB8AhZ15GCnxvB8eWacB8yqZ73x1cJWm7t"
+          "rpcuser": "rpcuser2",
+          "rpcpassword": "AoB3F1U6ICRisEp0dkrWS2cw4NjrowrgUeK3r4",
+          "rpcport": 22332,
+          "wif": "cMyRQNsgKkyPa2pfvDkB8AhZ15GCnxvB8eWacB8yqZ73x1cJWm7t",
+          "test": {
+            "miner": {
+              "wallet": "miner-start"
+            },
+            "ordinal": {
+              "wallet": "alice-test",
+              "wif": "cUxzxYaexZ55MPJTpquK5DJy6uD6bu1RKdjQddFTTxnbFwYjaVTV",
+              "addresses": [
+                {
+                  "wif": "cTpTQseg8mQVUKn5pTfcuLcf9PewxgLWbPvVM7iKEY3dNZTfxkst",
+                  "p2wpkh": "bcrt1q0s0j48td6c3gl6q7uq8gsth0uc8z0egr6pm2vu"
+                },
+                {
+                  "wif": "cVXa1yrhtgaqrvQ1uEEkfpUhHXVvL9udC2Pxwg4C5ZXG71XFRM2N",
+                  "p2wpkh": "bcrt1qfe5ac66clyeul8p490xz543lqgh99dqnjn5kjy"
+                }
+              ]
+            }
+          }
         }
       ],
       "submarine": [

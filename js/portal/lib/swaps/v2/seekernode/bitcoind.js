@@ -10,7 +10,9 @@ module.exports = class Node2 extends Node {
       rpcuser: props.rpcuser,
       rpcpassword: props.rpcpassword,
       rpcport: props.rpcport,
-      wif: props.wif
+      wif: props.wif,
+      mode: props.mode,
+      host: props.host
     }
   }
 }

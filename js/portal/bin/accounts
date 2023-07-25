@@ -19,6 +19,14 @@ const wallets = [
   { "bob": {
         "mnemonic": "come plastic first ginger sign nephew clever april salt banner monkey relief",
         "passphrase": { "regtest": "", "testnet": "", "mainnet": "" }
+  }},
+  { "alice-test": {
+        "mnemonic": "theme gallery agree spell team control velvet window voice borrow across report",
+        "passphrase": { "regtest": "", "testnet": "", "mainnet": "" }
+  }},
+  { "miner": {
+      "mnemonic": "become divide grief real garden stick lecture proof aisle relax mixture flower",
+      "passphrase": { "regtest": "", "testnet": "", "mainnet": "" }
   }}
 ]
 
@@ -45,10 +53,18 @@ wallets.forEach((walletInfo, walletIndex) => {
     let xpub = master.neutered().toBase58()
     let pubKeyFingerprint = bitcoin.crypto.hash160(master.publicKey).slice(0, 4).toString('hex')
 
+    const keyPair = master.derivePath('m/0')
+    const masterWif = master.toWIF()
+    const privateKeyBuffer = Buffer.from(keyPair.privateKey)
+    const privateKey = privateKeyBuffer.toString('hex')
+
+
     let networkNodes = {
       "master": {
         "xpub": xpub,
-        "pubKeyFingerprint": pubKeyFingerprint
+        "pubKeyFingerprint": pubKeyFingerprint,
+        "wif": masterWif,
+        "privateKey": privateKey
       }
     }
 
@@ -67,6 +83,8 @@ wallets.forEach((walletInfo, walletIndex) => {
 
       let account = master.derivePath(accountPath)
       let xpub = account.neutered().toBase58()
+      let accountPrivateKey = Buffer.from(master.privateKey).toString('hex')
+      let accountWif = account.toWIF()
 
       let addresses = []
 
@@ -78,16 +96,22 @@ wallets.forEach((walletInfo, walletIndex) => {
         let p2wpkh = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network })
         let p2wpkhAddress = p2wpkh.address
 
+        let privateKeyBuffer = Buffer.from(child.privateKey)
+        let privateKey = privateKeyBuffer.toString('hex')
+
         addresses.push({
           "wif": wif,
           "p2wpkh": p2wpkhAddress,
-          "path": path.replace("'", "'")
+          "path": path.replace("'", "'"),
+          "privateKey": privateKey
         })
       })
       let accountNodes = {
         "xpub": xpub,
         "path": accountPath.replace("'", "'"),
-        "addresses": addresses
+        "addresses": addresses,
+        "accountPrivateKey": accountPrivateKey,
+        "accountWif": accountWif
       }
 
       _.set(networkNodes, accountName, accountNodes)
@@ -103,7 +127,7 @@ wallets.forEach((walletInfo, walletIndex) => {
 
 })
 
-fs.writeFile("config/accounts.json", JSON.stringify(accounts, null, 4), (err) => {
+fs.writeFile(path.join(__dirname, "../config/accounts.json"), JSON.stringify(accounts, null, 4), (err) => {
   if (err) {  console.error(err);  return; };
   console.log("The file accounts.json has been created in the config folder");
 });

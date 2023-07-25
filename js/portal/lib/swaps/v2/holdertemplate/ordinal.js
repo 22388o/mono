@@ -4,12 +4,16 @@ const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 
 const bitcoin = require('bitcoinjs-lib')
-const NETWORK = bitcoin.networks.regtest
 const bip65 = require('bip65')
 const Client = require('bitcoin-core')
 const REQUIRED_CONFIRMATIONS = 1
 const DEFAULT_MINER_FEE = 2000
 const witnessStackToScriptWitness = require('../bitcoinjs-function/witnessStackToScriptWitness')
+const getBitcoinMode = require('../bitcoinjs-function/bitcoinMode')
+const {generate} = require("bitcoin-core/src/methods")
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 
 module.exports = class Ordinal extends HolderTemplate {
   constructor (party, node1, node2) {
@@ -22,9 +26,10 @@ module.exports = class Ordinal extends HolderTemplate {
 
     const wif = this.node2.creds.wif
     // console.log(`wif: ${wif}`)
-    const network = NETWORK
-    // console.log(`network: ${network}`)
-    const holderPair = bitcoin.ECPair.fromWIF(wif, network)
+    const mode = this.node2.creds.mode
+    // console.log(`node: ${node}`)
+    const bitcoinMode = getBitcoinMode(mode)
+    const holderPair = bitcoin.ECPair.fromWIF(wif, bitcoinMode)
     // console.log(`holderPair created`)
     const holderPublicKey = holderPair.publicKey.toString('hex')
     // console.log(`holderPublicKey: ${holderPublicKey}`)
@@ -92,20 +97,161 @@ module.exports = class Ordinal extends HolderTemplate {
     return party
   }
 
+  async commit (party, opts) {
+    // implemented only for automatic testing
+    // to replace manual payment of ordinal
+
+    const TEST_MINE_BLOCKS = 101
+    const TEST_CONFIRMATIONS = 6
+    const INITIAL_ORDINAL_PADDING = 0.0001 // in BTC
+
+    const minerWallet = this.node2.creds.test.miner.wallet
+
+    console.log('minerWallet: ', minerWallet)
+
+    const rpcuser =  this.node2.creds.rpcuser
+    const rpcpassword =  this.node2.creds.rpcpassword
+    const rpcport = this.node2.creds.rpcport
+
+    const alice = new Client({
+      host: this.node2.creds.host,
+      port: rpcport,
+      password: rpcpassword,
+      username: rpcuser,
+      network: this.node2.creds.mode
+    })
+
+    console.log("exec about to be done")
+
+    // TODO: note that the use of these exec commands are for automated testing, replacing the manual payment of an ordinal
+    // TODO: for anything used in production, let's create a secure library if existing libraries do not meet our needs as here for testing
+
+    const doMineCommand = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport} -rpcwallet=${minerWallet} -generate ${TEST_MINE_BLOCKS}`
+    const doMine = exec(doMineCommand);
+    const child = doMine.child;
+    child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const { stdout, stderr } = await doMine;
+    console.log('stdout: ', stdout)
+    console.log('stderr: ', stderr)
+
+    console.log("exec done")
+
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
+
+    const test = this.node2.creds.test
+    console.log('\ntest', JSON.stringify(test, null, 4))
+
+    const ordinal = test.ordinal
+    console.log('\ntest.ordinal', JSON.stringify(ordinal, null, 4))
+
+    const ordinalWallet = ordinal.wallet
+    console.log('ordinalWallet', ordinalWallet)
+    const ordinalWif0 = ordinal.addresses[0].wif
+    console.log('ordinalWif0', ordinalWif0)
+
+    const ordinalAddress0 = ordinal.addresses[0].p2wpkh
+    console.log('ordinalAddress0', ordinalAddress0)
+
+
+    const ordinalWif1 = ordinal.addresses[1].wif
+    console.log('ordinalWif1', ordinalWif1)
+
+    const ordinalAddress1 = ordinal.addresses[1].p2wpkh
+    console.log('ordinalAddress1', ordinalAddress1)
+
+
+    const sendToOrdinalAddress0Command = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport} -rpcwallet=${minerWallet} sendtoaddress ${ordinalAddress0} ${INITIAL_ORDINAL_PADDING}`
+    const sendToOrdinalAddress0 = exec(sendToOrdinalAddress0Command);
+    sendToOrdinalAddress0.child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const result1 = await sendToOrdinalAddress0
+    console.log('stdout sendToOrdinalAddress0: ', result1.stdout)
+    console.log('stderr sendToOrdinalAddress0: ', result1.stderr)
+
+
+    const doConfirmCommand = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport} -rpcwallet=${minerWallet} -generate ${TEST_CONFIRMATIONS}`
+    const doConfirm = exec(doConfirmCommand);
+    doConfirm.child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const result2 = await doConfirm;
+    console.log('doConfirmCommand stdout: ', result2.stdout)
+    console.log('doConfirmCommand stderr: ', result2.stderr)
+
+    const descriptorArray0 = `\"[\\"addr(${ordinalAddress0})\\"]\"`
+    console.log("descriptorArray0: ", descriptorArray0)
+    // const scantx0 = await alice.command([{ method: 'scantxoutset', parameters: ['start', descriptorArray0  ]}]) // TODO: add range
+
+    const doScan0Command = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport}  scantxoutset start ${descriptorArray0}`
+    const doScan0 = exec(doScan0Command);
+    doScan0.child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const result3 = await doScan0
+    const scantx0 = JSON.parse(result3.stdout)
+    console.log('doScan0Command stdout: ', JSON.stringify(scantx0, null, 4))
+    console.log('doScan0Command stderr: ', result3.stderr)
+    console.log('doScan0Command: ', doScan0Command)
+
+    const success0 = scantx0.success
+    if (!success0) {
+      console.log('scan for tx outputs failed')
+      return void 0
+      // TODO: throw exception?
+    }
+    const totalAmount0 = scantx0.total_amount
+    console.log("amount in ordinal address 0: ", totalAmount0)
+
+    const descriptorArray1 = `\"[\\"addr(${ordinalAddress1})\\"]\"`
+    console.log("descriptorArray1: ", descriptorArray1)
+
+    const doScan1Command = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport}  scantxoutset start ${descriptorArray1}`
+    const doScan1 = exec(doScan1Command);
+    doScan1.child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const result4 = await doScan1
+    const scantx1 = JSON.parse(result4.stdout)
+    console.log('doScan0Command stdout: ', JSON.stringify(scantx1, null, 4))
+    console.log('doScan0Command stderr: ', result4.stderr)
+    console.log('doScan0Command: ', doScan1Command)
+
+    const success1 = scantx1.success
+    if (!success1) {
+      console.log('scan for tx outputs failed')
+      return void 0
+      // TODO: throw exception?
+    }
+    const totalAmount1 = scantx1.total_amount
+    console.log("amount in ordinal address 1: ", totalAmount1)
+
+
+    return party
+
+  }
+
   async abort (party, opts) {
     const alice = new Client({
+      host: this.node2.creds.host,
       port: this.node2.creds.rpcport,
       password: this.node2.creds.rpcpassword,
       username: this.node2.creds.rpcuser
     })
 
     const wif = this.node2.creds.wif
-    const holderPair = bitcoin.ECPair.fromWIF(wif, NETWORK)
+    const holderPair = bitcoin.ECPair.fromWIF(wif, bitcoinMode)
 
-    const secretHolder_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: holderPair.publicKey, NETWORK })
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
+
+    const secretHolder_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: holderPair.publicKey, bitcoinMode })
     const secretHolder_redeemAddress = secretHolder_p2wpkh.address
 
-    const psbt = new bitcoin.Psbt({ NETWORK })
+    const psbt = new bitcoin.Psbt({ bitcoinMode })
 
     const info = await alice.command([{ method: 'getblockchaininfo', parameters: [] }])
     const height = info[0].blocks
@@ -205,6 +351,7 @@ module.exports = class Ordinal extends HolderTemplate {
     party.state.shared.transaction = transaction.toHex()
     return party
   }
+
 
   static fromProps (party, nodesProps) {
     const props1 = nodesProps[0]
