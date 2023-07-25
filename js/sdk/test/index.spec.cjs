@@ -3,7 +3,7 @@
  */
 
 const Sdk = require('../index.cjs')
-const Server = require('server')
+const Server = require('portal')
 const runSdkTests = require('./sdk.spec.cjs')
 
 runSdkTests(Sdk, Server)

@@ -3,7 +3,7 @@
 */
 
 import Sdk from '../index.mjs'
-import Server from 'server'
+import Server from 'portal'
 import runSdkTests from './sdk.spec.cjs'
 
 runSdkTests(Sdk, Server)

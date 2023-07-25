@@ -24,15 +24,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "npmlock2nix": {
-        "branch": "nin/npm-extra-args",
+        "branch": "master",
         "description": "nixify npm based packages [maintainer=@andir] ",
         "homepage": "",
-        "owner": "NinjaTrappeur",
+        "owner": "nix-community",
         "repo": "npmlock2nix",
-        "rev": "e6a156ddc001316993a994e7d1118417d0389e34",
-        "sha256": "1nsk93pdssndzx9k1apx3qhr1q7dmsg7sbx33p5rhk7452zq3k4w",
+        "rev": "9197bbf397d76059a76310523d45df10d2e4ca81",
+        "sha256": "1ddfby72fsnpn4yw43g4zxvg6jzlk5hi5cfnnccg9jgw53ckr4xh",
         "type": "tarball",
-        "url": "https://github.com/NinjaTrappeur/npmlock2nix/archive/e6a156ddc001316993a994e7d1118417d0389e34.tar.gz",
+        "url": "https://github.com/nix-community/npmlock2nix/archive/9197bbf397d76059a76310523d45df10d2e4ca81.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
