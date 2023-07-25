@@ -7,7 +7,7 @@ options.setLoggingPrefs({
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
-//options.addArguments('--headless');
+options.addArguments('--headless');
 options.addArguments('--window-size=1920,1096')
 options.addArguments('--disable-dev-shm-usage');
 

@@ -2,13 +2,15 @@ const webdriver = require("selenium-webdriver");
 const chrome = require('selenium-webdriver/chrome.js');
 const path = require('path');
 
+const projDir = path.resolve(__dirname, '../../chrome-profile')
+
 const options = new chrome.Options();
 options.setLoggingPrefs({
   browser: 'ALL'
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
-options.addArguments("--user-data-dir=/");
+options.addArguments(`--user-data-dir=${projDir}`);
 options.addArguments("--profile-directory=Profile 1");
 
 
@@ -31,10 +33,10 @@ async function main() {
 
     let connectL1 = await driver.findElement(By.id('connect-l1'));
     await connectL1.click();
-    await wait(5000);
+    await wait(500);
     await driver.switchTo().alert().accept();
 
-    await wait(20000);
+    await wait(10000);
 
     let windows = await driver.getAllWindowHandles();
     console.log(windows.length);

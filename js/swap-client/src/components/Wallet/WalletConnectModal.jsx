@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button, Divider, Grid, IconButton, Input, Stack } from '@mui/material';
 import { MyModal } from '../MyModal/MyModal';
 import { Close, West } from '@mui/icons-material';
@@ -8,9 +8,9 @@ export const WalletConnectModal = ({open, handleClose}) => {
   const [page, setPage] = useState(0);
   const [nextStep, setNextStep] = useState(false);
 
-  const onWalletTypeClicked = () => {
+  const onWalletTypeClicked = useCallback(() => {
     setNextStep(true);
-  }
+  }, []);
 
   if(nextStep === true) return (
     <MyModal open={open}>

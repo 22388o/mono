@@ -1,4 +1,4 @@
-import React, { useSyncExternalStore } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded';
 import { SwapCreate } from './SwapCreate/SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
@@ -21,17 +21,17 @@ export const SwapHome = () => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = anchorEl !== null;
-  const handleClick = (event) => {
+  const handleClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
+  }, []);
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
-  const selectUser = (user) => {
+  }, []);
+  const selectUser = useCallback((user) => {
     if (user == "alice") signInAsAlice();
     if (user == "bob") signInAsBob();
     handleClose();
-  }
+  }, []);
 
   
   // Client ws
@@ -40,7 +40,7 @@ export const SwapHome = () => {
   let aliceCred = getAlice();
   let bobCred = getBob();
   
-  const signInAsAlice = () => {
+  const signInAsAlice = useCallback(() => {
     if(wallet.connected === true)
       aliceCred.ethl2.public = wallet.data;
     else {
@@ -51,9 +51,9 @@ export const SwapHome = () => {
     userStore.dispatch({ type: 'SIGN_IN', payload: alice });
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-  }
+  }, [walletStore, aliceCred]);
   
-  const signInAsBob = () => {
+  const signInAsBob = useCallback(() => {
     if(wallet.connected === true)
       bobCred.ethl2.public = wallet.data;
     else {
@@ -64,14 +64,14 @@ export const SwapHome = () => {
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-  }
+  }, [bobCred, walletStore]);
 
-  const logOut = () => {
+  const logOut = useCallback(() => {
     userStore.dispatch({ type: 'SIGN_OUT' });
     walletStore.dispatch({ type: 'CLEAR_NODE_DATA'});
     walletStore.dispatch({ type: 'CLEAR_WALLET_DATA'});
     return Promise.all([user.user.disconnect()])
-  }
+  }, [userStore, walletStore]);
 
   return (
     <Grid container direction='column' style={{backgroundColor:'#242424'}}>
