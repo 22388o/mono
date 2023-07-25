@@ -1,0 +1,68 @@
+{
+  "name": "@portaldefi/sdk",
+  "version": "0.0.0",
+  "description": "The Portal-Defi SDK",
+  "type": "module",
+  "main": "index.cjs",
+  "module": "index.mjs",
+  "scripts": {
+    "clean": "rm -rf coverage node_modules package-lock.json",
+    "coverage": "c8 mocha",
+    "lint": "standard",
+    "lint-fix": "standard --fix",
+    "posttest": "npm run lint",
+    "test": "npm run test:cjs && npm run test:mjs",
+    "test:cjs": "mocha test/index.spec.cjs",
+    "test:mjs": "mocha test/index.spec.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "c8": "^7.12.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "puppeteer": "^20.9.0",
+    "server": "file:../portal",
+    "standard": "^17.0.0",
+    "vite": "^4.4.6"
+  },
+  "c8": {
+    "check-coverage": true,
+    "report-dir": "coverage",
+    "reporter": [
+      "html",
+      "text"
+    ]
+  },
+  "mocha": {
+    "diff": true,
+    "extension": [
+      "spec.js"
+    ],
+    "recursive": true,
+    "reporter": "spec",
+    "slow": 1000,
+    "timeout": 120000,
+    "ui": "bdd",
+    "watch-files": [
+      "lib/**/*.*js",
+      "test/**/*.*js"
+    ]
+  },
+  "standard": {
+    "globals": [
+      "after",
+      "afterEach",
+      "before",
+      "beforeEach",
+      "context",
+      "describe",
+      "expect",
+      "it"
+    ],
+    "ignore": [
+      "dist"
+    ]
+  }
+}
