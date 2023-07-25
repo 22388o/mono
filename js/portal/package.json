@@ -5,6 +5,7 @@
   "bin": {
     "portal": "bin/portal.js"
   },
+  "main": "lib/core/server.js",
   "scripts": {
     "clean": "rm -rf coverage node_modules package-lock.json",
     "coverage": "c8 mocha",
