@@ -6,7 +6,7 @@
   "main": "index.cjs",
   "module": "index.mjs",
   "scripts": {
-    "clean": "rm -rf coverage node_modules package-lock.json",
+    "clean": "rm -rf dist node_modules package-lock.json",
     "coverage": "c8 mocha",
     "lint": "standard",
     "lint-fix": "standard --fix",
@@ -22,10 +22,8 @@
     "c8": "^7.12.0",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "puppeteer": "^20.9.0",
-    "portal": "../portal",
-    "standard": "^17.0.0",
-    "vite": "^4.4.6"
+    "portal": "file:../portal",
+    "standard": "^17.0.0"
   },
   "c8": {
     "check-coverage": true,

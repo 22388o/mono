@@ -3,7 +3,7 @@
  */
 
 const { expect } = require('chai')
-const Client = require('../../lib/core/client')
+const Client = require('sdk')
 const Server = require('../../lib/core/server')
 
 before('Initialize client/server', function () {

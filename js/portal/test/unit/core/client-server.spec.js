@@ -2,10 +2,10 @@
  * @file Behavioral specification for the HTTP client and server
  */
 
-const Client = require('../../../../sdk')
 const Server = require('../../..')
 const { expect } = require('chai')
 const { join } = require('path')
+const Client = require('sdk')
 
 /**
  * Endpoints exposed by the server expected to be seen publicly

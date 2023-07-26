@@ -4,9 +4,9 @@
 
 const { expect } = require('chai')
 const { writeFileSync } = require('fs')
+const Client = require('sdk')
 const Web3 = require('web3')
 const { compile, deploy } = require('../helpers')
-const Client = require('../../lib/core/client')
 const Server = require('../../lib/core/server')
 
 before('Compile contracts', async function () {

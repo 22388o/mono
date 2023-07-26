@@ -29,10 +29,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "npmlock2nix",
-        "rev": "9197bbf397d76059a76310523d45df10d2e4ca81",
-        "sha256": "1ddfby72fsnpn4yw43g4zxvg6jzlk5hi5cfnnccg9jgw53ckr4xh",
+        "rev": "c381fd1a69c4e81a492e34863b6d98bd470af7c3",
+        "sha256": "0jnbq4fkkc2mvqx756nqh68bcs6cx3212w4nxndw1fw2v7r3c2w1",
         "type": "tarball",
-        "url": "https://github.com/nix-community/npmlock2nix/archive/9197bbf397d76059a76310523d45df10d2e4ca81.tar.gz",
+        "url": "https://github.com/nix-community/npmlock2nix/archive/c381fd1a69c4e81a492e34863b6d98bd470af7c3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

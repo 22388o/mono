@@ -8,19 +8,20 @@ let
     ../../.gitignore
     ./.gitignore
     ] ./.;
+  srcDir = ./.;
 
 in
 {
   build = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src;
+    inherit nodejs src srcDir;
     buildCommands = [ ];
     node_modules_attrs.npmExtraArgs = [ "--omit=dev" ];
     installPhase = "cp -r . $out";
   };
 
   test = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src;
-    buildCommands = [ "HOME=./ npm run test" ];
+    inherit nodejs src srcDir;
+    buildCommands = [ "HOME=./ npm test" ];
     installPhase = "cp -r . $out";
   };
 }
