@@ -1,6 +1,5 @@
 {
   "name": "swap-client",
-  "proxy": "http://localhost:34011/api",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -27,6 +26,7 @@
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.13",
+    "@portaldefi/peer": "file:../portal",
     "@portaldefi/sdk": "file:../sdk",
     "@reduxjs/toolkit": "^1.9.1",
     "@walletconnect/web3wallet": "^1.7.5",
