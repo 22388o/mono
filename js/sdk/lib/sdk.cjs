@@ -10,16 +10,16 @@ if (typeof require === 'function') {
   Websocket = require('ws');
 }
 else {
-  const events = await import('events');
+  const events = import('events');
   EventEmitter = events.EventEmitter;
-  Websocket = await import('ws');
+  Websocket = import('ws');
 }
 
 /* eslint-disable no-new-func */
 const testFn = obj => `try {return this===${obj};}catch(e){ return false;}`
 // const isBrowser = new Function(testFn('window'))
 // const isNode = new Function(testFn('global'))
-const http = (typeof require === 'function') ? require('http') : await import('http')
+const http = (typeof require === 'function') ? require('http') : import('http')
 
 /* eslint-enable no-new-func */
 
