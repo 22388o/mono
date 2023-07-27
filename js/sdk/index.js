@@ -40,10 +40,10 @@ class Sdk extends EventEmitter {
     this.pathname = props.pathname || '/api/v1/updates'
     this.credentials = props.credentials
     this.websocket = null
-    this._request = isNode()
-      ? httpRequest.bind(this)
-      : isBrowser()
-        ? httpFetch.bind(this)
+    this._request = isBrowser()
+      ? httpFetch.bind(this) 
+      : isNode()
+        ? httpRequest.bind(this)
         : function () { throw Error('unknown environment!') }
 
     Object.seal(this)
@@ -303,7 +303,10 @@ function httpFetch (args, data) {
         if (status !== 200 && status !== 400) {
           reject(new Error(`unexpected status code ${status}`))
         } else if (!contentType.startsWith('application/json')) {
-          reject(new Error(`unexpected content-type ${contentType}`))
+          res.text()
+            .then(text => console.log(`res.text() text ${text}`))
+            .then(() => reject(new Error(`unexpected content-type ${contentType}`)))
+            .catch(reject)
         } else {
           res.json()
             .then(obj => status === 200
