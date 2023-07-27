@@ -2,9 +2,9 @@
  * @file Behavioral specification for the Portal SDK
  */
 
+const Server = require('@portaldefi/peer')
 const { expect } = require('chai')
 const Sdk = require('..')
-const Server = require('portal')
 
 describe('CommonJS Module', function () {
   let sdk = null

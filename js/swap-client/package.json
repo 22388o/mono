@@ -26,7 +26,6 @@
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.13",
-    "@portaldefi/peer": "file:../portal",
     "@portaldefi/sdk": "file:../sdk",
     "@reduxjs/toolkit": "^1.9.1",
     "@walletconnect/web3wallet": "^1.7.5",
@@ -61,6 +60,7 @@
   "devDependencies": {
     "@babel/register": "^7.22.5",
     "@cucumber/cucumber": "^9.3.0",
+    "@portaldefi/peer": "file:../portal",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
     "@vitejs/plugin-react": "^2.2.0",
