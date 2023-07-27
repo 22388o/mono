@@ -2,7 +2,7 @@
  * @file The Portal SDK
  */
 
-const { EventEmitter } = require('events')
+const { EventEmitter } = require('eventemitter3')
 const Websocket = require('ws')
 
 /* eslint-disable no-new-func */
@@ -55,14 +55,6 @@ class Sdk extends EventEmitter {
    */
   get isConnected () {
     return (this.websocket != null) && (this.websocket.readyState === 1)
-  }
-
-  /**
-   * Returns the current state of the instance
-   * @type {String}
-   */
-  [Symbol.for('nodejs.util.inspect.custom')] () {
-    return this.toJSON()
   }
 
   /**
@@ -232,12 +224,14 @@ function httpRequest (args, data) {
       hostname: this.hostname,
       port: this.port,
       headers: Object.assign(args.headers || {}, {
-        accept: 'application/json',
+        /* eslint-disable quote-props */
+        'accept': 'application/json',
         'accept-encoding': 'application/json',
-        authorization: `Basic ${Buffer.from(creds).toString('base64')}`,
+        'authorization': `Basic ${Buffer.from(creds).toString('base64')}`,
         'content-type': 'application/json',
         'content-length': Buffer.byteLength(buf),
         'content-encoding': 'identity'
+        /* eslint-enable quote-props */
       })
     }))
 
@@ -289,12 +283,14 @@ function httpFetch (args, data) {
     const buf = (data && JSON.stringify(data)) || ''
     const req = fetch(Object.assign(args, {
       headers: Object.assign(args.headers || {}, {
-        accept: 'application/json',
+        /* eslint-disable quote-props */
+        'accept': 'application/json',
         'accept-encoding': 'application/json',
-        authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
+        'authorization': `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
         'content-type': 'application/json',
         'content-length': Buffer.byteLength(buf),
         'content-encoding': 'identity'
+        /* eslint-enable quote-props */
       }),
       body: buf
     }))
@@ -320,4 +316,14 @@ function httpFetch (args, data) {
   })
 }
 
-if (typeof module !== 'undefined') module.exports = Sdk
+if (typeof module !== 'undefined') {
+  module.exports = Sdk
+
+  /**
+   * Returns the current state of the instance
+   * @type {String}
+   */
+  Sdk.prototype[Symbol.for('nodejs.util.inspect.custom')] = function () {
+    return this.toJSON()
+  }
+}
