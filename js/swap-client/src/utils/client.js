@@ -6,7 +6,7 @@
 
 import { Buffer } from 'buffer'
 import { log } from './helpers'
-import Sdk from '../../../sdk/index.mjs';
+import { Sdk } from '@portaldefi/sdk';
 
  /**
   * Exports an implementation of a client

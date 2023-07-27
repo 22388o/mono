@@ -13,9 +13,9 @@ const isNode = new Function(testFn('global'))
 
 /**
  * Exports a function that returns the Portal SDK
- * @type {Function}
+ * @type {Sdk}
  */
-module.exports = class Sdk extends EventEmitter {
+class Sdk extends EventEmitter {
   /**
    * Creates a new instance of SDK
    * @param {Object} props Properties of the SDK instance
@@ -319,3 +319,5 @@ function httpFetch (args, data) {
       .catch(reject)
   })
 }
+
+if (typeof module !== 'undefined') module.exports = Sdk

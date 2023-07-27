@@ -2,20 +2,23 @@
   "name": "@portaldefi/sdk",
   "version": "0.0.0",
   "description": "The Portal-Defi SDK",
-  "type": "module",
-  "main": "index.cjs",
-  "module": "index.mjs",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
   "scripts": {
     "clean": "rm -rf coverage node_modules package-lock.json",
     "coverage": "c8 mocha",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "test": "npm run test:cjs && npm run test:mjs",
-    "test:cjs": "mocha test/index.spec.cjs",
-    "test:mjs": "mocha test/index.spec.mjs"
+    "test": "mocha"
   },
   "dependencies": {
+    "eventemitter3": "^5.0.1",
     "ws": "^8.13.0"
   },
   "devDependencies": {
@@ -36,7 +39,8 @@
   "mocha": {
     "diff": true,
     "extension": [
-      "spec.js"
+      "spec.js",
+      "spec.mjs"
     ],
     "recursive": true,
     "reporter": "spec",
@@ -44,7 +48,7 @@
     "timeout": 120000,
     "ui": "bdd",
     "watch-files": [
-      "lib/**/*.*js",
+      "*.*js",
       "test/**/*.*js"
     ]
   },
