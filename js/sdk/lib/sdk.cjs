@@ -2,32 +2,20 @@
  * @file The Portal SDK
  */
 
-//const { EventEmitter } = require('events')
-//const Websocket = require('ws')
-let EventEmitter, Websocket;
-if (typeof require === 'function') {
-  EventEmitter = require('events').EventEmitter;
-  Websocket = require('ws');
-}
-else {
-  const events = import('events');
-  EventEmitter = events.EventEmitter;
-  Websocket = import('ws');
-}
+const { EventEmitter } = require('events')
+const Websocket = require('ws')
 
 /* eslint-disable no-new-func */
 const testFn = obj => `try {return this===${obj};}catch(e){ return false;}`
-// const isBrowser = new Function(testFn('window'))
-// const isNode = new Function(testFn('global'))
-const http = (typeof require === 'function') ? require('http') : import('http')
-
+const isBrowser = new Function(testFn('window'))
+const isNode = new Function(testFn('global'))
 /* eslint-enable no-new-func */
 
 /**
  * Exports a function that returns the Portal SDK
  * @type {Function}
  */
-class Sdk extends EventEmitter {
+module.exports = class Sdk extends EventEmitter {
   /**
    * Creates a new instance of SDK
    * @param {Object} props Properties of the SDK instance
@@ -52,18 +40,13 @@ class Sdk extends EventEmitter {
     this.pathname = props.pathname || '/api/v1/updates'
     this.credentials = props.credentials
     this.websocket = null
-    this.apiVersion = props.apiVersion
-
-    this.on('log', (level, ...args) => console[level](...args))
-
-    this.emit('log', 'info', 'message', `Client Websocket initialized, id: ${this.id}`);
-
-    /*this._request = isNode()
+    this._request = isNode()
       ? httpRequest.bind(this)
       : isBrowser()
         ? httpFetch.bind(this)
         : function () { throw Error('unknown environment!') }
-*/
+
+    Object.seal(this)
   }
 
   /**
@@ -87,7 +70,7 @@ class Sdk extends EventEmitter {
    * @returns {Object}
    */
   toJSON () {
-    let payload = {
+    return {
       '@type': this.constructor.name,
       id: this.id,
       hostname: this.hostname,
@@ -95,13 +78,6 @@ class Sdk extends EventEmitter {
       pathname: this.pathname,
       credentials: this.credentials
     }
-    if(this.apiVersion === 2) {
-      payload = {
-        ...payload,
-        connected: this.isConnected
-      }
-    }
-    return payload;
   }
 
   /**
@@ -111,17 +87,13 @@ class Sdk extends EventEmitter {
   connect () {
     return new Promise((resolve, reject) => {
       const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
-      const ws = new WebSocket(url)
-
-      ws.onerror = () => { reject }
-      ws.onclose = () => { this.websocket = null }
-      ws.onopen = () => {
-        ws.onmessage = (...args) => { this._onMessage(...args) }
-        this.emit('connected')
-        resolve()
-      }
+      const ws = new Websocket(url)
 
       this.websocket = ws
+        .on('message', (...args) => this._onMessage(...args))
+        .once('open', () => { this.emit('connected'); resolve() })
+        .once('close', () => { this.websocket = null })
+        .once('error', reject)
     })
   }
 
@@ -130,11 +102,85 @@ class Sdk extends EventEmitter {
    * @returns {Promise<Void>}
    */
   disconnect () {
-    return new Promise((resolve, reject) => {
-      this.websocket.onerror = (error) => { reject; } // TODO
-      this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
-      this.websocket.close() // TODO
+    return new Promise((resolve, reject) => this.websocket
+      .once('error', reject)
+      .once('close', () => { this.emit('disconnected'); resolve() })
+      .close())
+  }
+
+  /**
+   * Adds a limit order to the orderbook
+   * @param {Object} order The limit order to add the orderbook
+   */
+  submitLimitOrder (order) {
+    return this._request({
+      method: 'PUT',
+      path: '/api/v1/orderbook/limit'
+    }, {
+      uid: this.id,
+      side: order.side,
+      hash: order.hash,
+      baseAsset: order.baseAsset,
+      baseNetwork: order.baseNetwork,
+      baseQuantity: order.baseQuantity,
+      quoteAsset: order.quoteAsset,
+      quoteNetwork: order.quoteNetwork,
+      quoteQuantity: order.quoteQuantity
     })
+  }
+
+  /**
+   * Adds a limit order to the orderbook
+   * @param {Object} order The limit order to delete the orderbook
+   */
+  cancelLimitOrder (order) {
+    return this._request({
+      method: 'DELETE',
+      path: '/api/v1/orderbook/limit'
+    }, {
+      id: order.id,
+      baseAsset: order.baseAsset,
+      quoteAsset: order.quoteAsset
+    })
+  }
+
+  /**
+   * Create the required state for an atomic swap
+   * @param {Swap|Object} swap The swap to open
+   * @param {Object} opts Options for the operation
+   * @returns {Swap}
+   */
+  swapOpen (swap, opts) {
+    return this._request({
+      method: 'PUT',
+      path: '/api/v1/swap'
+    }, { swap, opts })
+  }
+
+  /**
+   * Completes the atomic swap
+   * @param {Swap|Object} swap The swap to commit
+   * @param {Object} opts Options for the operation
+   * @returns {Promise<Void>}
+   */
+  swapCommit (swap, opts) {
+    return this._request({
+      method: 'POST',
+      path: '/api/v1/swap'
+    }, { swap, opts })
+  }
+
+  /**
+   * Abort the atomic swap optimistically and returns funds to owners
+   * @param {Swap|Object} swap The swap to abort
+   * @param {Object} opts Options for the operation
+   * @returns {Promise<Void>}
+   */
+  swapAbort (swap, opts) {
+    return this._request({
+      method: 'DELETE',
+      path: '/api/v1/swap'
+    }, { swap, opts })
   }
 
   /**
@@ -146,16 +192,7 @@ class Sdk extends EventEmitter {
     return new Promise((resolve, reject) => {
       const buf = Buffer.from(JSON.stringify(obj))
       const opts = { binary: false }
-
-      this.emit('log', 'info', 'send', obj)
-      this.websocket.send(buf, opts, err => {
-        if (err == null) {
-          resolve()
-        } else {
-          this.emit('log', 'error', 'send', err)
-          reject(err)
-        }
-      })
+      this.websocket.send(buf, opts, err => err ? reject(err) : resolve())
     })
   }
 
@@ -178,159 +215,107 @@ class Sdk extends EventEmitter {
       this.emit(event, arg)
     }
   }
+}
 
-  /**
-   * Performs an HTTP request and returns the response
-   * @param {Object} args Arguments for the operation
-   * @param {Object} [data] Data to be sent as part of the request
-   * @returns {Promise<Object>}
-   */
-  _request (url, args, obj) {
-    return new Promise((resolve, reject) => {
-      const body = (obj && JSON.stringify(obj)) || ''
-      const creds = `${this.id}:${this.id}`
-      const headers = Object.assign(args.headers || {}, {
+/**
+ * Performs an HTTP request using the `http(s)` module from node.js
+ * @param {Object} args Arguments for the operation
+ * @param {Object} [data] Data to be sent as part of the request
+ * @returns {Promise<Object>}
+ */
+const http = isNode() && require('http')
+function httpRequest (args, data) {
+  return new Promise((resolve, reject) => {
+    const creds = `${this.id}:${this.id}`
+    const buf = (data && JSON.stringify(data)) || ''
+    const req = http.request(Object.assign(args, {
+      hostname: this.hostname,
+      port: this.port,
+      headers: Object.assign(args.headers || {}, {
+        accept: 'application/json',
+        'accept-encoding': 'application/json',
+        authorization: `Basic ${Buffer.from(creds).toString('base64')}`,
+        'content-type': 'application/json',
+        'content-length': Buffer.byteLength(buf),
+        'content-encoding': 'identity'
+      })
+    }))
+
+    req
+      .once('abort', () => reject(new Error('aborted')))
+      .once('error', err => reject(err))
+      .once('response', res => {
+        const { statusCode } = res
+        const contentType = res.headers['content-type']
+
+        if (statusCode !== 200 && statusCode !== 400) {
+          return reject(new Error(`unexpected status code ${statusCode}`))
+        } else if (!contentType.startsWith('application/json')) {
+          return reject(new Error(`unexpected content-type ${contentType}`))
+        } else {
+          const chunks = []
+          res
+            .on('data', chunk => chunks.push(chunk))
+            .once('error', err => reject(err))
+            .once('end', () => {
+              const str = Buffer.concat(chunks).toString('utf8')
+              let obj = null
+
+              try {
+                obj = JSON.parse(str)
+              } catch (err) {
+                return reject(new Error(`malformed JSON response "${str}"`))
+              }
+
+              statusCode === 200
+                ? resolve(obj)
+                : reject(new Error(obj.message))
+            })
+        }
+      })
+      .end(buf)
+  })
+}
+
+/**
+ * Performs an HTTP request using the Fetch API
+ * @param {Object} args Arguments for the operation
+ * @param {Object} [data] Data to be sent as part of the request
+ * @returns {Promise<Object>}
+ */
+function httpFetch (args, data) {
+  return new Promise((resolve, reject) => {
+    const creds = `${this.id}:${this.id}`
+    const buf = (data && JSON.stringify(data)) || ''
+    const req = fetch(Object.assign(args, {
+      headers: Object.assign(args.headers || {}, {
         accept: 'application/json',
         'accept-encoding': 'application/json',
         authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
         'content-type': 'application/json',
-        'content-length': Buffer.byteLength(body),
+        'content-length': Buffer.byteLength(buf),
         'content-encoding': 'identity'
+      }),
+      body: buf
+    }))
+
+    req
+      .then(res => {
+        const { status } = res
+        const contentType = res.headers.get('Content-Type')
+
+        if (status !== 200 && status !== 400) {
+          reject(new Error(`unexpected status code ${status}`))
+        } else if (!contentType.startsWith('application/json')) {
+          reject(new Error(`unexpected content-type ${contentType}`))
+        } else {
+          res.json()
+            .then(obj => status === 200
+              ? resolve(obj)
+              : reject(Error(obj.message)))
+            .catch(reject)
+        }
       })
-
-      this.emit('log', 'info', 'request', { url, headers, body: obj })
-      args = Object.assign(args, { headers, body })
-
-      /*debug(`\n\n    Args: ${JSON.stringify(newArgs)}`)
-      debug(`\n\n    Data: ${JSON.stringify(data)}`)*/
-
-      fetch(url, args)
-        .then(res => {
-          const { status } = res
-          const contentType = res.headers.get('Content-Type')
-
-          if (status !== 200 && status !== 400) {
-            const err = Error(`unexpected status code ${status}`)
-            this.emit('log', 'error', 'response', err)
-            reject(err)
-          } else if (!contentType.startsWith('application/json')) {
-            const err = Error(`unexpected content-type ${contentType}`)
-            this.emit('log', 'error', 'response', err)
-            reject(err)
-          } else {
-            res.json()
-              .then(obj => {
-                if (status === 200) {
-                  this.emit('log', 'info', 'response', obj)
-                  resolve(obj)
-                } else {
-                  this.emit('log', 'error', 'response', obj)
-                  reject(Error(obj.message))
-                }
-              })
-              .catch(err => {
-                this.emit('log', 'error', 'response', err)
-                reject(err)
-              })
-          }
-        })
-        .catch(err => {
-          this.emit('log', 'error', 'response', err)
-          reject(err)
-        })
-    })
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to add the orderbook
-   */
-  submitLimitOrder (order) {
-    let payload = {
-      uid: this.id,
-      side: order.side,
-      hash: order.hash,
-      baseAsset: order.baseAsset,
-      baseNetwork: order.baseNetwork,
-      baseQuantity: order.baseQuantity,
-      quoteAsset: order.quoteAsset,
-      quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
-    };
-    if(this.apiVersion === 2) 
-      payload.ordinalLocation = order.ordinalLocation;
-    return this._request(
-      `/api/v${this.apiVersion}/orderbook/limit`, 
-      { method: 'PUT' }, 
-      payload
-    );
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to delete the orderbook
-   */
-  cancelLimitOrder (order) {
-    return this._request(`/api/v${this.apiVersion}/orderbook/limit`, {
-      method: 'DELETE',
-    }, {
-      id: order.id,
-      baseAsset: order.baseAsset,
-      quoteAsset: order.quoteAsset
-    })
-  }
-
-  /**
-   * Create the required state for an atomic swap
-   * @param {Swap|Object} swap The swap to open
-   * @param {Object} opts Options for the operation
-   * @returns {Swap}
-   */
-  swapOpen (swap, opts) {
-    return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'PUT',
-    }, { swap, opts })
-  }
-
-  /**
-   * Completes the atomic swap
-   * @param {Swap|Object} swap The swap to commit
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapCommit (swap, opts) {
-    return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'POST',
-    }, { swap, opts })
-  }
-
-  /**
-   * Abort the atomic swap optimistically and returns funds to owners
-   * @param {Swap|Object} swap The swap to abort
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapAbort (swap, opts) {
-    return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'DELETE',
-    }, { swap, opts })
-  }
-
-  /**
-   * Create a lightning invoice for client, payable by anyone
-   * @param {Object} opts Options for the operation
-   * @returns {Object} invoice - created invoice hash
-   */
-  createInvoice (opts) {
-    return this._request('/api/v1/invoice', {
-      method: 'POST',
-    }, opts)
-  }
+      .catch(reject)
+  })
 }
-
-
-if(typeof require === 'function'){
-  module.exports = Sdk;
-}
-
-export default Sdk;
