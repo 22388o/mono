@@ -1,27 +1,19 @@
 {
-  "name": "@portaldefi/sdk",
+  "name": "@portaldefi/app",
   "version": "0.0.0",
-  "description": "The Portal-Defi SDK",
-  "main": "index.js",
-  "exports": {
-    "import": "./index.mjs",
-    "require": "./index.js"
-  },
+  "description": "The Portal App",
   "scripts": {
-    "clean": "rm -rf coverage node_modules package-lock.json",
+    "clean": "rm -rf node_modules package-lock.json",
     "coverage": "c8 mocha",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
     "test": "mocha"
   },
-  "dependencies": {
-    "eventemitter3": "^5.0.1",
-    "ws": "^8.13.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@portaldefi/app": "file:../app",
     "@portaldefi/peer": "file:../portal",
+    "@portaldefi/sdk": "file:../sdk",
     "c8": "^7.12.0",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
@@ -38,8 +30,7 @@
   "mocha": {
     "diff": true,
     "extension": [
-      "spec.js",
-      "spec.mjs"
+      "spec.js"
     ],
     "recursive": true,
     "reporter": "spec",
@@ -47,8 +38,8 @@
     "timeout": 120000,
     "ui": "bdd",
     "watch-files": [
-      "*.*js",
-      "test/**/*.*js"
+      "src/**/*.js",
+      "test/**/*.js"
     ]
   },
   "standard": {
@@ -61,9 +52,6 @@
       "describe",
       "expect",
       "it"
-    ],
-    "ignore": [
-      "dist"
     ]
   }
 }

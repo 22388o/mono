@@ -2,8 +2,8 @@
  * @file Behavioral specification for the HTTP client and server
  */
 
-const Client = require('../../../../sdk')
 const Server = require('../../..')
+const Client = require('@portaldefi/sdk')
 const { expect } = require('chai')
 const { join } = require('path')
 
