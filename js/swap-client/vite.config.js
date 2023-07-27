@@ -17,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'ws://localhost:1337',
+        target: 'ws://localhost:42297',
         changeOrigin: true,
         secure: false,
         ws: true,
@@ -36,14 +36,3 @@ export default defineConfig({
     }
   }
 })
-
-/**
- * Start the Portal peer
- * @type {Peer}
- */
-import Server from '@portaldefi/peer'
-const server = new Server({ hostname: 'localhost', port: 1337 })
-  .on('log', console.error)
-  .start()
-
-process.on('exit', () => server.stop())
