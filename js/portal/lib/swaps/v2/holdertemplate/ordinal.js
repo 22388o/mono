@@ -193,9 +193,9 @@ module.exports = class Ordinal extends HolderTemplate {
     });
     const result3 = await doScan0
     const scantx0 = JSON.parse(result3.stdout)
-    console.log('doScan0Command stdout: ', JSON.stringify(scantx0, null, 4))
-    console.log('doScan0Command stderr: ', result3.stderr)
-    console.log('doScan0Command: ', doScan0Command)
+    // console.log('doScan0Command stdout: ', JSON.stringify(scantx0, null, 4))
+    // console.log('doScan0Command stderr: ', result3.stderr)
+    // console.log('doScan0Command: ', doScan0Command)
 
     const success0 = scantx0.success
     if (!success0) {
@@ -216,9 +216,9 @@ module.exports = class Ordinal extends HolderTemplate {
     });
     const result4 = await doScan1
     const scantx1 = JSON.parse(result4.stdout)
-    console.log('doScan0Command stdout: ', JSON.stringify(scantx1, null, 4))
-    console.log('doScan0Command stderr: ', result4.stderr)
-    console.log('doScan0Command: ', doScan1Command)
+    // console.log('doScan0Command stdout: ', JSON.stringify(scantx1, null, 4))
+    // console.log('doScan0Command stderr: ', result4.stderr)
+    // console.log('doScan0Command: ', doScan1Command)
 
     const success1 = scantx1.success
     if (!success1) {
@@ -229,6 +229,48 @@ module.exports = class Ordinal extends HolderTemplate {
     const totalAmount1 = scantx1.total_amount
     console.log("amount in ordinal address 1: ", totalAmount1)
 
+    // console.log('state.shared: ', JSON.stringify(party.state.shared, null, 4))
+    //
+    // console.log('scantx0: ', JSON.stringify(scantx0, null, 4))
+    //
+    // console.log('scantx0.unspents: ', JSON.stringify(scantx0.unspents, null, 4))
+
+    // console.log('scantx0.unspents[0]: ', JSON.stringify(scantx0.unspents[0], null, 4))
+
+
+    const findUtxoAddress = function (scantx) {
+      for (const utxo of scantx.unspents) {
+        console.log(JSON.stringify(utxo, null, 4))
+        if (utxo.vout === 0) {
+          console.log("found vout = 0")
+          if (utxo.amount === 0.0001) {
+            console.log("found utxo with 10,000 sats")
+
+            const addressDescriptor = utxo.desc
+            // console.log('addressDescriptor: ', addressDescriptor)
+            const addressRegex = /addr\((.*)\)#(.*)/
+            // console.log('addressRegex: ', addressRegex)
+            const addressRegex2 = new RegExp('/addr\\((.*)\\)#(.*)/')
+            // console.log('addressRegex2: ', addressRegex2)
+            const matches = addressDescriptor.match(addressRegex)
+            // console.log('matches: ', matches)
+            const address = matches[1]
+
+            // console.log('address: ', address)
+            const vout = utxo.vout
+            // console.log('vout: ', vout)
+            const amount = utxo.amount
+            // console.log('amount: ', amount)
+
+            return [{address}]
+          }
+        }
+      }
+      return []
+    }
+
+    const address = findUtxoAddress(scantx0)
+    console.log('address: ', address)
 
     return party
 
