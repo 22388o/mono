@@ -153,7 +153,7 @@ module.exports = class Ordinal extends SeekerTemplate {
 
     const secretSeeker_redeemAddress = secretSeeker_p2wpkh.address
 
-    const psbt = new bitcoin.Psbt({  bitcoinMode })
+    const psbt = new bitcoin.Psbt({  "network": bitcoinMode })
 
     const amountAndFee = ordinalAmount + fee
     console.log(`### fee           ###: ${fee}`)

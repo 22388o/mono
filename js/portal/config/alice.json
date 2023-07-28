@@ -22,11 +22,13 @@
               "addresses": [
                 {
                   "wif": "cTpTQseg8mQVUKn5pTfcuLcf9PewxgLWbPvVM7iKEY3dNZTfxkst",
-                  "p2wpkh": "bcrt1q0s0j48td6c3gl6q7uq8gsth0uc8z0egr6pm2vu"
+                  "p2wpkh": "bcrt1q0s0j48td6c3gl6q7uq8gsth0uc8z0egr6pm2vu",
+                  "pubKeyHash": "7c1f2a9d6dd6228fe81ee00e882eefe60e27e503"
                 },
                 {
                   "wif": "cVXa1yrhtgaqrvQ1uEEkfpUhHXVvL9udC2Pxwg4C5ZXG71XFRM2N",
-                  "p2wpkh": "bcrt1qfe5ac66clyeul8p490xz543lqgh99dqnjn5kjy"
+                  "p2wpkh": "bcrt1qfe5ac66clyeul8p490xz543lqgh99dqnjn5kjy",
+                  "pubKeyHash": "4e69dc6b58f933cf9c352bcc2a563f022e52b413"
                 }
               ]
             }

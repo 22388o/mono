@@ -155,6 +155,8 @@ module.exports = class Ordinal extends HolderTemplate {
     const ordinalAddress0 = ordinal.addresses[0].p2wpkh
     console.log('ordinalAddress0', ordinalAddress0)
 
+    const ordinalPubKeyHash0 = ordinal.addresses[0].pubKeyHash
+    console.log('ordinalPubKeyHash0', ordinalPubKeyHash0)
 
     const ordinalWif1 = ordinal.addresses[1].wif
     console.log('ordinalWif1', ordinalWif1)
@@ -238,7 +240,10 @@ module.exports = class Ordinal extends HolderTemplate {
     // console.log('scantx0.unspents[0]: ', JSON.stringify(scantx0.unspents[0], null, 4))
 
 
-    const findUtxoAddress = function (scantx) {
+    const findTwoOrdinalUtxos = function (scantx) {
+      let result =[]
+      let i= 0
+
       for (const utxo of scantx.unspents) {
         console.log(JSON.stringify(utxo, null, 4))
         if (utxo.vout === 0) {
@@ -261,17 +266,76 @@ module.exports = class Ordinal extends HolderTemplate {
             // console.log('vout: ', vout)
             const amount = utxo.amount
             // console.log('amount: ', amount)
+            const txid = utxo.txid
+            const ordinalLocation = `${txid}:${vout}`
 
-            return [{address}]
+            i++
+            result.push({address, ordinalLocation})
+            if (i === 2) {
+              break
+            }
           }
         }
       }
-      return []
+      return result
     }
 
-    const address = findUtxoAddress(scantx0)
-    console.log('address: ', address)
+    const ordinalUtxos = findTwoOrdinalUtxos(scantx0)
+    console.log('ordinalUtxos: ', ordinalUtxos)
 
+    console.log('ordinalPubKeyHash0: ',ordinalPubKeyHash0)
+
+    const ordinalUtxo = ordinalUtxos[0]
+    const ordinalLocation = ordinalUtxo.ordinalLocation
+    const ordinalLocationTx = ordinalLocation.split(':')[0]
+
+    // console.log('party.state.shared: ', JSON.stringify(party.state.shared, null, 4))
+
+    const swapAddressDescriptor = party.state.shared.swapinfo.descriptor
+    // console.log('swapAddressDescriptor: ', swapAddressDescriptor)
+    const addressRegex = /addr\((.*)\)#(.*)/
+    const matches = swapAddressDescriptor.match(addressRegex)
+    const swapAddress = matches[1]
+    console.log('swapAddress: ', swapAddress)
+
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
+
+
+
+    // ordinalLocation split into txid and output and oridinal index
+
+    const psbt = new bitcoin.Psbt({ "network": bitcoinMode})
+        .addInput({
+          hash: ordinalLocationTx,
+          index: 0,
+          witnessUtxo: {
+            script: Buffer.from('0014' + ordinalPubKeyHash0,'hex'),
+            value: 1e4
+          }
+        })
+        .addOutput({
+          address: swapAddress,
+          value: 4e3
+        })
+
+    const holderTestPair = bitcoin.ECPair.fromWIF(ordinalWif0,  bitcoinMode)
+
+    psbt.signInput(0, holderTestPair)
+    psbt.validateSignaturesOfInput(0)
+
+    psbt.finalizeAllInputs()
+
+    const transaction = psbt.extractTransaction()
+
+    try {
+      const txid = await alice.command([{ method: 'sendrawtransaction', parameters: [`${transaction.toHex()}`] }])
+      console.log('txid: ', txid.toHex())
+      // return transaction.toHex();
+    } catch (exception) {
+      console.log(`Failed broadcast of commit transaction, exception: ${exception}`)
+      // return transaction.toHex();
+    }
     return party
 
   }
@@ -284,11 +348,13 @@ module.exports = class Ordinal extends HolderTemplate {
       username: this.node2.creds.rpcuser
     })
 
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
+
     const wif = this.node2.creds.wif
     const holderPair = bitcoin.ECPair.fromWIF(wif, bitcoinMode)
 
-    const mode = this.node2.creds.mode
-    const bitcoinMode = getBitcoinMode(mode)
+
 
     const secretHolder_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: holderPair.publicKey, bitcoinMode })
     const secretHolder_redeemAddress = secretHolder_p2wpkh.address

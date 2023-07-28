@@ -99,11 +99,14 @@ wallets.forEach((walletInfo, walletIndex) => {
         let privateKeyBuffer = Buffer.from(child.privateKey)
         let privateKey = privateKeyBuffer.toString('hex')
 
+        let pubKeyHash = bitcoin.crypto.hash160(child.publicKey).toString('hex')
+
         addresses.push({
           "wif": wif,
           "p2wpkh": p2wpkhAddress,
           "path": path.replace("'", "'"),
-          "privateKey": privateKey
+          "privateKey": privateKey,
+          "pubKeyHash": pubKeyHash
         })
       })
       let accountNodes = {
