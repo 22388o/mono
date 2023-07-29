@@ -109,6 +109,16 @@ export const SwapCreate = () => {
   }, [user]);
 
   const getSwapPairId = (activity, swap) => {
+    /**
+     * Function to match swap pair with activity item
+     * -----------------------------------------
+     * base: 0 if current activity is from base, 1 if current activity is from quote, otherwise -1
+     * curUser: user object of current user in this swap
+     * nor: true if the curUser is this user and orderId matches activity orderId
+     * index: index of swap pair
+     * next: next step id of swap process
+     * f means flag which is temporarily to distinguish variable names
+     */
     let nor, base, index, nextSt;
     SWAP_PAIRS.forEach((pair, idx) => {
       let fBase = -1;

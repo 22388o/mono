@@ -45,8 +45,6 @@ class Sdk extends EventEmitter {
       : isNode()
         ? httpRequest.bind(this)
         : function () { throw Error('unknown environment!') }
-
-    Object.seal(this)
   }
 
   /**
@@ -79,13 +77,24 @@ class Sdk extends EventEmitter {
   connect () {
     return new Promise((resolve, reject) => {
       const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
-      const ws = new Websocket(url)
-
-      this.websocket = ws
+      let ws;
+      if(isBrowser()){
+        ws = new WebSocket(url);
+        ws.onerror = () => { reject }
+        ws.onclose = () => { this.websocket = null }
+        ws.onopen = () => {
+          ws.onmessage = (...args) => { this._onMessage(...args) }
+          this.emit('connected')
+          resolve()
+        }
+      } else {
+        ws = new Websocket(url);
+        this.websocket = ws
         .on('message', (...args) => this._onMessage(...args))
         .once('open', () => { this.emit('connected'); resolve() })
         .once('close', () => { this.websocket = null })
         .once('error', reject)
+      }
     })
   }
 
@@ -94,10 +103,18 @@ class Sdk extends EventEmitter {
    * @returns {Promise<Void>}
    */
   disconnect () {
-    return new Promise((resolve, reject) => this.websocket
-      .once('error', reject)
-      .once('close', () => { this.emit('disconnected'); resolve() })
-      .close())
+    if(isBrowser()) {
+      return new Promise((resolve, reject) => {
+        this.websocket.onerror = (error) => { reject; } // TODO
+        this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
+        this.websocket.close() // TODO
+      })
+    } else {
+      return new Promise((resolve, reject) => this.websocket
+        .once('error', reject)
+        .once('close', () => { this.emit('disconnected'); resolve() })
+        .close())
+    }
   }
 
   /**
@@ -279,43 +296,50 @@ function httpRequest (args, data) {
  */
 function httpFetch (args, data) {
   return new Promise((resolve, reject) => {
+    const body = (data && JSON.stringify(data)) || ''
     const creds = `${this.id}:${this.id}`
-    const buf = (data && JSON.stringify(data)) || ''
-    const req = fetch(Object.assign(args, {
-      headers: Object.assign(args.headers || {}, {
-        /* eslint-disable quote-props */
-        'accept': 'application/json',
-        'accept-encoding': 'application/json',
-        'authorization': `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
-        'content-type': 'application/json',
-        'content-length': Buffer.byteLength(buf),
-        'content-encoding': 'identity'
-        /* eslint-enable quote-props */
-      }),
-      body: buf
-    }))
+    const headers = Object.assign(args.headers || {}, {
+      accept: 'application/json',
+      'accept-encoding': 'application/json',
+      authorization: `Basic ${Buffer.from(`${creds}`).toString('base64')}`,
+      'content-type': 'application/json',
+      'content-length': Buffer.byteLength(body),
+      'content-encoding': 'identity'
+    })
 
-    req
+    args = Object.assign(args, { headers, body })
+
+    /*debug(`\n\n    Args: ${JSON.stringify(newArgs)}`)
+    debug(`\n\n    Data: ${JSON.stringify(data)}`)*/
+
+    fetch(args.path, args)
       .then(res => {
         const { status } = res
         const contentType = res.headers.get('Content-Type')
 
         if (status !== 200 && status !== 400) {
-          reject(new Error(`unexpected status code ${status}`))
+          const err = Error(`unexpected status code ${status}`)
+          reject(err)
         } else if (!contentType.startsWith('application/json')) {
-          res.text()
-            .then(text => console.log(`res.text() text ${text}`))
-            .then(() => reject(new Error(`unexpected content-type ${contentType}`)))
-            .catch(reject)
+          const err = Error(`unexpected content-type ${contentType}`)
+          reject(err)
         } else {
           res.json()
-            .then(obj => status === 200
-              ? resolve(obj)
-              : reject(Error(obj.message)))
-            .catch(reject)
+            .then(obj => {
+              if (status === 200) {
+                resolve(obj)
+              } else {
+                reject(Error(obj.message))
+              }
+            })
+            .catch(err => {
+              reject(err)
+            })
         }
       })
-      .catch(reject)
+      .catch(err => {
+        reject(err)
+      })
   })
 }
 

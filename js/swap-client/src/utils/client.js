@@ -39,7 +39,7 @@ export default class Client extends Sdk {
    * @returns {Swap}
    */
   swapOpenV2 (body) {
-    return this._request('/api/v2/swap/submarine', { method: 'PUT' },  body )
+    return this._request({ method: 'PUT', path: '/api/v2/swap/submarine' },  body )
   }
   // getBalance (opts) {
   //   return this._request('/api/v1/channel', { method: 'POST' }, { opts })
@@ -51,7 +51,7 @@ export default class Client extends Sdk {
    * @returns {Promise<Void>}
    */
   swapCommitV2 (body) {
-    return this._request('/api/v2/swap/submarine', { method: 'POST' },  body )
+    return this._request({ method: 'POST', path: '/api/v2/swap/submarine' },  body )
   }
 
    /**

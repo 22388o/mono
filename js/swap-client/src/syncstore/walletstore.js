@@ -1,7 +1,7 @@
 import { INSCRIPTIONS } from "../config/inscription_info";
 
 const initialAssets = [{
-  title: 'Bitcoin-L1',
+  title: 'Bitcoin-Taproot',
   type: 'BTC',
   rate: 100000000,
   connected: false,

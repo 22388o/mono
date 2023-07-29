@@ -49,7 +49,6 @@ const ASSETS = [{
 export const AddOtherAssetsModal = ({ open, handleClose }) => {
   const [selectedAsset , setSelectedAsset] = useState(null);
   const [filter, setFilter] = useState('');
-  const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
 
   const handleClick = useCallback((asset) => {
     setSelectedAsset(asset);

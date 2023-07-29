@@ -40,6 +40,7 @@ export const SwapHome = () => {
   let aliceCred = getAlice();
   let bobCred = getBob();
   
+  /** Alice clicks sign in to connect with ws */
   const signInAsAlice = useCallback(() => {
     if(wallet.connected === true)
       aliceCred.ethl2.public = wallet.data;
@@ -53,6 +54,7 @@ export const SwapHome = () => {
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
   }, [walletStore, aliceCred]);
   
+  /** Bob clicks sign in to connect with ws */
   const signInAsBob = useCallback(() => {
     if(wallet.connected === true)
       bobCred.ethl2.public = wallet.data;
@@ -66,6 +68,7 @@ export const SwapHome = () => {
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
   }, [bobCred, walletStore]);
 
+  /** Log out from the server */
   const logOut = useCallback(() => {
     userStore.dispatch({ type: 'SIGN_OUT' });
     walletStore.dispatch({ type: 'CLEAR_NODE_DATA'});
