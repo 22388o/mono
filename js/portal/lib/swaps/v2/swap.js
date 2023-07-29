@@ -289,7 +289,7 @@ module.exports = class Swap extends EventEmitter {
 
     const { secretHolder, secretSeeker, status } = this
     console.log('\nswap.commit', this, party, opts)
-    console.log('\nentering swap.open')
+    console.log('\nentering swap.commit')
     console.log('this.status: ', this.status)
     console.log('status: ', status)
 
@@ -298,7 +298,7 @@ module.exports = class Swap extends EventEmitter {
     const isBoth = isHolder && isSeeker
     const isNeither = !isHolder && !isSeeker
 
-    if ((isSeeker && status !== SWAP_STATUS[7]) || (isHolder && status !== SWAP_STATUS[6])) {
+    if ((isSeeker && (status !== SWAP_STATUS[7] && status !== SWAP_STATUS[3])) || (isHolder && status !== SWAP_STATUS[6])) {
       throw Error(`cannot commit swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
       throw Error('self-swapping is not allowed!')

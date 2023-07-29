@@ -101,7 +101,7 @@ module.exports = class Ordinal extends HolderTemplate {
     // implemented only for automatic testing
     // to replace manual payment of ordinal
 
-    const TEST_MINE_BLOCKS = 101
+    const TEST_MINE_BLOCKS = 10
     const TEST_CONFIRMATIONS = 6
     const INITIAL_ORDINAL_PADDING = 0.0001 // in BTC
 
@@ -127,7 +127,9 @@ module.exports = class Ordinal extends HolderTemplate {
     // TODO: for anything used in production, let's create a secure library if existing libraries do not meet our needs as here for testing
 
     const doMineCommand = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport} -rpcwallet=${minerWallet} -generate ${TEST_MINE_BLOCKS}`
-    const doMine = exec(doMineCommand);
+
+    console.log('doMineCommand: ', doMineCommand)
+    const doMine = exec(doMineCommand)
     const child = doMine.child;
     child.on('close', function(code) {
       console.log('closing code: ' + code);
@@ -267,7 +269,7 @@ module.exports = class Ordinal extends HolderTemplate {
             const amount = utxo.amount
             // console.log('amount: ', amount)
             const txid = utxo.txid
-            const ordinalLocation = `${txid}:${vout}`
+            const ordinalLocation = `${txid}:${vout}:0`
 
             i++
             result.push({address, ordinalLocation})
@@ -287,7 +289,13 @@ module.exports = class Ordinal extends HolderTemplate {
 
     const ordinalUtxo = ordinalUtxos[0]
     const ordinalLocation = ordinalUtxo.ordinalLocation
+    console.log('ordinalLocation: ', ordinalLocation)
     const ordinalLocationTx = ordinalLocation.split(':')[0]
+    console.log('ordinalLocationTx: ', ordinalLocationTx)
+
+    const nextOrdinalUtxo = ordinalUtxos[1]
+    const nextOrdinalLocation = nextOrdinalUtxo.ordinalLocation
+    const nextOrdinalLocationTx =  nextOrdinalLocation.split(':')[0]
 
     // console.log('party.state.shared: ', JSON.stringify(party.state.shared, null, 4))
 
@@ -298,15 +306,20 @@ module.exports = class Ordinal extends HolderTemplate {
     const swapAddress = matches[1]
     console.log('swapAddress: ', swapAddress)
 
-    const mode = this.node2.creds.mode
-    const bitcoinMode = getBitcoinMode(mode)
+    const mode2 = this.node2.creds.mode
+    const bitcoinMode2 = getBitcoinMode(mode2)
 
 
 
     // ordinalLocation split into txid and output and oridinal index
 
-    const psbt = new bitcoin.Psbt({ "network": bitcoinMode})
-        .addInput({
+    let psbt = new bitcoin.Psbt({ "network": bitcoinMode2})
+
+    console.log('psbt input countA: ', psbt.inputCount)
+    console.log('psbt input count: ', psbt.txInputs.length)
+    console.log('psbt output count: ', psbt.txOutputs.length)
+
+        psbt.addInput({
           hash: ordinalLocationTx,
           index: 0,
           witnessUtxo: {
@@ -314,28 +327,108 @@ module.exports = class Ordinal extends HolderTemplate {
             value: 1e4
           }
         })
-        .addOutput({
+
+    console.log('psbt input countB: ', psbt.inputCount)
+    console.log('psbt input count: ', psbt.txInputs.length)
+    console.log('psbt output count: ', psbt.txOutputs.length)
+
+        psbt.addOutput({
           address: swapAddress,
           value: 4e3
         })
 
-    const holderTestPair = bitcoin.ECPair.fromWIF(ordinalWif0,  bitcoinMode)
+    console.log('psbt input countC: ', psbt.inputCount)
+    console.log('psbt input count: ', psbt.txInputs.length)
+    console.log('psbt output count: ', psbt.txOutputs.length)
 
-    psbt.signInput(0, holderTestPair)
-    psbt.validateSignaturesOfInput(0)
+    const holderTestPair = bitcoin.ECPair.fromWIF(ordinalWif0,  bitcoinMode2)
+    console.log('holderTestPair: ', holderTestPair)
 
-    psbt.finalizeAllInputs()
+    const signInputResult= psbt.signInput(0, holderTestPair)
+    // const validator= function (pubkey, msghash, signature) {
+    //   return bitcoin.ECPair.fromPublicKey(pubkey).verify(msghash, signature)
+    // }
 
-    const transaction = psbt.extractTransaction()
+    console.log('signInputResult: ', signInputResult)
+
+    console.log('psbt input countD: ', psbt.inputCount)
+    console.log('psbt input count: ', psbt.txInputs.length)
+    console.log('psbt output count: ', psbt.txOutputs.length)
+
+
+
+    const validateSignaturesResult = signInputResult.validateSignaturesOfInput(0)
+    console.log('validateSignaturesResult: ', validateSignaturesResult)
+
+    console.log('psbt input countE: ', signInputResult.inputCount)
+    console.log('psbt input count: ', signInputResult.txInputs.length)
+    console.log('psbt output count: ', signInputResult.txOutputs.length)
+
+    const finalizeAllInputsResult = signInputResult.finalizeAllInputs()
+    console.log('finalizeAllInputsResult: ', finalizeAllInputsResult)
+
+    console.log('psbt input countF: ', finalizeAllInputsResult.inputCount)
+    console.log('psbt input count: ', finalizeAllInputsResult.txInputs.length)
+    console.log('psbt output count: ', finalizeAllInputsResult.txOutputs.length)
+
+    const transaction0 = psbt.extractTransaction()
+    console.log('psbt 00 transaction0: ', transaction0.toHex())
+
+    const transaction = signInputResult.extractTransaction()
+    console.log('psbt transaction: ', transaction.toHex())
+
+    const transaction2 = finalizeAllInputsResult.extractTransaction()
+    console.log('psbt finalized transaction2: ', transaction2.toHex())
+
+    const psbtData = finalizeAllInputsResult.data
+    console.log('psbtData: ', JSON.stringify(psbtData, null, 4))
+
+    const psbtInputs  = psbtData.inputs
+    console.log('psbtInputs: ', psbtInputs)
+    console.log('psbtInputs length: ', psbtInputs.length)
+
+    const psbtFirstInput = psbtInputs[0]
+    console.log('psbtFirstInput: ', JSON.stringify(psbtFirstInput, null, 4))
+
+
+
+    // transaction.sign(holderTestPair.privateKey)
+    // console.log('psbt transaction after sign: ', transaction.toHex())
+
+    const transactionHex = transaction.toHex()
+
 
     try {
-      const txid = await alice.command([{ method: 'sendrawtransaction', parameters: [`${transaction.toHex()}`] }])
-      console.log('txid: ', txid.toHex())
+      const txid = await alice.command([{ method: 'sendrawtransaction', parameters: [transactionHex] }])
+      // const txid = await alice.command([{ method: 'sendrawtransaction', parameters: [`${transaction.toHex()}`] }])
+      console.log('txid: ', txid)
+      // console.log('txid: ', txid.toHex)
       // return transaction.toHex();
     } catch (exception) {
       console.log(`Failed broadcast of commit transaction, exception: ${exception}`)
       // return transaction.toHex();
     }
+
+    console.log('psbt input countG: ', psbt.inputCount)
+    console.log('psbt input count: ', psbt.txInputs.length)
+    console.log('psbt output count: ', psbt.txOutputs.length)
+
+    const doConfirmCommand2 = `bitcoin-cli -rpcuser=${rpcuser} -rpcpassword=${rpcpassword} -rpcport=${rpcport} -rpcwallet=${minerWallet} -generate 7`
+    console.log('doConfirmCommand2: ', doConfirmCommand2)
+
+    const doConfirm2 = exec(doConfirmCommand2);
+    doConfirm2.child.on('close', function(code) {
+      console.log('closing code: ' + code);
+    });
+    const resultConfirm2 = await doConfirm2;
+    console.log('doConfirmCommand stdout: ', resultConfirm2.stdout)
+    console.log('doConfirmCommand stderr: ', resultConfirm2.stderr)
+
+    console.log('end of holder commit')
+    console.log('end of holder commit')
+
+    console.log('ordinalLocationTx: ', ordinalLocationTx)
+    console.log('nextOrdinalLocation: ', nextOrdinalLocation)
     return party
 
   }

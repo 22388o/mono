@@ -149,11 +149,13 @@ module.exports = class Ordinal extends SeekerTemplate {
     const seekerPair = bitcoin.ECPair.fromWIF(wif,  bitcoinMode)
     const seekerPublicKey = seekerPair.publicKey
 
-    const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: seekerPublicKey,  bitcoinMode })
+    const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: seekerPublicKey,  network: bitcoinMode })
 
     const secretSeeker_redeemAddress = secretSeeker_p2wpkh.address
 
-    const psbt = new bitcoin.Psbt({  "network": bitcoinMode })
+    const psbt = new bitcoin.Psbt({  'network': bitcoinMode })
+
+    console.log('swapinfo.descriptor: ', swapinfo.descriptor)
 
     const amountAndFee = ordinalAmount + fee
     console.log(`### fee           ###: ${fee}`)
@@ -185,7 +187,7 @@ module.exports = class Ordinal extends SeekerTemplate {
     const utxos = scantx[0].unspents
     const numUtxos = utxos.length
 
-    if (numUtxos == 0) {
+    if (numUtxos === 0) {
       console.log('payment not received yet')
       // TODO: determine return contract
       // return void 0;
@@ -194,7 +196,7 @@ module.exports = class Ordinal extends SeekerTemplate {
       console.log(`multiple payments, numUtxos: ${numUtxos}`)
       // TODO: determine return contract and implement handling in time
       return void 0
-    } else if (numUtxos == 1) {
+    } else if (numUtxos === 1) {
       // current happy path
     } else {
       console.log(`unusual value for numUtxos: ${numUtxos}`)
