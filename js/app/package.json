@@ -7,6 +7,7 @@
     "build": "parcel build",
     "clean": "rm -rf dist node_modules package-lock.json",
     "coverage": "c8 mocha",
+    "dev": "node bin/dev.js",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
@@ -21,6 +22,7 @@
     "@portaldefi/sdk": "file:../sdk",
     "c8": "^7.12.0",
     "chai": "^4.3.7",
+    "chokidar": "^3.5.3",
     "mocha": "^10.2.0",
     "parcel": "^2.9.3",
     "standard": "^17.0.0"
