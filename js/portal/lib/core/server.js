@@ -73,6 +73,14 @@ module.exports = class Server extends EventEmitter {
   }
 
   /**
+   * Returns the root directory holding static content to be served
+   * @returns {String}
+   */
+  get root () {
+    return INSTANCES.get(this).root
+  }
+
+  /**
    * Returns the port the server is listening on
    * @returns {Number}
    */
@@ -89,6 +97,14 @@ module.exports = class Server extends EventEmitter {
   }
 
   /**
+   * Returns the URL of the server
+   * @returns {String}
+   */
+  get url () {
+    return `${this.hostname}:${this.port}`
+  }
+
+  /**
    * Returns the current state of the server as a JSON string
    * @type {String}
    */
@@ -102,13 +118,12 @@ module.exports = class Server extends EventEmitter {
    */
   toJSON () {
     const { hostname, port, root } = INSTANCES.get(this)
-    const url = `http://${hostname}:${port}`
     return {
       '@type': this.constructor.name,
       hostname,
       port,
       root,
-      url
+      url: `http://${this.url}`
     }
   }
 
