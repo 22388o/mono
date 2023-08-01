@@ -1,5 +1,10 @@
 const unisat = window.unisat;
 
+/**
+ * Fetches the ETH price via coinbase api
+ * @param {Object} value the network to switch to
+ * @returns {Object} network switched to
+ */
 export const switchNetwork = async (value) => {
   try {
     const network = await unisat.switchNetwork(value);
@@ -9,7 +14,12 @@ export const switchNetwork = async (value) => {
   }
 }
 
-export const signPsbt = async (psbtHex) => {
+/**
+ * Sign a psbt
+ * @param {Object} psbtHex PSBT hex string to be signed
+ * @returns {Object} results of signed output
+ */
+ export const signPsbt = async (psbtHex) => {
   try {
     const psbtResult = await window.unisat.signPsbt(psbtHex);
     setPsbtResult(psbtResult);
@@ -18,7 +28,12 @@ export const signPsbt = async (psbtHex) => {
   }
 }
 
-export const signMessage = async (message) => {
+/**
+ * Sign a message
+ * @param {Object} message to be signed
+ * @returns {Object} result of signed message output
+ */
+ export const signMessage = async (message) => {
   const signature = await window.unisat.signMessage(message);
   setSignature(signature);
 }

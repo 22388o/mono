@@ -34,7 +34,7 @@ export default class Client extends Sdk {
   }
 
   /**
-   * Create the required state for an atomic swap
+   * Create the required state for a BTCORD atomic swap
    * @param {body|Object} swap The swap to open
    * @returns {Swap}
    */
@@ -46,7 +46,7 @@ export default class Client extends Sdk {
   // }
 
   /**
-   * Completes the atomic swap
+   * Completes the BTCORD atomic swap
    * @param {Body|Object} body The swap to commit
    * @returns {Promise<Void>}
    */

@@ -23,7 +23,7 @@ class Sdk extends EventEmitter {
    * @param {String} [props.hostname='localhost'] The hostname of the Portal server
    * @param {Number} [props.port=80] The port of the Portal server
    * @param {String} [props.pathname='/api/v1/updates'] The path to the updates channel
-   * @param {Object} [props.credentials] Credentials maintained by the SDK instance
+   * @param {Object} [props.credentials] Wallet Credentials maintained by the SDK instance
    */
   constructor (props) {
     if (props == null) {
@@ -71,7 +71,7 @@ class Sdk extends EventEmitter {
   }
 
   /**
-   * Opens a connection to the server
+   * Opens a websocket connection to the server
    * @returns {Promise<Void>}
    */
   connect () {
@@ -99,7 +99,7 @@ class Sdk extends EventEmitter {
   }
 
   /**
-   * Closes the connection to the server
+   * Closes the websocket connection to the server
    * @returns {Promise<Void>}
    */
   disconnect () {
@@ -118,7 +118,7 @@ class Sdk extends EventEmitter {
   }
 
   /**
-   * Adds a limit order to the orderbook
+   * Creates a limit order on the orderbook
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
@@ -139,8 +139,8 @@ class Sdk extends EventEmitter {
   }
 
   /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to delete the orderbook
+   * Removes a specified limit order from the orderbook
+   * @param {Object} order The limit order to delete from the orderbook
    */
   cancelLimitOrder (order) {
     return this._request({
@@ -343,6 +343,7 @@ function httpFetch (args, data) {
   })
 }
 
+// Check if executed by node
 if (typeof module !== 'undefined') {
   module.exports = Sdk
 

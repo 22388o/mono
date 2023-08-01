@@ -1,5 +1,9 @@
 //import * as alice from '../../../portal/config/alice.json'
 //import * as bob from '../../../portal/config/bob.json'
+/**
+ * Fetches the chain information via dapphub github repo
+ * @returns {JSON}
+ */
 
 export const CHAIN_INFO = {
   'BTC': {
@@ -41,6 +45,10 @@ export const getBob = () => {
     }
   }
 }
+/**
+ * Fetches walletconnect supported wallet info
+ * @returns {JSON}
+ */
 
 export const WALLETS = [{
   title: 'Rainbow',
