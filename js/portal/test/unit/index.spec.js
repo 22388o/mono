@@ -9,6 +9,10 @@ const { compile, deploy } = require('../helpers')
 const Client = require('../../lib/core/client')
 const Server = require('../../lib/core/server')
 
+const log = process.argv.includes('--debug')
+  ? console.error
+  : function () {}
+
 before('Compile contracts', async function () {
   // Web3
   const web3 = new Web3(process.env.PORTAL_ETHEREUM_URL)
@@ -20,6 +24,7 @@ before('Compile contracts', async function () {
   // Server and clients
   const server = await (new Server()).start()
   const { hostname, port } = server
+  server.on('log', log)
 
   const create = id => {
     const credentials = require(`./${id}`)
