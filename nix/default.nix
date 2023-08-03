@@ -2,7 +2,7 @@
 let
   sources = import ./sources.nix;
 in
-import sources.nixpkgs {
+import /home/aldo/Dev/aldoborrero/nixpkgs {
   inherit system;
   overlays = [(self: super: { inherit sources; })] ++ import ./overlays;
 }

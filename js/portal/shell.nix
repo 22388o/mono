@@ -1,15 +1,18 @@
-{ system ? builtins.currentSystem, pkgs ? import ../../nix { inherit system; }}:
-
-pkgs.npmlock2nix.v2.shell {
-  nodejs = pkgs.portaldefi.nodejs;
-  src = ./.;
-
+{
+  system ? builtins.currentSystem,
+  pkgs ? import ../../nix {inherit system;},
+  nodejs ? pkgs.portaldefi.nodejs,
+}:
+pkgs.mkShell {
   packages = with pkgs; [
+    alejandra
     bitcoind
     coreutils
     go-ethereum
     jq
     lnd
+    nodejs
+    yarn
   ];
 
   shellHook = ''

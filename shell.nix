@@ -1,21 +1,21 @@
-{ pkgs ? import ./nix { } }:
-
+{pkgs ? import ./nix {}}:
 pkgs.mkShell {
   packages = with pkgs; [
-    portaldefi.nodejs
-
     bash
     bitcoind
     coreutils
-    go-ethereum
     git
+    go-ethereum
     jq
     less
     lnd
     niv
     nix-diff
+    portaldefi.nodejs
+    process-compose
     terraform
     which
+    yarn
   ];
 
   shellHook = ''
@@ -33,6 +33,7 @@ pkgs.mkShell {
     # Developer Environment
     ############################################################################
     export PORTAL_ROOT=${toString ./.}
-    source $PORTAL_ROOT/sh/devenv.sh
+    export PLAYNET_ROOT=''${PORTAL_ROOT}/playnet
+    # source $PORTAL_ROOT/sh/devenv.sh
   '';
 }

@@ -42,18 +42,19 @@ module.exports = class Server extends EventEmitter {
     const port = props.port || env.PORTAL_HTTP_PORT || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
-    const ctx = require('./context')
+    const ctx = {}//require('./context')
     const server = http.createServer({ IncomingMessage, ServerResponse })
     const websocket = new WebSocketServer({ noServer: true })
 
     INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
 
+    // TODO: Commented as it's not working properly
     // Trigger the creation of a swap whenever an order match occurs
-    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+    // ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
 
-    // Propagate the log events
-    ctx.orderbooks.on('log', forwardLogEvent(this))
-    ctx.swaps.on('log', forwardLogEvent(this))
+    // // Propagate the log events
+    // ctx.orderbooks.on('log', forwardLogEvent(this))
+    // ctx.swaps.on('log', forwardLogEvent(this))
   }
 
   /**

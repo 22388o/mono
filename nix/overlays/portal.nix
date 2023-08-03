@@ -1,30 +1,23 @@
-self: super:
-
-let
+self: super: let
   # Change the version of nodejs for this project here
-  nodejs = super.nodejs-18_x;
+  nodejs = super.nodejs_20;
   pkgs = super;
 
-  portal = import ../../js/portal { inherit nodejs pkgs; };
-  sdk = import ../../js/sdk { inherit nodejs pkgs; };
+  portal = import ../../js/portal {inherit nodejs pkgs;};
+  sdk = import ../../js/sdk {inherit nodejs pkgs;};
+in {
+  portaldefi = {
+    inherit nodejs;
+    portal = portal.package;
+    sdk = sdk.package;
+  };
 
-in
+  # portaldefi-unit-tests = {
+  #   portal = portal.test;
+  #   sdk = sdk.test;
+  # };
 
-  rec {
-    portaldefi = {
-      inherit nodejs;
-      # contracts = import ../../js/contracts { inherit nodejs; pkgs = super; };
-      demo = import ../../js/swap-client { inherit nodejs; pkgs = super; };
-      portal = portal.build;
-      sdk = sdk.build;
-    };
-
-    portaldefi-unit-tests = {
-      portal = portal.test;
-      sdk = sdk.test;
-    };
-
-    portaldefi-integration-tests = {
-      portal = import ../vm-tests/portal.nix { pkgs = super; };
-    };
-  }
+  portaldefi-integration-tests = {
+    portal = import ../vm-tests/portal.nix {pkgs = super;};
+  };
+}

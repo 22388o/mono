@@ -1,0 +1,28 @@
+version: "0.5"
+
+log_location: ./playnet/dev.log
+log_level: debug
+
+environment:
+  - "PLAYNET_ROOT=${PORTAL_ROOT}/playnet"
+
+processes:
+  bitcoind-portal:
+    command: bitcoind -conf="$PLAYNET_ROOT/bitcoind.portal.conf" -datadir="$PLAYNET_ROOT/state/portal/bitcoind"
+    availability:
+      restart: "always"
+
+  geth-portal:
+    command: geth --dev --config "$PLAYNET_ROOT/geth.portal.toml" --datadir "$PLAYNET_ROOT/state/portal/geth/data"
+    availability:
+      restart: "always"
+
+  lnd-alice:
+    command: lnd --configfile "$PLAYNET_ROOT/lnd.alice.conf" --lnddir "$PLAYNET_ROOT/state/alice/lnd" --noseedbackup
+    availability:
+      restart: "always"
+
+  lnd-bob:
+    command: lnd --configfile "$PLAYNET_ROOT/lnd.bob.conf" --lnddir "$PLAYNET_ROOT/state/bob/lnd" --noseedbackup
+    availability:
+      restart: "always"
