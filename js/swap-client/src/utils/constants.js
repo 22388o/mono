@@ -1,5 +1,5 @@
-//import * as alice from '../../../portal/config/alice.json'
-//import * as bob from '../../../portal/config/bob.json'
+import alice from './alice.js'
+import bob from './bob.js'
 /**
  * Fetches the chain information via dapphub github repo
  * @returns {JSON}
@@ -15,8 +15,14 @@ export const CHAIN_INFO = {
     name: 'Ethereum'
   }
 }
-
 export const getAlice = () => {
+  return JSON.stringify(alice)
+}
+export const getBob = () => {
+  return JSON.stringify(bob)
+}
+
+export const getAliceOld = () => {
   return {
     "lightning": {
       "socket": "localhost:10001",
@@ -24,14 +30,14 @@ export const getAlice = () => {
       "admin": "AgEDbG5kAvgBAwoQS8eFVqksJiYPlNVamUCpEhIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYg01JRbtJdiPTXLN3/BMqsR85PkTS7VPsRy/D9Agwg0oU=",
       "invoice": "AgEDbG5kAlgDChBJx4VWqSwmJg+U1VqZQKkSEgEwGhYKB2FkZHJlc3MSBHJlYWQSBXdyaXRlGhcKCGludm9pY2VzEgRyZWFkEgV3cml0ZRoPCgdvbmNoYWluEgRyZWFkAAAGIBNQFE2B207D5lcgfNZpsJzIpkexuQoK5Ob6eP6DskfT"
     },
-    "ethl2": {
+    "ethereum": {
       "public": "0xb7f337B1244709aafd9baf50057eD0df934f2076",
       "private": "0a4beb249e3302806f5616f32d12907dd5eadc4406546a3fc2c06758f1787017"
     }
   }
 }
 
-export const getBob = () => {
+export const getBobOld = () => {
   return {
     "lightning": {
       "socket": "localhost:10002",
@@ -39,7 +45,7 @@ export const getBob = () => {
       "admin": "AgEDbG5kAvgBAwoQLV7kucfxJGGXbRbwkzivMxIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgkJYyCRuI5D9Klab5lsUAY1cpArqHaL0LHEN0PZEX/BY=",
       "invoice": "AgEDbG5kAlgDChArXuS5x/EkYZdtFvCTOK8zEgEwGhYKB2FkZHJlc3MSBHJlYWQSBXdyaXRlGhcKCGludm9pY2VzEgRyZWFkEgV3cml0ZRoPCgdvbmNoYWluEgRyZWFkAAAGIDPksBM/tzDZfdswhfIsQbmludPbEGlaVipnCfzAlqKQ"
     },
-    "ethl2": {
+    "ethereum": {
       "public": "0xD38099E977f17E39EC84b6d7807A6E0e81885144",
       "private": "c69bcf276bd8b53497150b793cf2661a078eb8ee3925ea534e943da27148f74f"
     }

@@ -43,9 +43,9 @@ export const SwapHome = () => {
   /** Alice clicks sign in to connect with ws */
   const signInAsAlice = useCallback(() => {
     if(wallet.connected === true)
-      aliceCred.ethl2.public = wallet.data;
+      aliceCred.ethereum.public = wallet.data;
     else {
-      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethl2});
+      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
     const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
@@ -57,9 +57,9 @@ export const SwapHome = () => {
   /** Bob clicks sign in to connect with ws */
   const signInAsBob = useCallback(() => {
     if(wallet.connected === true)
-      bobCred.ethl2.public = wallet.data;
+      bobCred.ethereum.public = wallet.data;
     else {
-      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethl2});
+      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
     const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });

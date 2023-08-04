@@ -114,10 +114,10 @@ export const SwapCreate = () => {
      * -----------------------------------------
      * base: 0 if current activity is from base, 1 if current activity is from quote, otherwise -1
      * curUser: user object of current user in this swap
-     * nor: true if the curUser is this user and orderId matches activity orderId
+     * nor: normal swap, true if the curUser is this user and orderId matches activity orderId
      * index: index of swap pair
      * next: next step id of swap process
-     * f means flag which is temporarily to distinguish variable names
+     * f means flag which is used temporarily in distinguishing variable names
      */
     let nor, base, index, nextSt;
     SWAP_PAIRS.forEach((pair, idx) => {
@@ -133,7 +133,8 @@ export const SwapCreate = () => {
       fNor = (user.user.id === substrname(curUser.id) && activity.secretHash === swap.secretHash);
 
       nextSt = pair.process[pair.process.indexOf(activity.status) + 1]
-      nor = fNor;
+      // nor = fNor;
+      nor = true;
       base = fBase;
       index = idx;
     })
@@ -168,7 +169,8 @@ export const SwapCreate = () => {
                 
         log("activity.secret", activity)
         
-        if(fIndex === 0) {
+        if(fIndex === 0) { // Check if BTC-ETH swap
+          // TODO: temp fix for single swap / order in orderbook at any given moment
 
 
         // if(activity.status !== 1 || user.user.id !== swap.secretSeeker.id || activity.secretHash !== swap.secretSeeker.hash) return;
@@ -182,7 +184,8 @@ export const SwapCreate = () => {
           const credentials = user.user.credentials;
 
           log("swapOpen (secretSeeker) requested, sent settingSwapState to 2");
-          user.user.swapOpen(swap, { [network]: credentials[network]});
+          if(network=="lightning") user.user.swapOpen(swap, { [network]: credentials[network]}); 
+          else user.user.swapOpen(swap, { [network]: credentials[network]}); 
           activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHash, status: fNext} });
         } else {
           if(user.user.id == substrname(swap.secretHolder.id) && orderSecret!=null) {
