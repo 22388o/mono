@@ -4,9 +4,10 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "vite build",
     "clean": "rm -rf dist node_modules package-lock.json",
-    "dev": "vite",
+    "credentials": "export PORTAL_ROOT=../../ && node credentials.js",
+    "build": "npm run credentials && vite build",
+    "dev": "npm run credentials && vite",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "preview": "vite preview --port 7500",

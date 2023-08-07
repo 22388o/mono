@@ -1,5 +1,5 @@
-import alice from './alice.js'
-import bob from './bob.js'
+import alice from './alice.json'
+import bob from './bob.json'
 /**
  * Fetches the chain information via dapphub github repo
  * @returns {JSON}
