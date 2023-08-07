@@ -23,9 +23,12 @@ docs/package-lock.json
 
 # Miscellaneous
 .DS_Store
+**/.editorconfig
+**/.vscode/settings.json
 
 # Playnet-related stuff
 playnet
 !playnet/bitcoind*
 !playnet/geth*
 !playnet/lnd*
+**/credentials/*.json
