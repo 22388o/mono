@@ -1,5 +1,6 @@
 # Nix
-result*
+/result*
+/repl-result*
 
 # Node.js
 coverage
@@ -29,3 +30,6 @@ playnet
 !playnet/bitcoind*
 !playnet/geth*
 !playnet/lnd*
+
+# direnv
+.direnv/

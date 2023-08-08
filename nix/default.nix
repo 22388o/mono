@@ -1,8 +1,16 @@
-{ system ? builtins.currentSystem }:
-let
-  sources = import ./sources.nix;
-in
-import sources.nixpkgs {
-  inherit system;
-  overlays = [(self: super: { inherit sources; })] ++ import ./overlays;
+{inputs, ...}: {
+  imports = [
+    # flake.parts modules
+    inputs.flake-root.flakeModule
+    inputs.devshell.flakeModule
+    inputs.process-compose-flake.flakeModule
+    inputs.flake-parts.flakeModules.easyOverlay
+
+    # Local modules
+    ./checks.nix
+    ./dev.nix
+    ./formatter.nix
+    ./shell.nix
+    ./packages.nix
+  ];
 }

@@ -1,25 +1,21 @@
-{ pkgs ? import ../../nix { inherit system; }
-, system ? builtins.currentSystem
-, nodejs ? pkgs.portaldefi.nodejs
-}: let 
-  npmlock2nix = pkgs.callPackage ./npmlock2nix.nix {};
-in {
-  modules = npmlock2nix.node_modules {
-    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
-  };
+{
+  buildNpmPackage,
+  nix-gitignore,
+}:
+buildNpmPackage {
+  pname = "portal";
+  version = "0.0.0-dev";
 
-  build = npmlock2nix.build {
-    inherit nodejs;
-    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
-    buildCommands = [ ];
-    node_modules_attrs.npmExtraArgs = [ "--omit=dev" ];
-    installPhase = "cp -r . $out";
-  };
+  src = nix-gitignore.gitignoreSourcePure [../../.gitignore] ./..;
+  sourceRoot = "js/portal";
 
-  # test = pkgs.npmlock2nix.v2.build {
-  #   inherit nodejs;
-  #   src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
-  #   buildCommands = [ "HOME=./ npm run test:unit" ];
-  #   installPhase = "cp -r . $out";
-  # };
+  npmDepsHash = "sha256-RxW4R2rv1qNUlanD1pMq5uvNZ0BByE5F5BEtxbTE3No=";
+
+  makeCacheWritable = true;
+
+  npmRebuildFlags = ["--ignore-scripts"];
+  npmFlags = ["--legacy-peer-deps" "--omit=dev"];
+
+  forceGitDeps = true;
+  dontNpmBuild = true;
 }

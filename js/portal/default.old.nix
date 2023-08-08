@@ -2,25 +2,18 @@
   pkgs ? import ../../nix {inherit system;},
   system ? builtins.currentSystem,
   nodejs ? pkgs.portaldefi.nodejs,
-}: let
-  src =
-    pkgs.nix-gitignore.gitignoreSourcePure [
-      ../../.gitignore
-      ./.gitignore
-    ]
-    ./.;
-  srcDir = ./.;
-in {
+}: {
   build = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src srcDir;
+    inherit nodejs;
+    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
     buildCommands = [];
     node_modules_attrs.npmExtraArgs = ["--omit=dev"];
     installPhase = "cp -r . $out";
   };
-
   test = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src srcDir;
-    buildCommands = ["HOME=./ npm test"];
+    inherit nodejs;
+    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
+    buildCommands = ["HOME=./ npm run test:unit"];
     installPhase = "cp -r . $out";
   };
 }
