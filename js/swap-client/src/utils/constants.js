@@ -16,10 +16,10 @@ export const CHAIN_INFO = {
   }
 }
 export const getAlice = () => {
-  return JSON.stringify(alice)
+  return alice;
 }
 export const getBob = () => {
-  return JSON.stringify(bob)
+  return bob;
 }
 
 /**
