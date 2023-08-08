@@ -3,28 +3,30 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const Sdk = require('./lib')
+const Blockchains = require('./blockchains')
+const Orderbooks = require('./orderbooks')
+const Network = require('./network')
+const Store = require('./store')
+const Swaps = require('./swaps')
 
 /**
- * Export the class
- * @type {SDK}
+ * The Portal SDK
+ * @type {Sdk}
  */
-module.exports = class SDK extends BaseClass {
+module.exports = class Sdk extends BaseClass {
+  /**
+   * Creates a new instance of the Portal SDK
+   * @param {Object} props Properties of the instance
+   */
   constructor (props) {
     super()
 
     /**
-     * Client credentials for the blockchains
-     * @type {Object}
-     * @todo Refactor these out of the client altogether!
+     * Interface to the underlying network (browser/node.js)
+     * @type {Network}
      */
-    this.credentials = props.credentials
-
-    /**
-     * The Portal SDK instance
-     * @type {Sdk}
-     */
-    this.sdk = new Sdk(props)
+    this.network = new Network(props.network)
+      // TODO: Refactor these to be less coupled with the Sdk class
       .on('order.created', (...args) => this.emit('order.created', ...args))
       .on('order.opened', (...args) => this.emit('order.opened', ...args))
       .on('order.closed', (...args) => this.emit('order.closed', ...args))
@@ -34,14 +36,44 @@ module.exports = class SDK extends BaseClass {
       .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
       .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
       .on('message', (...args) => this.emit('message', ...args))
+
+    /**
+     * Interface to the underlying data store (browser/node.js)
+     * @type {Store}
+     */
+    this.store = new Store(props.store)
+
+    /**
+     * Interface to all the blockchain networks
+     * @type {Blockchains}
+     */
+    this.blockchains = new Blockchains(this, props.blockchains)
+
+    /**
+     * Interface to the DEX orderbooks
+     * @type {Orderbooks}
+     */
+    this.orderbooks = new Orderbooks(this, props.orderbooks)
+
+    /**
+     * Interface to atomic swaps
+     * @type {Swaps}
+     */
+    this.swaps = new Swaps(this, props.swaps)
+
+    Object.freeze(this)
   }
 
   get id () {
-    return this.sdk.network.id
+    return this.network.id
   }
 
+  /**
+   * Returns whether the SDK is connected to the network
+   * @returns {Boolean}
+   */
   get isConnected () {
-    return this.sdk.network.isConnected
+    return this.network.isConnected
   }
 
   /**
@@ -55,10 +87,27 @@ module.exports = class SDK extends BaseClass {
 
   /**
    * Starts the Portal SDK.
+   *
+   * The peer connects to the network intermittently and syncs up state. This
+   * method initializes the network sub-system to allow the peer to communicate
+   * with the rest of the network.
+   *
    * @returns {Sdk}
    */
   start () {
-    return this.sdk.start()
+    const operations = [
+      this.network.connect(),
+      this.store.open(),
+      this.blockchains.connect(),
+      this.orderbooks.open(),
+      this.swaps.sync()
+    ]
+
+    return Promise.all(operations)
+      .then(([network, store, blockchains, orderbooks, swaps]) => {
+        this.emit('start')
+        return this
+      })
   }
 
   /**
@@ -66,7 +115,19 @@ module.exports = class SDK extends BaseClass {
    * @returns {Sdk}
    */
   stop () {
-    return this.sdk.stop()
+    const operations = [
+      this.network.disconnect(),
+      this.store.close(),
+      this.blockchains.disconnect(),
+      this.orderbooks.close(),
+      this.swaps.sync()
+    ]
+
+    return Promise.all(operations)
+      .then(([network, store, blockchains, orderbooks, swaps]) => {
+        this.emit('stop')
+        return this
+      })
   }
 
   /**
@@ -74,7 +135,7 @@ module.exports = class SDK extends BaseClass {
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'PUT',
       path: '/api/v1/orderbook/limit'
     }, {
@@ -94,7 +155,7 @@ module.exports = class SDK extends BaseClass {
    * @param {Object} order The limit order to delete the orderbook
    */
   cancelLimitOrder (order) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'DELETE',
       path: '/api/v1/orderbook/limit'
     }, {
@@ -111,7 +172,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Swap}
    */
   swapOpen (swap, opts) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'PUT',
       path: '/api/v1/swap'
     }, { swap, opts })
@@ -124,7 +185,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapCommit (swap, opts) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'POST',
       path: '/api/v1/swap'
     }, { swap, opts })
@@ -137,17 +198,9 @@ module.exports = class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapAbort (swap, opts) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'DELETE',
       path: '/api/v1/swap'
     }, { swap, opts })
-  }
-
-  request (...args) {
-    return this.sdk.network.request(...args)
-  }
-
-  send (...args) {
-    return this.sdk.network.send(...args)
   }
 }

@@ -8,23 +8,33 @@
     "require": "./index.js"
   },
   "scripts": {
-    "clean": "rm -rf coverage node_modules package-lock.json",
+    "build": "parcel build",
+    "clean": "rm -rf .parcel-cache dist node_modules package-lock.json test/dist",
     "coverage": "c8 mocha",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "test": "mocha"
+    "test": "mocha",
+    "watch": "mocha --watch"
   },
   "dependencies": {
-    "eventemitter3": "^5.0.1",
+    "@portaldefi/core": "file:../core",
+    "events": "^3.3.0",
+    "isomorphic-ws": "^5.0.0",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.1",
+    "util": "^0.12.5",
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "@portaldefi/app": "file:../app",
     "@portaldefi/peer": "file:../portal",
     "c8": "^7.12.0",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
+    "parcel": "^2.9.3",
+    "puppeteer": "^20.9.0",
     "standard": "^17.0.0"
   },
   "c8": {
@@ -44,10 +54,10 @@
     "recursive": true,
     "reporter": "spec",
     "slow": 1000,
-    "timeout": 120000,
+    "timeout": 30000,
     "ui": "bdd",
     "watch-files": [
-      "*.*js",
+      "**.*js",
       "test/**/*.*js"
     ]
   },

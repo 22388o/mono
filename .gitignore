@@ -2,10 +2,10 @@
 result*
 
 # Node.js
+.parcel-cache
 coverage
 dist
 node_modules
-dist
 
 # Terraform
 .terraform

@@ -2,7 +2,6 @@
  * @file Behavioral specification for an EVM/Lightning atomic swap
  */
 
-const { expect } = require('chai')
 const { createHash, randomBytes } = require('crypto')
 
 /**

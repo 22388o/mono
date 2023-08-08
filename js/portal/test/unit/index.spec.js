@@ -1,19 +1,22 @@
 /**
- * @file Client/Server Interface Specification
+ * @file The Unit Test Environment builder
  */
 
-const Client = require('@portaldefi/sdk')
-const { expect } = require('chai')
+const Sdk = require('@portaldefi/sdk')
+const chai = require('chai')
 const { writeFileSync } = require('fs')
 const Web3 = require('web3')
 const { compile, deploy } = require('../helpers')
 const Server = require('../../lib/core/server')
 
-const log = process.argv.includes('--debug')
-  ? console.error
-  : function () {}
+// Make `expect` a global to avoid having to require/import it in the tests
+let globalExpect = null
 
 before('Compile contracts', async function () {
+  // Make `expect` a global to avoid having to require/import it in the tests
+  globalExpect = global.expect
+  global.expect = chai.expect
+
   // Web3
   const web3 = new Web3(process.env.PORTAL_ETHEREUM_URL)
   const compiled = await compile()
@@ -24,34 +27,30 @@ before('Compile contracts', async function () {
   // Server and clients
   const server = await (new Server()).start()
   const { hostname, port } = server
-  server.on('log', log)
 
   const create = id => {
     const credentials = require(`./${id}`)
-    return new Client({ id, hostname, port, credentials })
+    return new Sdk({ credentials, network: { id, hostname, port } })
   }
-  const client = new Client({ id: 'client', hostname, port })
   const alice = create('alice')
   const bob = create('bob')
   await Promise.all([
-    client.connect(),
-    alice.connect(),
-    bob.connect()
+    alice.start(),
+    bob.start()
   ])
 
-  Object.assign(this, { alice, bob, client, server })
+  Object.assign(this, { alice, bob, server })
 })
 
 after('Destroy contracts', async function () {
   this.test.ctx.contracts = null
   this.test.ctx.web3 = null
 
-  const { alice, bob, client, server } = this.test.ctx
+  const { alice, bob, server } = this.test.ctx
 
   await Promise.all([
-    client.disconnect(),
-    alice.disconnect(),
-    bob.disconnect()
+    alice.stop(),
+    bob.stop()
   ])
   await server.stop()
 
@@ -59,6 +58,9 @@ after('Destroy contracts', async function () {
   this.test.ctx.bob = null
   this.test.ctx.client = null
   this.test.ctx.server = null
+
+  global.expect = globalExpect
+  globalExpect = null
 })
 
 describe('Test Environment', function () {
@@ -72,6 +74,7 @@ describe('Test Environment', function () {
    */
   it('must setup the client/server correctly for further testing', function () {
     expect(this.test.ctx.server.isListening).to.equal(true)
-    expect(this.test.ctx.client.isConnected).to.equal(true)
+    expect(this.test.ctx.alice.isConnected).to.equal(true)
+    expect(this.test.ctx.bob.isConnected).to.equal(true)
   })
 })
