@@ -9,7 +9,15 @@
 const INSTANCES = new WeakMap()
 
 /**
- * A base class for all other classes
+ * A base class for all other classes/types.
+ *
+ * This class provides the following abstractions:
+ * - EventEmitter: through `.emit()`, `.on()`, `.once()`, and `.off()`
+ * - Logger: through `.debug()`, `.info()`, `.warn()`, and `.error()`
+ *
+ * Additionally, it provides methods for logging the internal state of the
+ * instances of the class, through the `.toJSON()` method.
+ *
  * @type {BaseClass}
  */
 module.exports = class BaseClass {
@@ -50,6 +58,8 @@ module.exports = class BaseClass {
    */
   emit (eventName, ...args) {
     const { events } = INSTANCES.get(this)
+    if (!events.has(eventName)) return false
+
     const handlers = events.get(eventName)
     const result = handlers.size !== 0
 

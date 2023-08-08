@@ -3,12 +3,17 @@
  */
 
 const { expect } = require('chai')
+const { rmSync } = require('fs')
 const { tmpdir } = require('os')
 const Store = require('../../../lib/stores/leveldb')
 
 describe('Store - LevelDB', function () {
   const PROPS = { name: 'test', location: tmpdir() }
   let store = null
+
+  before(function () {
+    rmSync(`${tmpdir()}/test`, { recursive: true })
+  })
 
   it('must not throw when instantiated', function () {
     expect(() => { store = new Store(PROPS) }).to.not.throw()
