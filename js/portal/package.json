@@ -73,14 +73,18 @@
   },
   "standard": {
     "globals": [
+      "debug",
+
       "after",
       "afterEach",
       "before",
       "beforeEach",
-      "context",
       "describe",
       "expect",
-      "it"
+      "it",
+
+      "fetch",
+      "WebSocket"
     ]
   }
 }

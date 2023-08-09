@@ -12,6 +12,15 @@ const uuid = require('uuid')
 const Helpers = module.exports
 
 /**
+ * Returns random data of the specified length (in bytes)
+ * @param {Number} [length=32] The number of bytes of random data to generate
+ * @returns {*}
+ */
+Helpers.random = function (length = 32) {
+  return crypto.randomBytes(length)
+}
+
+/**
  * Returns hex-formatted sha256 hash of the concatenation of all input strings
  * @param {String[]} args
  * @returns {String}

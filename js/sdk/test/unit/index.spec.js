@@ -7,8 +7,24 @@ const Sdk = require('../..')
 const Peer = require('@portaldefi/peer')
 const chai = require('chai')
 
-// Make `expect` a global to avoid having to require/import it in the tests
-let globalExpect = null
+/**
+ * Returns whether the tests are being run in debug mode
+ * @type {Boolean}
+ */
+const isDebugEnabled = process.argv.includes('--debug')
+
+/**
+ * Maps globally visible keys to their values for the duration of the tests
+ *
+ * The keys/values set here override any existing globals for the duration of
+ * the tests.
+ *
+ * @type {Object}
+ */
+const GLOBALS = {
+  debug: isDebugEnabled ? console.debug : function () {},
+  expect: chai.expect
+}
 
 /**
  * A list of user accounts to setup in the testing environment.
@@ -19,18 +35,28 @@ let globalExpect = null
  * @type {Array}
  */
 const USERS = ['alice', 'bob']
-const isDebugEnabled = process.argv.includes('--debug')
 
+/**
+ * Sets up the testing environment
+ * - Sets up global functions for use within tests
+ * - Initializes and starts a peer
+ * - Initializes and starts SDK instances for each user
+ * @returns {Void}
+ */
 before(async function () {
-  // Make `expect` a global to avoid having to require/import it in the tests
-  globalExpect = global.expect
-  global.expect = chai.expect
+  // override/install globals
+  for (const key in GLOBALS) {
+    const existing = global[key]
+    global[key] = GLOBALS[key]
+    GLOBALS[key] = existing
+  }
 
   this.peer = await new Peer(config.network)
     .on('log', (...args) => isDebugEnabled
       ? console.log(...args)
       : function () {})
     .start()
+  expect(this.test.ctx.peer.isListening).to.equal(true)
 
   await Promise.all(USERS.map(id => {
     const credentials = require(`../../../portal/test/unit/${id}`)
@@ -41,24 +67,26 @@ before(async function () {
     this[id] = new Sdk(props)
     return this[id].start()
   }))
+  USERS.forEach(name => {
+    expect(this.test.ctx[name].isConnected).to.equal(true)
+  })
 })
 
+/**
+ * Tears down the testing environment
+ * - Stops the SDK instances for each user
+ * - Stops the peer
+ * - Restores the global functions that were overridden during setup
+ * @returns {Void}
+ */
 after(async function () {
   await Promise.all(USERS.map(name => this.test.ctx[name].stop()))
   await this.test.ctx.peer.stop()
 
-  global.expect = globalExpect
-  globalExpect = null
-})
-
-describe('Portal SDK Test Environment', function () {
-  it('must setup the peer', function () {
-    expect(this.test.ctx.peer.isListening).to.equal(true)
-  })
-
-  it('must setup sdk instances for all users', function () {
-    USERS.forEach(name => {
-      expect(this.test.ctx[name].isConnected).to.equal(true)
-    })
-  })
+  // override/install globals
+  for (const key in GLOBALS) {
+    const existing = global[key]
+    global[key] = GLOBALS[key]
+    GLOBALS[key] = existing
+  }
 })

@@ -89,6 +89,7 @@ function startPeer () {
             status: 'failed',
             error: event.diagnostics
           })
+          process.exit(1)
         } else if (event.type === 'buildSuccess') {
           console.error('info', 'bundler.build', {
             '@type': 'Parcel',
