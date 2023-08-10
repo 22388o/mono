@@ -121,8 +121,6 @@ describe('Swaps - EVM/Lightning', function () {
     const { alice } = this.test.ctx
     const { ethereum } = alice.credentials
     const secret = SECRET.toString('hex')
-    console.log(" { ethereum, secret }")
-    console.log( { ethereum, secret })
     return alice.swapOpen(aliceSwapCreated, { ethereum, secret })
   })
 
