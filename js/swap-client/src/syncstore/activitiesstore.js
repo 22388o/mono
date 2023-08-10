@@ -8,6 +8,7 @@ const activitiesStore = {
         newState.push(action.payload);
         return newState;
       case 'UPDATE_SWAP_STATUS':
+        // TODO: right now only checking activity item with the same status
         const toUpdate = newState.filter(activity => activity.secretHash == action.payload.secretHash);
         console.log("updating activity " + action.payload.secretHash)
         console.log(action.payload)
