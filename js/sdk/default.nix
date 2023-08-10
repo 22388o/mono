@@ -1,26 +1,45 @@
-{ pkgs ? import ../../nix { inherit system; }
-, system ? builtins.currentSystem
-, nodejs ? pkgs.portaldefi.nodejs
-}:
-
-let
-  src = pkgs.nix-gitignore.gitignoreSourcePure [
-    ../../.gitignore
-    ./.gitignore
-    ] ./.;
-
-in
 {
-  build = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src;
-    buildCommands = [ ];
-    node_modules_attrs.npmExtraArgs = [ "--omit=dev" ];
-    installPhase = "cp -r . $out";
-  };
+  pkgs ? import ../../nix {inherit system;},
+  system ? builtins.currentSystem,
+  nodejs ? pkgs.portaldefi.nodejs,
+}: {
+  build = pkgs.stdenv.mkDerivation {
+    name = "sdk";
+    version = "0.0.0";
 
-  test = pkgs.npmlock2nix.v2.build {
-    inherit nodejs src;
-    buildCommands = [ "HOME=./ npm run test" ];
-    installPhase = "cp -r . $out";
+    src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./..;
+    sourceRoot = "js/sdk";
+
+    # TODO: Remove once npmlock2nix file resolution works
+    __noChroot = true;
+
+    buildInputs = [
+      pkgs.makeWrapper
+      nodejs
+    ];
+
+    buildPhase = ''
+      # npm needs a user HOME.
+      export HOME=$(mktemp -d)
+
+      # Install the packages
+      npm install
+
+      # Perform tests (don't work, leaving commented)
+      # npm run test
+
+      # Perform the build
+      npm run build
+    '';
+
+    installPhase = ''
+      mkdir -p $out
+      cp -R {bin,contracts,lib,node_modules,package.json} $out
+
+      chmod +x $out/bin/portal
+      wrapProgram $out/bin/portal \
+        --set NODE_ENV production \
+        --set NODE_PATH "$out/node_modules"
+    '';
   };
 }

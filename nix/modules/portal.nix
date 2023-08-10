@@ -7,7 +7,7 @@ let
 
   cfgBitcoin = config.services.bitcoind.default;
   cfgEthereum = config.services.geth.default;
-
+  cfgPortal = config.portal;
 in
 {
   options.portaldefi.portal.server = {
@@ -41,10 +41,10 @@ in
         PORTAL_HTTP_PORT = toString cfg.port;
 
         PORTAL_GOERLI_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_GOERLI_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
+        PORTAL_GOERLI_CONTRACT_ADDRESS=cfgPortal.ethereum.swapContractAddress;
 
         PORTAL_SEPOLIA_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_SEPOLIA_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
+        PORTAL_SEPOLIA_CONTRACT_ADDRESS=cfgPortal.ethereum.swapContractAddress;
       };
       serviceConfig = {
         # Dynamic user prevents connection to geth

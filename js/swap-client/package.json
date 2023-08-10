@@ -60,6 +60,7 @@
   "devDependencies": {
     "@babel/register": "^7.22.5",
     "@cucumber/cucumber": "^9.3.0",
+    "@portaldefi/core": "file:../core",
     "@portaldefi/peer": "file:../portal",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
