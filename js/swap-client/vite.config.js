@@ -12,7 +12,16 @@ export default defineConfig({
     commonjsOptions: {
       include: [/sdk/, /node_modules/]
     },
-    minifiy: false
+    minifiy: false,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+        warning.message.includes(`'use client'`)) {
+          return
+        }
+        warn(warning)
+      }
+    }
   },
   server: {
     proxy: {
