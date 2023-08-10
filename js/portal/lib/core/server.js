@@ -490,6 +490,12 @@ class ServerResponse extends http.ServerResponse {
       return
     }
 
+    try {
+      console.log("server.js data");
+      console.log(data);
+    } catch (e) {
+      console.log("error console log server.js", e)
+    }
     this.json = data instanceof Error
       ? { message: data.message }
       : data
