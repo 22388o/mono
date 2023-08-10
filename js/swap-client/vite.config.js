@@ -8,6 +8,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@portaldefi/sdk']
   },
+  resolve: {
+    alias: {
+      $fonts: resolve('./public')
+    }
+  },
   build: {
     commonjsOptions: {
       include: [/sdk/, /node_modules/]
