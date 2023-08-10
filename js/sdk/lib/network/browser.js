@@ -19,7 +19,7 @@ module.exports = class Network extends BaseClass {
     this.credentials = props.credentials
     this.websocket = null
 
-    Object.freeze(this)
+    Object.seal(this)
   }
 
   /**
