@@ -176,6 +176,9 @@ module.exports = class Server extends EventEmitter {
    */
   _onRequest (req, res) {
     // If the request errors, then handle the response to the client
+    req.headers['access-control-allow-origin'] = '127.0.0.1:5174'
+    req.headers['access-control-allow-methods'] = 'OPTIONS,GET,PUT,DELETE'
+
     req.once('error', () => {
       if (!res.destroyed && !res.headersSent) {
         res.statusCode = 500

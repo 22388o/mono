@@ -6,6 +6,7 @@
       "ordinal": [
         {
           "nodetype": "lnd",
+          "mode": "regtest",
           "network": "lightning.btc",
           "fungible": true,
           "asset": "BTC",
@@ -16,9 +17,11 @@
         },
         {
           "nodetype": "bitcoind",
+          "mode": "regtest",
           "network": "bitcoin",
           "fungible": false,
           "asset": "BTC",
+          "host": "127.0.0.1",
           "bitcoin-conf": "playnet/bitcoind.portal.conf",
           "bitcoin-lnd-conf": "playnet/lnd.${username}.conf"
         }
@@ -26,6 +29,7 @@
       "submarine": [
         {
           "nodetype": "lnd",
+          "mode": "regtest",
           "network": "lightning.btc",
           "fungible": true,
           "asset": "BTC",
@@ -36,9 +40,11 @@
         },
         {
           "nodetype": "bitcoind",
+          "mode": "regtest",
           "network": "btc.btc",
           "fungible": false,
           "asset": "BTC",
+          "host": "127.0.0.1",
           "bitcoin-conf": "playnet/bitcoind.portal.conf",
           "bitcoin-lnd-conf": "playnet/lnd.${username}.conf"
         }

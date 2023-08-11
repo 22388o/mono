@@ -9,12 +9,13 @@ const ln = require('lightning')
 const { createInvoice, createHodlInvoice, subscribeToInvoice, decodePaymentRequest, payViaPaymentRequest, settleHodlInvoice } = require('lightning')
 const SwapInfo = require('../swap-info')
 const witnessStackToScriptWitness = require('../bitcoinjs-function/witnessStackToScriptWitness')
+const getBitcoinMode = require('../bitcoinjs-function/bitcoinMode')
+
 
 const RELATIVE_SWAP_TIMELOCK = 36
 const RELATIVE_PAYMENT_DEADLINE = 24
 const REQUIRED_CONFIRMATIONS = 1
 const DEFAULT_MINER_FEE = 2000
-const NETWORK = bitcoin.networks.regtest
 
 module.exports = class Ordinal extends SeekerTemplate {
   constructor (party, node1, node2) {
@@ -48,7 +49,8 @@ module.exports = class Ordinal extends SeekerTemplate {
     // console.log(`node1: ${JSON.stringify(this.node1, null, 2)}`)
     // console.log(`node2: ${JSON.stringify(this.node2, null, 2)}`)
 
-    const carol = new Client({
+    const bob = new Client({
+      host: this.node2.creds.host,
       port: this.node2.creds.rpcport,
       password: this.node2.creds.rpcpassword,
       username: this.node2.creds.rpcuser
@@ -60,15 +62,17 @@ module.exports = class Ordinal extends SeekerTemplate {
     console.log("username: ", this.node2.creds.rpcuser)
 
 
-    const info = await carol.command([{ method: 'getblockchaininfo', parameters: [] }])
+    const info = await bob.command([{ method: 'getblockchaininfo', parameters: [] }])
 
     // console.log(`info: ${JSON.stringify(info, null, 2)}`)
 
     const wif = this.node2.creds.wif
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
     // console.log(`wif: ${wif}`)
     // const network = bitcoin.networks.regtest
     // console.log(`network: ${network}`)
-    const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK)
+    const seekerPair = bitcoin.ECPair.fromWIF(wif,  bitcoinMode)
     // console.log(`holderPair created`)
     const seekerPublicKey = seekerPair.publicKey.toString('hex')
     // console.log(`seekerPublicKey: ${seekerPublicKey}`)
@@ -84,14 +88,14 @@ module.exports = class Ordinal extends SeekerTemplate {
     console.log(`holderPublicKey: ${holderPublicKey}`)
     const swapHash = party.swapHash
     const witnessScriptRaw = scriptGenerator(seekerPublicKey, holderPublicKey, swapHash, timelock)
-    const p2wsh = bitcoin.payments.p2wsh({ redeem: { output: witnessScriptRaw, NETWORK }, NETWORK })
+    const p2wsh = bitcoin.payments.p2wsh({ redeem: { output: witnessScriptRaw,  bitcoinMode }, bitcoinMode })
 
     const witnessScript = witnessScriptRaw.toString('hex')
 
-    const scriptInfo = await carol.decodeScript(witnessScript)
+    const scriptInfo = await bob.decodeScript(witnessScript)
     const payAddress = scriptInfo.segwit.address
     const barePayDescriptor = `addr(${payAddress})`
-    const descriptorInfo = await carol.command([{ method: 'getdescriptorinfo', parameters: [barePayDescriptor] }])
+    const descriptorInfo = await bob.command([{ method: 'getdescriptorinfo', parameters: [barePayDescriptor] }])
     const checksum = descriptorInfo[0].checksum
     const payDescriptor = `${barePayDescriptor}#${checksum}`
 
@@ -107,7 +111,8 @@ module.exports = class Ordinal extends SeekerTemplate {
 
   // async function commit(secret, swapinfo, amount, fee) {
   async commit (party, opts) {
-    const carol = new Client({
+    const bob = new Client({
+      host: this.node2.creds.host,
       port: this.node2.creds.rpcport,
       password: this.node2.creds.rpcpassword,
       username: this.node2.creds.rpcuser
@@ -138,14 +143,19 @@ module.exports = class Ordinal extends SeekerTemplate {
     const swapinfo = party.state.shared.swapinfo
 
     const wif = this.node2.creds.wif
-    const seekerPair = bitcoin.ECPair.fromWIF(wif, NETWORK)
+    const mode = this.node2.creds.mode
+    const bitcoinMode = getBitcoinMode(mode)
+
+    const seekerPair = bitcoin.ECPair.fromWIF(wif,  bitcoinMode)
     const seekerPublicKey = seekerPair.publicKey
 
-    const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: seekerPublicKey, NETWORK })
+    const secretSeeker_p2wpkh = bitcoin.payments.p2wpkh({ pubkey: seekerPublicKey,  network: bitcoinMode })
 
     const secretSeeker_redeemAddress = secretSeeker_p2wpkh.address
 
-    const psbt = new bitcoin.Psbt({ NETWORK })
+    const psbt = new bitcoin.Psbt({  'network': bitcoinMode })
+
+    console.log('swapinfo.descriptor: ', swapinfo.descriptor)
 
     const amountAndFee = ordinalAmount + fee
     console.log(`### fee           ###: ${fee}`)
@@ -158,7 +168,7 @@ module.exports = class Ordinal extends SeekerTemplate {
     console.log(`### height (type) ###: ${typeof (height)}`)
     console.log(`### height  ###: ${height}`)
 
-    const scantx = await carol.command([{ method: 'scantxoutset', parameters: ['start', [{ desc: `${swapinfo.descriptor}` }]] }]) // TODO: add range
+    const scantx = await bob.command([{ method: 'scantxoutset', parameters: ['start', [{ desc: `${swapinfo.descriptor}` }]] }]) // TODO: add range
 
     // for basic demo - assume one payment
     // later accommodate multiple payments that add up to at least amount + fee with sufficient confirmations for all
@@ -177,7 +187,7 @@ module.exports = class Ordinal extends SeekerTemplate {
     const utxos = scantx[0].unspents
     const numUtxos = utxos.length
 
-    if (numUtxos == 0) {
+    if (numUtxos === 0) {
       console.log('payment not received yet')
       // TODO: determine return contract
       // return void 0;
@@ -186,7 +196,7 @@ module.exports = class Ordinal extends SeekerTemplate {
       console.log(`multiple payments, numUtxos: ${numUtxos}`)
       // TODO: determine return contract and implement handling in time
       return void 0
-    } else if (numUtxos == 1) {
+    } else if (numUtxos === 1) {
       // current happy path
     } else {
       console.log(`unusual value for numUtxos: ${numUtxos}`)
@@ -222,17 +232,17 @@ module.exports = class Ordinal extends SeekerTemplate {
       socket: this.node1.creds.socket
     }
 
-    const carolAdmin = ln.authenticatedLndGrpc(auth)
+    const bobAdmin = ln.authenticatedLndGrpc(auth)
     const request = party.state.shared.request
-    carolAdmin.request = request
-    const details = await decodePaymentRequest(carolAdmin).catch(reason => console.log(reason))
+    bobAdmin.request = request
+    const details = await decodePaymentRequest(bobAdmin).catch(reason => console.log(reason))
     const swapHash = party.swapHash
     if (swapHash !== details.id) {
       throw new Error('Swap hash does not match payment hash for invoice ')
     }
 
     console.log('Bob about to pay invoice')
-    const paidInvoice = await payViaPaymentRequest(carolAdmin).catch(reason => console.log(reason))
+    const paidInvoice = await payViaPaymentRequest(bobAdmin).catch(reason => console.log(reason))
 
     console.log(`paidInvoice.secret: ${paidInvoice.secret}`)
     const secret = paidInvoice.secret
@@ -274,7 +284,7 @@ module.exports = class Ordinal extends SeekerTemplate {
     const transaction = psbt.extractTransaction()
 
     try {
-      const txid = await carol.command([{ method: 'sendrawtransaction', parameters: [`${transaction.toHex()}`] }])
+      const txid = await bob.command([{ method: 'sendrawtransaction', parameters: [`${transaction.toHex()}`] }])
       party.state.shared.txid = txid
       // return transaction.toHex();
     } catch (exception) {

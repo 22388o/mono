@@ -18,11 +18,6 @@ Playnet.normalize = function (props) {
                 delete newProps['cert-file']
 
                 const cert = fs.readFileSync(join(basename, certFile),'base64').toString()
-                // const certFileString = fs.readFileSync(join(basename, certFile), 'utf8').toString()
-                // console.log('certFileString: ', certFileString)
-                // const cert = certFileString.replace('-----BEGIN CERTIFICATE-----', '')
-                //     .replace('-----END CERTIFICATE-----', '')
-                //     .replace(/\s*/g, '')
                 newProps['cert'] = cert
             }
             if ('admin-binary' in props) {
@@ -49,7 +44,6 @@ Playnet.normalize = function (props) {
                 const socket = properties.get('rpclisten')
                 console.log('socket: ', socket)
                 newProps['socket'] = socket.replace('127.0.0.1', 'localhost')
-                // newProps['socket'] = socket
             }
             return newProps
             break

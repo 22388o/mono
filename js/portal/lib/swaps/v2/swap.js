@@ -163,6 +163,14 @@ module.exports = class Swap extends EventEmitter {
     return this.status === SWAP_STATUS[5]
   }
 
+  get isHolderPaymentPending () {
+    return this.status === SWAP_STATUS[6]
+  }
+
+  get isHolderPaid () {
+    return this.status === SWAP_STATUS[7]
+  }
+
   /**
    * The current status of the atomic swap
    * @returns {String}
@@ -211,9 +219,14 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   async open (party, opts) {
-    // console.log('\nswap.open', this, party, opts)
+
 
     const { secretHolder, secretSeeker, status } = this
+    console.log('\nswap.open', this, party, opts)
+    console.log('\nentering swap.open')
+    console.log('this.status: ', this.status)
+    console.log('status: ', status)
+
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
     const isBoth = isHolder && isSeeker
@@ -236,11 +249,31 @@ module.exports = class Swap extends EventEmitter {
     party.state = Object.assign({}, party.state, state)
 
     party = await party.open(opts)
-    SWAP_INSTANCES.get(this).status = this.isOpening
-      ? SWAP_STATUS[2]
-      : SWAP_STATUS[1]
+    console.log('isOpening', this.isOpening)
+
+    function getNewStatus (swap) {
+      if (swap.isCreated) {
+        return SWAP_STATUS[1]
+      }
+      else if (swap.isOpening) {
+        return SWAP_STATUS[2]
+      }
+      else if (swap.isHolderPaymentPending) {
+        return SWAP_STATUS[6] // stays the same; change made elsewhere
+      }
+      else {
+        throw new Error(`swap status incorrect upon leaving call to open() ${swap.status}`)
+      }
+    }
+
+
+    const newStatus = getNewStatus(this)
+    console.log('newStatus', newStatus)
+    SWAP_INSTANCES.get(this).status = newStatus
     this.emit(this.status, this)
 
+    console.log('\nleaving swap.open')
+    console.log('status: ', this.status)
     return this
   }
 
@@ -252,15 +285,20 @@ module.exports = class Swap extends EventEmitter {
    * @returns {Promise<Swap>}
    */
   async commit (party, opts) {
-    console.log('\nswap.commit', this, party, opts)
+
 
     const { secretHolder, secretSeeker, status } = this
+    console.log('\nswap.commit', this, party, opts)
+    console.log('\nentering swap.commit')
+    console.log('this.status: ', this.status)
+    console.log('status: ', status)
+
     const isHolder = party.id === secretHolder.id
     const isSeeker = party.id === secretSeeker.id
     const isBoth = isHolder && isSeeker
     const isNeither = !isHolder && !isSeeker
 
-    if (status !== SWAP_STATUS[7]) {
+    if ((isSeeker && (status !== SWAP_STATUS[7] && status !== SWAP_STATUS[3])) || (isHolder && status !== SWAP_STATUS[6])) {
       throw Error(`cannot commit swap "${this.id}" when ${status}!`)
     } else if (isBoth) {
       throw Error('self-swapping is not allowed!')
@@ -280,6 +318,9 @@ module.exports = class Swap extends EventEmitter {
       : SWAP_STATUS[3]
     this.emit(this.status, this)
 
+
+    console.log('\nleaving swap.commit')
+    console.log('this.status: ', this.status)
     return this
   }
 

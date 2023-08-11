@@ -32,4 +32,7 @@ playnet
 
 # bak
 *.bak
+bak
+
+js/portal/config/accounts.json
 
