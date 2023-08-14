@@ -9,8 +9,13 @@ describe('Portal SDK', function () {
   let sdk = null
 
   before(async function () {
-    sdk = new Sdk({ id: 'sdk', ...config.peer })
-    await sdk.connect()
+    const credentials = {}
+    const props = Object.assign({}, config, {
+      credentials,
+      network: Object.assign({}, config.network, { id: 'alice' })
+    })
+    sdk = new Sdk(props)
+    await sdk.start()
   })
 
   it('must be connected and ready for subsequent tests', function () {
@@ -19,7 +24,7 @@ describe('Portal SDK', function () {
   })
 
   after(async function () {
-    await sdk.disconnect()
+    await sdk.stop()
     sdk = null
   })
 })

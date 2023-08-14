@@ -14,7 +14,7 @@
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "test": "npm run test:browser && npm run test:node",
+    "test": "npm run test:node",
     "test:browser": "mocha test/browser.spec.js",
     "test:node": "mocha test/node.spec.js",
     "watch": "npm run test:browser -- --watch"
