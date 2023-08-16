@@ -1,19 +1,18 @@
-{ pkgs ? import ./nix { } }:
-
+{pkgs ? import ./nix {}}:
 pkgs.mkShell {
   packages = with pkgs; [
-    portaldefi.nodejs
-
+    alejandra
     bash
     bitcoind
     coreutils
-    go-ethereum
     git
+    go-ethereum
     jq
     less
     lnd
     niv
     nix-diff
+    portaldefi.nodejs
     terraform
     which
   ];
