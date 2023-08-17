@@ -1,5 +1,4 @@
-{ pkgs ? import ../. {}  }:
-let
+{pkgs ? import ../. {}}: let
   test-portal = pkgs.writeScriptBin "test-portal" ''
     set -eux
     endpoint="https://portal.portaldefi.com/api/v1/alive"
@@ -17,7 +16,7 @@ let
       exit 1
     fi
   '';
-  tls-cert = pkgs.runCommand "selfSignedCerts" { buildInputs = [ pkgs.openssl ]; } ''
+  tls-cert = pkgs.runCommand "selfSignedCerts" {buildInputs = [pkgs.openssl];} ''
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -nodes -subj '/CN=portal.portaldefi.com' -days 36500
     mkdir -p $out
     cp key.pem cert.pem $out
@@ -26,40 +25,54 @@ let
     ${nodes.portal.config.networking.primaryIPAddress} portal.portaldefi.com
     ${nodes.client.config.networking.primaryIPAddress} client.portaldefi.com
   '';
-in pkgs.nixosTest {
-  name = "portal-vm-test";
-  nodes = {
-    client = { nodes, pkgs, config, ...}: {
-      security.pki.certificateFiles = [ "${tls-cert}/cert.pem" ];
-      networking.extraHosts = hosts nodes;
-      environment.systemPackages = [ pkgs.curl pkgs.jq test-portal ];
-    };
+in
+  pkgs.nixosTest {
+    name = "portal-vm-test";
+    nodes = {
+      client = {
+        nodes,
+        pkgs,
+        config,
+        ...
+      }: {
+        security.pki.certificateFiles = ["${tls-cert}/cert.pem"];
+        networking.extraHosts = hosts nodes;
+        environment.systemPackages = [pkgs.curl pkgs.jq test-portal];
+      };
 
-    portal = { nodes, pkgs, config, ...}:{
-      security.pki.certificateFiles = [ "${tls-cert}/cert.pem" ];
-      networking.extraHosts = hosts nodes;
-      imports = [ ../modules/portal.nix ];
-      networking.firewall.enable = false;
-      services = {
-        nginx = {
-          enable = true;
-          virtualHosts."portal.portaldefi.com" = {
-            addSSL = true;
-            sslCertificate = "${tls-cert}/cert.pem";
-            sslCertificateKey = "${tls-cert}/key.pem";
-            locations."/" = {
-              proxyPass = "http://${config.portaldefi.portal.server.hostname}:${toString config.portaldefi.portal.server.port}";
+      portal = {
+        nodes,
+        pkgs,
+        config,
+        ...
+      }: {
+        security.pki.certificateFiles = ["${tls-cert}/cert.pem"];
+        networking.extraHosts = hosts nodes;
+        imports = [
+          ../modules/portal.nix
+          ../modules/geth.nix
+        ];
+        networking.firewall.enable = false;
+        services = {
+          nginx = {
+            enable = true;
+            virtualHosts."portal.portaldefi.com" = {
+              addSSL = true;
+              sslCertificate = "${tls-cert}/cert.pem";
+              sslCertificateKey = "${tls-cert}/key.pem";
+              locations."/" = {
+                proxyPass = "http://${config.portaldefi.portal.server.hostname}:${toString config.portaldefi.portal.server.port}";
+              };
             };
           };
         };
       };
     };
-  };
-  testScript = { nodes, ... }: ''
-    start_all()
-    portal.wait_for_unit("portal.service")
-    portal.wait_for_unit("nginx.service")
-    client.wait_for_unit("multi-user.target")
-    client.succeed("test-portal")
-  '';
-}
+    testScript = {nodes, ...}: ''
+      start_all()
+      portal.wait_for_unit("portal.service")
+      portal.wait_for_unit("nginx.service")
+      client.wait_for_unit("multi-user.target")
+      client.succeed("test-portal")
+    '';
+  }

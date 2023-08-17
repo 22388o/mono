@@ -5,9 +5,7 @@ with lib;
 let
   cfg = config.portaldefi.portal.server;
 
-  cfgBitcoin = config.services.bitcoind.default;
   cfgEthereum = config.services.geth.default;
-
 in
 {
   options.portaldefi.portal.server = {
