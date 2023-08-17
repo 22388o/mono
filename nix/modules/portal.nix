@@ -1,13 +1,14 @@
-{ config, lib, pkgs, ...}:
-
-with lib;
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   cfg = config.portaldefi.portal.server;
 
   cfgEthereum = config.services.geth.default;
-in
-{
+in {
   options.portaldefi.portal.server = {
     hostname = mkOption {
       description = "The interface/IP address to listen on";
@@ -23,11 +24,11 @@ in
   };
 
   config = {
-    environment.systemPackages = [ pkgs.portaldefi.demo ];
+    environment.systemPackages = [pkgs.portaldefi.demo];
 
     systemd.services.portal = {
       description = "Portal Server";
-      wantedBy = [ "multi-user.target" ];
+      wantedBy = ["multi-user.target"];
       after = [
         "network.target"
         "bitcoind-default.service"
@@ -39,10 +40,10 @@ in
         PORTAL_HTTP_PORT = toString cfg.port;
 
         PORTAL_GOERLI_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_GOERLI_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
+        PORTAL_GOERLI_CONTRACT_ADDRESS = config.portal.ethereum.swapContractAddress;
 
         PORTAL_SEPOLIA_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_SEPOLIA_CONTRACT_ADDRESS=config.portal.ethereum.swapContractAddress;
+        PORTAL_SEPOLIA_CONTRACT_ADDRESS = config.portal.ethereum.swapContractAddress;
       };
       serviceConfig = {
         # Dynamic user prevents connection to geth
