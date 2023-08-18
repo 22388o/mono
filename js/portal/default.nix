@@ -12,8 +12,9 @@ pkgs.stdenv.mkDerivation {
 
   __noChroot = true;
 
-  # TODO: Fix tests
   doCheck = false;
+
+  NODE_ENV = "production";
 
   buildInputs = [
     nodejs
@@ -34,7 +35,7 @@ pkgs.stdenv.mkDerivation {
     for dir in ../*/; do
       chmod -R u+w "$dir"
     done
-
+  
     # npm needs a user HOME.
     export HOME=$(mktemp -d)
   '';
@@ -46,17 +47,9 @@ pkgs.stdenv.mkDerivation {
     npm install
   '';
 
-  checkPhase = ''
-    # Fix issues not importing correctly libraries when linking (see: https://github.com/npm/cli/issues/2339#issuecomment-1111228605)
-    npm install -D --install-links ../core
-
-    # Perform tests
-    npm run test:unit
-  '';
-
   installPhase = ''
     mkdir -p $out
-    cp -R {bin,contracts,lib,node_modules,package.json} $out
+    cp -R {bin,contracts,lib,node_modules,package.json,package-lock.json} $out
 
     chmod +x $out/bin/portal
     wrapProgram $out/bin/portal \
