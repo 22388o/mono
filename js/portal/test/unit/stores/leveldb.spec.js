@@ -12,7 +12,11 @@ describe('Store - LevelDB', function () {
   let store = null
 
   before(function () {
-    rmSync(`${tmpdir()}/test`, { recursive: true })
+    try {
+      rmSync(`${tmpdir()}/test`, { recursive: true })
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err
+    }
   })
 
   it('must not throw when instantiated', function () {
