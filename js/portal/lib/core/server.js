@@ -317,11 +317,13 @@ module.exports = class Server extends EventEmitter {
     // The authorization header is "Basic <base-64 encoded username:password>"
     // We split out the username and stash it on req.user
     const auth = req.headers.authorization
-    /* eslint-disable-next-line no-unused-vars */
-    const [algorithm, base64] = auth.split(' ')
-    /* eslint-disable-next-line no-unused-vars */
-    const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
-    req.user = user
+    if (auth != null) {
+      /* eslint-disable-next-line no-unused-vars */
+      const [algorithm, base64] = auth.split(' ')
+      /* eslint-disable-next-line no-unused-vars */
+      const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+      req.user = user
+    }
 
     // Collect the incoming HTTP body
     const chunks = []
