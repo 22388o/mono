@@ -12,13 +12,13 @@ pkgs.stdenv.mkDerivation {
 
   __noChroot = true;
 
-  # TODO: Fix tests
   doCheck = false;
 
   buildInputs = [
     nodejs
     pkgs.cacert
     pkgs.git
+    pkgs.jq
     pkgs.makeWrapper
     pkgs.openssh
   ];
@@ -29,34 +29,63 @@ pkgs.stdenv.mkDerivation {
       insteadOf = "ssh://git@github.com/"
   '';
 
+  NODE_ENV = "production";
+
   preBuild = ''
-    # Update permissions to be writable on parent folders (required when working with npm link)
+    # Extract local dependencies from package.json
+    function get_local_deps() {
+      jq -r '.dependencies | to_entries[] | select(.value | startswith("file:")) | .key' package.json
+    }
+
+    # Function to get the path of a given local dependency from package.json.
+    function get_dep_path() {
+      jq -r ".dependencies.\"$1\"" package.json | cut -c 6-
+    }
+
+    # Update permissions to be writable on parent folders. 
+    # This is required when working with npm link.
     for dir in ../*/; do
       chmod -R u+w "$dir"
     done
 
-    # npm needs a user HOME.
+    # Define a temporary home directory for npm so it won't complain.
     export HOME=$(mktemp -d)
   '';
 
   buildPhase = ''
     runHook preBuild
 
-    # Install the packages
+    # Install local deps (see issue: https://github.com/npm/cli/issues/2339)
+    for dep in $(get_local_deps); do
+      pushd "$(get_dep_path "$dep")"
+      npm install
+      popd
+    done
+
+    # Install the primary library's node_modules
     npm install
-
-    # Perform the build
-    # TODO: Fix parcel build
-    npm run build
-  '';
-
-  checkPhase = ''
-    npm run test:node
   '';
 
   installPhase = ''
-    mkdir -p $out
-    # TODO: Copy appropiately outputs after fixing parcel build
-    cp -R {node_modules,package.json} $out
+    # Create out dir
+    mkdir -p "$out"
+    
+    # Handle local dependencies: 
+    # Remove symlinks and copy the actual content of local dependencies
+    for dep in $(get_local_deps); do
+      dep_path="node_modules/$dep"
+
+      # If a symlink or directory for the local dependency exists, remove it
+      [ -e "$dep_path" ] && rm -rf "$dep_path"
+
+      # Ensure the parent directory of the local dependency exists
+      mkdir -p "$(dirname "$dep_path")"
+
+      # Copy the actual content of the local dependency
+      cp -RT "$(get_dep_path "$dep")" "$dep_path"
+    done
+
+    # Copy the main library's relevant files to the build result directory
+    cp -R {node_modules,package.json,package-lock.json,etc,lib,index.js,index.mjs} "$out"
   '';
 }
