@@ -39,7 +39,7 @@ pkgs.stdenv.mkDerivation {
 
     # Function to get the path of a given local dependency from package.json.
     function get_dep_path() {
-      jq -r ".dependencies.\"$1\"" package.json | cut -c 6- | tr -d '\n
+      jq -r ".dependencies.\"$1\"" package.json | cut -c 6-
     }
 
     # Update permissions to be writable on parent folders. 
