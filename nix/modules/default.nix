@@ -70,7 +70,7 @@ with lib; {
           path = "/etc/ssh/ed25519_key";
         }
       ];
-      settings.passwordAuthentication = false;
+      settings.PasswordAuthentication = false;
     };
 
     time.timeZone = "UTC";
