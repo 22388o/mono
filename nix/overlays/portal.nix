@@ -4,14 +4,9 @@ self: super: let
   pkgs = super;
 in {
   portaldefi = {
-    inherit nodejs;
     app = import ../../js/app {inherit nodejs pkgs;};
     demo = import ../../js/swap-client {inherit nodejs pkgs;};
     portal = import ../../js/portal {inherit nodejs pkgs;};
     sdk = import ../../js/sdk {inherit nodejs pkgs;};
-  };
-
-  portaldefi-integration-tests = {
-    portal = import ../vm-tests/portal.nix {pkgs = super;};
   };
 }

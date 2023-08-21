@@ -39,7 +39,7 @@ jobs:
       run: nix-shell --run "chmod +x ./sh/tests.sh && ./sh/tests.sh"
 
     - name: Build PortalDefi packages
-      run: nix-build --option sandbox false nix -A portaldefi
+      run: nix-build --option sandbox false --attr packages
 
     # TODO: Fix these for playnet
     # - name: Run PortalOS tests
@@ -69,8 +69,8 @@ jobs:
 
     - name: Build PortalOS closure
       run: |
-        nix-build ./default.nix
-        system_path=$(nix-build ./default.nix)
+        nix-build --option sandbox false --attr nixosConfigurations.portalos
+        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
         echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
       id: build-machine-closure
 

@@ -21,7 +21,7 @@ in
       lnd
       niv
       nix-diff
-      portaldefi.nodejs
+      nodejs
       terraform
       which
     ];
@@ -83,6 +83,6 @@ in
       }
     ];
 
-    # TODO: Potentially migrate to process-compose or pro
+    # TODO: Potentially migrate to process-compose or procfile
     devshell.startup.playnet.text = ''source $PORTAL_ROOT/sh/devenv.sh'';
   }
