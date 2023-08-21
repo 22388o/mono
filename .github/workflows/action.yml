@@ -35,16 +35,13 @@ jobs:
         name: portaldefi-demo
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-    - name: Run tests
+    - name: Run tests & integration tests
       run: nix-shell --run "chmod +x ./sh/tests.sh && ./sh/tests.sh"
+      env:
+        MATRIX_OS: ${{ matrix.os }}
 
     - name: Build PortalDefi packages
       run: nix-build --option sandbox false --attr packages
-
-    # TODO: Fix these for playnet
-    # - name: Run PortalOS tests
-    #   run: nix-build nix -A portaldefi-integration-tests
-    #   if: matrix.os != 'macOS-latest'
 
   deploy:
     needs: build

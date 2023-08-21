@@ -20,3 +20,9 @@ for dir in "${directories[@]}"; do
   echo "Tests in $dir completed."
   echo "-------------------------"
 done
+
+if [ "$MATRIX_OS" != "macOS-latest" ]; then
+  cd $PORTAL_ROOT
+  echo "Performing integration tests"
+  nix-build --option sandbox false --attr checks.portaldefi.integration-tests.portal
+fi
