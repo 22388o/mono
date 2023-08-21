@@ -42,7 +42,7 @@ pkgs.stdenv.mkDerivation {
       jq -r ".dependencies.\"$1\"" package.json | cut -c 6-
     }
 
-    # Update permissions to be writable on parent folders. 
+    # Update permissions to be writable on parent folders.
     # This is required when working with npm link.
     for dir in ../*/; do
       chmod -R u+w "$dir"
@@ -69,8 +69,8 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     # Create out dir
     mkdir -p "$out"
-    
-    # Handle local dependencies: 
+
+    # Handle local dependencies:
     # Remove symlinks and copy the actual content of local dependencies
     for dep in $(get_local_deps); do
       dep_path="node_modules/$dep"

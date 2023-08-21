@@ -35,7 +35,7 @@ pkgs.stdenv.mkDerivation {
     for dir in ../*/; do
       chmod -R u+w "$dir"
     done
-  
+
     # npm needs a user HOME.
     export HOME=$(mktemp -d)
   '';
