@@ -25,18 +25,27 @@ in
       terraform
       which
     ];
-    
+
     env = [
       # Configure nix to use our defined nixpkgs
-      { name = "NIX_PATH"; value = "nixpkgs=${toString pkgs.path}"; }
-      
+      {
+        name = "NIX_PATH";
+        value = "nixpkgs=${toString pkgs.path}";
+      }
+
       # Define PORTAL_ROOT (used by some scripts, although we can use $PRJ_ROOT as well)
-      { name = "PORTAL_ROOT"; value = "${toString ./.}"; }
+      {
+        name = "PORTAL_ROOT";
+        value = "${toString ./.}";
+      }
 
       # Define PLAYNET_ROOT
-      { name = "PLAYNET_ROOT"; value = "${toString ./.}/playnet"; }
+      {
+        name = "PLAYNET_ROOT";
+        value = "${toString ./.}/playnet";
+      }
     ];
-    
+
     commands = [
       {
         category = "Terraform";
