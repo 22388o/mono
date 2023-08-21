@@ -6,8 +6,10 @@
 }:
 with lib; let
   cfg = config.portaldefi.portal.server;
-
   cfgEthereum = config.services.geth.default;
+
+  # TODO: Harcoded values for contracts for now, it should come from custom derivation
+  contracts = ../../playnet/contracts.json;
 in {
   options.portaldefi.portal.server = {
     hostname = mkOption {
@@ -39,11 +41,9 @@ in {
         PORTAL_HTTP_HOSTNAME = cfg.hostname;
         PORTAL_HTTP_PORT = toString cfg.port;
 
-        PORTAL_GOERLI_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_GOERLI_CONTRACT_ADDRESS = config.portal.ethereum.swapContractAddress;
-
-        PORTAL_SEPOLIA_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_SEPOLIA_CONTRACT_ADDRESS = config.portal.ethereum.swapContractAddress;
+        PORTAL_ETHEREUM_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
+        PORTAL_ETHEREUM_CHAINID = "0x539";
+        PORTAL_ETHEREUM_CONTRACTS = contracts;
       };
       serviceConfig = {
         # Dynamic user prevents connection to geth

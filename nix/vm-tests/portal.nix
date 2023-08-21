@@ -46,12 +46,14 @@ in
         config,
         ...
       }: {
+        imports = [
+          ../modules/bitcoind.nix
+          ../modules/geth.nix
+          ../modules/portal.nix
+        ];
+
         security.pki.certificateFiles = ["${tls-cert}/cert.pem"];
         networking.extraHosts = hosts nodes;
-        imports = [
-          ../modules/portal.nix
-          ../modules/geth.nix
-        ];
         networking.firewall.enable = false;
         services = {
           nginx = {
