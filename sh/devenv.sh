@@ -2,7 +2,7 @@
 # Functions/Helpers
 ############################################################################
 
-__run_as_user() {
+function __run_as_user() {
   local user=$1
   local service=$2
   shift 2
@@ -37,7 +37,7 @@ __run_as_user() {
   $cli "${cli_args[@]}" "$@"
 }
 
-__gethAccount() {
+function __gethAccount() {
   local user=$1
   local password_file=$(mktemp)
   echo -n "$user" >$password_file
@@ -50,32 +50,93 @@ __gethAccount() {
   echo "$PLAYNET_ROOT/state/$user/geth/keystore.json"
 }
 
-initialize_services() {
-  echo "starting developer environment..."
+############################################################################
+# Aliases
+############################################################################
+alias alice='__run_as_user alice'
+alias bob='__run_as_user bob'
+alias portal='__run_as_user portal'
 
-  echo "- starting bitcoind for portal..."
-  bitcoind -conf="$PLAYNET_ROOT/bitcoind.portal.conf" \
-    -datadir="$PLAYNET_ROOT/state/portal/bitcoind" >/dev/null
+############################################################################
+# Services
+############################################################################
 
-  echo "- starting geth for portal..."
-  nohup geth --dev \
-    --config "$PLAYNET_ROOT/geth.portal.toml" \
-    --datadir "$PLAYNET_ROOT/state/portal/geth/data" >$PLAYNET_ROOT/log/portal/geth.log 2>&1 &
+# Kill all services on exit
+function on_exit() {
+  set +eu
 
-  echo "- starting lnd for alice..."
-  nohup lnd --configfile "$PLAYNET_ROOT/lnd.alice.conf" \
-    --lnddir "$PLAYNET_ROOT/state/alice/lnd" \
-    --noseedbackup >$PLAYNET_ROOT/log/alice/lnd.log 2>&1 &
-  while ! $(__run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
+  echo "- terminating lnd for alice..."
+  __run_as_user alice lnd stop
 
-  echo "- starting lnd for bob..."
-  nohup lnd --configfile "$PLAYNET_ROOT/lnd.bob.conf" \
-    --lnddir "$PLAYNET_ROOT/state/bob/lnd" \
-    --noseedbackup >$PLAYNET_ROOT/log/bob/lnd.log 2>&1 &
-  while ! $(__run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
+  echo "- terminating lnd for bob..."
+  __run_as_user bob lnd stop
+
+  echo "- terminating geth for portal..."
+  pkill geth
+
+  echo "- terminating bitcoind for portal..."
+  __run_as_user portal bitcoind stop >/dev/null
+
+  echo "terminated developer environment..."
 }
+trap on_exit EXIT
 
-initialize_dev_environment() {
+# Fail the script if any command fails
+set -eu
+
+readonly RESET_STATE=$([[ -f $PLAYNET_ROOT/.delete_to_reset ]] && echo false || echo true)
+readonly LND_WALLET_FUNDS=10       # in btc
+readonly LND_CHANNEL_FUNDS=1000000 # in satoshis
+readonly BITCOIND_BLOCKS=$(((100 + (($LND_WALLET_FUNDS * 2 + 49) / 50))))
+
+# Cleanup prior state, if needed
+if [[ $RESET_STATE == "true" ]]; then
+  echo "resetting developer environment..."
+  rm -rf $PLAYNET_ROOT/{log,state}/*
+  mkdir -p $PLAYNET_ROOT/log/{alice,bob,portal}
+  mkdir -p $PLAYNET_ROOT/state/{alice,bob,portal}/{bitcoind,geth,lnd}
+fi
+
+# Start the services
+echo "starting developer environment..."
+
+echo "- starting bitcoind for portal..."
+bitcoind -conf="$PLAYNET_ROOT/bitcoind.portal.conf" \
+         -datadir="$PLAYNET_ROOT/state/portal/bitcoind" >/dev/null
+
+echo "- starting geth for portal..."
+nohup geth --dev \
+           --config "$PLAYNET_ROOT/geth.portal.toml" \
+           --datadir "$PLAYNET_ROOT/state/portal/geth/data" >$PLAYNET_ROOT/log/portal/geth.log 2>&1 &
+
+echo "- starting lnd for alice..."
+nohup lnd --configfile "$PLAYNET_ROOT/lnd.alice.conf" \
+          --lnddir "$PLAYNET_ROOT/state/alice/lnd" \
+          --noseedbackup >$PLAYNET_ROOT/log/alice/lnd.log 2>&1 &
+while ! $(__run_as_user alice lnd getinfo >/dev/null 2>&1); do sleep 1; done
+
+echo "- starting lnd for bob..."
+nohup lnd --configfile "$PLAYNET_ROOT/lnd.bob.conf" \
+          --lnddir "$PLAYNET_ROOT/state/bob/lnd" \
+          --noseedbackup >$PLAYNET_ROOT/log/bob/lnd.log 2>&1 &
+while ! $(__run_as_user bob lnd getinfo >/dev/null 2>&1); do sleep 1; done
+
+echo "- creating a new geth wallet for alice..."
+ALICE_GETH_KEYSTORE=$(__gethAccount alice)
+ALICE_GETH_ADDRESS="0x$(jq -r '.address' $ALICE_GETH_KEYSTORE)"
+echo "- funding new geth wallet for alice with 100 ether..."
+__run_as_user portal geth attach --exec "eth.sendTransaction({ from: eth.coinbase, to: '$ALICE_GETH_ADDRESS', value:web3.toWei(100,'ether') })" >/dev/null
+
+echo "- creating a new geth wallet for bob..."
+BOB_GETH_KEYSTORE=$(__gethAccount bob)
+BOB_GETH_ADDRESS="0x$(jq -r '.address' $BOB_GETH_KEYSTORE)"
+echo "- funding new geth wallet for bob with 100 ether..."
+__run_as_user portal geth attach --exec "eth.sendTransaction({ from: eth.coinbase, to: '$BOB_GETH_ADDRESS', value:web3.toWei(100,'ether') })" >/dev/null
+
+# Initialize state, if needed
+if [[ $RESET_STATE == "true" ]]; then
+  echo "initializing developer environment..."
+
   echo "- creating a new bitcoin wallet..."
   __run_as_user portal bitcoind createwallet 'default' >/dev/null
 
@@ -125,78 +186,19 @@ initialize_dev_environment() {
   # Create the `reset` file to prevent the wallets from being recreated.
   touch $PLAYNET_ROOT/.delete_to_reset
   echo "reset complete"
-}
 
-initialize_environment_if_required() {
-  if [[ $RESET_STATE == "true" ]]; then
-    initialize_dev_environment
-  else
-    # Load the default bitcoin wallet and generate a block to trigger sync
-    __run_as_user portal bitcoind loadwallet 'default' >/dev/null
-    __run_as_user portal bitcoind -generate 1 >/dev/null
-  fi
-}
+else
+  # Load the default bitcoin wallet and generate a block to trigger sync
+  __run_as_user portal bitcoind loadwallet 'default' >/dev/null
+  __run_as_user portal bitcoind -generate 1 >/dev/null
 
-reset_environment_if_required() {
-  if [[ $RESET_STATE == "true" ]]; then
-    echo "resetting developer environment..."
-    rm -rf $PLAYNET_ROOT/{log,state}/*
-    mkdir -p $PLAYNET_ROOT/log/{alice,bob,portal}
-    mkdir -p $PLAYNET_ROOT/state/{alice,bob,portal}/{bitcoind,geth,lnd}
-  fi
-}
+fi
 
-disable_sigint() {
-  # Disable SIGINT to avoid accidentally stopping any nohup'd processes
-  if [[ ${GITHUB_ACTIONS-false} == false ]]; then
-    echo "- disabling Ctrl-C..."
-    stty intr ""
-  fi
-}
-
-kill_all_services() {
-  set +eu
-
-  echo "- terminating lnd for alice..."
-  __run_as_user alice lnd stop
-
-  echo "- terminating lnd for bob..."
-  __run_as_user bob lnd stop
-
-  echo "- terminating geth for portal..."
-  pkill geth
-
-  echo "- terminating bitcoind for portal..."
-  __run_as_user portal bitcoind stop >/dev/null
-
-  echo "terminated developer environment..."
-}
-
-############################################################################
-# Aliases
-############################################################################
-alias alice='__run_as_user alice'
-alias bob='__run_as_user bob'
-alias portal='__run_as_user portal'
-
-############################################################################
-# Execution Flow
-############################################################################
-
-trap kill_all_services EXIT
-
-# Fail the script if any command fails
-set -eu
-
-readonly RESET_STATE=$([[ -f $PLAYNET_ROOT/.delete_to_reset ]] && echo false || echo true)
-readonly LND_WALLET_FUNDS=10       # in btc
-readonly LND_CHANNEL_FUNDS=1000000 # in satoshis
-readonly BITCOIND_BLOCKS=$((100 + ((LND_WALLET_FUNDS * 2 + 49) / 50)))
-
-reset_environment_if_required
-initialize_services
-initialize_environment_if_required
-disable_sigint
+# Disable SIGINT to avoid accidentally stopping any nohup'd processes
+if [[ ${GITHUB_ACTIONS-false} == false ]]; then
+  echo "- disabling Ctrl-C..."
+  stty intr ""
+fi
 
 ############################################################################
 # Developer Environment
