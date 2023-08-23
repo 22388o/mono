@@ -7,8 +7,8 @@ async function runTests() {
     await performLogin(alice, 1);
     await performLogin(bob, 2);
 
-    await createOrder(alice);
-    await createOrder(bob);
+    await createOrder(alice, "alice");
+    await createOrder(bob, "bob");
 
     await finalize();
     
@@ -17,7 +17,7 @@ async function runTests() {
 }
 
 async function setupBrowser() {
-    const browser = await puppeteer.launch({ headless: "new", args: ['--window-size=1920,1096'] });
+    const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] });
     const page = await browser.newPage();
     await page.goto('http://localhost:5173');
     return browser;
@@ -54,11 +54,15 @@ async function performLogin(browser, index) {
 }
 
 
+async function createOrder(browser, identifier) {
+    const pages = await browser.pages();
+    const page = pages[pages.length - 1]; // Get the last page
 
-async function createOrder(browser) {
-    const page = await browser.pages()[0];
+    if (!page) {
+        throw new Error("No active page found for " + identifier);
+    }
 
-    if (browser === bob) {
+    if (identifier === 'bob') {
         await page.click('.exchange');
     }
 
@@ -66,7 +70,12 @@ async function createOrder(browser) {
     await inputs[0].type('.0001');
     await inputs[1].type('.0001');
 
-    await page.click("button:contains('Swap')");
+    const [swapButton] = await page.$x("//button[contains(., 'Swap')]");
+    if (swapButton) {
+        await swapButton.click();
+    } else {
+        throw new Error("Swap button not found");
+    }
 
     await page.waitForSelector('.activitiesContainer');
     const activities = await page.$$('.activitiesContainer .activity-item');
