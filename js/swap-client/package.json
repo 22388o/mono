@@ -12,6 +12,7 @@
     "lint-fix": "standard --fix",
     "preview": "vite preview --port 7500",
     "watch": "vite build --watch",
+    "test:all": "npm run dev & node src/test/test_all.js",
     "test": "node src/test/test.js",
     "test1": "node src/test/test2.js",
     "test:unisat": "node src/test/test_unisat.js",

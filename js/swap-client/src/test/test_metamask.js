@@ -1,7 +1,7 @@
 const webdriver = require("selenium-webdriver");
 const chrome = require('selenium-webdriver/chrome.js');
 const path = require('path');
-const projDir = path.resolve(__dirname, '../../chrome-profile')
+const projDir = path.resolve(__dirname, './chrome-profile')
 
 const options = new chrome.Options();
 options.setLoggingPrefs({

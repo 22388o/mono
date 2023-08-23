@@ -13,7 +13,6 @@ options.addArguments("--log-level=0")
 options.addExtensions(`${projDir}/src/test/crx/xverse.crx`);
 
 const By = webdriver.By; 
-const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -23,6 +22,7 @@ const wait = (t) => {
 
 
 async function main() {
+  const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
   await driver.navigate().to("http://localhost:5173");
   /** 
    * Create Xverse Wallet 
@@ -80,7 +80,7 @@ async function main() {
   await driver.switchTo().alert().sendKeys("2");
   await driver.switchTo().alert().accept();
 
-  await wait(2000);
+  await wait(7000);
   await driver.switchTo().window((await driver.getAllWindowHandles())[1]);
 
   //Xverse control
@@ -139,9 +139,15 @@ async function main() {
       throw new Error('Insufficient Balance!');
     }
     console.log('Payment Simulation Done!');
+    await driver.quit();
   } catch (e) {
+    await driver.quit();
     console.error('Error occured on payment!');
   }
+
+
 }
 
-main();
+module.exports = async function () {
+  main()
+}

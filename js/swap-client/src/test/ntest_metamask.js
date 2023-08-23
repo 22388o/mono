@@ -12,7 +12,6 @@ options.addArguments("--log-level=0")
 options.addExtensions(`${projDir}/src/test/crx/metamask.crx`);
 
 const By = webdriver.By; 
-const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -22,6 +21,7 @@ const wait = (t) => {
 
 
 async function main() {
+  const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
   await driver.navigate().to("http://localhost:5173");
 
   await wait(2000);
@@ -102,6 +102,10 @@ async function main() {
   }
 
   await driver.switchTo().window(windows[0]);
+  await driver.close();
+
 }
 
-main();
+module.exports = async function () {
+  main()
+}

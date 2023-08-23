@@ -60,6 +60,8 @@ async function main(){
   let activityList = await driver.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
+  await driver.close();
+
 }
 
 
@@ -106,10 +108,11 @@ async function main2(){
 
   let activityList = await driver1.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
-  await activities[0].click();
- 
+  await activities[0].click(); 
+  await driver1.close();
 }
 
-main()
-
-main2()
+module.exports = async function () {
+  await main()
+  await main2()
+}

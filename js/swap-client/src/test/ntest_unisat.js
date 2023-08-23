@@ -13,7 +13,6 @@ options.addArguments("--log-level=0");
 options.addExtensions(`${projDir}/src/test/crx/unisat.crx`);
 
 const By = webdriver.By; 
-const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -25,12 +24,16 @@ let windows, seeds = [];
 
 
 async function main() {
+
+  const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+
   try {
     await driver.navigate().to("http://localhost:5173");
 
-    await wait(3000);
+    await wait(5000);
 
     windows = await driver.getAllWindowHandles();
+    console.log(windows.length);
     await driver.switchTo().window(windows[1]);
 
     const createWalletBtn = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(2)'));
@@ -118,11 +121,13 @@ async function main() {
 
     await wait(3000);
     
-    windows = await driver.getAllWindowHandles();
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+    await driver.close();
   } catch(e) {
+    await driver.close();
     console.error(e);
   }
 }
 
-main();
+module.exports = async function () {
+  main()
+}
