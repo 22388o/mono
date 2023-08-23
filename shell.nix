@@ -22,6 +22,7 @@ in
       niv
       nix-diff
       nodejs
+      process-compose
       terraform
       which
     ];
@@ -56,7 +57,7 @@ in
       {
         category = "Terraform";
         name = "tf-get-deploy-public-key";
-        help = "Obtain the deployment private key from terraform state";
+        help = "Obtain the deployment public key from terraform state";
         command = ''terraform state pull | jq -r ".resources[] | select(.name == \"deploy\") | .instances[0].attributes.public_key_openssh"'';
       }
       {
