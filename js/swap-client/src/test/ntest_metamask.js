@@ -70,6 +70,6 @@ const main = async () => {
   }
 };
 
-//module.exports = async () => {
+module.exports = async () => {
   main();
-//}
+}
