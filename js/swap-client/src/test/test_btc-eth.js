@@ -24,20 +24,35 @@ async function setupBrowser() {
 }
 
 async function performLogin(browser, index) {
-  const page = await browser.pages()[0];
+  // Explicitly get the page we want to work with
+  const pages = await browser.pages();
+  const page = pages[1]; // This should be the second tab (index 1)
+
+  // Debugging output
+  console.log(`Attempting to login with index: ${index}`);
+
   await page.click('#connect-wallet');
 
-  // Wait for the '.MuiList-root' to be rendered
-  await page.waitForSelector('.MuiList-root');
+  try {
+      // Wait for the '.MuiList-root' to be rendered
+      await page.waitForSelector('.MuiList-root', { timeout: 5000 }); // waits for 5 seconds
+  } catch (error) {
+      console.error("Failed to find '.MuiList-root'.", error);
+      throw error;
+  }
+
   const lis = await page.$$('.MuiList-root li');
 
   // Ensure the list items are found before trying to click
   if (lis && lis[index]) {
       await lis[index].click();
   } else {
-      throw new Error(`Unable to find list item at index ${index}`);
+      const error = new Error(`Unable to find list item at index ${index}`);
+      console.error(error);
+      throw error;
   }
 }
+
 
 
 async function createOrder(browser) {
