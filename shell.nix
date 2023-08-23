@@ -68,8 +68,9 @@ in
             projectRootFile = ".git/config";
             programs = {
               alejandra.enable = true;
-              prettier.enable = false; # consider using prettier to autoformat code for js/
               mdformat.enable = true;
+              prettier.enable = false; # consider using prettier to autoformat code for js/
+              shfmt.enable = true;
               terraform.enable = true;
             };
           };
