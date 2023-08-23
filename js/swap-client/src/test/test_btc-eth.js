@@ -58,7 +58,7 @@ async function createOrder(browser, identifier) {
   const pages = await browser.pages();
   const page = pages[pages.length - 1]; // Get the last page
 
-  if (identifier === 'bob') {
+  if (identifier === 'bob') { // TODO: Remove bob check and manually choose opposite pairs (remove state)
       const exchangeButton = await page.$('.exchange');
       if (!exchangeButton) {
           throw new Error("Exchange button not found for Bob");
