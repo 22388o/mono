@@ -1,18 +1,5 @@
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
+const puppeteer = require('puppeteer');
 const path = require('path');
-
-const projDir = path.resolve(__dirname, '../..')
-
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0");
-options.addExtensions(`${projDir}/src/test/crx/unisat.crx`);
-
-const By = webdriver.By; 
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -20,114 +7,76 @@ const wait = (t) => {
   })
 }
 
-let windows, seeds = [];
+const main = async () => {
+  const unisatExtPath = path.join(process.cwd(), 'src/test/crx/unisat');
 
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    //headless: false,
+    args: [
+      `--disable-extensions-except=${unisatExtPath}`,
+      `--load-extension=${unisatExtPath}`
+    ]
+  });
+  const projPage = (await browser.pages())[0];
+  await projPage.goto('http://localhost:5173'); // Open the Proj
 
-async function main() {
+  projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
+    await dialog.accept('1');
+  })
 
-  const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+  await wait(5000);
 
-  try {
-    await driver.navigate().to("http://localhost:5173");
+  const newUniSatPage = (await browser.pages())[1];
+  await (await newUniSatPage.$('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(2)')).click(); // Click on Create new Wallet
 
-    await wait(5000);
+  await wait(500);
 
-    windows = await driver.getAllWindowHandles();
-    console.log(windows.length);
-    await driver.switchTo().window(windows[1]);
+  const inputs = await newUniSatPage.$$('input'); //Input passwords
+  await inputs[0].type('TESTPW123');
+  await inputs[1].type('TESTPW123');
+  await (await newUniSatPage.$('.layout > div:first-child > div:first-child > div:first-child > div:nth-child(5)')).click(); // Click on Continue
 
-    const createWalletBtn = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(2)'));
-    await createWalletBtn.click();
+  await wait(500);
 
-    const pwdInputs = await driver.findElements(By.tagName('input'));
-    await pwdInputs[0].sendKeys('TESTPW123');
-    await pwdInputs[1].sendKeys('TESTPW123');
-
-    const continueBtn = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:first-child > div:nth-child(5)'));
-    await continueBtn.click();
-
-    await wait(500);
-
-    const seedContainer = await (await driver.findElement(By.css('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(4) > div:first-child'))).findElements(By.css('.row-container'));
-    console.log(seedContainer.length);
-    for(let i = 0; i < 12; i ++) {
-      const seed = await (await seedContainer[i].findElement(By.css('div:nth-child(2) > div:first-child > span'))).getText();
-      seeds.push(seed);
-    }
-
-    console.log(seeds);
-
-    await (await driver.findElement(By.css('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(5) > label'))).click();
-    await (await driver.findElement(By.css('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(2) > div:first-child'))).click();
-
-    await wait(200);
-    await (await driver.findElement(By.css('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(10) > div:nth-child(2) > div:first-child'))).click();
-
-    await driver.close();
-
-    await wait(2000);
-
-    await driver.switchTo().window((await driver.getAllWindowHandles())[0]);
-    
-    let res = await driver.findElement(By.className('connect-bitcoin'));
-    await res.click();
-
-    let connectL1 = await driver.findElement(By.id('connect-l1'));
-    await connectL1.click();
-
-    await wait(500);
-    await driver.switchTo().alert().accept();
-
-    await wait(500);
-    windows = await driver.getAllWindowHandles();
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-    //Unisat control
-    /*const pwdInput = await driver.findElement(By.tagName('input'));
-    await pwdInput.sendKeys('TESTPW123');
-
-    const firstDiv = await driver.findElement(By.css('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(3)'));
-    await firstDiv.click();*/
-
-    await wait(2000);
-
-    windows = await driver.getAllWindowHandles();
-    if(windows.length === 1) {
-      console.log('Unisat Wallet Connected!');
-    }
-    else {
-      await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-      const approveBtn = await driver.findElement(By.css('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)'));
-      await approveBtn.click();
-      console.log('Unisat Wallet Connected!');
-
-      await wait(1000);
-    }
-
-
-    const logs = await driver.manage().logs().get('browser');
-    const idxLog = logs.findIndex(log => log.message.indexOf("Unisat Wallet Connected") >= 0);
-    if(idxLog >= 0) {
-      console.log('Address Detected');
-      console.log(logs[idxLog].message);
-    }
-
-    await driver.switchTo().window(windows[0]);
-
-    const modal = await driver.findElement(By.className('connect-modal-color'));
-    const simulate = await modal.findElement(By.className('simulate-l1'));
-    await simulate.click();
-
-    await wait(3000);
-    
-    await driver.close();
-  } catch(e) {
-    await driver.close();
-    console.error(e);
+  const seedContainer = await (await newUniSatPage.$('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(4) > div:first-child')).$$('.row-container'), seeds = [];
+  for(let i = 0; i < 12; i ++) {
+    const seed = await seedContainer[i].$eval('div:nth-child(2) > div:first-child > span', el => el.innerHTML);
+    seeds.push(seed);
   }
-}
+  console.log(seeds);
 
-module.exports = async function () {
-  main()
-}
+  await (await newUniSatPage.$('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(5) > label')).click(); // Saved Radio Check
+  await (await newUniSatPage.$('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(6) > div:nth-child(2) > div:first-child')).click(); // Click on Continue
+
+  await wait(500);
+  await (await newUniSatPage.$('.layout > div:nth-child(2) > div:nth-child(2) > div:nth-child(10) > div:nth-child(2) > div:first-child')).click(); // Click on Continue
+
+  await newUniSatPage.close();
+
+  await wait(2000);
+
+  //Unisat Wallet Connect
+
+  await (await projPage.$('.connect-bitcoin')).click();
+  await (await projPage.$('#connect-l1')).click();
+
+  await wait(3000);
+
+  const walletDlg = (await browser.pages())[1];
+  await (await walletDlg.$('.layout > div:nth-child(3) > div:first-child > div:nth-child(2)')).click(); // Click on Connect
+  console.log('Unisat Wallet Connected');
+
+  await wait(2000);
+
+  await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click();
+
+  await wait(3000);
+
+
+  await browser.close();
+};
+
+//module.exports = async () => {
+  main();
+//}
