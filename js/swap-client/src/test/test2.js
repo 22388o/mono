@@ -47,8 +47,8 @@ async function main(){
 
   //Quantity Inputs
   let inputs = await driver.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
-  await inputs[1].sendKeys('2');
+  await inputs[0].sendKeys('0.0001');
+  await inputs[1].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
@@ -98,8 +98,8 @@ async function main2(){
   
   //Quantity Inputs
   let inputs = await driver1.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('2');
-  await inputs[1].sendKeys('1');
+  await inputs[0].sendKeys('0.0001');
+  await inputs[1].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
