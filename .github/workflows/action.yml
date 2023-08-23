@@ -46,7 +46,8 @@ jobs:
   deploy:
     needs: build
     runs-on: [ubuntu-latest]
-    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    # if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    if: true
     steps:
     - name: Checkout branch
       uses: actions/checkout@v3
