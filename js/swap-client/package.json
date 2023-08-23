@@ -15,6 +15,7 @@
     "test:all": "npm run dev & node src/test/test_all.js",
     "test": "node src/test/test.js",
     "test1": "node src/test/test2.js",
+    "test:swap": "node src/test/test_btc-eth.js",
     "test:cucumber": "cucumber-js",
     "test:unisat": "node src/test/ntest_unisat.js",
     "test:xverse": "node src/test/ntest_xverse.js",
