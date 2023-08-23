@@ -51,6 +51,18 @@ __gethAccount() {
 }
 
 initialize_dev_environment() {
+  echo "- creating a new geth wallet for alice..."
+  ALICE_GETH_KEYSTORE=$(__gethAccount alice)
+  ALICE_GETH_ADDRESS="0x$(jq -r '.address' $ALICE_GETH_KEYSTORE)"
+  echo "- funding new geth wallet for alice with 100 ether..."
+  __run_as_user portal geth attach --exec "eth.sendTransaction({ from: eth.coinbase, to: '$ALICE_GETH_ADDRESS', value:web3.toWei(100,'ether') })" >/dev/null
+
+  echo "- creating a new geth wallet for bob..."
+  BOB_GETH_KEYSTORE=$(__gethAccount bob)
+  BOB_GETH_ADDRESS="0x$(jq -r '.address' $BOB_GETH_KEYSTORE)"
+  echo "- funding new geth wallet for bob with 100 ether..."
+  __run_as_user portal geth attach --exec "eth.sendTransaction({ from: eth.coinbase, to: '$BOB_GETH_ADDRESS', value:web3.toWei(100,'ether') })" >/dev/null
+
   echo "- creating a new bitcoin wallet..."
   __run_as_user portal bitcoind createwallet 'default' >/dev/null
 
