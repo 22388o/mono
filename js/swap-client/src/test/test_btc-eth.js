@@ -55,32 +55,40 @@ async function performLogin(browser, index) {
 
 
 async function createOrder(browser, identifier) {
-    const pages = await browser.pages();
-    const page = pages[pages.length - 1]; // Get the last page
+  const pages = await browser.pages();
+  const page = pages[pages.length - 1]; // Get the last page
 
-    if (!page) {
-        throw new Error("No active page found for " + identifier);
-    }
+  if (identifier === 'bob') {
+      const exchangeButton = await page.$('.exchange');
+      if (!exchangeButton) {
+          throw new Error("Exchange button not found for Bob");
+      }
+      await exchangeButton.click();
+  }
 
-    if (identifier === 'bob') {
-        await page.click('.exchange');
-    }
+  const inputs = await page.$$('.qty-input');
+  if (!inputs || inputs.length < 2) {
+      throw new Error(`Input fields not found for ${identifier}`);
+  }
+  await inputs[0].type('.0001');
+  await inputs[1].type('.0001');
 
-    const inputs = await page.$$('.qty-input');
-    await inputs[0].type('.0001');
-    await inputs[1].type('.0001');
+  const [swapButton] = await page.$x("//button[contains(., 'Swap')]");
+  if (!swapButton) {
+      throw new Error(`Swap button not found for ${identifier}`);
+  }
+  await swapButton.click();
 
-    const [swapButton] = await page.$x("//button[contains(., 'Swap')]");
-    if (swapButton) {
-        await swapButton.click();
-    } else {
-        throw new Error("Swap button not found");
-    }
-
-    await page.waitForSelector('.activitiesContainer');
-    const activities = await page.$$('.activitiesContainer .activity-item');
-    await activities[0].click();
+  await page.waitForSelector('.activitiesContainer');
+  // await page.screenshot({ path: 'debug_screenshot.png' });
+  await page.waitForTimeout(1000);  // wait for 5 seconds
+  const activities = await page.$$('.activitiesContainer .activity-item');
+  if (!activities || activities.length === 0) {
+      throw new Error(`Activity items not found for ${identifier}`);
+  }
+  await activities[0].click();
 }
+
 
 async function finalize() {
     await new Promise(resolve => setTimeout(resolve, 10000));
