@@ -7,7 +7,7 @@ options.setLoggingPrefs({
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
-options.addArguments('--headless');
+//options.addArguments('--headless');
 options.addArguments('--window-size=1920,1096')
 options.addArguments('--disable-dev-shm-usage');
 
@@ -60,7 +60,9 @@ async function main(){
   let activityList = await driver.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
-  await driver.close();
+
+  await wait(10000);
+  //await driver.close();
 
 }
 
@@ -109,10 +111,12 @@ async function main2(){
   let activityList = await driver1.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click(); 
-  await driver1.close();
+  
+  await wait(10000);
+  //await driver1.close();
 }
 
-module.exports = async function () {
-  await main()
-  await main2()
-}
+//module.exports = async function () {
+  main()
+  main2()
+//}

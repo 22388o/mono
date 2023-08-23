@@ -3,6 +3,6 @@ Feature: Connect to Xverse wallet extension
 
   Scenario: Connect and Simulate Payment with Xverse
     Given Test Browser is opened - FX
-    When Click on Lightning Connect Button - FX
+    When Create Xverse Wallet - FX
     Then Connect Xverse Wallet - FX
     And Simulate Xverse Payment - FX

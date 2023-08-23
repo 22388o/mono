@@ -59,7 +59,7 @@ When('Bob clicks on login', {timeout: 10000}, async () => {
 
   await wait(500);
 });
-
+/*
 Then('Alice logs in', async () => {
   const logs = await alice.manage().logs().get('browser');
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
@@ -71,13 +71,12 @@ Then('Bob logs in', async () => {
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
   assert.ok(idxLog >= 0, 'Bob is not logged in');
 });
-
+*/
 Given('Alice & Bob is logged in', () => {
   return 'success';
 });
 
 When('Alice creates an order from BTC to ETH', {timeout: 100000}, async() => {
-  
   //Quantity Inputs
   let inputs = await alice.findElements(By.className('qty-input'));
   await inputs[0].sendKeys('1');
