@@ -4,8 +4,8 @@ import { Button, Divider, Grid, IconButton, Input } from '@mui/material';
 import { Close, West } from '@mui/icons-material';
 import styles from '../../styles/wallet/AddOtherAssetsModal.module.css';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { walletStore } from '../../syncstore/walletstore';
 
+/** Assets supported in wallet */
 const ASSETS = [{
   title: 'Bitcoin',
   type: 'BTC',
@@ -46,6 +46,7 @@ const ASSETS = [{
   balance: 1000,
 }];
 
+/** Modal for adding additional assets to wallet */
 export const AddOtherAssetsModal = ({ open, handleClose }) => {
   const [selectedAsset , setSelectedAsset] = useState(null);
   const [filter, setFilter] = useState('');
@@ -59,6 +60,7 @@ export const AddOtherAssetsModal = ({ open, handleClose }) => {
     handleClose();
   }, []);
 
+  /** Add selected assets  */
   if(selectedAsset != null) {
     return <MyModal open={open}>
       <Grid container direction='column' spacing={1}>
@@ -79,6 +81,7 @@ export const AddOtherAssetsModal = ({ open, handleClose }) => {
     </MyModal>
   }
   
+  /** Add specific assets */
   return <MyModal open={open}>
     <Grid container direction='column' spacing={1}>
       <Grid item container direction='row' width={400}>

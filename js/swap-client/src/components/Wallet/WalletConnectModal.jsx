@@ -4,6 +4,7 @@ import { MyModal } from '../MyModal/MyModal';
 import { Close, West } from '@mui/icons-material';
 import { WALLETS } from '../../utils/constants';
 
+/** WalletConnect setup modal */
 export const WalletConnectModal = ({open, handleClose}) => {
   const [page, setPage] = useState(0);
   const [nextStep, setNextStep] = useState(false);

@@ -4,7 +4,7 @@ import { CHAIN_INFO } from '../../utils/constants';
 import classNames from 'classnames';
 import { MyModal } from '../MyModal/MyModal';
 import { Close, West } from '@mui/icons-material';
-import { Button,  Divider, Grid, Stack, Modal, IconButton, TextField } from '@mui/material';
+import { Button,  Divider, Grid, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -17,6 +17,7 @@ import QRCode from 'qrcode';
 import { walletStore } from '../../syncstore/walletstore';
 import { userStore } from '../../syncstore/userstore';
 
+/** ReceiveFunds Modal */
 export const ReceiveFunds = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [invoiceCopied, setInvoiceCopied] = useState(false);
