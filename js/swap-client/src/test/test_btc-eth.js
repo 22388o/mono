@@ -24,12 +24,21 @@ async function setupBrowser() {
 }
 
 async function performLogin(browser, index) {
-    const page = await browser.pages()[0]; 
-    await page.click('#connect-wallet');
-    await page.waitForSelector('.MuiList-root');
-    const lis = await page.$$('.MuiList-root li');
-    await lis[index].click();
+  const page = await browser.pages()[0];
+  await page.click('#connect-wallet');
+
+  // Wait for the '.MuiList-root' to be rendered
+  await page.waitForSelector('.MuiList-root');
+  const lis = await page.$$('.MuiList-root li');
+
+  // Ensure the list items are found before trying to click
+  if (lis && lis[index]) {
+      await lis[index].click();
+  } else {
+      throw new Error(`Unable to find list item at index ${index}`);
+  }
 }
+
 
 async function createOrder(browser) {
     const page = await browser.pages()[0];
