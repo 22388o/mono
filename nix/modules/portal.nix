@@ -43,7 +43,7 @@ in {
 
         PORTAL_ETHEREUM_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
         PORTAL_ETHEREUM_CHAINID = "0x539";
-        PORTAL_ETHEREUM_CONTRACTS = contracts;
+        PORTAL_ETHEREUM_CONTRACTS = contracts; # pkgs.portaldefi.demo.contracts
       };
       serviceConfig = {
         # Dynamic user prevents connection to geth

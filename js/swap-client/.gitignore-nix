@@ -37,7 +37,6 @@ docs/package-lock.json
 
 # Remove unnecessary folders as well
 docs
-sh
 tf
 nix
 *.nix
@@ -54,3 +53,4 @@ playnet/state/*
 !playnet/lnd.alice.conf
 !playnet/lnd.bob.conf
 
+!playnet/contracts.json

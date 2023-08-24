@@ -7,7 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-
 env:
   DEPLOY_HOST: node.playnet.portaldefi.zone
 
@@ -43,6 +42,13 @@ jobs:
     - name: Build PortalDefi packages
       run: nix-build --option sandbox false --attr packages
 
+    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
+    - uses: actions/upload-artifact@v2
+      if: matrix.os != 'macOS-latest'
+      with:
+        name: playnet
+        path: playnet/
+
   deploy:
     needs: build
     runs-on: [ubuntu-latest]
@@ -64,9 +70,14 @@ jobs:
         name: portaldefi-demo
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
+    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
+    - uses: actions/download-artifact@v2
+      with:
+        name: playnet
+        path: playnet/
+
     - name: Build PortalOS closure
       run: |
-        nix-build --option sandbox false --attr nixosConfigurations.portalos
         system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
         echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
       id: build-machine-closure
