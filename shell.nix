@@ -83,8 +83,16 @@ in
         help = "Update all inputs with niv";
         command = ''${getExe pkgs.niv} update'';
       }
+      {
+        category = "Dev";
+        name = "devenv";
+        help = "Development Environment Control Script";
+        command = let
+          script = pkgs.writeShellScriptBin "devenv" (builtins.readFile ./sh/devenv2.sh);
+        in ''${script}/bin/devenv $@'';
+      }
     ];
 
-    # TODO: Potentially migrate to process-compose or procfile
+    # TODO: Remove this entry once devenv2 is ready
     devshell.startup.playnet.text = ''source $PORTAL_ROOT/sh/devenv.sh'';
   }
