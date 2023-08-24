@@ -13,6 +13,7 @@ import { userStore } from '../syncstore/userstore';
 import { walletStore } from '../syncstore/walletstore';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { version } from "../../package.json";
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
@@ -88,7 +89,7 @@ export const SwapHome = () => {
             <h4 className='flex-center'><RectangleRoundedIcon />&nbsp;Disconnected</h4>}
         </Grid>
         <Grid item xs={1}>
-          <h4>v0.2</h4>
+          <h4>v { version }</h4> 
         </Grid>
       </Grid>
       <Grid item container justifyContent='flex-end' style={{padding:'1em 2em'}}>

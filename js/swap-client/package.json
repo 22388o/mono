@@ -2,7 +2,7 @@
   "name": "swap-client",
   "proxy": "http://localhost:34011/api",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.2",
   "scripts": {
     "clean": "rm -rf dist node_modules package-lock.json",
     "credentials": "export PORTAL_ROOT=../../ && node credentials.js",
