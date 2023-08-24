@@ -45,6 +45,12 @@ in
         name = "PLAYNET_ROOT";
         value = "${toString ./.}/playnet";
       }
+
+      # Disables loading old devenv script
+      {
+        name = "SKIP_OLD_DEVENV";
+        value = "false";
+      }
     ];
 
     commands = [
@@ -66,7 +72,7 @@ in
             programs = {
               alejandra.enable = true;
               mdformat.enable = true;
-              prettier.enable = false; # consider using prettier to autoformat code for js/
+              prettier.enable = false; # TODO: consider using prettier to autoformat code for js/
               shfmt.enable = true;
               terraform.enable = true;
             };
@@ -90,5 +96,5 @@ in
     ];
 
     # TODO: Remove this entry once devenv2 is ready
-    devshell.startup.playnet.text = ''source $PORTAL_ROOT/sh/devenv.sh'';
+    devshell.startup.playnet.text = ''[ "$SKIP_OLD_DEVENV" != "true" ] && source "$PORTAL_ROOT/sh/devenv.sh"'';
   }
