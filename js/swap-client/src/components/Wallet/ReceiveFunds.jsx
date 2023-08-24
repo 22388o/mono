@@ -4,7 +4,7 @@ import { CHAIN_INFO } from '../../utils/constants';
 import classNames from 'classnames';
 import { MyModal } from '../MyModal/MyModal';
 import { Close, West } from '@mui/icons-material';
-import { Button,  Divider, Grid, Stack, Modal, IconButton, TextField } from '@mui/material';
+import { Button,  Divider, Grid, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -17,6 +17,7 @@ import QRCode from 'qrcode';
 import { walletStore } from '../../syncstore/walletstore';
 import { userStore } from '../../syncstore/userstore';
 
+/** ReceiveFunds Modal */
 export const ReceiveFunds = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [invoiceCopied, setInvoiceCopied] = useState(false);
@@ -26,12 +27,16 @@ export const ReceiveFunds = () => {
   const [qrData, setQrData] = useState('');
   const [timeLeft, setTimeLeft] = useState(86400);
   const [timerId, setTimerId] = useState(-1);
+  const [invoiceHash, setInvoiceHash] = useState('');
 
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const receivingProcess = globalWallet.receivingProcess;
   const assetTypes = getMinimizedAssets(globalWallet);
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
+  const node = globalWallet.assets[0];
+  const wallet = globalWallet.assets[1];
 
+  /** Generate QRCode Image */
   useEffect(() => {
     QRCode.toDataURL('LNBC10U1P3PJ257PP5YZTKWJCZ5FTL5LAXKAV23ZMZEKAW37ZK6KMV80PK4XAEV5QHTZ7QDPDWD3XGER9WD5KWM36YPRX7U3QD36KUCMGYP282ETNV3SHJCQZPGXQYZ5VQSP5USYC4LK9CHSFP53KVCNVQ456GANH60D89REYKDNGSMTJ6YW3NHVQ9QYYSSQJCEWM5CJWZ4A6RFJX77C490YCED6PEMK0UPKXHY89CMM7SCT66K8GNEANWYKZGDRWRFJE69H9U5U0W57RRCSYSAS7GADWMZXC8C6T0SPJAZUP6')
     .then(url => {
@@ -79,21 +84,40 @@ export const ReceiveFunds = () => {
     }
   }, [receivingProcess]);
 
+  /** 
+   * Click on Asset Item
+   * @param asset: Asset Item Info
+   */
   const onClickAsset = useCallback((asset) => {
     setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: !asset.isNFT ? 2 : 2.5 });
   }, [walletStore]);
 
+  /** Click on Collectibles */
   const onNftChainClick = useCallback((chain) => {
     setNftChain(chain);
     walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: 3.5 });
   }, [walletStore]);
 
+  /** Press on back */
+  const onBack = useCallback(() => {
+    let curPro;
+    if(receivingProcess === 3) curPro = 1;
+    else if(receivingProcess === 3.5) curPro = 2.5;
+    else if(receivingProcess === 2.5) curPro = 1;
+    else return;
+
+    walletStore.dispatch({ 
+      type: 'SET_RECEIVING_PROCESS', 
+      payload: curPro 
+    });
+  }, [receivingProcess, walletStore]);
+
   return (
     <MyModal open={modalOpen}>
       <Grid container direction='column' spacing={1}>
         <Grid item container direction='row'>
-          <Grid item xs={1} textAlign='center' onClick={() => walletStore.dispatch({ type: 'SET_RECEIVING_PROCESS', payload: (receivingProcess == 3 ? receivingProcess - 2 : receivingProcess - 1) }) }>
+          <Grid item xs={1} textAlign='center' onClick={onBack}>
             <IconButton><West /></IconButton>
           </Grid>
           <Grid item xs={10} textAlign='center' width={receivingProcess < 3 ? 250 : 350}>
@@ -199,13 +223,13 @@ export const ReceiveFunds = () => {
         { receivingProcess === 3.5 && <>
           <Grid container direction='row'>
             <Grid item xs={1} textAlign='center'>
-              <img width={25} className="ui avatar image" src={CHAIN_INFO[coinType].url} />
+              <img width={25} className="ui avatar image" src={CHAIN_INFO[nftChain].url} />
             </Grid>
             <Grid item xs={4} textAlign='left'>
-              <h4>&nbsp;{ CHAIN_INFO[coinType].name }</h4>
+              <h4>&nbsp;{ CHAIN_INFO[nftChain].name }</h4>
             </Grid>
             <Grid item xs={7} textAlign='right'>
-              <h4>{ coinType == "ETH" ? wallet.balance : node.balance }</h4>
+              <h4>{ nftChain == "ETH" ? wallet.balance : node.balance }</h4>
             </Grid>
           </Grid>
           <Grid textAlign='center'>

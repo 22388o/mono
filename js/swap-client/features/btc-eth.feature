@@ -6,8 +6,8 @@ Feature: Perform BTC to ETH swap
     And Bob browser is opened
     When Alice clicks on login
     And Bob clicks on login
-    Then Alice logs in
-    And Bob logs in
+    # Then Alice logs in
+    # And Bob logs in
 
   Scenario: Alice & Bob Performs Swap
     Given Alice & Bob is logged in

@@ -4,6 +4,8 @@ const webdriver = require("selenium-webdriver");
 const chrome = require('selenium-webdriver/chrome.js');
 
 const By = webdriver.By;
+
+// Chrome options configuration
 const options = new chrome.Options();
 options.setLoggingPrefs({
   browser: 'ALL'
@@ -16,8 +18,9 @@ options.addArguments('--disable-dev-shm-usage');
 
 let alice, bob;
 
+// Utility function to pause the execution
 const wait = (t) => {
-  return new Promise((res, rej)=>{
+  return new Promise((res) => {
     setTimeout(res, t);
   })
 }
@@ -33,33 +36,28 @@ Given('Bob browser is opened', {timeout: 10000}, async () => {
 });
 
 When('Alice clicks on login', {timeout: 10000}, async () => {
-  let res = await alice.findElement(By.id('connect-wallet'));
-  await res.click();
-  
-  await wait(500);
-  
-  //Alice Click
-  let uls = await alice.findElement(By.className('MuiList-root'));
-  let lis = await uls.findElements(By.tagName('li'));
-  await lis[1].click();
-
-  await wait(500);
+  await performLogin(alice, 1);
 });
 
 When('Bob clicks on login', {timeout: 10000}, async () => {
-  let res = await bob.findElement(By.id('connect-wallet'));
+  await performLogin(bob, 2);
+});
+
+async function performLogin(browser, index) {
+  let res = await browser.findElement(By.id('connect-wallet'));
   await res.click();
   
   await wait(500);
   
-  //bob Click
-  let uls = await bob.findElement(By.className('MuiList-root'));
+  let uls = await browser.findElement(By.className('MuiList-root'));
   let lis = await uls.findElements(By.tagName('li'));
-  await lis[2].click();
+  await lis[index].click();
 
   await wait(500);
-});
+}
 
+// Previous login code
+/*
 Then('Alice logs in', async () => {
   const logs = await alice.manage().logs().get('browser');
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
@@ -71,52 +69,44 @@ Then('Bob logs in', async () => {
   const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
   assert.ok(idxLog >= 0, 'Bob is not logged in');
 });
+*/
 
 Given('Alice & Bob is logged in', () => {
   return 'success';
 });
 
 When('Alice creates an order from BTC to ETH', {timeout: 100000}, async() => {
-  
-  //Quantity Inputs
-  let inputs = await alice.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
-  await inputs[1].sendKeys('2');
-
-  await wait(500);
-  //Swap Button Click
-  let swapBtn = await alice.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
-  await swapBtn.click();
-
-  await wait(1500);
-
-  let activityList = await alice.findElement(By.className('activitiesContainer'));
-  let activities = await activityList.findElements(By.className('activity-item'));
-  await activities[0].click();
+  await createOrder(alice);
 });
 
 When('Bob creates an order from ETH to BTC', {timeout: 100000}, async () => {
+  await createOrder(bob);
+});
 
-  let excBtn = await bob.findElement(By.className('exchange'));
-  await excBtn.click();
-   
+async function createOrder(browser) {
+  // With BTC to ETH swap as the default, Bob clicks the exchange button for ETH to BTC swap 
+  if (browser === bob) {
+    let excBtn = await browser.findElement(By.className('exchange'));
+    await excBtn.click();
+  }
   
   //Quantity Inputs
-  let inputs = await bob.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('2');
-  await inputs[1].sendKeys('1');
+  let inputs = await browser.findElements(By.className('qty-input'));
+  await inputs[0].sendKeys('.0001');
+  await inputs[1].sendKeys('.0001');
 
   await wait(500);
+  
   //Swap Button Click
-  let swapBtn = await bob.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
+  let swapBtn = await browser.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
   await swapBtn.click();
- 
+
   await wait(1500);
 
-  let activityList = await bob.findElement(By.className('activitiesContainer'));
+  let activityList = await browser.findElement(By.className('activitiesContainer'));
   let activities = await activityList.findElements(By.className('activity-item'));
   await activities[0].click();
-});
+}
 
 Then('Swap fills and completes', {timeout: 100000}, async () => {
   await wait(10000);

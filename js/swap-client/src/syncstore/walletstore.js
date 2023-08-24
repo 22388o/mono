@@ -1,7 +1,7 @@
 import { INSCRIPTIONS } from "../config/inscription_info";
 
 const initialAssets = [{
-  title: 'Bitcoin-L1',
+  title: 'Bitcoin-Taproot',
   type: 'BTC',
   rate: 100000000,
   connected: false,
@@ -15,7 +15,7 @@ const initialAssets = [{
   type: 'ETH',
   rate: 1000000000000000000,
   connected: false,
-  network: 'eth-l2.eth',
+  network: 'ethereum',
   img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true',
   isNFT: false,
   data: null,

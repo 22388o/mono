@@ -1,4 +1,4 @@
-import React, { useSyncExternalStore } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded';
 import { SwapCreate } from './SwapCreate/SwapCreate';
 import { SwapActivity } from './SwapActivity/SwapActivity';
@@ -13,6 +13,7 @@ import { userStore } from '../syncstore/userstore';
 import { walletStore } from '../syncstore/walletstore';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { version } from "../../package.json";
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
@@ -21,17 +22,17 @@ export const SwapHome = () => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = anchorEl !== null;
-  const handleClick = (event) => {
+  const handleClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
+  }, []);
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
-  const selectUser = (user) => {
+  }, []);
+  const selectUser = useCallback((user) => {
     if (user == "alice") signInAsAlice();
     if (user == "bob") signInAsBob();
     handleClose();
-  }
+  }, []);
 
   
   // Client ws
@@ -40,38 +41,41 @@ export const SwapHome = () => {
   let aliceCred = getAlice();
   let bobCred = getBob();
   
-  const signInAsAlice = () => {
+  /** Alice clicks sign in to connect with ws */
+  const signInAsAlice = useCallback(() => {
     if(wallet.connected === true)
-      aliceCred.ethl2.public = wallet.data;
+      aliceCred.ethereum.public = wallet.data;
     else {
-      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethl2});
+      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
     const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
     userStore.dispatch({ type: 'SIGN_IN', payload: alice });
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-  }
+  }, [walletStore, aliceCred]);
   
-  const signInAsBob = () => {
+  /** Bob clicks sign in to connect with ws */
+  const signInAsBob = useCallback(() => {
     if(wallet.connected === true)
-      bobCred.ethl2.public = wallet.data;
+      bobCred.ethereum.public = wallet.data;
     else {
-      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethl2});
+      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
     const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
-  }
+  }, [bobCred, walletStore]);
 
-  const logOut = () => {
+  /** Log out from the server */
+  const logOut = useCallback(() => {
     userStore.dispatch({ type: 'SIGN_OUT' });
     walletStore.dispatch({ type: 'CLEAR_NODE_DATA'});
     walletStore.dispatch({ type: 'CLEAR_WALLET_DATA'});
     return Promise.all([user.user.disconnect()])
-  }
+  }, [userStore, walletStore]);
 
   return (
     <Grid container direction='column' style={{backgroundColor:'#242424'}}>
@@ -85,7 +89,7 @@ export const SwapHome = () => {
             <h4 className='flex-center'><RectangleRoundedIcon />&nbsp;Disconnected</h4>}
         </Grid>
         <Grid item xs={1}>
-          <h4>v0.2</h4>
+          <h4>v { version }</h4> 
         </Grid>
       </Grid>
       <Grid item container justifyContent='flex-end' style={{padding:'1em 2em'}}>

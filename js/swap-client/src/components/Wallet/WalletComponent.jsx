@@ -1,4 +1,4 @@
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { Box, Button, ButtonGroup, Divider, Grid, Stack, IconButton, TextField, Input } from '@mui/material';
 import { WalletItem } from './WalletItem';
 import styles from '../../styles/wallet/WalletComponent.module.css';
@@ -21,7 +21,6 @@ import { Web3ModalSign, useConnect } from '@web3modal/sign-react';
 import { getAlice } from '../../utils/constants';
 import { getAddress, signTransaction } from 'sats-connect'
 import { toast } from 'react-toastify';
-import { log } from '../../utils/helpers';
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false);
@@ -40,8 +39,8 @@ export const WalletComponent = () => {
   
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const NFT_COUNT = getAvailableNFTCount(globalWallet);
-  const node = globalWallet.assets[0];
-  const wallet = globalWallet.assets[1];
+  const node = globalWallet.assets[0]; //Bitcoin
+  const wallet = globalWallet.assets[1]; //Ethereum
   const assets = globalWallet.assets;
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState);
 
@@ -58,9 +57,8 @@ export const WalletComponent = () => {
     });
   }, []);
 
+
   useEffect(() => {
-    // console.log("node or wallet updated")
-    // console.log({wallet})
     if (node.connected) {
       setNodeModalOpen(false);
     }
@@ -68,6 +66,7 @@ export const WalletComponent = () => {
       setWalletModalOpen(false);
     }
 
+    /** When both Bitcoin & Ethereum wallets are connected */
     if (node.connected && wallet.connected && user.user.id==undefined) {
       const hostname = window.location.hostname;
       const port = window.location.port;
@@ -82,6 +81,7 @@ export const WalletComponent = () => {
 
   }, [node, wallet]);
 
+  /** Use WalletConnect Hook with ethereum set as default  */
   const { connect, data, error, loading } = useConnect({
     requiredNamespaces: {
       eip155: {
@@ -92,12 +92,14 @@ export const WalletComponent = () => {
     }
   })
 
-  async function onConnectWC() {
+  /** On Connecting WalletConnect */
+  const onConnectWC = useCallback(async () => {
     const data = await connect()
-  }
+  }, []);
 
+  /** When Logged in check balance */
   useEffect(() => {
-    async function getBalance() {
+    /*async function getBalance() {
       const {balances} = await user.user.getBalance(user.user.credentials);
       if (balances[0].lightning) dispatch(setNodeBalance(fromSats(balances[0].lightning.balance)))
     }
@@ -107,25 +109,16 @@ export const WalletComponent = () => {
       walletStore.dispatch({ type: 'CLEAR_WALLET_DATA' });
     } else if(user.isLoggedIn) {
       getBalance();
-    }
+    }*/
   }, [user.isLoggedIn]);
 
+  /** When expired, clears interval */
   useEffect(() => {
     if(expireSec === 0) clearInterval(timerId);
   }, [expireSec]);
 
-  const onConnectNode = (data = null) => {
-    walletStore.dispatch({ type: 'SET_NODE_DATA', payload: data || {
-      'lightning': {
-      'admin': '',
-      'invoice': '',
-      'socket': '',
-      'cert': '',
-    }}});
-    setNodeModalOpen(false);
-  }
-
-  const onNodeModalOpenClick = () => {
+  /** When Bitcoin Connect Button is pressed */
+  const onNodeModalOpenClick = useCallback(() => {
     setNodeModalOpen(true);
 
     clearInterval(timerId);
@@ -134,9 +127,10 @@ export const WalletComponent = () => {
       setExpireSec(expireSec => expireSec - 1);
     }, 1000);
     setTimerId(id);
-  }
+  }, [timerId]);
 
-  const onSetCredentials = () => {
+  /** Save Credentials to the store */
+  const onSetCredentials = useCallback(() => {
     if (curInputCredsType === 1) {
       walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning});
       walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
@@ -151,9 +145,10 @@ export const WalletComponent = () => {
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
     setCurInputCredsType(0);
-  }
+  }, [walletStore]);
 
-  const onConnectMetamask = async () => {
+  /** Connect Metamask */
+  const onConnectMetamask = useCallback(async () => {
     if (window.ethereum) {
       //user.user.ethereum = window.ethereum;
       const accounts = await getEthAddress();
@@ -163,14 +158,16 @@ export const WalletComponent = () => {
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: balance});
       console.log('Metamask Wallet Connected: ', accounts);
     }
-  }
+  }, [walletStore]);
 
-  const onConnectWalletConnect = () => {
+  /** When WalletConnect button is clicked  */
+  const onConnectWalletConnect = useCallback(() => {
     onConnectWC();
     setWalletModalOpen(false);
-  };
+  }, []);
 
-  const onConnectBtcWallet = async () => {
+  /** When Bitcoin-Taproot Connect is clicked */
+  const onConnectBtcWallet = useCallback(async () => {
     const selWal = prompt('Which wallet would you like to connect? 1 - Unisat, 2 - Xverse', 1);
     if(selWal != 1 && selWal != 2) {
       toast.error(
@@ -183,6 +180,7 @@ export const WalletComponent = () => {
       return; 
     }
     if(selWal == 1) {
+      /** Unisat Wallet Extension Connection */
       if(unisat) {
         const result = await unisat.requestAccounts();
         const publicKey = await unisat.getPublicKey();
@@ -206,6 +204,7 @@ export const WalletComponent = () => {
       }
       return;
     }
+    /** Xverse Wallet Extension Connection */
     const core = async () => {
       try {
         const getAddressOptions = {
@@ -247,14 +246,15 @@ export const WalletComponent = () => {
       }  
     }
     core();
-  }
+  }, [unisat, walletStore]);
 
-  const onConnectLightning = () => {
+  /** Alby Wallet Connect */
+  const onConnectLightning = useCallback(() => {
     const core = async () => {
       try {
         if(window.webln !== 'undefined'){
           await window.webln.enable();
-          setIsBtcWalletConnected(true);
+          //setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo();
           console.log('Alby Wallet Connected: ', info);
 
@@ -276,9 +276,10 @@ export const WalletComponent = () => {
       }  
     }
     core();
-  }
+  }, [walletStore]);
   
-  const onPaymentSimulate = (isL1 = false) => {
+  /** Payment Simulate for Bitcoin Wallets */
+  const onPaymentSimulate = useCallback((isL1 = false) => {
     const core = async () => {
       if(isL1){
         if(isBtcWalletConnected == 'unisat') {
@@ -333,7 +334,7 @@ export const WalletComponent = () => {
     };
 
     core();
-  }
+  }, [isBtcWalletConnected, btcAddrs]);
 
   return (
     <>
@@ -377,7 +378,7 @@ export const WalletComponent = () => {
           </Grid>
           <Grid item container direction='column' className='flex-vh-center' spacing={2}>
             <Grid item container direction='row' spacing={1} className='flex-vh-center'>
-              <Grid item xs={4}><h4>L1 Network</h4></Grid>
+              <Grid item xs={4}><h4>Taproot</h4></Grid>
               { !isBtcWalletConnected 
                 ? <Grid item xs={8} textAlign='right' spacing={1}>
                     <Button circular="true" secondary="true" id='connect-l1' className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button>
@@ -473,7 +474,7 @@ export const WalletComponent = () => {
       <WalletConnectModal open={walletConnectModalOpen} handleClose={() => setWalletConnectModalOpen(false)} />
       <ReceiveFunds />
       <Web3ModalSign
-        projectId="33eaf37ba0badd61cecfe4f3582f18ac"
+        projectId="f304c5cbc7e0cc903d8c8bbb4c8c9ab6"
         metadata={{
           name: 'My Dapp',
           description: 'My Dapp description',

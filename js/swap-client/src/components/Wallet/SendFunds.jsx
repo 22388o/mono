@@ -12,6 +12,7 @@ import { CollectiblesModal } from '../Collectibles/CollectiblesModal';
 import { AddOtherAssetsModal } from './AddOtherAssetsModal';
 import { walletStore } from '../../syncstore/walletstore';
 
+/** SendFunds Modal */
 export const SendFunds = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [recipAddr, setRecipAddr] = useState('');
@@ -29,6 +30,7 @@ export const SendFunds = () => {
       }, 1000);
   }, [sendingProcess]);
 
+  /** Click on Asset Item */
   const onClickAsset = useCallback((asset) => {
     if(!asset.isNFT) setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: !asset.isNFT ? 2 : 1.5 });
@@ -39,16 +41,19 @@ export const SendFunds = () => {
     setModalOpen(false);
   }, [walletStore]);
 
+  /** Click on Close */
   const onClickClose = useCallback(() => {
     setModalOpen(false);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 0 });
   }, [walletStore]);
 
+  /** Click on Ordinal */
   const onNftItemClick = useCallback((asset) => {
     setSelAsset(asset);
     walletStore.dispatch({ type: 'SET_SENDING_PROCESS', payload: 2 });
   }, [walletStore]);
 
+  /** Draw an NFT Asset Container */
   const nftAssetContainer = () => { 
     return <Grid item className='flex-center' style={{border:'1px solid #444444',padding:'0.5em',borderRadius:'0.5em'}}>
       <Stack direction='row' className='flex-middle' spacing={1}>

@@ -2,6 +2,8 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const webdriver = require("selenium-webdriver");
 const chrome = require('selenium-webdriver/chrome.js');
+const path = require('path');
+const projDir = path.resolve(__dirname, '../../chrome-profile')
 
 const By = webdriver.By;
 const options = new chrome.Options();
@@ -12,7 +14,7 @@ options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
 options.addArguments('--window-size=1920,1096')
 options.addArguments('--disable-dev-shm-usage');
-options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
+options.addArguments(`--user-data-dir=${projDir}`);
 options.addArguments("--profile-directory=Profile 1");
 
 let driver, windows;

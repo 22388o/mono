@@ -1,8 +1,8 @@
 export const SWAP_PAIRS = [{
   base: 'BTC',
   quote: 'ETH',
-  seeker: 'BTC',
-  holder: 'ETH',
+  seeker: 'ETH',
+  holder: 'BTC',
   process: [
     1, 
     2, 

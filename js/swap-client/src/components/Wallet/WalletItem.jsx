@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Button, Stack } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const ID_ARR = {'Bitcoin-L1' : 0, 'Ethereum' : 1, 'Bitcoin-lightning' : 2};
+const ID_ARR = {'Bitcoin-Taproot' : 0, 'Ethereum' : 1, 'Bitcoin-lightning' : 2};
 
 export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
   const type = item.title, typeId = ID_ARR[type];
@@ -15,7 +15,7 @@ export const WalletItem = ({item, setNodeModalOpen, setWalletModalOpen}) => {
       </Grid>
       <Grid item xs={5} textAlign='left'>
         <Stack direction='column'>
-          <b>{ type }</b>
+          <b>{ type.indexOf('Bitcoin') >= 0 ? 'Bitcoin' : type }</b>
           <span style={{fontSize:'0.8em',color:'grey',marginTop:'-5px'}}>{ item.type }</span>
         </Stack>
       </Grid>

@@ -10,12 +10,12 @@ export const DemoSwap = ({ mockSwap }) => {
       baseNetwork: 'lightning.btc',
       baseQuantity: 0.001,
       quoteAsset: 'ETH',
-      quoteNetwork: 'eth-l2.eth',
+      quoteNetwork: 'ethereum',
       quoteQuantity: 0.0000000000001})}>Swap 0.001 BTC for 0.0000000000001 ETH</Button>
     <Button circular="true" secondary="true" className='gradient-btn w-100 h-3' onClick={e => mockSwap({
       side: 'bid',
       baseAsset: 'ETH',
-      baseNetwork: 'eth-l2.eth',
+      baseNetwork: 'ethereum',
       baseQuantity: 0.0000000000001,
       quoteAsset: 'BTC',
       quoteNetwork: 'lightning.btc',

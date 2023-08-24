@@ -5,13 +5,14 @@
 'use strict'
 
 import { Buffer } from 'buffer'
-import CoreEvents from './CoreEvents'
+import { log } from './helpers'
+import { Sdk } from '@portaldefi/sdk';
 
  /**
   * Exports an implementation of a client
   * @type {Client}
   */
-export default class Client extends CoreEvents {
+export default class Client extends Sdk {
    /**
     * Creates a new instance of Client
     * @param {Object} props Properties of the client
@@ -24,32 +25,33 @@ export default class Client extends CoreEvents {
   constructor (props) {
     super({
       ...props,
-      apiVersion: 2
+      apiVersion: 1
     });
 
-    this.webln = null
-    this.ethereum = null
 
 
     Object.seal(this)
   }
 
   /**
-   * Create the required state for an atomic swap
+   * Create the required state for a BTCORD atomic swap
    * @param {body|Object} swap The swap to open
    * @returns {Swap}
    */
   swapOpenV2 (body) {
-    return this._request('/api/v2/swap/submarine', { method: 'PUT' },  body )
+    return this._request({ method: 'PUT', path: '/api/v2/swap/submarine' },  body )
   }
+  // getBalance (opts) {
+  //   return this._request('/api/v1/channel', { method: 'POST' }, { opts })
+  // }
 
   /**
-   * Completes the atomic swap
+   * Completes the BTCORD atomic swap
    * @param {Body|Object} body The swap to commit
    * @returns {Promise<Void>}
    */
   swapCommitV2 (body) {
-    return this._request('/api/v2/swap/submarine', { method: 'POST' },  body )
+    return this._request({ method: 'POST', path: '/api/v2/swap/submarine' },  body )
   }
 
    /**
@@ -59,7 +61,7 @@ export default class Client extends CoreEvents {
     */
   _onMessage (msg) {
     let dat = JSON.parse(msg.data);
-    this.emit(dat.status, dat.data);
+    this.emit(dat.status, dat);
 
     /*try {
       arg = JSON.parse(msg.data)
