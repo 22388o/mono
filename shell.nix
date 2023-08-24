@@ -49,16 +49,12 @@ in
 
     commands = [
       {
-        category = "Terraform";
-        name = "tf-get-deploy-private-key";
-        help = "Obtain the deployment private key from terraform state";
-        command = ''terraform state pull | jq -r ".resources[] | select(.name == \"deploy\") | .instances[0].attributes.private_key_pem"'';
-      }
-      {
-        category = "Terraform";
-        name = "tf-get-deploy-public-key";
-        help = "Obtain the deployment public key from terraform state";
-        command = ''terraform state pull | jq -r ".resources[] | select(.name == \"deploy\") | .instances[0].attributes.public_key_openssh"'';
+        category = "DevOps";
+        name = "tf-get";
+        help = "Obtain the deployment public or private key from terraform state";
+        command = let
+          script = pkgs.writeShellScriptBin "tf-get" (builtins.readFile ./sh/tf-get.sh);
+        in ''${script}/bin/tf-get $@'';
       }
       {
         category = "Tools";
