@@ -31,7 +31,9 @@ async function performLogin(browser, index) {
   // Debugging output
   console.log(`Attempting to login with index: ${index}`);
 
+  await page.waitForSelector('#connect-wallet', { timeout: 10000 }); // Wait up to 1 seconds
   await page.click('#connect-wallet');
+  
 
   try {
       // Wait for the '.MuiList-root' to be rendered
