@@ -109,6 +109,15 @@ async function createOrder(browser) {
 }
 
 Then('Swap fills and completes', {timeout: 100000}, async () => {
+
+  // TODO: checks to add in place
+  // order.matched
+  // swap.created
+  // swap.opening
+  // swap.opened
+  // swap.committing
+  // swap.committed  
+
   await wait(10000);
   alice.quit();
   bob.quit();
