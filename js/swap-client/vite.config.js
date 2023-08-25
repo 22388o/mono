@@ -4,9 +4,6 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  build: {
-    minifiy: false
-  },
   plugins: [react()],
   optimizeDeps: {
     include: ['@portaldefi/sdk']
