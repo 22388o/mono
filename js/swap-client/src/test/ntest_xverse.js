@@ -52,11 +52,11 @@ const main = async () => {
     await wait(500);
     await (await walletCreatePage.$$('button'))[0].click(); /** Backup Later button */
     await wait(500);
-    await (await walletCreatePage.$$('input'))[0].type('TESTPW123'); /** Password Input */
+    await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Input */
     await wait(500);
     await (await walletCreatePage.$$('button'))[2].click();
     await wait(500);
-    await (await walletCreatePage.$$('input'))[0].type('TESTPW123'); /** Password Confirm */
+    await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Confirm */
     await wait(500);
     await (await walletCreatePage.$$('button'))[2].click(); /** Confirm Button */
     await wait(2000);
@@ -71,7 +71,7 @@ const main = async () => {
     await wait(7000);
     const walletDlg = (await browser.pages())[1];
     //Xverse control
-    await (await walletDlg.$('input')).type('TESTPW123');
+    await (await walletDlg.$('input')).type('TESTPW123_five');
     await (await walletDlg.$$('button'))[1].click();
 
     await wait(5000);
@@ -91,7 +91,7 @@ const main = async () => {
       throw new Error('Insufficient Balance!');
     }*/
 
-    console.log('Payment Simulate Done!');
+    console.log('Payment Simulation Done!');
     await browser.close();
 
 

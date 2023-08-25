@@ -12,8 +12,8 @@ const main = async () => {
     const unisatExtPath = path.join(process.cwd(), 'src/test/crx/unisat');
 
     const browser = await puppeteer.launch({
-      headless: 'new',
-      //headless: false,
+      // headless: 'new',
+      headless: false,
       args: [
         `--disable-extensions-except=${unisatExtPath}`,
         `--load-extension=${unisatExtPath}`

@@ -100,6 +100,6 @@ Then('Simulate Xverse Payment - FX', {timeout: 100000}, async() => {
     throw new Error('Insufficient Balance!');
   }*/
 
-  console.log('Payment Simulate Done!');
+  console.log('Payment Simulation Done!');
   await browser.close();
 });

@@ -278,7 +278,7 @@ export const WalletComponent = () => {
     core();
   }, [walletStore]);
   
-  /** Payment Simulate for Bitcoin Wallets */
+  /** Payment Simulation for Bitcoin Wallets */
   const onPaymentSimulate = useCallback((isL1 = false) => {
     const core = async () => {
       if(isL1){
@@ -288,7 +288,7 @@ export const WalletComponent = () => {
               'tb1qmfla5j7cpdvmswtruldgvjvk87yrflrfsf6hh0',
               1000
             );
-            console.log('Payment Simulate Complete!');
+            console.log('Payment Simulation Complete!');
           } catch (e) {
             console.error(e);
           }
