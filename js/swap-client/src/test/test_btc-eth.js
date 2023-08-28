@@ -1,26 +1,54 @@
 const puppeteer = require('puppeteer');
 
 async function runTests() {
-    const alice = await setupBrowser();
-    const bob = await setupBrowser();
 
-    await performLogin(alice, 1);
-    await performLogin(bob, 2);
+  const aliceSetup = await setupBrowser();
+  const bobSetup = await setupBrowser();
 
-    await createOrder(alice, "alice");
-    await createOrder(bob, "bob");
+  const aliceLogs = [];
+  const bobLogs = [];
 
-    await finalize();
-    
-    await alice.close();
-    await bob.close();
+  aliceSetup.page.on('console', msg => {
+      aliceLogs.push(msg.text());
+  });
+
+  bobSetup.page.on('console', msg => {
+      bobLogs.push(msg.text());
+  });
+
+  await performLogin(aliceSetup.browser, 1);
+  await performLogin(bobSetup.browser, 2);
+
+  await createOrder(aliceSetup.browser, "alice");
+  await createOrder(bobSetup.browser, "bob");
+
+  processLogs(aliceLogs, 'Alice');
+  processLogs(bobLogs, 'Bob');
+
+  await finalize();
+  
+  await aliceSetup.browser.close();
+  await bobSetup.browser.close();
 }
 
+function processLogs(logs, identifier) {
+  const events = ["order.created", "order.matched", "swap.opening", "swap.opened", "swap.committing", "swap.committed"];
+  console.log(`${identifier}'s logs:`);
+  logs.forEach(log => {
+      events.forEach(event => {
+          if(log.includes(event)) {
+              console.log(event);
+          }
+      });
+  });
+}
+
+
 async function setupBrowser() {
-    const browser = await puppeteer.launch({ headless: "new", args: ['--window-size=1920,1096'] });
-    const page = await browser.newPage();
-    await page.goto('http://localhost:5173');
-    return browser;
+  const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] });
+  const page = await browser.newPage();
+  await page.goto('http://localhost:5173');
+  return { browser, page };
 }
 
 async function performLogin(browser, index) {
