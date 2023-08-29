@@ -10,22 +10,23 @@ const wait = (t) => {
 
 let browser, projPage;
 
-Given('Test Browser is opened - FX', {timeout: 5000}, async () => {
-  await openTestBrowser();
-});
+async function runTests() {
+  Given('Test Browser is opened - FX', {timeout: 5000}, async () => {
+    await openTestBrowser();
+  });
 
-When('Create Xverse Wallet - FX', {timeout: 15000}, async () => {
-  await createXverseWallet();
-});
+  When('Create Xverse Wallet - FX', {timeout: 15000}, async () => {
+    await createXverseWallet();
+  });
 
-Then('Connect Xverse Wallet - FX', {timeout: 15000}, async () => {
-  await connectXverseWallet();
-});
+  Then('Connect Xverse Wallet - FX', {timeout: 15000}, async () => {
+    await connectXverseWallet();
+  });
 
-Then('Simulate Xverse Payment - FX', {timeout: 5000}, async() => {
-  await simulateXversePayment();
-});
-
+  Then('Simulate Xverse Payment - FX', {timeout: 5000}, async() => {
+    await simulateXversePayment();
+  });
+}
 
 
 async function openTestBrowser() {
@@ -121,3 +122,8 @@ async function simulateXversePayment() {
   console.log('Payment Simulation Done!');
   await browser.close();
 }
+
+// Execute the tests
+runTests().catch(error => {
+    console.error('Error during tests:', error);
+});
