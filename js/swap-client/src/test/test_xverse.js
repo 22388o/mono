@@ -1,16 +1,13 @@
 const webdriver = require("selenium-webdriver");
 const chrome = require('selenium-webdriver/chrome.js');
-const path = require('path');
-
-const projDir = path.resolve(__dirname, '../../chrome-profile')
 
 const options = new chrome.Options();
 options.setLoggingPrefs({
   browser: 'ALL'
 });
 options.addArguments('--enable-logging');
-options.addArguments("--log-level=0")
-options.addArguments(`--user-data-dir=${projDir}`);
+options.addArguments("--log-level=0");
+options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
 options.addArguments("--profile-directory=Profile 1");
 
 const By = webdriver.By; 
@@ -63,6 +60,17 @@ async function main() {
     await wait(1000);
   }
 
+  await driver.switchTo().window(windows[0]);
+
+  const modal = await driver.findElement(By.className('connect-modal-color'));
+  const simulate = await modal.findElement(By.className('simulate-l1'));
+  await simulate.click();
+
+  await wait(3000);
+  
+  windows = await driver.getAllWindowHandles();
+  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+
   try {
     const logs = await driver.manage().logs().get('browser');
     const idxLog = logs.findIndex(log => log.message.indexOf("Xverse Wallet Connected") >= 0);
@@ -74,17 +82,6 @@ async function main() {
 
   }
 
-  await driver.switchTo().window(windows[0]);
-
-  const modal = await driver.findElement(By.className('connect-modal-color'));
-  const simulate = await modal.findElement(By.className('simulate-l1'));
-  await simulate.click();
-
-  await wait(3000);
-
-  windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-  
   try {
     const approveBtn = await driver.findElement(By.className('iwDLzk'));
     const text = await approveBtn.getText();

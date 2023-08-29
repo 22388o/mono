@@ -3,5 +3,5 @@ Feature: Connect Metamask wallet extension
 
   Scenario: Connect and Simulate Payment with Metamask
     Given Test Browser is opened - FM
-    When Click on Lightning Connect Button - FM
+    When Create Metamask Wallet - FM
     Then Connect Metamask Wallet - FM

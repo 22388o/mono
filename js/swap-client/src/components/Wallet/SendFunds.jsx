@@ -12,6 +12,7 @@ import { CollectiblesModal } from '../Collectibles/CollectiblesModal';
 import { AddOtherAssetsModal } from './AddOtherAssetsModal';
 import { walletStore } from '../../syncstore/walletstore';
 
+/** SendFunds Modal */
 export const SendFunds = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [recipAddr, setRecipAddr] = useState('');

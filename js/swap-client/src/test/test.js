@@ -7,7 +7,6 @@ options.setLoggingPrefs({
 });
 options.addArguments('--enable-logging');
 options.addArguments("--log-level=0")
-options.addArguments('--headless');
 options.addArguments('--window-size=1920,1096')
 options.addArguments('--disable-dev-shm-usage');
 
@@ -62,7 +61,7 @@ async function main(){
 
   //Quantity Inputs
   let inputs = await driver.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
+  await inputs[0].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
@@ -118,7 +117,7 @@ async function main2(){
 
   //Quantity Inputs
   let inputs = await driver1.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
+  await inputs[0].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
@@ -133,6 +132,7 @@ async function main2(){
  
 }
 
-main()
-
-main2()
+module.exports = async function () {
+  main()
+  main2()
+}

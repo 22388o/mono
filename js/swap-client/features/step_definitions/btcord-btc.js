@@ -94,7 +94,7 @@ When('Alice creates an order from BTCORD to BTC - F1', {timeout: 100000}, async(
 
   //Quantity Inputs
   let inputs = await alice.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
+  await inputs[0].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
@@ -127,7 +127,7 @@ When('Bob creates an order from BTC to BTCORD - F1', {timeout: 100000}, async ()
 
   //Quantity Inputs
   let inputs = await bob.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('1');
+  await inputs[0].sendKeys('0.0001');
 
   await wait(500);
   //Swap Button Click
