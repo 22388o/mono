@@ -10,8 +10,7 @@ exit_script() {
 trap exit_script SIGINT
 
 # Loop indefinitely
-while true
-do
+while true; do
   # Run the two commands
   ./inscribe.sh 1
   ./updateInscriptions.sh ./inscriptions.json inscription_info.js

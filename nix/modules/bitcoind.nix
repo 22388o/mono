@@ -1,8 +1,4 @@
-{ config, lib, ...}:
-
-with lib;
-
-{
+{...}: {
   # TODO: what should be configurable
   options.portal.bitcoin = {};
 
@@ -11,7 +7,7 @@ with lib;
       enable = true;
       extraConfig = ''
         regtest=1
-        '';
+      '';
     };
   };
 }

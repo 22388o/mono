@@ -1,8 +1,5 @@
-{ config, lib, modulesPath, options, pkgs, ... }:
-
-with lib;
-
-{
+{lib, ...}:
+with lib; {
   imports = [
     ./modules/bitcoind.nix
     ./modules/default.nix
@@ -17,5 +14,4 @@ with lib;
     nodeFqdn = mkDefault "nixos";
     rootSshKey = mkDefault "not-provided";
   };
-
 }

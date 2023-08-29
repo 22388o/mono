@@ -64,6 +64,7 @@
   "devDependencies": {
     "@babel/register": "^7.22.5",
     "@cucumber/cucumber": "^9.3.0",
+    "@portaldefi/peer": "file:../portal",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
     "@vitejs/plugin-react": "^2.2.0",
