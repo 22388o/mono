@@ -50,7 +50,7 @@ async function runTests() {
 }
 
 function processLogs(logs, user) {
-  const events = ["order.created", "order.matched", "swap.opening", "swap.opened", "swap.committing", "swap.committed"];
+  const events = ["order.created", "order.matched", "swap.created", "swap.opening", "swap.opened", "swap.committing", "swap.committed"];
   console.log(`${user}'s logs:`);
   if (logs && logs.length)
     logs.forEach(log => {
