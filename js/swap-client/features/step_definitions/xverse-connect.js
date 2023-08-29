@@ -10,12 +10,30 @@ const wait = (t) => {
 
 let browser, projPage;
 
-Given('Test Browser is opened - FX', {timeout: 100000}, async () => {
+Given('Test Browser is opened - FX', {timeout: 5000}, async () => {
+  await openTestBrowser();
+});
+
+When('Create Xverse Wallet - FX', {timeout: 15000}, async () => {
+  await createXverseWallet();
+});
+
+Then('Connect Xverse Wallet - FX', {timeout: 15000}, async () => {
+  await connectXverseWallet();
+});
+
+Then('Simulate Xverse Payment - FX', {timeout: 5000}, async() => {
+  await simulateXversePayment();
+});
+
+
+
+async function openTestBrowser() {
   const xversePath = path.join(process.cwd(), 'src/test/crx/xverse');
 
   browser = await puppeteer.launch({
     headless: 'new',
-    //headless: false,
+    // headless: false,
     args: [
       `--disable-extensions-except=${xversePath}`,
       `--load-extension=${xversePath}`
@@ -28,69 +46,69 @@ Given('Test Browser is opened - FX', {timeout: 100000}, async () => {
     await dialog.accept('2');
   });
 
-});
+}
 
-When('Create Xverse Wallet - FX', {timeout: 100000}, async () => {
+async function createXverseWallet() {
+  await wait(500);
+
+  await (await projPage.$('.connect-bitcoin')).click();
+  await (await projPage.$('#connect-l1')).click();
+
+  await wait(500);
+
+  /* Create New Wallet */
+  const walletCreateDlg = (await browser.pages())[1];
+  await (await walletCreateDlg.$$('button'))[0].click();
+
   await wait(2000);
 
-    await (await projPage.$('.connect-bitcoin')).click();
-    await (await projPage.$('#connect-l1')).click();
+  const walletCreatePage = (await browser.pages())[2];
+  /** Create Xverse Wallet Window opened */
 
-    await wait(2000);
+  await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[0].click(); /** Continue button */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[0].click(); /** Accept button */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[0].click(); /** Backup Later button */
+  await wait(500);
+  await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Input */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[2].click();
+  await wait(500);
+  await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Confirm */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[2].click(); /** Confirm Button */
+  await wait(500);
+  await (await walletCreatePage.$$('button'))[0].click(); /** Close Create Window */
+  
+  await walletCreateDlg.close();
+}
 
-    /* Create New Wallet */
-    const walletCreateDlg = (await browser.pages())[1];
-    await (await walletCreateDlg.$$('button'))[0].click();
-
-    await wait(2000);
-
-    const walletCreatePage = (await browser.pages())[2];
-    /** Create Xverse Wallet Window opened */
-
-    await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[0].click(); /** Continue button */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[0].click(); /** Accept button */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[0].click(); /** Backup Later button */
-    await wait(500);
-    await (await walletCreatePage.$$('input'))[0].type('TESTPW123'); /** Password Input */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[2].click();
-    await wait(500);
-    await (await walletCreatePage.$$('input'))[0].type('TESTPW123'); /** Password Confirm */
-    await wait(500);
-    await (await walletCreatePage.$$('button'))[2].click(); /** Confirm Button */
-    await wait(2000);
-    await (await walletCreatePage.$$('button'))[0].click(); /** Close Create Window */
-    
-    await walletCreateDlg.close();
-});
-
-Then('Connect Xverse Wallet - FX', {timeout: 100000}, async () => {
+async function connectXverseWallet() {
   await (await projPage.$('.connect-bitcoin')).click();
   await wait(500);
   await (await projPage.$('#connect-l1')).click();
 
-  await wait(7000);
+  await wait(2000);
   const walletDlg = (await browser.pages())[1];
   //Xverse control
-  await (await walletDlg.$('input')).type('TESTPW123');
+  await (await walletDlg.$('input')).type('TESTPW123_five');
   await (await walletDlg.$$('button'))[1].click();
 
-  await wait(5000);
+  await wait(2000);
   await (await walletDlg.$$('button'))[2].click();
   console.log('Xverse Wallet Connected!');
 
   await wait(1000);
-});
+}
 
-Then('Simulate Xverse Payment - FX', {timeout: 100000}, async() => {
+async function simulateXversePayment() {
   await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click(); //Simulate Payment
-  await wait(3000);
+  await wait(2000);
 
   const approveDlg = (await browser.pages())[1];
   /*const text = await approveDlg.$eval('.iwDLzk', el => el.innerHTML);
@@ -102,4 +120,4 @@ Then('Simulate Xverse Payment - FX', {timeout: 100000}, async() => {
 
   console.log('Payment Simulation Done!');
   await browser.close();
-});
+}

@@ -1,3 +1,5 @@
+// old test, see site-definition xverse-connect for latests, written in gherkin
+
 const puppeteer = require('puppeteer');
 const path = require('path');
 

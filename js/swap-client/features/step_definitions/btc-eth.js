@@ -64,7 +64,7 @@ function processLogs(logs, user) {
 
 
 async function setupBrowser() {
-  const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] });
+  const browser = await puppeteer.launch({ headless: "new", args: ['--window-size=1920,1096'] });
   const page = await browser.newPage();
   await page.goto('http://localhost:5173');
   return { browser, page };
