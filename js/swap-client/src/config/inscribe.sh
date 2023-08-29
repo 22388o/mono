@@ -26,10 +26,8 @@ dir="./inscriptions"
 
 if [ $SKIP_ORD -eq 0 ]; then
   # Iterate over each file in the directory
-  for file in "$dir"/*
-  do
-    if [ -f "$file" ]
-    then
+  for file in "$dir"/*; do
+    if [ -f "$file" ]; then
       # Run the command for this file
       ord_command wallet inscribe --fee-rate 154 "$file"
 
@@ -40,4 +38,4 @@ if [ $SKIP_ORD -eq 0 ]; then
 fi
 
 # Run the final command after all file commands have completed
-ord_command wallet inscriptions > inscriptions.json
+ord_command wallet inscriptions >inscriptions.json
