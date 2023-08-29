@@ -1,3 +1,5 @@
+// old test, see site-definition btc-eth for latests, written in gherkin
+
 const puppeteer = require('puppeteer');
 
 async function runTests() {

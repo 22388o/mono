@@ -10,7 +10,7 @@ Feature: Perform BTC to ETH swap
     # And Bob logs in
 
   Scenario: Alice & Bob Performs Swap
-    Given Alice & Bob is logged in
+    Given Alice & Bob are logged in
     When Alice creates an order from BTC to ETH
     And Bob creates an order from ETH to BTC
     Then Swap fills and completes

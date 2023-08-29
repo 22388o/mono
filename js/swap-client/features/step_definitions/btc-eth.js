@@ -1,125 +1,149 @@
-const assert = require('assert');
+const puppeteer = require('puppeteer');
 const { Given, When, Then } = require('@cucumber/cucumber');
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
 
-const By = webdriver.By;
 
-// Chrome options configuration
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0")
-options.addArguments('--headless');
-options.addArguments('--window-size=1920,1096')
-options.addArguments('--disable-dev-shm-usage');
+async function runTests() {
+  let aliceSetup, bobSetup;
+  let aliceLogs = [];
+  let bobLogs = [];
+  Given("Alice browser is opened", async function () {
+    aliceSetup = await setupBrowser();
+  });
+  Given("Bob browser is opened", async function () {
+    bobSetup = await setupBrowser();
+  });
 
-let alice, bob;
 
-// Utility function to pause the execution
-const wait = (t) => {
-  return new Promise((res) => {
-    setTimeout(res, t);
-  })
+  When('Alice clicks on login', async function() {
+    await performLogin(aliceSetup.browser, 1);
+  });
+  When('Bob clicks on login', async function() {
+    await performLogin(bobSetup.browser, 2);
+  });
+
+  When('Alice & Bob are logged in', async function() {
+  });
+
+  When('Alice creates an order from BTC to ETH', async function() {
+      aliceSetup.page.on('console', msg => {
+        aliceLogs.push(msg.text());
+    });
+    await createOrder(aliceSetup.browser, "alice");
+  });
+  When('Bob creates an order from ETH to BTC', async function() {
+    bobSetup.page.on('console', msg => {
+        bobLogs.push(msg.text());
+    });
+    await createOrder(bobSetup.browser, "bob");
+  });
+
+
+  Then('Swap fills and completes', async function() {
+    processLogs(aliceLogs, 'Alice');
+    processLogs(bobLogs, 'Bob');
+  });
+
+  await finalize();
+  
+  await aliceSetup.browser.close();
+  await bobSetup.browser.close();
 }
 
-Given('Alice browser is opened', {timeout: 10000}, async () => {
-  alice = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
-  await alice.navigate().to("http://localhost:5173")
-});
+function processLogs(logs, user) {
+  const events = ["order.created", "order.matched", "swap.opening", "swap.opened", "swap.committing", "swap.committed"];
+  console.log(`${user}'s logs:`);
+  if (logs && logs.length)
+    logs.forEach(log => {
+        events.forEach(event => {
+            if(log.includes(event)) {
+                console.log(event);
+            }
+        });
+    });
+}
 
-Given('Bob browser is opened', {timeout: 10000}, async () => {
-  bob = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
-  await bob.navigate().to("http://localhost:5173")
-});
 
-When('Alice clicks on login', {timeout: 10000}, async () => {
-  await performLogin(alice, 1);
-});
-
-When('Bob clicks on login', {timeout: 10000}, async () => {
-  await performLogin(bob, 2);
-});
+async function setupBrowser() {
+  const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] });
+  const page = await browser.newPage();
+  await page.goto('http://localhost:5173');
+  return { browser, page };
+}
 
 async function performLogin(browser, index) {
-  let res = await browser.findElement(By.id('connect-wallet'));
-  await res.click();
-  
-  await wait(500);
-  
-  let uls = await browser.findElement(By.className('MuiList-root'));
-  let lis = await uls.findElements(By.tagName('li'));
-  await lis[index].click();
+  // Explicitly get the page we want to work with
+  const pages = await browser.pages();
+  const page = pages[1]; // This should be the second tab (index 1)
 
-  await wait(500);
+  // Debugging output
+  console.log(`Attempting to login with index: ${index}`);
+
+  await page.waitForSelector('#connect-wallet', { timeout: 10000 }); // Wait up to 1 seconds
+  await page.click('#connect-wallet');
+  
+
+  try {
+      // Wait for the '.MuiList-root' to be rendered
+      await page.waitForSelector('.MuiList-root', { timeout: 5000 }); // waits for 5 seconds
+  } catch (error) {
+      console.error("Failed to find '.MuiList-root'.", error);
+      throw error;
+  }
+
+  const lis = await page.$$('.MuiList-root li');
+
+  // Ensure the list items are found before trying to click
+  if (lis && lis[index]) {
+      await lis[index].click();
+  } else {
+      const error = new Error(`Unable to find list item at index ${index}`);
+      console.error(error);
+      throw error;
+  }
 }
 
-// Previous login code
-/*
-Then('Alice logs in', async () => {
-  const logs = await alice.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
-  assert.ok(idxLog >= 0, 'Alice is not logged in');
-})
 
-Then('Bob logs in', async () => {
-  const logs = await bob.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
-  assert.ok(idxLog >= 0, 'Bob is not logged in');
-});
-*/
+async function createOrder(browser, identifier) {
+  const pages = await browser.pages();
+  const page = pages[pages.length - 1]; // Get the last page
 
-Given('Alice & Bob is logged in', () => {
-  return 'success';
-});
-
-When('Alice creates an order from BTC to ETH', {timeout: 100000}, async() => {
-  await createOrder(alice);
-});
-
-When('Bob creates an order from ETH to BTC', {timeout: 100000}, async () => {
-  await createOrder(bob);
-});
-
-async function createOrder(browser) {
-  // With BTC to ETH swap as the default, Bob clicks the exchange button for ETH to BTC swap 
-  if (browser === bob) {
-    let excBtn = await browser.findElement(By.className('exchange'));
-    await excBtn.click();
+  if (identifier === 'bob') { // TODO: Remove bob check and manually choose opposite pairs (remove state)
+      const exchangeButton = await page.$('.exchange');
+      if (!exchangeButton) {
+          throw new Error("Exchange button not found for Bob");
+      }
+      await exchangeButton.click();
   }
-  
-  //Quantity Inputs
-  let inputs = await browser.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('.0001');
-  await inputs[1].sendKeys('.0001');
 
-  await wait(500);
-  
-  //Swap Button Click
-  let swapBtn = await browser.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
-  await swapBtn.click();
+  const inputs = await page.$$('.qty-input');
+  if (!inputs || inputs.length < 2) {
+      throw new Error(`Input fields not found for ${identifier}`);
+  }
+  await inputs[0].type('.0001');
+  await inputs[1].type('.0001');
 
-  await wait(1500);
+  const [swapButton] = await page.$x("//button[contains(., 'Swap')]");
+  if (!swapButton) {
+      throw new Error(`Swap button not found for ${identifier}`);
+  }
+  await swapButton.click();
 
-  let activityList = await browser.findElement(By.className('activitiesContainer'));
-  let activities = await activityList.findElements(By.className('activity-item'));
+  await page.waitForSelector('.activitiesContainer');
+  // await page.screenshot({ path: 'debug_screenshot.png' });
+  await page.waitForTimeout(1000);  // wait for 5 seconds
+  const activities = await page.$$('.activitiesContainer .activity-item');
+  if (!activities || activities.length === 0) {
+      throw new Error(`Activity items not found for ${identifier}`);
+  }
   await activities[0].click();
 }
 
-Then('Swap fills and completes', {timeout: 100000}, async () => {
 
-  // TODO: checks to add in place
-  // order.matched
-  // swap.created
-  // swap.opening
-  // swap.opened
-  // swap.committing
-  // swap.committed  
+async function finalize() {
+    await new Promise(resolve => setTimeout(resolve, 10000));
+}
 
-  await wait(10000);
-  alice.quit();
-  bob.quit();
-  return 'success'
+// Execute the tests
+runTests().catch(error => {
+    console.error('Error during tests:', error);
 });
