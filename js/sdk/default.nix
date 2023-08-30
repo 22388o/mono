@@ -85,7 +85,7 @@ pkgs.stdenv.mkDerivation {
       cp -RT "$(get_dep_path "$dep")" "$dep_path"
     done
 
-    # Copy the main library's relevant files to the build result directory
-    cp -R {node_modules,package.json,package-lock.json,etc,lib,index.js,index.mjs} "$out"
+    # Copy the relevant files to the build result directory
+    cp -R {node_modules,package.json,etc,lib,index.js,index.mjs} "$out"
   '';
 }

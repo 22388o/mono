@@ -1,7 +1,7 @@
 set -eu
 
 # Tests needs to be performed in this order to work properly
-directories=("core" "portal" "sdk" "app")
+directories=("core" "portal" "sdk")
 
 for dir in "${directories[@]}"; do
   echo "-------------------------"

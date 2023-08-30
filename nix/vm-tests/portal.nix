@@ -5,7 +5,7 @@
     # The node service might be considered as ready by systemd by not
     # yet listening to the input socket. Let's wait until it's ready.
     # Note: the nixos test has a 900s timeout.
-    while [[ "$(curl -s -o /dev/null -w '%{http_code}' "$endpoint")" != "200" ]]; do sleep 2; done
+    while [[ "$(curl -s -o /dev/null -w '%{http_code}' "$endpoint")" != "200" ]]; do sleep 5; done
     res_code=$(curl -s -o /dev/null -w '%{http_code}' "$endpoint")
     res_expected_body=$(curl -s "$endpoint" | jq ".alive")
     if [[ $res_code == 200 && $res_expected_body == true  ]]; then

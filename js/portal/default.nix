@@ -14,12 +14,11 @@ pkgs.stdenv.mkDerivation {
 
   doCheck = false;
 
-  NODE_ENV = "production";
-
   buildInputs = [
     nodejs
     pkgs.cacert
     pkgs.git
+    pkgs.jq
     pkgs.makeWrapper
     pkgs.openssh
   ];
@@ -30,7 +29,19 @@ pkgs.stdenv.mkDerivation {
       insteadOf = "ssh://git@github.com/"
   '';
 
+  NODE_ENV = "production";
+
   preBuild = ''
+    # Extract local dependencies from package.json
+    function get_local_deps() {
+      jq -r '[.dependencies, .devDependencies] | map(select(. != null) | to_entries[] | select(.value | startswith("file:")) | .key)[]' package.json
+    }
+
+    # Function to get the path of a given local dependency from package.json.
+    function get_dep_path() {
+      jq -r "[.dependencies.\"$1\", .devDependencies.\"$1\"] | select(. != null) | .[]" package.json | cut -c 6- | tr -d '\n'
+    }
+
     # Update permissions to be writable on parent folders (required when working with npm link)
     for dir in ../*/; do
       chmod -R u+w "$dir"
@@ -43,13 +54,38 @@ pkgs.stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
+    # Install local deps (see issue: https://github.com/npm/cli/issues/2339)
+    for dep in $(get_local_deps); do
+      pushd "$(get_dep_path "$dep")"
+      npm install
+      popd
+    done
+
     # Install the packages
     npm install
   '';
 
   installPhase = ''
-    mkdir -p $out
-    cp -R {bin,contracts,lib,node_modules,package.json,package-lock.json} $out
+    # Create out dir
+    mkdir -p "$out"
+
+    # Handle local dependencies:
+    # Remove symlinks and copy the actual content of local dependencies
+    for dep in $(get_local_deps); do
+      dep_path="node_modules/$dep"
+
+      # If a symlink or directory for the local dependency exists, remove it
+      [ -e "$dep_path" ] && rm -rf "$dep_path"
+
+      # Ensure the parent directory of the local dependency exists
+      mkdir -p "$(dirname "$dep_path")"
+
+      # Copy the actual content of the local dependency
+      cp -RT "$(get_dep_path "$dep")" "$dep_path"
+    done
+
+    # Copy the relevant files to the build result directory
+    cp -R {bin,contracts,lib,node_modules,package.json} $out
 
     chmod +x $out/bin/portal
     wrapProgram $out/bin/portal \
