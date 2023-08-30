@@ -73,8 +73,5 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     mkdir -p $out
     cp -r dist/* $out
-
-    # mkdir -p $contracts
-    # cp ./../../playnet/contracts.json $contracts/contracts.json
   '';
 }
