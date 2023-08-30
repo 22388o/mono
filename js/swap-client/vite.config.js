@@ -4,12 +4,12 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  build: {
-    minifiy: false
-  },
   plugins: [react()],
   optimizeDeps: {
-    include: ['@portaldefi/sdk']
+    include: [
+      '@portaldefi/core',
+      '@portaldefi/sdk'
+    ]
   },
   resolve: {
     alias: {
@@ -18,7 +18,7 @@ export default defineConfig({
   },
   build: {
     commonjsOptions: {
-      include: [/sdk/, /node_modules/]
+      include: [/core/, /sdk/, /node_modules/]
     },
     minifiy: false,
     rollupOptions: {
