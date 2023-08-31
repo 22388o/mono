@@ -136,6 +136,7 @@ readonly BITCOIND_BLOCKS=$((100 + ((LND_WALLET_FUNDS * 2 + 49) / 50)))
 if [[ $RESET_STATE == "true" ]]; then
   initialize_dev_environment
 else
+  echo "Loading portal bitcoind wallets..."
   __run_as_user portal bitcoind loadwallet 'default' >/dev/null
   __run_as_user portal bitcoind -generate 1 >/dev/null
 fi
