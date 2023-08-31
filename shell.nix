@@ -45,12 +45,6 @@ in
         name = "PLAYNET_ROOT";
         value = "${toString ./.}/playnet";
       }
-
-      # Disables loading old devenv script
-      {
-        name = "SKIP_OLD_DEVENV";
-        value = "false";
-      }
     ];
 
     commands = [
