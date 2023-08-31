@@ -63,6 +63,11 @@ pkgs.stdenv.mkDerivation {
       popd
     done
 
+    # Include as well core (we need to recursively traverse each file: dep)
+    pushd "../core"
+    npm install
+    popd
+
     # Install the primary library's node_modules
     npm install
 
