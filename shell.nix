@@ -19,6 +19,7 @@ in
       jq
       less
       lnd
+      lsof
       niv
       nix-diff
       nodejs

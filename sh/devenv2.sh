@@ -1,15 +1,12 @@
-PID_FILE="/tmp/devenv_process-compose.pid"
+### Configurable Parameters ###
+PID_FILE="${DEVENV_PID_FILE:-/tmp/devenv_process-compose.pid}"
+PORT="${DEVENV_PORT:-8585}"
+MAX_RETRIES="${DEVENV_MAX_RETRIES:-120}"
 
-log_info() {
-  echo "[devenv] [INFO] $1"
-}
-
-log_error() {
-  echo "[devenv] [ERROR] $1" >&2
-}
+### Initial Checks ###
 
 # Check for dependencies
-for cmd in jq curl process-compose; do
+for cmd in jq curl process-compose lsof; do
   if ! command -v $cmd &>/dev/null; then
     log_error "$cmd is not installed."
     exit 1
@@ -22,8 +19,29 @@ if [ -z "$PORTAL_ROOT" ] || [ ! -d "$PORTAL_ROOT" ]; then
   exit 1
 fi
 
+### Helper Functions ###
+
+log_info() {
+  echo "[devenv] [INFO] $1"
+}
+
+log_error() {
+  echo "[devenv] [ERROR] $1" >&2
+}
+
+check_port_availability() {
+  if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null; then
+    log_error "Port $PORT is already in use. Aborting."
+    exit 1
+  else
+    log_info "Port $PORT is available."
+  fi
+}
+
+### Main Functions ###
+
 devenv_up() {
-  local ci_mode=$1
+  local watch_mode=$1
 
   # Check if already running using PID file
   if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE) 2>/dev/null; then
@@ -37,15 +55,17 @@ devenv_up() {
     exit 1
   fi
 
+  # Check port availability
+  check_port_availability
+
   log_info "Starting development environment..."
-  nohup process-compose -t=false -f $PORTAL_ROOT/sh/process-compose.yaml up >/dev/null 2>&1 &
+  nohup process-compose --port=$PORT --tui=false --config $PORTAL_ROOT/sh/process-compose.yaml up >/dev/null 2>&1 &
   echo $! >$PID_FILE
   log_info "Started process-compose with PID $!"
 
   # Check for CI mode and then poll the status
-  if [ "$ci_mode" == "--watch" ]; then
+  if [ "$watch_mode" == "--watch" ]; then
     local retries=0
-    local max_retries=60
     while true; do
       devenv_status
       exit_code=$?
@@ -54,11 +74,11 @@ devenv_up() {
         break
       else
         retries=$((retries + 1))
-        if [ $retries -ge $max_retries ]; then
+        if [ $retries -ge $MAX_RETRIES ]; then
           log_error "Max retries reached. Development environment might not be ready."
           exit 1
         fi
-        log_info "Waiting for development environment to be ready... Retry $retries/$max_retries"
+        log_info "Waiting for development environment to be ready... Retry $retries/$MAX_RETRIES"
         sleep 1
       fi
     done
@@ -88,7 +108,7 @@ devenv_down() {
 
 devenv_attach() {
   if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE) 2>/dev/null; then
-    process-compose attach
+    process-compose --port=$PORT attach
   else
     log_error "Development environment is not running. Cannot attach."
   fi
@@ -96,7 +116,7 @@ devenv_attach() {
 
 devenv_status() {
   # Attempt to retrieve the status of the "post-init" process
-  RESULT=$(curl -s --fail http://localhost:8080/processes 2>/dev/null)
+  RESULT=$(curl -s --fail http://localhost:$PORT/processes 2>/dev/null)
 
   if [ $? -ne 0 ]; then
     log_error "devenv not running or port might be closed."
@@ -141,6 +161,8 @@ devenv_help() {
   echo
 }
 
+### Signal Handling ###
+
 # Handle termination signals
 trap "devenv_down; exit" SIGINT SIGTERM
 
@@ -150,6 +172,8 @@ if [ "$#" -lt 1 ]; then
   devenv_help
   exit 1
 fi
+
+### Main Script ###
 
 # Handle the command
 case "$1" in
