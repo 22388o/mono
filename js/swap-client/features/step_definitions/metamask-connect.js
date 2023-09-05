@@ -10,7 +10,21 @@ const wait = (t) => {
   })
 }
 
-Given('Test Browser is opened - FM', {timeout: 100000}, async () => {
+async function runTests() {
+  Given('Test Browser is opened - FM', {timeout: 50000}, async () => {
+    await openTestBrowser();
+  });
+
+  When('Create Metamask Wallet - FM', {timeout: 150000}, async () => {
+    await createMetamaskWallet();
+  });
+
+  Then('Connect Metamask Wallet - FM', {timeout: 150000}, async () => {
+    await connectMetamaskWallet();
+  });
+}
+
+const openTestBrowser = async () => {
   const metamaskPath = path.join(process.cwd(), 'src/test/crx/metamask');
   browser = await puppeteer.launch({
     headless: 'new',
@@ -22,9 +36,9 @@ Given('Test Browser is opened - FM', {timeout: 100000}, async () => {
   });
   projPage = (await browser.pages())[0];
   await projPage.goto('http://localhost:5173'); // Open the Proj
-});
+};
 
-When('Create Metamask Wallet - FM', {timeout: 100000}, async () => {
+const createMetamaskWallet = async () => {
   await wait(3000);
 
   const metamaskPage = (await browser.pages())[1];
@@ -53,10 +67,9 @@ When('Create Metamask Wallet - FM', {timeout: 100000}, async () => {
   await wait(500);
   await (await metamaskPage.$('.btn-primary')).click(); // Close
   await metamaskPage.close();
+};
 
-});
-
-Then('Connect Metamask Wallet - FM', {timeout: 100000}, async () => {
+const connectMetamaskWallet = async () => {
   await (await projPage.$('.connect-ethereum')).click();
   await (await projPage.$('#connect-metamask')).click();
 
@@ -70,4 +83,9 @@ Then('Connect Metamask Wallet - FM', {timeout: 100000}, async () => {
   console.log('Metamask Wallet Connected!');
 
   await browser.close();
+};
+
+// Execute the tests
+runTests().catch(error => {
+  console.error('Error during tests:', error);
 });
