@@ -1,5 +1,6 @@
 # Nix
 result*
+repl-result*
 
 # Node.js
 .parcel-cache
