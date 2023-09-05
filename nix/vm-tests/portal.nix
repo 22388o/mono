@@ -16,18 +16,21 @@
       exit 1
     fi
   '';
+
   tls-cert = pkgs.runCommand "selfSignedCerts" {buildInputs = [pkgs.openssl];} ''
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -nodes -subj '/CN=portal.portaldefi.com' -days 36500
     mkdir -p $out
     cp key.pem cert.pem $out
   '';
+
   hosts = nodes: ''
-    ${nodes.portal.config.networking.primaryIPAddress} portal.portaldefi.com
-    ${nodes.client.config.networking.primaryIPAddress} client.portaldefi.com
+    ${nodes.portal.networking.primaryIPAddress} portal.portaldefi.com
+    ${nodes.client.networking.primaryIPAddress} client.portaldefi.com
   '';
 in
   pkgs.nixosTest {
     name = "portal-vm-test";
+
     nodes = {
       client = {
         nodes,
@@ -35,9 +38,9 @@ in
         config,
         ...
       }: {
+        environment.systemPackages = with pkgs; [curl jq test-portal];
         security.pki.certificateFiles = ["${tls-cert}/cert.pem"];
         networking.extraHosts = hosts nodes;
-        environment.systemPackages = [pkgs.curl pkgs.jq test-portal];
       };
 
       portal = {
@@ -49,13 +52,33 @@ in
         imports = [
           ../modules/bitcoind.nix
           ../modules/geth.nix
+          ../modules/nb-secrets.nix
           ../modules/portal.nix
         ];
 
         security.pki.certificateFiles = ["${tls-cert}/cert.pem"];
-        networking.extraHosts = hosts nodes;
-        networking.firewall.enable = false;
+
+        nix-bitcoin.generateSecrets = true;
+
+        networking = {
+          extraHosts = hosts nodes;
+          firewall.enable = false;
+        };
+
         services = {
+          bitcoind = {
+            enable = true;
+            regtest = true;
+            zmqpubhashblock = "tcp://127.0.0.1:18500";
+            zmqpubhashtx = "tcp://127.0.0.1:18501";
+            zmqpubrawblock = "tcp://127.0.0.1:18502";
+            zmqpubrawtx = "tcp://127.0.0.1:18503";
+            zmqpubsequence = "tcp://127.0.0.1:18504";
+            extraConfig = ''
+              fallbackfee=0.0002
+            '';
+          };
+
           nginx = {
             enable = true;
             virtualHosts."portal.portaldefi.com" = {
@@ -70,6 +93,7 @@ in
         };
       };
     };
+
     testScript = {nodes, ...}: ''
       start_all()
       portal.wait_for_unit("portal.service")
