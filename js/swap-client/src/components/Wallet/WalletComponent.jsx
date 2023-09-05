@@ -348,7 +348,7 @@ export const WalletComponent = () => {
             </ButtonGroup></Grid> }
           </Grid>
           { 
-            assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => <><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></>) 
+            assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => <div key={idx}><Divider /><WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} /></div>) 
           }
           <Divider />
           <Grid container direction='row' style={{display:'flex',justifyContent:'space-between'}}>
@@ -380,7 +380,7 @@ export const WalletComponent = () => {
             <Grid item container direction='row' spacing={1} className='flex-vh-center'>
               <Grid item xs={4}><h4>Taproot</h4></Grid>
               { !isBtcWalletConnected 
-                ? <Grid item xs={8} textAlign='right' spacing={1}>
+                ? <Grid container item xs={8} textAlign='right' spacing={1}>
                     <Button circular="true" secondary="true" id='connect-l1' className={`${styles['gradient-border-btn']}`} onClick={onConnectBtcWallet}>Connect</Button>
                     <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(1)}>Input Creds</Button>
                   </Grid>
@@ -393,7 +393,7 @@ export const WalletComponent = () => {
             <Grid item container direction='row' spacing={1} className='flex-vh-center'>
               <Grid item xs={4}><h4>Lightning</h4></Grid>
               { !assets[2].connected 
-                ? <Grid item xs={8} textAlign='right' spacing={1}>
+                ? <Grid item container xs={8} textAlign='right' spacing={1}>
                     <Button circular="true" secondary="true" id='connect-lightning' className={`${styles['gradient-border-btn']}`} onClick={onConnectLightning}>Connect</Button>
                     <Button circular="true" secondary="true" className={`${styles['gradient-border-btn']}`} onClick={() => setCurInputCredsType(2)}>Input Creds</Button>
                   </Grid>
