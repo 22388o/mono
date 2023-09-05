@@ -48,7 +48,7 @@ function processLogs(logs, identifier) {
 
 async function setupBrowser() {
   const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] });
-  const page = await browser.newPage();
+  const page = (await browser.pages())[0];
   await page.goto('http://localhost:5173');
   return { browser, page };
 }
@@ -56,7 +56,7 @@ async function setupBrowser() {
 async function performLogin(browser, index) {
   // Explicitly get the page we want to work with
   const pages = await browser.pages();
-  const page = pages[1]; // This should be the second tab (index 1)
+  const page = pages[0]; // This should be the second tab (index 1)
 
   // Debugging output
   console.log(`Attempting to login with index: ${index}`);
@@ -88,7 +88,7 @@ async function performLogin(browser, index) {
 
 async function createOrder(browser, identifier) {
   const pages = await browser.pages();
-  const page = pages[pages.length - 1]; // Get the last page
+  const page = pages[0]; // Get the last page
 
   if (identifier === 'bob') { // TODO: Remove bob check and manually choose opposite pairs (remove state)
       const exchangeButton = await page.$('.exchange');
