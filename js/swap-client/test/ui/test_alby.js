@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
-const { Given, When, Then } = require('@cucumber/cucumber');
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -19,7 +18,7 @@ async function runTests() {
 }
 
 const openTestBrowser = async () => {
-  const unisatExtPath = path.join(process.cwd(), 'src/test/crx/alby');
+  const unisatExtPath = path.join(process.cwd(), 'test/ui/crx/alby');
 
   browser = await puppeteer.launch({
     headless: 'new',

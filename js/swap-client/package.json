@@ -12,14 +12,14 @@
     "lint-fix": "standard --fix",
     "preview": "vite preview --port 7500",
     "watch": "vite build --watch",
-    "test:all": "npm run dev & node src/test/test_all.js",
-    "test:ord": "node src/test/test_btcord2btc.js",
-    "test:swap": "node src/test/test_btc2eth.js",
+    "test:all": "npm run dev & node test/ui/test_all.js",
+    "test:ord": "node test/ui/test_btcord2btc.js",
+    "test:swap": "node test/ui/test_btc2eth.js",
     "test:cucumber": "cucumber-js",
-    "test:unisat": "node src/test/test_unisat.js",
-    "test:xverse": "node src/test/test_xverse.js",
-    "test:metamask": "node src/test/test_metamask.js",
-    "test:alby": "node src/test/test_alby.js"
+    "test:unisat": "node test/ui/test_unisat.js",
+    "test:xverse": "node test/ui/test_xverse.js",
+    "test:metamask": "node test/ui/test_metamask.js",
+    "test:alby": "node test/ui/test_alby.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",

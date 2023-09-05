@@ -100,7 +100,7 @@ async function connectXverseWallet() {
   await (await walletDlg.$('input')).type('TESTPW123_five');
   await (await walletDlg.$$('button'))[1].click();
 
-  await wait(2000);
+  await wait(5000);
   await (await walletDlg.$$('button'))[2].click();
   console.log('Xverse Wallet Connected!');
 

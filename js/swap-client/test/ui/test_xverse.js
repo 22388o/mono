@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
-const { Given, When, Then } = require('@cucumber/cucumber');
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -19,11 +18,11 @@ async function runTests() {
 
 
 async function openTestBrowser() {
-  const xversePath = path.join(process.cwd(), 'src/test/crx/xverse');
+  const xversePath = path.join(process.cwd(), 'test/ui/crx/xverse');
 
   browser = await puppeteer.launch({
-    //headless: 'new',
-     headless: false,
+    headless: 'new',
+    //headless: false,
     args: [
       `--disable-extensions-except=${xversePath}`,
       `--load-extension=${xversePath}`
@@ -89,7 +88,7 @@ async function connectXverseWallet() {
   await (await walletDlg.$('input')).type('TESTPW123_five');
   await (await walletDlg.$$('button'))[1].click();
 
-  await wait(2000);
+  await wait(5000);
   await (await walletDlg.$$('button'))[2].click();
   console.log('Xverse Wallet Connected!');
 
