@@ -1,17 +1,5 @@
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
-
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0");
-options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
-options.addArguments("--profile-directory=Profile 1");
-
-const By = webdriver.By; 
-const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+const puppeteer = require('puppeteer');
+const path = require('path');
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -19,57 +7,69 @@ const wait = (t) => {
   })
 }
 
+const main = async () => {
+  try {
+    const unisatExtPath = path.join(process.cwd(), 'src/test/crx/metamask');
 
-async function main() {
-  await driver.navigate().to("http://localhost:5173");
-  
-  let res = await driver.findElement(By.className('connect-ethereum'));
-  await res.click();
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      //headless: false,
+      args: [
+        `--disable-extensions-except=${unisatExtPath}`,
+        `--load-extension=${unisatExtPath}`
+      ]
+    });
+    const projPage = (await browser.pages())[0];
+    await projPage.goto('http://localhost:5173'); // Open the Proj
 
-  let connectLightning = await driver.findElement(By.id('connect-metamask'));
-  await connectLightning.click();
+    await wait(3000);
 
-  await wait(2000);
-
-  let windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-  //Unisat control
-  const pwdInput = await driver.findElement(By.tagName('input'));
-  await pwdInput.sendKeys('TESTPW123_five');
-
-  const buttons = await driver.findElements(By.tagName('button'));
-  await buttons[0].click();
-
-  await wait(2000);
-
-  windows = await driver.getAllWindowHandles();
-  if(windows.length === 1) {
-    console.log('Metamask Wallet Connected!');
-  }
-  else {
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-    let footer = await driver.findElement(By.className('page-container__footer'));
-    let approveBtn = await footer.findElements(By.tagName('button'));
-    await approveBtn[1].click();
-
-    footer = await driver.findElement(By.className('page-container__footer'));
-    approveBtn = await footer.findElements(By.tagName('button'));
-    await approveBtn[1].click();
-    console.log('Metamask Wallet Connected!');
-
+    const metamaskPage = (await browser.pages())[1];
+    await (await metamaskPage.$('.check-box')).click(); // Checkbox Accept
+    await wait(500)
+    await (await metamaskPage.$('.btn-primary')).click(); // Accept Button
+    await wait(500)
+    await (await metamaskPage.$('.btn-primary')).click(); // Create button
+    await wait(500);
+    const pwdInputs = await metamaskPage.$$('.form-field__input'); // Input Passwords
+    await pwdInputs[0].type('TESTPW123_five');
+    await pwdInputs[1].type('TESTPW123_five');
+    await (await metamaskPage.$('.check-box')).click(); // Next
+    await wait(500);
+    await (await metamaskPage.$('.btn-primary')).click(); // Skip the Backup step
     await wait(1000);
-  }
+    await (await metamaskPage.$('.mm-button-base')).click();
+    await wait(500);
+    await (await metamaskPage.$('.skip-srp-backup-popover__checkbox')).click();
+    await wait(500);
+    await (await (await metamaskPage.$('.skip-srp-backup-popover__footer')).$$('button'))[1].click();
+    await wait(500);
+    await (await metamaskPage.$('.btn-primary')).click(); // Next
+    await wait(500);
+    await (await metamaskPage.$('.btn-primary')).click(); // Done
+    await wait(500);
+    await (await metamaskPage.$('.btn-primary')).click(); // Close
+    await metamaskPage.close();
 
-  const logs = await driver.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Metamask Wallet Connected") >= 0);
-  if(idxLog >= 0) {
-    console.log('Address Detected');
-    console.log(logs[idxLog].message);
-  }
+    //Connect Metamask
+    await (await projPage.$('.connect-ethereum')).click();
+    await (await projPage.$('#connect-metamask')).click();
 
-  await driver.switchTo().window(windows[0]);
+    await wait(4000);
+    const dlgWindow = (await browser.pages())[1];
+
+    await (await (await dlgWindow.$('.page-container__footer')).$$('button'))[1].click(); //Approve Button
+    await wait(500);
+    await (await (await dlgWindow.$('.page-container__footer')).$$('button'))[1].click(); //Approve Button
+
+    console.log('Metamask Wallet Connected!');
+
+    await browser.close();
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+module.exports = async () => {
+  main();
 }
-
-main();

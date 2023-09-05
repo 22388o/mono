@@ -1,17 +1,7 @@
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
+// old test, see site-definition xverse-connect for latests, written in gherkin
 
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0");
-options.addArguments("--user-data-dir=/Users/dev/Library/Application\ Support/Google/Chrome");
-options.addArguments("--profile-directory=Profile 1");
-
-const By = webdriver.By; 
-const driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
+const puppeteer = require('puppeteer');
+const path = require('path');
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -19,83 +9,99 @@ const wait = (t) => {
   })
 }
 
+const main = async () => {
+  try{
+    const unisatExtPath = path.join(process.cwd(), 'src/test/crx/xverse');
 
-async function main() {
-  await driver.navigate().to("http://localhost:5173");
-  
-  let res = await driver.findElement(By.className('connect-bitcoin'));
-  await res.click();
+    const browser = await puppeteer.launch({
+      //headless: 'new',
+      headless: false,
+      args: [
+        `--disable-extensions-except=${unisatExtPath}`,
+        `--load-extension=${unisatExtPath}`
+      ]
+    });
+    const projPage = (await browser.pages())[0];
+    await projPage.goto('http://localhost:5173'); // Open the Proj
 
-  let connectLightning = await driver.findElement(By.id('connect-l1'));
-  await connectLightning.click();
-  await wait(500);
-  await driver.switchTo().alert().sendKeys("2");
-  await driver.switchTo().alert().accept();
+    projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
+      await dialog.accept('2');
+    });
 
-  await wait(2000);
+    await wait(2000);
 
-  let windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+    await (await projPage.$('.connect-bitcoin')).click();
+    await (await projPage.$('#connect-l1')).click();
 
-  //Unisat control
-  const pwdInput = await driver.findElement(By.tagName('input'));
-  await pwdInput.sendKeys('TESTPW123_five');
+    await wait(2000);
 
-  const loginBtn = await driver.findElement(By.className('sc-jxOSlx'));
-  await loginBtn.click();
+    /* Create New Wallet */
+    const walletCreateDlg = (await browser.pages())[1];
+    await (await walletCreateDlg.$$('button'))[0].click();
 
-  await wait(15000);
+    await wait(2000);
 
-  windows = await driver.getAllWindowHandles();
-  if(windows.length === 1) {
-    console.log('Xverse Wallet Connected!');
-  }
-  else {
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+    const walletCreatePage = (await browser.pages())[2];
+    /** Create Xverse Wallet Window opened */
 
-    const approveBtn = await driver.findElement(By.className('iwDLzk'));
-    await approveBtn.click();
+    await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[1].click(); /** Next button */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[0].click(); /** Continue button */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[0].click(); /** Accept button */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[0].click(); /** Backup Later button */
+    await wait(500);
+    await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Input */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[2].click();
+    await wait(500);
+    await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Confirm */
+    await wait(500);
+    await (await walletCreatePage.$$('button'))[2].click(); /** Confirm Button */
+    await wait(2000);
+    await (await walletCreatePage.$$('button'))[0].click(); /** Close Create Window */
+    
+    await walletCreateDlg.close();
+
+    await (await projPage.$('.connect-bitcoin')).click();
+    await wait(500);
+    await (await projPage.$('#connect-l1')).click();
+
+    await wait(7000);
+    const walletDlg = (await browser.pages())[1];
+    //Xverse control
+    await (await walletDlg.$('input')).type('TESTPW123_five');
+    await (await walletDlg.$$('button'))[1].click();
+
+    await wait(5000);
+    await (await walletDlg.$$('button'))[2].click();
     console.log('Xverse Wallet Connected!');
 
     await wait(1000);
-  }
 
-  await driver.switchTo().window(windows[0]);
+    await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click(); //Simulate Payment
+    await wait(3000);
 
-  const modal = await driver.findElement(By.className('connect-modal-color'));
-  const simulate = await modal.findElement(By.className('simulate-l1'));
-  await simulate.click();
-
-  await wait(3000);
-  
-  windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-  try {
-    const logs = await driver.manage().logs().get('browser');
-    const idxLog = logs.findIndex(log => log.message.indexOf("Xverse Wallet Connected") >= 0);
-    if(idxLog >= 0) {
-      console.log('Address Detected');
-      console.log(logs[idxLog].message);
-    }
-  } catch (e) {
-
-  }
-
-  try {
-    const approveBtn = await driver.findElement(By.className('iwDLzk'));
-    const text = await approveBtn.getText();
+    const approveDlg = (await browser.pages())[1];
+    /*const text = await approveDlg.$eval('.iwDLzk', el => el.innerHTML);
     if(text.indexOf('Close') === -1) {
-      await approveBtn.click();
-    }
-    else {
-      await approveBtn.click();
+      await (await approveDlg.$('.iwDLzk')).click();
+    } else {
       throw new Error('Insufficient Balance!');
-    }
-    console.log('Payment Simulation Done!');
-  } catch (e) {
-    console.error('Error occured on payment!');
-  }
-}
+    }*/
 
-main();
+    console.log('Payment Simulation Done!');
+    await browser.close();
+
+
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+//module.exports = async () => {
+  main();
+//}
