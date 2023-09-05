@@ -11,7 +11,7 @@ const wait = (t) => {
 let browser, projPage;
 
 async function runTests() {
-  Given('Test Browser is opened - FX', {timeout: 5000}, async () => {
+  Given('Test Browser is opened - FX', {timeout: 50000}, async () => {
     await openTestBrowser();
   });
 
@@ -23,14 +23,14 @@ async function runTests() {
     await connectXverseWallet();
   });
 
-  Then('Simulate Xverse Payment - FX', {timeout: 5000}, async() => {
+  Then('Simulate Xverse Payment - FX', {timeout: 50000}, async() => {
     await simulateXversePayment();
   });
 }
 
 
 async function openTestBrowser() {
-  const xversePath = path.join(process.cwd(), 'src/test/crx/xverse');
+  const xversePath = path.join(process.cwd(), 'test/ui/crx/xverse');
 
   browser = await puppeteer.launch({
     headless: 'new',

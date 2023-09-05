@@ -33,7 +33,7 @@ async function runTests() {
 }
 
 const openTestBrowser = async () => {
-  const unisatExtPath = path.join(process.cwd(), 'src/test/crx/alby');
+  const unisatExtPath = path.join(process.cwd(), 'test/ui/crx/alby');
 
   browser = await puppeteer.launch({
     headless: 'new',

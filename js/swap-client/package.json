@@ -15,7 +15,7 @@
     "test:all": "npm run dev & node test/ui/test_all.js",
     "test:ord": "node test/ui/test_btcord2btc.js",
     "test:swap": "node test/ui/test_btc2eth.js",
-    "test:cucumber": "cucumber-js",
+    "test:cucumber": "cucumber-js test/features",
     "test:unisat": "node test/ui/test_unisat.js",
     "test:xverse": "node test/ui/test_xverse.js",
     "test:metamask": "node test/ui/test_metamask.js",
