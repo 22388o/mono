@@ -1,23 +1,6 @@
-const assert = require('assert');
-const { Given, When, Then } = require('@cucumber/cucumber');
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
+const puppeteer = require('puppeteer');
 const path = require('path');
-const projDir = path.resolve(__dirname, '../../chrome-profile')
-
-const By = webdriver.By;
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0")
-options.addArguments('--window-size=1920,1096')
-options.addArguments('--disable-dev-shm-usage');
-options.addArguments(`--user-data-dir=${projDir}`);
-options.addArguments("--profile-directory=Profile 1");
-
-let driver, windows;
+const { Given, When, Then } = require('@cucumber/cucumber');
 
 const wait = (t) => {
   return new Promise((res, rej)=>{
@@ -25,76 +8,134 @@ const wait = (t) => {
   })
 }
 
-Given('Test Browser is opened - FA', {timeout: 100000}, async () => {
-  driver = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
-  await driver.navigate().to("http://localhost:5173")
-});
+let browser, projPage, emailPage, newAlbyDlg, newAlbyPage;
 
-When('Click on Lightning Connect Button - FA', {timeout: 10000}, async () => {
-  let res = await driver.findElement(By.className('connect-bitcoin'));
-  await res.click();
+async function runTests() {
+  Given('Test Browser is opened - FA', {timeout: 50000}, async () => {
+    await openTestBrowser();
+  });
 
-  let connectLightning = await driver.findElement(By.id('connect-lightning'));
-  await connectLightning.click();
+  When('New Alby wallet extension page is opened - FA', {timeout: 150000}, async () => {
+    await newAlbyWalletPageOpen();
+  });
 
-  await wait(2000);
+  When('Temp Mail page is opened and sign up with email - FA', {timeout: 150000}, async () => {
+    await tempMailPageManage();
+  });
 
-  windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+  Then('Input Code sent to inbox - FA', {timeout: 100000}, async () => {
+    await codeSentToInbox();
+  });
 
-  //Unisat control
-  const pwdInput = await driver.findElement(By.tagName('input'));
-  await pwdInput.sendKeys('TESTPW123');
+  Then('Connect Alby Wallet and simulate payment - FA', {timeout: 100000}, async () => {
+    await connectWalletAndSimulate();
+  });
+}
 
-  const buttons = await driver.findElements(By.tagName('button'));
-  await buttons[1].click();
+const openTestBrowser = async () => {
+  const unisatExtPath = path.join(process.cwd(), 'src/test/crx/alby');
 
-  await wait(2000);
+  browser = await puppeteer.launch({
+    //headless: 'new',
+    headless: false,
+    args: [
+      `--disable-extensions-except=${unisatExtPath}`,
+      `--load-extension=${unisatExtPath}`
+    ]
+  });
+  projPage = (await browser.pages())[0];
+  await projPage.goto('http://localhost:5173', { timeout: 100000 }); // Open the Proj
 
-  windows = await driver.getAllWindowHandles();
-  if(windows.length === 1) {
-    console.log('Alby Wallet Connected!');
-  }
-  else {
-    await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
-
-    const approveBtn = await driver.findElement(By.className('bg-primary-gradient'));
-    await approveBtn.click();
-    console.log('Alby Wallet Connected!');
-
-    await wait(1000);
-  }
-});
-
-Then('Connect Alby Wallet - FA', {timeout: 10000}, async () => {
-  const logs = await driver.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Alby Wallet Connected") >= 0);
-  if(idxLog >= 0) {
-    console.log('Address Detected');
-    console.log(logs[idxLog].message);
-  }
-});
-
-Then('Simulate Alby Payment - FA', {timeout: 100000}, async() => {
-  await driver.switchTo().window(windows[0]);
-
-  const modal = await driver.findElement(By.className('connect-modal-color'));
-  const simulate = await modal.findElement(By.id('simulate-lightning'));
-  await simulate.click();
+  projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
+    await dialog.accept('1');
+  })
 
   await wait(3000);
-  
-  windows = await driver.getAllWindowHandles();
-  await driver.switchTo().window(windows[1]); // assuming the extension popup is the second window
+};
 
-  try {
-    const approveBtn = await driver.findElement(By.className('bg-primary-gradient'));
-    await approveBtn.click();
-    console.log('Payment Simulation Done!');
-  } catch (e) {
-    console.error('Error occured on payment!');
+const newAlbyWalletPageOpen = async () => {
+  newAlbyPage = (await browser.pages())[1];
+  const inputs = (await newAlbyPage.$$('input'));
+  await inputs[0].type('TESTPW123_five');
+  await inputs[1].type('TESTPW123_five');
+
+  await (await newAlbyPage.$('.bg-primary-gradient')).click();
+  await wait(500);
+  await (await newAlbyPage.$('.bg-primary-gradient')).click();
+  await wait(10000);
+
+  while(1) {
+    const len = (await browser.pages()).length;
+    if(len > 2) break;
+    await wait(3000);
   }
+};
 
-  await wait(3000)
-  driver.quit();
+const tempMailPageManage = async () => {
+  //Open Temp Mail Page
+  emailPage = await browser.newPage();
+  await emailPage.goto('https://internxt.com/temporary-email');
+  await wait(5000);
+  const email = await emailPage.$eval('.px-4.py-3 p', el => el.innerHTML);
+
+  await wait(1000);
+  
+  newAlbyDlg = (await browser.pages())[2];
+  await (await newAlbyDlg.$$('.bg-primary-gradient'))[1].click();
+  await wait(2000);
+  await (await newAlbyDlg.$('.w-full.rounded-md.px-3.py-2.border-1.border-border-secondary')).type(email);
+  await (await newAlbyDlg.$('.px-7.py-2.rounded-md')).click();
+}
+
+const codeSentToInbox = async () => {
+  /** Click Refresh Button to reload the incoming emails */
+  await wait(10000);
+  await (await emailPage.$('.cursor-pointer.text-gray-50')).click();
+
+  await emailPage.waitForSelector('button.px-4.text-start', { visible: true, timeout: 100000 });
+  await (await emailPage.$('button.px-4.text-start')).click();
+  await wait(2000);
+  let code = await emailPage.$eval('.monospace.otp', el => el.innerHTML);
+  code = code.substring(0, 3) + code.substring(code.length - 3);
+  console.log(code);
+
+  /** Type One-time Code into the SignUp Page */
+  await (await newAlbyDlg.$('.px-3.py-2.border-1.border-border-secondary')).type(code);
+  await (await newAlbyDlg.$('.px-7.py-2.rounded-md')).click();
+  /** Alby Wallet Extension Created */
+
+  await wait(3000);
+
+  await (await browser.pages())[1].close();
+  await wait(1000);
+  await (await browser.pages())[1].close();
+};
+
+const connectWalletAndSimulate = async() => {
+  /** Alby Wallet Connect */
+  await (await projPage.$('.connect-bitcoin')).click();
+  await (await projPage.$('#connect-lightning')).click();
+
+  /** Click Approve Button */
+  await wait(1000);
+  const albyConnectDlg = await (await browser.pages())[1];
+  await (await albyConnectDlg.$('button.px-0.py-2.bg-primary-gradient')).click();
+  
+  /** Simulate Payment */
+  await wait(1000);
+  await (await projPage.$('#simulate-lightning')).click();
+  await wait(1000);
+  const albySimulateDlg = await (await browser.pages())[1];
+  await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click();
+  await wait(1000);
+  await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click();
+  
+  await wait(2000);
+
+  await browser.close();
+};
+
+// Execute the tests
+runTests().catch(error => {
+  console.error('Error during tests:', error);
 });

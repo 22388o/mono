@@ -34,8 +34,8 @@ const main = async () => {
     await wait(500);
 
     const inputs = await newUniSatPage.$$('input'); //Input passwords
-    await inputs[0].type('TESTPW123');
-    await inputs[1].type('TESTPW123');
+    await inputs[0].type('TESTPW123_five');
+    await inputs[1].type('TESTPW123_five');
     await (await newUniSatPage.$('.layout > div:first-child > div:first-child > div:first-child > div:nth-child(5)')).click(); // Click on Continue
 
     await wait(500);

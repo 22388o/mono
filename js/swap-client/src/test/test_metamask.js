@@ -36,7 +36,7 @@ async function main() {
 
   //Unisat control
   const pwdInput = await driver.findElement(By.tagName('input'));
-  await pwdInput.sendKeys('TESTPW123');
+  await pwdInput.sendKeys('TESTPW123_five');
 
   const buttons = await driver.findElements(By.tagName('button'));
   await buttons[0].click();

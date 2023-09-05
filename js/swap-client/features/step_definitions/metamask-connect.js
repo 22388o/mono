@@ -49,8 +49,8 @@ const createMetamaskWallet = async () => {
   await (await metamaskPage.$('.btn-primary')).click(); // Create button
   await wait(500);
   const pwdInputs = await metamaskPage.$$('.form-field__input'); // Input Passwords
-  await pwdInputs[0].type('TESTPW123');
-  await pwdInputs[1].type('TESTPW123');
+  await pwdInputs[0].type('TESTPW123_five');
+  await pwdInputs[1].type('TESTPW123_five');
   await (await metamaskPage.$('.check-box')).click(); // Next
   await wait(500);
   await (await metamaskPage.$('.btn-primary')).click(); // Skip the Backup step
