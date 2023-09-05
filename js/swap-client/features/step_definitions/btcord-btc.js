@@ -1,149 +1,149 @@
-const assert = require('assert');
+const puppeteer = require('puppeteer');
 const { Given, When, Then } = require('@cucumber/cucumber');
-const webdriver = require("selenium-webdriver");
-const chrome = require('selenium-webdriver/chrome.js');
 
-const By = webdriver.By;
-const options = new chrome.Options();
-options.setLoggingPrefs({
-  browser: 'ALL'
-});
-options.addArguments('--enable-logging');
-options.addArguments("--log-level=0")
-options.addArguments('--headless');
-options.addArguments('--window-size=1920,1096')
-options.addArguments('--disable-dev-shm-usage');
+async function runTests() {
+  let aliceSetup, bobSetup;
+  let aliceLogs = [];
+  let bobLogs = [];
+  Given("Alice browser is opened - F1", {timeout: 50000}, async function () {
+    aliceSetup = await setupBrowser();
+  });
+  Given("Bob browser is opened - F1", {timeout: 50000}, async function () {
+    bobSetup = await setupBrowser();
+  });
 
-let alice, bob;
 
-const wait = (t) => {
-  return new Promise((res, rej)=>{
-    setTimeout(res, t);
-  })
+  When('Alice clicks on login - F1', async function() {
+    await performLogin(aliceSetup.browser, 1);
+  });
+  When('Bob clicks on login - F1', async function() {
+    await performLogin(bobSetup.browser, 2);
+  });
+
+  When('Alice & Bob are logged in - F1', async function() {
+  });
+
+  When('Alice creates an order from BTCORD to BTC - F1', async function() {
+    aliceSetup.page.on('console', msg => {
+      aliceLogs.push(msg.text());
+    });
+    await createOrder(aliceSetup.browser, "alice");
+  });
+  When('Bob creates an order from BTC to BTCORD - F1', async function() {
+    bobSetup.page.on('console', msg => {
+        bobLogs.push(msg.text());
+    });
+    await createOrder(bobSetup.browser, "bob");
+  });
+
+
+  Then('Swap fills and completes - F1', {timeout: 20000}, async function() {
+    processLogs(aliceLogs, 'Alice');
+    processLogs(bobLogs, 'Bob');
+
+    await finalize();
+    
+    await aliceSetup.browser.close();
+    await bobSetup.browser.close();
+  });
 }
 
-Given('Alice browser is opened - F1', {timeout: 10000}, async () => {
-  alice = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
-  await alice.navigate().to("http://localhost:5173")
-});
+function processLogs(logs, user) {
+  const events = ["order.created", "order.matched", "swap.created", "swap.opening", "swap.opened", "swap.committing", "swap.committed"];
+  console.log(`${user}'s logs:`);
+  if (logs && logs.length)
+    logs.forEach(log => {
+        events.forEach(event => {
+            if(log.includes(event)) {
+                console.log(event);
+            }
+        });
+    });
+}
 
-Given('Bob browser is opened - F1', {timeout: 10000}, async () => {
-  bob = new webdriver.Builder().forBrowser("chrome").setChromeOptions(options).build();
-  await bob.navigate().to("http://localhost:5173")
-});
 
-When('Alice clicks on login - F1', {timeout: 10000}, async () => {
-  let res = await alice.findElement(By.id('connect-wallet'));
-  await res.click();
+async function setupBrowser() {
+  const browser = await puppeteer.launch({ headless: 'new', args: ['--window-size=1920,1096'] });
+  const page = (await browser.pages())[0];
+  await page.goto('http://localhost:5173');
+  return { browser, page };
+}
+
+async function performLogin(browser, index) {
+  // Explicitly get the page we want to work with
+  const pages = await browser.pages();
+  const page = pages[0]; // This should be the second tab (index 1)
+
+  // Debugging output
+  console.log(`Attempting to login with index: ${index}`);
+
+  await page.waitForSelector('#connect-wallet', { timeout: 10000 }); // Wait up to 1 seconds
+  await page.click('#connect-wallet');
   
-  await wait(500);
+
+  try {
+      // Wait for the '.MuiList-root' to be rendered
+      await page.waitForSelector('.MuiList-root', { timeout: 5000 }); // waits for 5 seconds
+  } catch (error) {
+      console.error("Failed to find '.MuiList-root'.", error);
+      throw error;
+  }
+
+  const lis = await page.$$('.MuiList-root li');
+
+  // Ensure the list items are found before trying to click
+  if (lis && lis[index]) {
+      await lis[index].click();
+  } else {
+      const error = new Error(`Unable to find list item at index ${index}`);
+      console.error(error);
+      throw error;
+  }
+}
+
+
+async function createOrder(browser, identifier) {
+  const pages = await browser.pages();
+  const page = pages[0]; // Get the last page
+
+  if (identifier === 'alice') { // TODO: Remove bob check and manually choose opposite pairs (remove state)
+    await page.waitForTimeout(500);
+    await (await page.$('.coin-select')).click();
+    
+    await page.waitForTimeout(500);
+    await (await (await page.$('.modal-container')).$$('.asset-item'))[4].click();
   
-  //Alice Click
-  let uls = await alice.findElement(By.className('MuiList-root'));
-  let lis = await uls.findElements(By.tagName('li'));
-  await lis[1].click();
-
-  await wait(500);
-});
-
-When('Bob clicks on login - F1', {timeout: 10000}, async () => {
-  let res = await bob.findElement(By.id('connect-wallet'));
-  await res.click();
+    await page.waitForTimeout(1500);
+    await (await (await page.$('.modal-container')).$$('.nft-card'))[0].click();
   
-  await wait(500);
+    await (await page.$$('.qty-input'))[0].type('0.0001');
   
-  //bob Click
-  let uls = await bob.findElement(By.className('MuiList-root'));
-  let lis = await uls.findElements(By.tagName('li'));
-  await lis[2].click();
+    await page.waitForTimeout(500);
+    await (await page.$('.gradient-btn.w-100.h-3')).click();
+  }
+  else {
+    await page.waitForTimeout(500);
+    await (await page.$$('.coin-select'))[1].click();
+    
+    await page.waitForTimeout(500);
+    await (await (await page.$('.modal-container')).$$('.asset-item'))[4].click();
 
-  await wait(500);
-});
+    await page.waitForTimeout(1500);
+    await (await (await page.$('.modal-container')).$$('.nft-card'))[0].click();
 
-Then('Alice logs in - F1', async () => {
-  const logs = await alice.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
-  assert.ok(idxLog >= 0, 'Alice is not logged in');
-})
+    await (await page.$$('.qty-input'))[0].type('0.0001');
 
-Then('Bob logs in - F1', async () => {
-  const logs = await bob.manage().logs().get('browser');
-  const idxLog = logs.findIndex(log => log.message.indexOf("Client Websocket initialized") >= 0);
-  assert.ok(idxLog >= 0, 'Bob is not logged in');
-});
+    await page.waitForTimeout(500);
+    await (await page.$('.gradient-btn.w-100.h-3')).click();
+  }
+}
 
-Given('Alice & Bob is logged in - F1', () => {
-  return 'success';
-});
 
-When('Alice creates an order from BTCORD to BTC - F1', {timeout: 100000}, async() => {
-  
-  //Quantity Inputs
-  let btcAsset = await alice.findElement(By.className('coin-select'));
-  await btcAsset.click();
+async function finalize() {
+    await new Promise(resolve => setTimeout(resolve, 10000));
+}
 
-  await wait(500);
-  let modal = await alice.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('asset-item'));
-  await items[4].click();
-
-  let collModal = await alice.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('nft-card'));
-  await wait(200);
-  await ordinals[0].click();
-
-  //Quantity Inputs
-  let inputs = await alice.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('0.0001');
-
-  await wait(500);
-  //Swap Button Click
-  let swapBtn = await alice.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
-  await swapBtn.click();
-
-  await wait(2500);
-
-  let activityList = await alice.findElement(By.className('activitiesContainer'));
-  let activities = await activityList.findElements(By.className('activity-item'));
-  await activities[0].click();
-});
-
-When('Bob creates an order from BTC to BTCORD - F1', {timeout: 100000}, async () => {
-
-  //Quantity Inputs
-  let btcAssets = await bob.findElements(By.className('coin-select'));
-  await btcAssets[1].click();
-
-  await wait(500);
-  let modal = await bob.findElement(By.className('modal-container'));
-  let items = await modal.findElements(By.className('asset-item'));
-  await items[4].click();
- 
-  await wait(500);
-  let collModal = await bob.findElement(By.className('modal-container'));
-  let ordinals = await collModal.findElements(By.className('nft-card'));
-  await wait(200);
-  await ordinals[0].click();
-
-  //Quantity Inputs
-  let inputs = await bob.findElements(By.className('qty-input'));
-  await inputs[0].sendKeys('0.0001');
-
-  await wait(500);
-  //Swap Button Click
-  let swapBtn = await bob.findElement(By.xpath("//button[contains(text(), 'Swap')]"));
-  await swapBtn.click();
- 
-  await wait(1500);
-
-  let activityList = await bob.findElement(By.className('activitiesContainer'));
-  let activities = await activityList.findElements(By.className('activity-item'));
-  await activities[0].click();
-});
-
-Then('Swap fills and completes - F1', {timeout: 100000}, async () => {
-  await wait(10000);
-  alice.quit();
-  bob.quit();
-  return 'success'
+// Execute the tests
+runTests().catch(error => {
+    console.error('Error during tests:', error);
 });

@@ -1,4 +1,4 @@
-// old test, see site-definition btc-eth for latests, written in gherkin
+// old test, see site-definition btcord-btc for latests, written in puppeteer
 
 const puppeteer = require('puppeteer');
 
