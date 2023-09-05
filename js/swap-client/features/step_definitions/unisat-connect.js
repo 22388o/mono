@@ -10,12 +10,30 @@ const wait = (t) => {
 
 let browser, projPage;
 
-Given('Test Browser is opened - FU', {timeout: 100000}, async () => {
+async function runTests() {
+  Given('Test Browser is opened - FU', {timeout: 50000}, async () => {
+    await openTestBrowser();
+  });
+
+  When('Create Unisat Wallet - FU', {timeout: 150000}, async () => {
+    await createUnisatWallet();
+  });
+
+  Then('Connect Unisat Wallet - FU', {timeout: 150000}, async () => {
+    await connectUnisatWallet();
+  });
+
+  Then('Simulate Unisat Payment - FU', {timeout: 50000}, async() => {
+    await simulateUnisatPayment();
+  });
+}
+
+const openTestBrowser = async () => {
   const unisatExtPath = path.join(process.cwd(), 'src/test/crx/unisat');
 
   browser = await puppeteer.launch({
-    headless: 'new',
-    //headless: false,
+    //headless: 'new',
+    headless: false,
     args: [
       `--disable-extensions-except=${unisatExtPath}`,
       `--load-extension=${unisatExtPath}`
@@ -23,15 +41,14 @@ Given('Test Browser is opened - FU', {timeout: 100000}, async () => {
   });
   projPage = (await browser.pages())[0];
   await projPage.goto('http://localhost:5173'); // Open the Proj
-});
+};
 
-When('Create Unisat Wallet - FU', {timeout: 100000}, async () => {
-  
+const createUnisatWallet = async () => {
   projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
     await dialog.accept('1');
   })
 
-  await wait(15000);
+  await wait(5000);
 
   const newUniSatPage = (await browser.pages())[1];
   await (await newUniSatPage.$('.layout > div:first-child > div:first-child > div:nth-child(2) > div:nth-child(2)')).click(); // Click on Create new Wallet
@@ -61,9 +78,9 @@ When('Create Unisat Wallet - FU', {timeout: 100000}, async () => {
   await newUniSatPage.close();
 
   await wait(2000);
-});
+};
 
-Then('Connect Unisat Wallet - FU', {timeout: 100000}, async () => {
+const connectUnisatWallet = async () => {
   //Unisat Wallet Connect
 
   await (await projPage.$('.connect-bitcoin')).click();
@@ -76,13 +93,17 @@ Then('Connect Unisat Wallet - FU', {timeout: 100000}, async () => {
   console.log('Unisat Wallet Connected');
 
   await wait(2000);
+};
 
-});
-
-Then('Simulate Unisat Payment - FU', {timeout: 100000}, async() => { 
+const simulateUnisatPayment = async () => { 
   await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click();
 
   await wait(3000);
 
   await browser.close();
+};
+
+// Execute the tests
+runTests().catch(error => {
+  console.error('Error during tests:', error);
 });

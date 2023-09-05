@@ -19,7 +19,8 @@
     "test:cucumber": "cucumber-js",
     "test:unisat": "node src/test/ntest_unisat.js",
     "test:xverse": "node src/test/ntest_xverse.js",
-    "test:metamask": "node src/test/ntest_metamask.js"
+    "test:metamask": "node src/test/ntest_metamask.js",
+    "test:alby": "node src/test/ntest_alby.js"
   },
   "dependencies": {
     "@babel/preset-env": "^7.21.5",

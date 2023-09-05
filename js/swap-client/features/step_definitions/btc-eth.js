@@ -25,8 +25,8 @@ async function runTests() {
   });
 
   When('Alice creates an order from BTC to ETH', async function() {
-      aliceSetup.page.on('console', msg => {
-        aliceLogs.push(msg.text());
+    aliceSetup.page.on('console', msg => {
+      aliceLogs.push(msg.text());
     });
     await createOrder(aliceSetup.browser, "alice");
   });

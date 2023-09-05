@@ -6,3 +6,4 @@ Feature: Connect to Alby wallet extension
     When Click on Lightning Connect Button - FA
     Then Connect Alby Wallet - FA
     And Simulate Alby Payment - FA
+
