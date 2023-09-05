@@ -83,8 +83,8 @@ async function createXverseWallet() {
   await (await walletCreatePage.$$('input'))[0].type('TESTPW123_five'); /** Password Confirm */
   await wait(500);
   await (await walletCreatePage.$$('button'))[2].click(); /** Confirm Button */
-  await wait(500);
-  await (await walletCreatePage.$$('button'))[0].click(); /** Close Create Window */
+  await wait(1000);
+  await walletCreatePage.close();  /** Close Create Window */
   
   await walletCreateDlg.close();
 }
