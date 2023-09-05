@@ -349,7 +349,7 @@ export const WalletComponent = () => {
           </Grid>
           { 
             assets.filter(asset => asset.isNFT === false && !asset.isSubNet).map((asset, idx) => 
-              <div>
+              <div key={idx}>
                 <Divider />
                 <WalletItem item={asset} setNodeModalOpen={onNodeModalOpenClick} setWalletModalOpen={() => setWalletModalOpen(true)} />
               </div>
