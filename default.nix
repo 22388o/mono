@@ -7,7 +7,7 @@
       os = pkgs.nixos {
         imports = [
           ./tf/playnet-equinix/nix/node/configuration.nix
-          ./nix/configuration.nix
+          ./nix/hosts/portalos/configuration.nix
         ];
       };
     in

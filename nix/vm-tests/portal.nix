@@ -52,6 +52,7 @@ in
         imports = [
           ../modules/bitcoind.nix
           ../modules/geth.nix
+          ../modules/lnd.nix
           ../modules/nb-secrets.nix
           ../modules/portal.nix
         ];
@@ -77,6 +78,22 @@ in
             extraConfig = ''
               fallbackfee=0.0002
             '';
+          };
+
+          lnd = {
+            alice = {
+              enable = true;
+              port = 9001;
+              rpcPort = 10001;
+              restPort = 8080;
+            };
+
+            bob = {
+              enable = true;
+              port = 9002;
+              rpcPort = 10002;
+              restPort = 8181;
+            };
           };
 
           nginx = {
