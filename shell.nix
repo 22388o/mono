@@ -99,6 +99,14 @@ in
           script = pkgs.writeShellScriptBin "devenv" (builtins.readFile ./sh/devenv2.sh);
         in ''${script}/bin/devenv $@'';
       }
+      {
+        category = "Tests";
+        name = "tests";
+        help = "Run tests";
+        command = let
+          script = pkgs.writeShellScriptBin "tests" (builtins.readFile ./sh/tests.sh);
+        in ''${script}/bin/tests $@'';
+      }
     ];
 
     # TODO: Remove this entry once devenv2 is ready
