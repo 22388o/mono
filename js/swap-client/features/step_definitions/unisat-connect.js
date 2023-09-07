@@ -14,6 +14,7 @@ Given('Test Browser is opened - FU', {timeout: 100000}, async () => {
   const unisatExtPath = path.join(process.cwd(), 'src/test/crx/unisat');
 
   browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, 
     headless: 'new',
     //headless: false,
     args: [
@@ -23,6 +24,7 @@ Given('Test Browser is opened - FU', {timeout: 100000}, async () => {
   });
   projPage = (await browser.pages())[0];
   await projPage.goto('http://localhost:5173'); // Open the Proj
+  await projPage.waitForNavigation({ waitUntil: 'networkidle0' }); // Wait for the project to load
 });
 
 When('Create Unisat Wallet - FU', {timeout: 100000}, async () => {

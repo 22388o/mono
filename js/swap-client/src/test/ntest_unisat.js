@@ -12,6 +12,7 @@ const main = async () => {
     const unisatExtPath = path.join(process.cwd(), 'src/test/crx/unisat');
 
     const browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       headless: 'new',
       //headless: false,
       args: [

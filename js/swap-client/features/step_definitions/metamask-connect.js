@@ -13,6 +13,7 @@ const wait = (t) => {
 Given('Test Browser is opened - FM', {timeout: 100000}, async () => {
   const metamaskPath = path.join(process.cwd(), 'src/test/crx/metamask');
   browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     headless: 'new',
     //headless: false,
     args: [
@@ -22,6 +23,7 @@ Given('Test Browser is opened - FM', {timeout: 100000}, async () => {
   });
   projPage = (await browser.pages())[0];
   await projPage.goto('http://localhost:5173'); // Open the Proj
+  await projPage.waitForNavigation({ waitUntil: 'networkidle0' }); // Wait for the project to load
 });
 
 When('Create Metamask Wallet - FM', {timeout: 100000}, async () => {
