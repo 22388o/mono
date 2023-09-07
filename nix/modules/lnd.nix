@@ -9,7 +9,7 @@ with lib; let
   nbLib = import ./nb-lib.nix lib pkgs;
 
   # LND
-  eachLnd = config.services.lnd;
+  eachLnd = filterAttrs (_: cfg: cfg.enable) config.services.lnd;
   lndinit = "${pkgs.lndinit}/bin/lndinit";
 
   # Bitcoin
@@ -198,24 +198,13 @@ in {
     };
   };
 
-  config = mkIf (eachLnd != {}) (let
-    eachLnd' = filterAttrs (_: cfg: cfg.enable) eachLnd;
-  in {
-    environment.systemPackages = flatten (mapAttrsToList (lndName: cfg: [cfg.package (hiPrio cfg.cli)]) eachLnd');
+  config = mkIf (eachLnd != {}) {
+    environment.systemPackages = flatten (mapAttrsToList (lndName: cfg: [cfg.package (hiPrio cfg.cli)]) eachLnd);
 
     systemd.tmpfiles.rules = flatten (mapAttrsToList (lndName: cfg: [
         "d '${cfg.dataDir}' 0770 '${cfg.user}' '${cfg.group}' - -"
       ])
-      eachLnd');
-
-    # TODO: Review infinite recursion error
-    # services.lnd =
-    #   mapAttrs' (lndName: cfg: (
-    #     nameValuePair "lnd-${lndName}" {
-    #       certificate.extraIPs = mkIf (cfg.rpcAddress != "127.0.0.1") ["${cfg.rpcAddress}"];
-    #     }
-    #   ))
-    #   eachLnd';
+      eachLnd);
 
     systemd.services =
       mapAttrs' (lndName: cfg: (
@@ -228,6 +217,7 @@ in {
             configFile = pkgs.writeText "lnd.conf" ''
               datadir=${cfg.dataDir}
               logdir=${cfg.dataDir}/logs
+
               tlscertpath=${cfg.certPath}
               tlskeypath=${secretsDir}/lnd-${lndName}-key
 
@@ -312,7 +302,7 @@ in {
           }
         )
       ))
-      eachLnd';
+      eachLnd;
 
     users.users =
       mapAttrs' (lndName: cfg: (
@@ -325,25 +315,19 @@ in {
           name = cfg.user;
         }
       ))
-      eachLnd';
+      eachLnd;
 
     users.groups =
       mapAttrs' (lndName: cfg: (
         nameValuePair "${cfg.group}" {}
       ))
-      eachLnd';
+      eachLnd;
 
     nix-bitcoin.secrets = let
       determineUser = attrName: cfg:
         if attrName == "rpcpassword-lnd"
         then cfg.user
         else bitcoind.user;
-      mapEachLndToSecrets = attr:
-        mapAttrsToList (lndName: cfg: {
-          name = "bitcoin-${attr.name}-${lndName}";
-          value = attr.value // {user = determineUser attr.name cfg;};
-        })
-        eachLnd';
       lndSecrets = listToAttrs (
         concatMap (
           attr:
@@ -351,7 +335,7 @@ in {
               name = "lnd-${lndName}-${attr.name}";
               value = attr.value // {user = cfg.user;};
             })
-            eachLnd'
+            eachLnd
         ) [
           {
             name = "wallet-password";
@@ -367,7 +351,12 @@ in {
           }
         ]
       );
-      optionalSecrets = listToAttrs (concatMap mapEachLndToSecrets [
+      optionalSecrets = listToAttrs (concatMap (attr:
+        mapAttrsToList (lndName: cfg: {
+          name = "bitcoin-${attr.name}-${lndName}";
+          value = attr.value // {user = determineUser attr.name cfg;};
+        })
+        eachLnd) [
         {
           name = "rpcpassword-lnd";
           value = {};
@@ -384,21 +373,17 @@ in {
     # - Reduces dynamic state
     # - Enables deployment of a mesh of server plus client nodes with predefined certs
     nix-bitcoin.generateSecretsCmds = let
-      baseCmds = listToAttrs (
+      mkLndSecrets = listToAttrs (
         mapAttrsToList (lndName: cfg:
           nameValuePair "lnd-${lndName}" ''
             makePasswordSecret lnd-${lndName}-wallet-password
+            ${optionalString isPruned ''makeBitcoinRPCPassword lnd-${lndName}''}
             makeCert lnd-${lndName} '${nbLib.mkCertExtraAltNames cfg.certificate}'
           '')
-        eachLnd'
-      );
-      optionalCmds = listToAttrs (
-        mapAttrsToList (lndName: cfg:
-          nameValuePair "lndBitcoinRPC-${lndName}" "makeBitcoinRPCPassword lnd-${lndName}")
-        eachLnd'
+        eachLnd
       );
     in
-      baseCmds // optionalAttrs isPruned optionalCmds;
+      mkLndSecrets;
 
     services.bitcoind.rpc.users = mkIf isPruned (listToAttrs (
       mapAttrsToList (lndName: cfg:
@@ -411,7 +396,7 @@ in {
               "getnodeaddresses"
             ];
         })
-      eachLnd'
+      eachLnd
     ));
-  });
+  };
 }
