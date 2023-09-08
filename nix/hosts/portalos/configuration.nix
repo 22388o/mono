@@ -13,14 +13,8 @@ with lib; {
   ];
 
   # Fixes deadlock with network manager
-  # See: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1658731959
-  # systemd.services.NetworkManager-wait-online = {
-  #   serviceConfig = {
-  #     ExecStart = ["" "${pkgs.networkmanager}/bin/nm-online -q"];
-  #   };
-  # };
-
   # see: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1473408913
+  # TODO: Review what to do with this
   systemd.services.NetworkManager-wait-online.enable = lib.mkForce false;
   systemd.services.systemd-networkd-wait-online.enable = lib.mkForce false;
 
