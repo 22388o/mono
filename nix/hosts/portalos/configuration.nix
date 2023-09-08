@@ -41,14 +41,14 @@ with lib; {
 
     lnd = {
       alice = {
-        enable = false;
+        enable = true;
         port = 9001;
         rpcPort = 10001;
         restPort = 8080;
       };
 
       bob = {
-        enable = false;
+        enable = true;
         port = 9002;
         rpcPort = 10002;
         restPort = 8181;

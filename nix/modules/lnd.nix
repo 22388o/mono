@@ -268,17 +268,15 @@ in {
               fi
             '';
             serviceConfig =
-              nbLib.defaultHardening
-              // {
+              # TODO: Restore hardening measures
+              {
                 Type = "notify";
                 RuntimeDirectory = "lnd-${lndName}"; # Only used to store custom macaroons
                 RuntimeDirectoryMode = "711";
                 ExecStart = "${cfg.package}/bin/lnd --configfile='${cfg.dataDir}/lnd.conf'";
                 User = cfg.user;
-                # TimeoutSec = "15min"; # TODO: Restore behavior
-                # Restart = "on-failure"; # TODO: Restore behavior
-                TimeoutSec = "10s";
-                Restart = "no";
+                TimeoutSec = "15min";
+                Restart = "on-failure";
                 RestartSec = "10s";
                 ReadWritePaths = [cfg.dataDir];
                 ExecStartPost = let
