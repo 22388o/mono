@@ -40,13 +40,6 @@ with lib;
         RestrictAddressFamilies = self.defaultHardening.RestrictAddressFamilies + " AF_NETLINK";
       };
 
-      nodejs = {
-        # Required for JIT compilation
-        MemoryDenyWriteExecute = false;
-        # Required by nodejs >= 18
-        SystemCallFilter = self.defaultHardening.SystemCallFilter ++ ["@pkey"];
-      };
-
       # Allow takes precedence over Deny.
       allowLocalIPAddresses = {
         IPAddressAllow = [
@@ -86,18 +79,6 @@ with lib;
 
       # Used for ExecStart*
       rootScript = name: src: "+${self.script name src}";
-
-      cliExec = mkOption {
-        # Used by netns-isolation to execute the cli in the service's private netns
-        internal = true;
-        type = types.str;
-        default = "exec";
-      };
-
-      mkOnionService = map: {
-        map = [map];
-        version = 3;
-      };
 
       # Convert a bind address, which may be a special INADDR_ANY address,
       # to an actual IP address

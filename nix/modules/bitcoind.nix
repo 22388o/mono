@@ -567,9 +567,6 @@ in {
     users.groups.${cfg.group} = {};
     users.groups.bitcoinrpc-public = {};
 
-    # TODO: Restore this functionality
-    # nix-bitcoin.operator.groups = [cfg.group];
-
     nix-bitcoin.secrets = {
       bitcoin-rpcpassword-privileged.user = cfg.user;
       bitcoin-rpcpassword-public = {

@@ -1,4 +1,4 @@
-{lib, ...}:
+{lib, pkgs, ...}:
 with lib; {
   imports = [
     ../../modules/bitcoind.nix
@@ -11,6 +11,14 @@ with lib; {
     ../../modules/portal.nix
     ../../modules/users.nix
   ];
+
+  # Fixes deadlock with network manager
+  # See: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1658731959
+  systemd.services.NetworkManager-wait-online = {
+    serviceConfig = {
+      ExecStart = ["" "${pkgs.networkmanager}/bin/nm-online -q"];
+    };
+  };
 
   portal = {
     nodeFqdn = mkDefault "node.playnet.portaldefi.zone";
