@@ -13,7 +13,7 @@ with lib; {
   ];
 
   portal = {
-    nodeFqdn = mkDefault "nixos";
+    nodeFqdn = mkDefault "node.playnet.portaldefi.zone";
     rootSshKey = mkDefault "not-provided";
   };
 
