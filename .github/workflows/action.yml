@@ -93,8 +93,12 @@ jobs:
 
     - name: Deploy closure on node.playnet.portaldefi.zone
       run: |
+        echo "Copying nixos closure to machine"
         nix copy -s --to "ssh://$DEPLOY_HOST" $SYSTEM_PATH
+        echo "Switching to new nixos closure"
         ssh $NIX_SSHOPTS "$DEPLOY_HOST" "$SYSTEM_PATH"/bin/switch-to-configuration switch
+        echo "Removing unused packages"
+        ssh $NIX_SSHOPTS "$DEPLOY_HOST" nix-collect-garbage
       env:
         SSH_KEYFILE: ${{ steps.deploy_env.outputs.SSH_KEY_PATH }}
         SYSTEM_PATH: ${{ steps.build-machine-closure.outputs.SYSTEM_PATH }}
