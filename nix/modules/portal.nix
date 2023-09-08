@@ -33,7 +33,7 @@ in {
       wantedBy = ["multi-user.target"];
       after = [
         "network.target"
-        "bitcoind-default.service"
+        "bitcoind.service"
         "geth-default.service"
       ];
       environment = {
