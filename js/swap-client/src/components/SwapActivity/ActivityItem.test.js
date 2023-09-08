@@ -1,16 +1,16 @@
-import { ActivityItem } from './ActivityItem';
-import { create, act } from 'react-test-renderer';
+import { ActivityItem } from './ActivityItem'
+import { create, act } from 'react-test-renderer'
 import configureStore from 'redux-mock-store'
-import { Provider } from 'react-redux';
+import { Provider } from 'react-redux'
 
 describe('AccessOptionComponent', () => {
   const initialState = {
-  };
-  const mockStore = configureStore();
-  let store;
+  }
+  const mockStore = configureStore()
+  let store
   it('should work', () => {
-    let tree;
-    let activity = {
+    let tree
+    const activity = {
       hash: '',
       baseAsset: 'BTC',
       baseQuantity: 0,
@@ -23,21 +23,22 @@ describe('AccessOptionComponent', () => {
       quoteAsset: 'ETH',
       quoteQuantity: 0
     }
-    let handleClick = jest.fn();
+    const handleClick = jest.fn()
 
     act(() => {
-      store = mockStore(initialState);
+      store = mockStore(initialState)
       tree = create(
         <Provider store={store}>
-          <ActivityItem 
-            activity={activity} 
+          <ActivityItem
+            activity={activity}
             index={0}
-            handleClick={handleClick} />
+            handleClick={handleClick}
+          />
         </Provider>
-      );
-    });
+      )
+    })
 
-    expect(tree).toMatchSnapshot();
-  });
-  afterAll(() => jest.resetModules());
-});
+    expect(tree).toMatchSnapshot()
+  })
+  afterAll(() => jest.resetModules())
+})

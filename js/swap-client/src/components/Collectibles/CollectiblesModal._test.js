@@ -1,7 +1,7 @@
-import { CollectiblesModal } from './CollectiblesModal';
-import { create, act } from 'react-test-renderer';
+import { CollectiblesModal } from './CollectiblesModal'
+import { create, act } from 'react-test-renderer'
 import configureStore from 'redux-mock-store'
-import { Provider } from 'react-redux';
+import { Provider } from 'react-redux'
 
 describe('AccountSelector', () => {
   const initialState = {
@@ -25,28 +25,29 @@ describe('AccountSelector', () => {
           network: 'eth-l2.eth',
           img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true',
           isNFT: false,
-          data: null,
+          data: null
         }
       ]
     }
-  };
-  const mockStore = configureStore();
-  let store;
-  let handleClose = jest.fn();
+  }
+  const mockStore = configureStore()
+  let store
+  const handleClose = jest.fn()
   it('should work', () => {
-    let tree;
+    let tree
     act(() => {
-      store = mockStore(initialState);
+      store = mockStore(initialState)
       tree = create(
         <Provider store={store}>
-          <CollectiblesModal 
-            open={true} 
-            handleClose={handleClose} />
+          <CollectiblesModal
+            open
+            handleClose={handleClose}
+          />
         </Provider>
-      );
-    });
+      )
+    })
 
-    expect(tree).toMatchSnapshot();
-  });
-  afterAll(() => jest.resetModules());
-});
+    expect(tree).toMatchSnapshot()
+  })
+  afterAll(() => jest.resetModules())
+})

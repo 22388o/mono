@@ -101,7 +101,7 @@ module.exports = class Server extends EventEmitter {
    * @returns {String}
    */
   get url () {
-    return `${this.hostname}:${this.port}`
+    return `http://${this.hostname}:${this.port}`
   }
 
   /**
@@ -123,7 +123,7 @@ module.exports = class Server extends EventEmitter {
       hostname,
       port,
       root,
-      url: `http://${this.url}`
+      url: this.url
     }
   }
 

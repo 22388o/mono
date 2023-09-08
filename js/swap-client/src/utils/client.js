@@ -6,14 +6,14 @@
 
 import { Buffer } from 'buffer'
 import { log } from './helpers'
-import { Sdk } from '@portaldefi/sdk';
+import { Sdk } from '@portaldefi/sdk'
 
- /**
+/**
   * Exports an implementation of a client
   * @type {Client}
   */
 export default class Client extends Sdk {
-   /**
+  /**
     * Creates a new instance of Client
     * @param {Object} props Properties of the client
     * @param {String} props.id The unique name of the client
@@ -26,9 +26,7 @@ export default class Client extends Sdk {
     super({
       ...props,
       apiVersion: 1
-    });
-
-
+    })
 
     Object.seal(this)
   }
@@ -39,7 +37,7 @@ export default class Client extends Sdk {
    * @returns {Swap}
    */
   swapOpenV2 (body) {
-    return this._request({ method: 'PUT', path: '/api/v2/swap/submarine' },  body )
+    return this._request({ method: 'PUT', path: '/api/v2/swap/submarine' }, body)
   }
   // getBalance (opts) {
   //   return this._request('/api/v1/channel', { method: 'POST' }, { opts })
@@ -51,19 +49,19 @@ export default class Client extends Sdk {
    * @returns {Promise<Void>}
    */
   swapCommitV2 (body) {
-    return this._request({ method: 'POST', path: '/api/v2/swap/submarine' },  body )
+    return this._request({ method: 'POST', path: '/api/v2/swap/submarine' }, body)
   }
 
-   /**
+  /**
     * Handles incoming websocket messages
     * @param {Buffer|Object} msg The message received over the websocket
     * @returns {Void}
     */
   _onMessage (msg) {
-    let dat = JSON.parse(msg.data);
-    this.emit(dat.status, dat);
+    const dat = JSON.parse(msg.data)
+    this.emit(dat.status, dat)
 
-    /*try {
+    /* try {
       arg = JSON.parse(msg.data)
       event = (arg['@type'] != null && arg.status != null)
          ? `${arg['@type'].toLowerCase()}.${arg.status}`
@@ -74,6 +72,6 @@ export default class Client extends Sdk {
     } finally {
       this.emit('log', 'info', event, arg)
       this.emit(event, arg)
-    }*/
+    } */
   }
- }
+}

@@ -14,9 +14,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #1',
@@ -33,9 +33,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #2',
@@ -52,9 +52,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #3',
@@ -71,9 +71,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #4',
@@ -90,9 +90,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #5',
@@ -109,9 +109,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #6',
@@ -128,9 +128,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #7',
@@ -147,9 +147,9 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
 }, {
   title: 'Inscription #8',
@@ -166,8 +166,8 @@ export const INSCRIPTIONS = [{
     value: 4000
   }],
   info: {
-    "inscription": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698",
-    "location": "daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0",
-    "explorer": "http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698"
+    inscription: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698',
+    location: 'daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698:0:0',
+    explorer: 'http://localhost/inscription/daabda16df2df4b4ebc45957a524f2c5979487ae9beff08d3bf93874654ce698'
   }
-}];
+}]

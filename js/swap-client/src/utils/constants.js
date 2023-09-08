@@ -6,20 +6,20 @@ import bob from './credentials/bob.json'
  */
 
 export const CHAIN_INFO = {
-  'BTC': {
+  BTC: {
     url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
     name: 'Bitcoin'
-  }, 
-  'ETH': {
+  },
+  ETH: {
     url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true',
     name: 'Ethereum'
   }
 }
 export const getAlice = () => {
-  return alice;
+  return alice
 }
 export const getBob = () => {
-  return bob;
+  return bob
 }
 
 /**
