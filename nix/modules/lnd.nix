@@ -271,7 +271,7 @@ in {
               nbLib.defaultHardening
               // {
                 Type = "notify";
-                RuntimeDirectory = "lnd"; # Only used to store custom macaroons
+                RuntimeDirectory = "lnd-${lndName}"; # Only used to store custom macaroons
                 RuntimeDirectoryMode = "711";
                 ExecStart = "${cfg.package}/bin/lnd --configfile='${cfg.dataDir}/lnd.conf'";
                 User = cfg.user;
