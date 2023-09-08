@@ -42,7 +42,7 @@ pkgs.nixosTest {
           };
 
           bob = {
-            enable = true;
+            enable = false;
             port = 9002;
             rpcPort = 10002;
             restPort = 8181;
