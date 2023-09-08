@@ -4,9 +4,9 @@ export const SWAP_PAIRS = [{
   seeker: 'ETH',
   holder: 'BTC',
   process: [
-    1, 
-    2, 
-    4, 
+    1,
+    2,
+    4,
     5
   ],
   required_chains: [
@@ -19,11 +19,11 @@ export const SWAP_PAIRS = [{
   seeker: 'BTC',
   holder: 'BTCORD',
   process: [
-    1, 
-    3, 
+    1,
+    3,
     5
   ],
   required_chains: [
     'bitcoin'
   ]
-}];
+}]

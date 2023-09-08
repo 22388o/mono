@@ -30,14 +30,14 @@ class CoreEvents extends EventEmitter {
     this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
-    this.apiVersion = props.apiVersion;
+    this.apiVersion = props.apiVersion
     this.pathname = props.pathname || `/api/v${this.apiVersion}/updates`
     this.credentials = props.credentials
     this.websocket = null
 
     this.on('log', (level, ...args) => console[level](...args))
 
-    this.emit('log', 'info', 'message', `Client Websocket initialized, id: ${this.id}`);
+    this.emit('log', 'info', 'message', `Client Websocket initialized, id: ${this.id}`)
   }
 
   /**
@@ -69,14 +69,13 @@ class CoreEvents extends EventEmitter {
       pathname: this.pathname,
       credentials: this.credentials
     }
-    if(this.apiVersion === 2) {
+    if (this.apiVersion === 2) {
       payload = {
         ...payload,
         connected: this.isConnected
       }
     }
-    return payload;
-
+    return payload
   }
 
   /**
@@ -106,7 +105,7 @@ class CoreEvents extends EventEmitter {
    */
   disconnect () {
     return new Promise((resolve, reject) => {
-      this.websocket.onerror = (error) => { reject; } // TODO
+      this.websocket.onerror = (error) => { reject } // TODO
       this.websocket.onclose = () => { this.emit('disconnected'); resolve() } // TODO
       this.websocket.close() // TODO
     })
@@ -117,7 +116,7 @@ class CoreEvents extends EventEmitter {
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
-    let payload = {
+    const payload = {
       uid: this.id,
       side: order.side,
       hash: order.hash,
@@ -127,14 +126,13 @@ class CoreEvents extends EventEmitter {
       quoteAsset: order.quoteAsset,
       quoteNetwork: order.quoteNetwork,
       quoteQuantity: order.quoteQuantity
-    };
-    if(this.apiVersion === 2) 
-      payload.ordinalLocation = order.ordinalLocation;
+    }
+    if (this.apiVersion === 2) { payload.ordinalLocation = order.ordinalLocation }
     return this._request(
-      `/api/v${this.apiVersion}/orderbook/limit`, 
-      { method: 'PUT' }, 
+      `/api/v${this.apiVersion}/orderbook/limit`,
+      { method: 'PUT' },
       payload
-    );
+    )
   }
 
   /**
@@ -143,7 +141,7 @@ class CoreEvents extends EventEmitter {
    */
   cancelLimitOrder (order) {
     return this._request(`/api/v${this.apiVersion}/orderbook/limit`, {
-      method: 'DELETE',
+      method: 'DELETE'
     }, {
       id: order.id,
       baseAsset: order.baseAsset,
@@ -159,7 +157,7 @@ class CoreEvents extends EventEmitter {
    */
   swapOpen (swap, opts) {
     return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'PUT',
+      method: 'PUT'
     }, { swap, opts })
   }
 
@@ -171,7 +169,7 @@ class CoreEvents extends EventEmitter {
    */
   swapCommit (swap, opts) {
     return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'POST',
+      method: 'POST'
     }, { swap, opts })
   }
 
@@ -183,7 +181,7 @@ class CoreEvents extends EventEmitter {
    */
   swapAbort (swap, opts) {
     return this._request(this.apiVersion === 1 ? '/api/v1/swap' : '/api/v2/swap/submarine', {
-      method: 'DELETE',
+      method: 'DELETE'
     }, { swap, opts })
   }
 
@@ -200,10 +198,9 @@ class CoreEvents extends EventEmitter {
    */
   createInvoice (opts) {
     return this._request('/api/v1/invoice', {
-      method: 'POST',
+      method: 'POST'
     }, opts)
   }
-
 
   /**
    * Performs an HTTP request and returns the response
@@ -227,8 +224,8 @@ class CoreEvents extends EventEmitter {
       this.emit('log', 'info', 'request', { url, headers, body: obj })
       args = Object.assign(args, { headers, body })
 
-      /*debug(`\n\n    Args: ${JSON.stringify(newArgs)}`)
-      debug(`\n\n    Data: ${JSON.stringify(data)}`)*/
+      /* debug(`\n\n    Args: ${JSON.stringify(newArgs)}`)
+      debug(`\n\n    Data: ${JSON.stringify(data)}`) */
 
       fetch(url, args)
         .then(res => {
@@ -311,4 +308,4 @@ class CoreEvents extends EventEmitter {
 }
 
 // module.exports = CommonClient;
-export default CoreEvents;
+export default CoreEvents

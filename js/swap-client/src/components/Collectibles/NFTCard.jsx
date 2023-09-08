@@ -1,6 +1,6 @@
-import { Grid, Stack } from '@mui/material';
-import React from 'react';
-import styles from '../../styles/collectibles/index.module.css';
+import { Grid, Stack } from '@mui/material'
+import React from 'react'
+import styles from '../../styles/collectibles/index.module.css'
 
 export const NFTCard = ({ card, handleClick }) => {
   return (
@@ -15,9 +15,9 @@ export const NFTCard = ({ card, handleClick }) => {
           </h4>
         </Grid>
         <Grid item textAlign='center'>
-          <h4>{card.info.inscription.slice(0,7)}</h4>
+          <h4>{card.info.inscription.slice(0, 7)}</h4>
         </Grid>
       </Stack>
     </Grid>
   )
-};
+}

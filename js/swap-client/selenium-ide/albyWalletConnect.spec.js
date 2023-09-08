@@ -2,29 +2,29 @@
 const { Builder, By, Key, until } = require('selenium-webdriver')
 const assert = require('assert')
 
-describe('Alby Wallet Connect', function() {
+describe('Alby Wallet Connect', function () {
   this.timeout(30000)
   let driver
   let vars
-  beforeEach(async function() {
+  beforeEach(async function () {
     driver = await new Builder().forBrowser('chrome').build()
     vars = {}
   })
-  afterEach(async function() {
-    await driver.quit();
+  afterEach(async function () {
+    await driver.quit()
   })
-  it('Alby Wallet Connect', async function() {
+  it('Alby Wallet Connect', async function () {
     // Test name: Alby Wallet Connect
     // Step # | name | target | value
-    // 1 | open | / | 
-    await driver.get("http://localhost:5173/")
-    // 2 | setWindowSize | 945x1020 | 
+    // 1 | open | / |
+    await driver.get('http://localhost:5173/')
+    // 2 | setWindowSize | 945x1020 |
     await driver.manage().window().setRect({ width: 945, height: 1020 })
-    // 3 | click | css=.connect-bitcoin | 
-    await driver.findElement(By.css(".connect-bitcoin")).click()
-    // 4 | click | id=connect-lightning | 
-    await driver.findElement(By.id("connect-lightning")).click()
-    // 5 | click | id=simulate-lightning | 
-    await driver.findElement(By.id("simulate-lightning")).click()
+    // 3 | click | css=.connect-bitcoin |
+    await driver.findElement(By.css('.connect-bitcoin')).click()
+    // 4 | click | id=connect-lightning |
+    await driver.findElement(By.id('connect-lightning')).click()
+    // 5 | click | id=simulate-lightning |
+    await driver.findElement(By.id('simulate-lightning')).click()
   })
 })

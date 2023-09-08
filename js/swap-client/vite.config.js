@@ -22,9 +22,9 @@ export default defineConfig({
     },
     minifiy: false,
     rollupOptions: {
-      onwarn(warning, warn) {
+      onwarn (warning, warn) {
         if (warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes(`'use client'`)) {
+        warning.message.includes('\'use client\'')) {
           return
         }
         warn(warning)
