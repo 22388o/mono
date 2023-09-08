@@ -1,12 +1,10 @@
 {lib, ...}:
 with lib; {
   imports = [
-    ../../modules/bitcoind.nix
     ../../modules/default.nix
     ../../modules/devtools.nix
     ../../modules/geth.nix
     ../../modules/lnd.nix
-    ../../modules/nb-secrets.nix
     ../../modules/nginx.nix
     ../../modules/portal.nix
     ../../modules/users.nix
@@ -23,20 +21,26 @@ with lib; {
     rootSshKey = mkDefault "not-provided";
   };
 
-  nix-bitcoin.generateSecrets = true;
-
   services = {
     bitcoind = {
-      enable = true;
-      regtest = true;
-      zmqpubhashblock = "tcp://127.0.0.1:18500";
-      zmqpubhashtx = "tcp://127.0.0.1:18501";
-      zmqpubrawblock = "tcp://127.0.0.1:18502";
-      zmqpubrawtx = "tcp://127.0.0.1:18503";
-      zmqpubsequence = "tcp://127.0.0.1:18504";
-      extraConfig = ''
-        fallbackfee=0.0002
-      '';
+      regtest = {
+        enable = true;
+        rpc = {
+          # TODO: Use sops to store properly secrets
+          users.lnd.passwordHMAC = "67d3078c31e998da3e5c733272333b53$5fc27bb8d384d2dc6f5b4f8c39b9527da1459e391fb531d317b2feb669724f16";
+        };
+        extraConfig = ''
+          chain=regtest
+
+          zmqpubhashblock=tcp://127.0.0.1:18500
+          zmqpubhashtx=tcp://127.0.0.1:18501
+          zmqpubrawblock=tcp://127.0.0.1:18502
+          zmqpubrawtx=tcp://127.0.0.1:18503
+          zmqpubsequence=tcp://127.0.0.1:18504
+
+          fallbackfee=0.0002
+        '';
+      };
     };
 
     lnd = {
@@ -45,6 +49,14 @@ with lib; {
         port = 9001;
         rpcPort = 10001;
         restPort = 8080;
+        rpcUser = "lnd";
+        rpcPassword = "lnd"; # TODO: Use sops to store properly secrets
+        network = "regtest";
+        extraConfig = ''
+          norest=true
+          bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
+          bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
+        '';
       };
 
       bob = {
@@ -52,6 +64,14 @@ with lib; {
         port = 9002;
         rpcPort = 10002;
         restPort = 8181;
+        rpcUser = "lnd";
+        rpcPassword = "lnd"; # TODO: Use sops to store properly secrets
+        network = "regtest";
+        extraConfig = ''
+          norest=true
+          bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
+          bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
+        '';
       };
     };
   };
