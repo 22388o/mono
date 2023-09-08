@@ -49,7 +49,7 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
-    const alice = new Client({ id: 'alice', hostname, port, credentials: aliceCred });
+    const alice = new Client({ network: { id: 'alice', hostname, port }, credentials: aliceCred });
     userStore.dispatch({ type: 'SIGN_IN', payload: alice });
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
@@ -63,7 +63,7 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum});
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000});
     }
-    const bob = new Client({ id: 'bob', hostname, port, credentials: bobCred });
+    const bob = new Client({ network: { id: 'bob', hostname, port }, credentials: bobCred });
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.credentials.lightning});
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000});
@@ -122,7 +122,12 @@ export const SwapHome = () => {
               </> 
             : <span>
                 Signed in as&nbsp;<u>{user.user.id.toUpperCase()}</u>&nbsp;
-                <Button variant='contained' color='error' onClick={e => logOut()}><b>Logout</b></Button>
+                <Button
+                  id="logout"
+                  variant='contained'
+                  color='error'
+                  onClick={e => logOut()}><b>Logout</b>
+                </Button>
               </span>
         }
       </Grid>
