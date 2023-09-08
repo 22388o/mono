@@ -109,7 +109,7 @@ in {
       createNormalUser "aldo" {
         extraGroups = ["sudo" "wheel"];
         openssh.authorizedKeys.keys = [
-          "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIGixdPdtzc018TSn5ZjzPSpV2NY55KDoaeiYMngfXiI6AAAAF3NzaDphbGRvQHBvcnRhbGRlZmkuY29t aldo@portaldefi.com"
+          "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIGixdPdtzc018TSn5ZjzPSpV2NY55KDoaeiYMngfXiI6AAAAF3NzaDphbGRvQHBvcnRhbGRlZmkuY29t ssh:aldo@portaldefi.com"
         ];
       }
       //
