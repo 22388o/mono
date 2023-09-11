@@ -86,32 +86,52 @@ in
           lnd = {
             alice = {
               enable = true;
-              port = 9001;
-              rpcPort = 10001;
-              restPort = 8080;
-              rpcUser = "lnd";
-              rpcPassword = "lnd";
-              network = "regtest";
-              extraConfig = ''
-                norest=true
-                bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
-                bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
-              '';
+              settings = {
+                application = {
+                  listen = ["127.0.0.1:9001"];
+                  rpc.listen = ["127.0.0.1:10001"];
+                };
+                bitcoin = {
+                  enable = true;
+                  network = "regtest";
+                };
+                bitcoind = {
+                  enable = true;
+                  rpcUser = "lnd";
+                  rpcPass = "lnd";
+                  zmqpubrawblock = "tcp://127.0.0.1:18502";
+                  zmqpubrawtx = "tcp://127.0.0.1:18503";
+                };
+              };
+              extras = {
+                lncli.createAliasedBin = true;
+                wallet.enableAutoCreate = true;
+              };
             };
 
             bob = {
               enable = true;
-              port = 9002;
-              rpcPort = 10002;
-              restPort = 8181;
-              rpcUser = "lnd";
-              rpcPassword = "lnd";
-              network = "regtest";
-              extraConfig = ''
-                norest=true
-                bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
-                bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
-              '';
+              settings = {
+                application = {
+                  listen = ["127.0.0.1:9002"];
+                  rpc.listen = ["127.0.0.1:10002"];
+                };
+                bitcoin = {
+                  enable = true;
+                  network = "regtest";
+                };
+                bitcoind = {
+                  enable = true;
+                  rpcUser = "lnd";
+                  rpcPass = "lnd";
+                  zmqpubrawblock = "tcp://127.0.0.1:18502";
+                  zmqpubrawtx = "tcp://127.0.0.1:18503";
+                };
+              };
+              extras = {
+                lncli.createAliasedBin = true;
+                wallet.enableAutoCreate = true;
+              };
             };
           };
 
@@ -131,10 +151,32 @@ in
     };
 
     testScript = {nodes, ...}: ''
+      def wait_for_units(node, units):
+        for unit in units:
+          node.wait_for_unit(unit)
+
+      def check_ports(node, ports):
+        for port in ports:
+          node.wait_for_open_port(port)
+
       start_all()
-      portal.wait_for_unit("portal.service")
-      portal.wait_for_unit("nginx.service")
+
+      # Service Status
+      wait_for_units(portal, ["portal.service", "nginx.service", "bitcoind-regtest.service", "lnd-bob.service", "lnd-alice.service"])
       client.wait_for_unit("multi-user.target")
+
+      # Port Accessibility
+      check_ports(portal, [9001, 9002, 18500])
+
+      # Check Portal starts
       client.succeed("test-portal")
+
+      # Data Persistence
+      portal.succeed("test -f /var/lib/lnd-alice/chain/bitcoin/regtest/wallet.db")
+      portal.succeed("test -f /var/lib/lnd-bob/chain/bitcoin/regtest/wallet.db")
+
+      # Error Logs
+      portal.fail("journalctl -u portal.service | grep -i 'error'")
+      portal.fail("journalctl -u nginx.service | grep -i 'error'")
     '';
   }

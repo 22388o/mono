@@ -39,32 +39,52 @@ pkgs.nixosTest {
         lnd = {
           alice = {
             enable = true;
-            port = 9001;
-            rpcPort = 10001;
-            restPort = 8080;
-            rpcUser = "lnd";
-            rpcPassword = "lnd";
-            network = "regtest";
-            extraConfig = ''
-              norest=true
-              bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
-              bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
-            '';
+            settings = {
+              application = {
+                listen = ["127.0.0.1:9001"];
+                rpc.listen = ["127.0.0.1:10001"];
+              };
+              bitcoin = {
+                enable = true;
+                network = "regtest";
+              };
+              bitcoind = {
+                enable = true;
+                rpcUser = "lnd";
+                rpcPass = "lnd";
+                zmqpubrawblock = "tcp://127.0.0.1:18502";
+                zmqpubrawtx = "tcp://127.0.0.1:18503";
+              };
+            };
+            extras = {
+              lncli.createAliasedBin = true;
+              wallet.enableAutoCreate = true;
+            };
           };
 
           bob = {
             enable = true;
-            port = 9002;
-            rpcPort = 10002;
-            restPort = 8181;
-            rpcUser = "lnd";
-            rpcPassword = "lnd";
-            network = "regtest";
-            extraConfig = ''
-              norest=true
-              bitcoind.zmqpubrawblock=tcp://127.0.0.1:18502
-              bitcoind.zmqpubrawtx=tcp://127.0.0.1:18503
-            '';
+            settings = {
+              application = {
+                listen = ["127.0.0.1:9002"];
+                rpc.listen = ["127.0.0.1:10002"];
+              };
+              bitcoin = {
+                enable = true;
+                network = "regtest";
+              };
+              bitcoind = {
+                enable = true;
+                rpcUser = "lnd";
+                rpcPass = "lnd";
+                zmqpubrawblock = "tcp://127.0.0.1:18502";
+                zmqpubrawtx = "tcp://127.0.0.1:18503";
+              };
+            };
+            extras = {
+              lncli.createAliasedBin = true;
+              wallet.enableAutoCreate = true;
+            };
           };
         };
       };
@@ -72,9 +92,38 @@ pkgs.nixosTest {
   };
 
   testScript = {nodes, ...}: ''
+    def verify_services():
+      # Wait for systemd units
+      lnd.wait_for_unit("bitcoind-regtest.service")
+      lnd.wait_for_unit("lnd-alice.service")
+      lnd.wait_for_unit("lnd-bob.service")
+
+      # Verify ports are active
+      for port in [9001, 10001, 9002, 10002]:
+        lnd.wait_for_open_port(port)
+
+      # Verify RPC Functionality
+      lnd.succeed("lncli-alice getinfo")
+      lnd.succeed("lncli-bob getinfo")
+
+    def restart_and_verify_services():
+      # Restart services
+      lnd.succeed("systemctl restart lnd-alice.service")
+      lnd.succeed("systemctl restart lnd-bob.service")
+
+      # Re-verify
+      verify_services()
+
     lnd.start()
-    lnd.wait_for_unit("bitcoind.service")
-    lnd.wait_for_unit("lnd-alice.service")
-    lnd.wait_for_unit("lnd-bob.service")
+
+    # Initial verification
+    verify_services()
+
+    # Validate Wallet Creation
+    lnd.succeed("test -f /var/lib/lnd-alice/chain/bitcoin/regtest/wallet.db")
+    lnd.succeed("test -f /var/lib/lnd-bob/chain/bitcoin/regtest/wallet.db")
+
+    # Restart services and re-verify
+    restart_and_verify_services()
   '';
 }
