@@ -38,20 +38,19 @@ export const SwapHome = () => {
   }, [])
 
   useEffect(() => {
-    // Usage:
-    const dbWrapper = new IndexedDB('myDatabase', 'myStore');
-
     // Initialization
-    dbWrapper.init().then(() => {
+    IndexedDB.init().then(() => {
         // Using the DB after initializing
-        dbWrapper.put({ name: 'John', age: 30 }).then(key => {
+        IndexedDB.put({ name: 'John', age: 30 }).then(key => {
             console.log('Added with key', 1);
 
-            dbWrapper.get(1).then(data => {
+            IndexedDB.get(1).then(data => {
                 console.log('Retrieved data', data);
             });
         });
     });
+
+    
   }, []);
 
   // Client ws
