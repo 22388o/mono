@@ -38,19 +38,15 @@ export const SwapHome = () => {
   }, [])
 
   useEffect(() => {
-    // Initialization
-    IndexedDB.init().then(() => {
+    setTimeout(() => {
+      // Initialization
+      IndexedDB.init().then(() => {
         // Using the DB after initializing
         IndexedDB.put({ name: 'John', age: 30 }).then(key => {
-            console.log('Added with key', 1);
-
-            IndexedDB.get(1).then(data => {
-                console.log('Retrieved data', data);
-            });
+          console.log('Added with key', 1);
         });
-    });
-
-    
+      });
+    }, 2000);
   }, []);
 
   // Client ws
