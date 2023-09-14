@@ -416,7 +416,7 @@ with lib; let
                   ''
                   else ''
                     echo "Create wallet-password"
-                    ${pkgs.pwgen}/bin/pwgen -s 20 1 > "$passwordFile"
+                    ${lndinit} gen-password > "$passwordFile"
                   ''
                 }
                   echo "Create lnd wallet"
