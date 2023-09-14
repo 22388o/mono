@@ -33,8 +33,8 @@ in {
       wantedBy = ["multi-user.target"];
       after = [
         "network.target"
-        "bitcoind-default.service"
-        "geth-default.service"
+        "bitcoind-regest.service" # TODO: Don't hardcode this value, obtain it properly from defined service
+        "geth-default.service" # TODO: Don't hardcode this value, obtain it properly from defined service
       ];
       environment = {
         PORTAL_HTTP_ROOT = toString pkgs.portaldefi.demo;
