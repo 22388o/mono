@@ -6,7 +6,6 @@
 'use strict'
 
 import { Buffer } from 'buffer'
-import { log } from './helpers'
 import { SDK } from '@portaldefi/sdk';
 
 /**
