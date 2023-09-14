@@ -2,8 +2,13 @@
  * @file Defines an order
  */
 
-const Assets = require('./assets')
-const BaseClass = require('./base_class')
+const { Util: { uuid } } = require('@portaldefi/core')
+
+/**
+ * A list of supported assets
+ * @type {Map}
+ */
+const ASSETS = require('../../portal/lib/core/assets')
 
 /**
  * A list of supported networks
@@ -24,7 +29,7 @@ const ORDER_SIDES = ['ask', 'bid']
  * Types of orders
  * @type {Array}
  */
-const ORDER_TYPES = ['limit']
+const ORDER_TYPES = ['limit', 'market']
 
 /**
  * An enum of order states
@@ -35,13 +40,14 @@ const ORDER_STATUS = ['created', 'opened', 'closed']
 /**
  * Defines an order
  */
-module.exports = class Order extends BaseClass {
+module.exports = class Order {
   /**
    * Creates a new instance of an order
    * @param {Object} props Properties of the order
    * @param {String} props.uid The unique identifier of the user
    * @param {String} props.type The type of the order (should be limit)
    * @param {String} props.side The side of the orderbook to add the order
+   * @param {String} props.hash The hash of the atomic swap secret
    * @param {String} props.baseAsset The symbol of the asset being bought/sold
    * @param {String} props.baseQuantity The amount of base asset being traded
    * @param {String} props.baseNetwork The network of base asset being traded
@@ -49,7 +55,7 @@ module.exports = class Order extends BaseClass {
    * @param {String} props.quoteQuantity The amount of quote asset being traded
    * @param {String} props.quoteNetwork The network of quote asset being traded
    */
-  constructor(props) {
+  constructor (props) {
     if (props.uid == null) {
       throw new Error('no uid specified!')
     } else if (typeof props.uid !== 'string' || props.uid.length <= 0) {
@@ -62,9 +68,11 @@ module.exports = class Order extends BaseClass {
       throw new Error('no side specified!')
     } else if (!ORDER_SIDES.includes(props.side)) {
       throw new Error(`type must one of "${ORDER_SIDES.join(', ')}"`)
+    } else if (props.hash == null) {
+      throw new Error('no hash specified!')
     }
 
-    if (Assets[props.baseAsset] == null) {
+    if (ASSETS[props.baseAsset] == null) {
       throw new Error(`"${props.baseAsset}" is not a supported base asset!`)
     } else if (!NETWORKS.includes(props.baseNetwork)) {
       throw new Error(`"${props.baseNetwork}" is not a supported blockchain!`)
@@ -72,7 +80,7 @@ module.exports = class Order extends BaseClass {
       throw new Error(`"${props.baseQuantity}" is not a valid quantity!`)
     }
 
-    if (Assets[props.quoteAsset] == null) {
+    if (ASSETS[props.quoteAsset] == null) {
       throw new Error(`"${props.quoteAsset}" is not a supported quote asset!`)
     } else if (!NETWORKS.includes(props.quoteNetwork)) {
       throw new Error(`"${props.quoteNetwork}" is not a supported blockchain!`)
@@ -80,13 +88,13 @@ module.exports = class Order extends BaseClass {
       throw new Error(`"${props.quoteQuantity}" is not a valid quantity!`)
     }
 
-    super({ id: props.id })
-
     Object.seal(Object.assign(this, {
+      id: props.id || uuid(),
       ts: props.ts || Date.now(),
       uid: props.uid,
       type: props.type,
       side: props.side,
+      hash: props.hash,
       baseAsset: props.baseAsset,
       baseNetwork: props.baseNetwork,
       baseQuantity: props.baseQuantity,
@@ -100,10 +108,26 @@ module.exports = class Order extends BaseClass {
   }
 
   /**
+   * Returns an asset-pair, given a JSON object with the base/quote assets
+   * @param {Object} obj JSON object representing the order
+   * @param {String} obj.baseAsset The symbol of the asset being bought/sold
+   * @param {String} obj.quoteAsset The symbol of the asset used for payment
+   */
+  static toAssetPair (obj) {
+    if (obj.baseAsset == null && typeof obj.baseAsset !== 'string') {
+      return null
+    } else if (obj.quoteAsset == null && typeof obj.quoteAsset !== 'string') {
+      return null
+    } else {
+      return `${obj.baseAsset}-${obj.quoteAsset}`
+    }
+  }
+
+  /**
    * Returns the age of the order in milliseconds from when it was created
    * @returns {Number}
    */
-  get age() {
+  get age () {
     return Date.now() - this.ts
   }
 
@@ -111,7 +135,7 @@ module.exports = class Order extends BaseClass {
    * Returns if the order is a ask (sell)
    * @returns {Boolean}
    */
-  get isAsk() {
+  get isAsk () {
     return this.side === 'ask'
   }
 
@@ -119,7 +143,7 @@ module.exports = class Order extends BaseClass {
    * Returns if the order is a bid (buy)
    * @returns {Boolean}
    */
-  get isBid() {
+  get isBid () {
     return this.side === 'bid'
   }
 
@@ -127,7 +151,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'created' state
    * @returns {Boolean}
    */
-  get isCreated() {
+  get isCreated () {
     return this.status === ORDER_STATUS[0]
   }
 
@@ -135,7 +159,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'opened' state
    * @returns {Boolean}
    */
-  get isOpened() {
+  get isOpened () {
     return this.status === ORDER_STATUS[1]
   }
 
@@ -143,7 +167,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'closed' state
    * @returns {Boolean}
    */
-  get isClosed() {
+  get isClosed () {
     return this.status === ORDER_STATUS[2]
   }
 
@@ -151,7 +175,7 @@ module.exports = class Order extends BaseClass {
    * Returns the unit price of the base asset in terms of the quote asset
    * @returns {Number}
    */
-  get price() {
+  get price () {
     return this.quoteQuantity / this.baseQuantity
   }
 
@@ -159,7 +183,7 @@ module.exports = class Order extends BaseClass {
    * Returns the current state of the instance
    * @type {String}
    */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')] () {
     return this.toJSON()
   }
 
@@ -167,12 +191,15 @@ module.exports = class Order extends BaseClass {
    * Returns the JSON representation of this instance
    * @returns {Object}
    */
-  toJSON() {
-    return Object.assign(super.toJSON(), {
+  toJSON () {
+    const obj = {
+      '@type': this.constructor.name,
+      id: this.id,
       ts: this.ts,
       uid: this.uid,
       type: this.type,
       side: this.side,
+      hash: this.hash,
       baseAsset: this.baseAsset,
       baseQuantity: this.baseQuantity,
       baseNetwork: this.baseNetwork,
@@ -181,14 +208,16 @@ module.exports = class Order extends BaseClass {
       quoteNetwork: this.quoteNetwork,
       status: this.status,
       reason: this.reason
-    })
+    }
+
+    return obj
   }
 
   /**
    * Opens the order on an orderbook
    * @returns {Order}
    */
-  open(reason) {
+  open (reason) {
     this.status = ORDER_STATUS[1]
     this.reason = reason || null
     return this
@@ -198,7 +227,7 @@ module.exports = class Order extends BaseClass {
    * Closes the order on an orderbook
    * @returns {Order}
    */
-  close(reason) {
+  close (reason) {
     this.status = ORDER_STATUS[2]
     this.reason = reason || null
     return this
@@ -209,7 +238,7 @@ module.exports = class Order extends BaseClass {
    * @param {Order} target The target order instance to check against this one
    * @returns {Boolean}
    */
-  equals(target) {
+  equals (target) {
     return this.id === target.id &&
       this.ts === target.ts &&
       this.uid === target.uid &&
@@ -225,18 +254,12 @@ module.exports = class Order extends BaseClass {
   }
 
   /**
-   * Returns an asset-pair, given a JSON object with the base/quote assets
-   * @param {Object} obj JSON object representing the order
-   * @param {String} obj.baseAsset The symbol of the asset being bought/sold
-   * @param {String} obj.quoteAsset The symbol of the asset used for payment
+   * Validates a matched order-pair
+   * @param {Object<Order>} maker The maker order of the match order-pair
+   * @param {Object<Order>} taker The taker order of the match order-pair
+   * @returns {Boolean}
    */
-  static toAssetPair(obj) {
-    if (obj.baseAsset == null && typeof obj.baseAsset !== 'string') {
-      return null
-    } else if (obj.quoteAsset == null && typeof obj.quoteAsset !== 'string') {
-      return null
-    } else {
-      return `${obj.baseAsset}-${obj.quoteAsset}`
-    }
+  static validateMatch (maker, taker) {
+    return true
   }
 }
