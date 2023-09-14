@@ -61,11 +61,13 @@ jobs:
       run: nix-build --option sandbox false --attr packages
 
     # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: matrix.os != 'macOS-latest'
       with:
         name: playnet
-        path: playnet/
+        path: |
+          playnet/
+          !playnet/**/*.ipc
 
   deploy:
     needs: build
@@ -89,7 +91,7 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
     # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: playnet
         path: playnet/
