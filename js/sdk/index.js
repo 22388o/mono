@@ -4,7 +4,7 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
-const Store = require('./lib/store');
+const IndexedDB = require('./lib/store/indexeddb');
 
 /**
  * Export the class
@@ -153,5 +153,5 @@ class SDK extends BaseClass {
   }
 }
 module.exports = {
-  SDK, Store
+  SDK, IndexedDB
 }
