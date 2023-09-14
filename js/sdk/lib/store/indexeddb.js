@@ -103,10 +103,6 @@ const IndexedDB = {
   },
 
   subscribe(listener) {
-    /*listeners = [...listeners, listener];
-    return () => {
-      listeners = listeners.filter(l => l !== listener);
-    }*/
     IndexedDB.listeners.push(listener);
   },
 
@@ -116,7 +112,7 @@ const IndexedDB = {
       lastCallTime = new Date().getTime();
       (async () => {
         const data = await IndexedDB.get_all();
-        db_data = data;
+        db_data = data || [];
         IndexedDB.emitChanges();
       })();
     }
@@ -129,8 +125,6 @@ const IndexedDB = {
         await IndexedDB.put(action.payload);
         break;
       case 'UPDATE_SWAP_STATUS':
-        // TODO: right now only checking activity item with the same status
-        // const toUpdate = newState.filter(activity => activity.secretHash == action.payload.secretHash);
         const toUpdate = IndexedDB.get('secretHash', action.payload.secretHash);
         console.log("updating activity " + action.payload.secretHash)
         console.log(action.payload)
@@ -153,7 +147,9 @@ const IndexedDB = {
   },
 
   emitChanges() {
-    IndexedDB.listeners.forEach(listener => listener());
+    for(let listener of IndexedDB.listeners) {
+      listener();
+    }
   }
 }
 
