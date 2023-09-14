@@ -1,79 +1,61 @@
 module.exports = class IndexedDB {
-  constructor() {
+  constructor(dbName, storeName) {
+    this.dbName = dbName;
+    this.storeName = storeName;
     this.db = null;
   }
 
-  /**
-   * IndexedDB Initialization
-   */
-  connectDB () {
-    if(!window.indexedDB) {
-      console.log(`Your browser doesn't support IndexedDB`);
-      return;
-    }
-    const request = indexedDB.open('SWAP_CLIENT', 1);
-    request.onerror = (event) => {
-      console.error(`Database Connection Error: ${event.target.errorCode}`);
-    };
-    request.onsuccess = (event) => {
-      this.db = event.target.result;
-      console.log(`Connected`);
-    }
-    request.onupgradeneeded = (event) => {
-      this.db = event.target.result;
+  async init() {
+      return new Promise((resolve, reject) => {
+          const request = indexedDB.open(this.dbName, 1);
 
-      // create the Contacts object store 
-      // with auto-increment id
-      let store = db.createObjectStore('Activities', {
-          autoIncrement: true
+          request.onupgradeneeded = event => {
+              this.db = event.target.result;
+              this.db.createObjectStore(this.storeName, { autoIncrement: true });
+          };
+
+          request.onsuccess = event => {
+              this.db = event.target.result;
+              resolve();
+          };
+
+          request.onerror = event => {
+              reject('Error opening DB', event);
+          };
       });
- 
-      // create an index on the email property
-      let index = store.createIndex('id', 'id', {
-          unique: true
-      }); 
-    };
   }
 
-  addNewActivity(activity) {
-    const txn = db.transaction('Activities', 'readwrite');
-
-    const store = txn.objectStore('Activities');
-
-    let query = store.put(activity);
-
-    query.onsuccess = (event) => {
-      console.log(event);
-    }
-    query.onerror = (event) => {
-      console.log(event.target.errorCode);
-    }
-
-    txn.complete = () => {
-      db.close();
-    }
+  async put(value) {
+      const transaction = this.db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      return store.put(value);
   }
 
-  getActivityById(id) {
-    const txn = db.transaction('Activities', 'readonly');
-    const store = txn.objectStore('Activities');
+  async get(key) {
+      const transaction = this.db.transaction(this.storeName, 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      return new Promise((resolve, reject) => {
+          const request = store.get(key);
+          request.onsuccess = event => {
+              resolve(event.target.result);
+          };
+          request.onerror = event => {
+              reject(event);
+          };
+      });
+  }
 
-    let query = store.get(id);
-
-    query.onsuccess = (event) => {
-        if (!event.target.result) {
-            console.log(`The activity with ${id} not found`);
-        } else {
-            console.table(event.target.result);
-        }
-    };
-
-    query.onerror = (event) => {
-        console.log(event.target.errorCode);
-    }
-
-    txn.oncomplete = function () {
-        db.close();
-    };
+  async delete(key) {
+      const transaction = this.db.transaction(this.storeName, 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      return new Promise((resolve, reject) => {
+          const request = store.delete(key);
+          request.onsuccess = event => {
+              resolve(event.target.result);
+          };
+          request.onerror = event => {
+              reject(event);
+          };
+      });
   }
 }
