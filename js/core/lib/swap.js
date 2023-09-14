@@ -3,7 +3,7 @@
  */
 
 const Party = require('../../portal/lib/core/party')
-const { Util: { hash, uuid } } = require('@portaldefi/core')
+const { hash, uuid } = require('./util')
 const BaseClass = require('./base_class')
 
 /**

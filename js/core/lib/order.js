@@ -2,7 +2,7 @@
  * @file Defines an order
  */
 
-const { Util: { uuid } } = require('@portaldefi/core')
+const { uuid } = require('./util')
 
 /**
  * A list of supported assets
