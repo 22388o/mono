@@ -1,3 +1,5 @@
+let db_data = [], lastCallTime = null;
+
 const IndexedDB = {
   dbName: 'swap_client',
   storeName: 'activities',
@@ -27,8 +29,14 @@ const IndexedDB = {
   async put(value) {
     const transaction = IndexedDB.db.transaction(IndexedDB.storeName, 'readwrite');
     const store = transaction.objectStore(IndexedDB.storeName);
-    store.put(value);
-    IndexedDB.emitChanges();
+    const request = store.put(value);
+    request.onsuccess = (event) => {
+      console.log('emitted the change');
+      IndexedDB.emitChanges();
+    }
+    request.onerror = () => {
+      console.error('Error!');
+    }
   },
 
   async get(key) {
@@ -64,7 +72,7 @@ const IndexedDB = {
     const transaction = IndexedDB.db.transaction(IndexedDB.storeName, 'readonly');
     const store = transaction.objectStore(IndexedDB.storeName);
     return new Promise((resolve, reject) => {
-      const request = store.get();
+      const request = store.getAll();
       request.onsuccess = event => {
         resolve(event.target.result);
       };
@@ -82,8 +90,19 @@ const IndexedDB = {
     IndexedDB.listeners.push(listener);
   },
 
-  async getSnapshot() {
-    return await IndexedDB.get_all();
+  getSnapshot() {
+    const curTime = new Date().getTime();
+    console.log('Get Snapshot', lastCallTime, curTime - lastCallTime);
+    if (lastCallTime === null || curTime - lastCallTime >= 1000) {
+      lastCallTime = new Date().getTime();
+      (async () => {
+        const data = await IndexedDB.get_all();
+        db_data = data;
+        console.log('data updated', db_data);
+        IndexedDB.emitChanges();
+      })();
+    }
+    return db_data;
   },
 
   emitChanges() {
