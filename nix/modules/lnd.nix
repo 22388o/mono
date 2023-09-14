@@ -587,9 +587,9 @@ in {
               ExecStart = "${cfg.package}/bin/lnd --configfile='${cfg.dataDir}/lnd.conf'";
               User = cfg.user;
               Group = cfg.group;
-              TimeoutSec = "15min";
+              TimeoutSec = "180s";
               Restart = "on-failure";
-              RestartSec = "10s";
+              RestartSec = "60s";
               ReadWritePaths = [cfg.dataDir];
 
               ExecStartPost = let
@@ -625,10 +625,10 @@ in {
               ProtectProc = "invisible";
               ProcSubset = "pid";
               ProtectControlGroups = true;
-              # RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6"; # If enabled doesn't allow to create the tls certificates
+              # RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6"; # TODO: If enabled doesn't allow to create the tls certificates
               RestrictNamespaces = true;
               LockPersonality = true;
-              # IPAddressDeny = "any"; # Need to fine tune this
+              # IPAddressDeny = "any"; # TODO: Need to fine tune this
               PrivateUsers = true;
               RestrictSUIDSGID = true;
               RemoveIPC = true;
