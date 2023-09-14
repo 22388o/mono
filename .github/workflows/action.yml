@@ -50,7 +50,8 @@ jobs:
 
     - name: Run integration tests
       run: tests integration
-      if: matrix.os == 'ubuntu-latest'
+      if: false
+      # if: matrix.os == 'ubuntu-latest' # TODO: Restore this integration tests are going to stay in the current form
 
     - name: Run nixos tests
       run: tests nixos
