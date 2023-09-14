@@ -580,6 +580,7 @@ in {
               ''}
             '';
 
+            # Following some settings from: https://github.com/lightningnetwork/lnd/blob/90effda090e752662500aa47eaed8b8619687e4e/contrib/init/lnd.service
             serviceConfig = {
               Type = "notify";
               RuntimeDirectory = "lnd-${lndName}"; # Only used to store custom macaroons
@@ -587,7 +588,8 @@ in {
               ExecStart = "${cfg.package}/bin/lnd --configfile='${cfg.dataDir}/lnd.conf'";
               User = cfg.user;
               Group = cfg.group;
-              TimeoutSec = "180s";
+              TimeoutSec = "1200";
+              TimeoutStopSec = "3600";
               Restart = "on-failure";
               RestartSec = "60s";
               ReadWritePaths = [cfg.dataDir];
