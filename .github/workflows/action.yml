@@ -41,18 +41,13 @@ jobs:
       run: direnv allow
 
     - name: Start devenv
-      run: devenv up --watch 
+      run: direnv exec . devenv up --watch 
 
     - name: Run unit tests
-      run: tests unit
-
-    - name: Run integration tests
-      run: tests integration
-      if: false
-      # if: matrix.os == 'ubuntu-latest' # TODO: Restore this integration tests are going to stay in the current form
+      run: direnv exec . tests unit
 
     - name: Run nixos tests
-      run: tests nixos
+      run: direnv exec . tests nixos
       if: matrix.os == 'ubuntu-latest'
 
     - name: Build PortalDefi packages
