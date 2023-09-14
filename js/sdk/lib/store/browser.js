@@ -152,7 +152,7 @@ module.exports = class Store extends BaseClass {
       this.db = event.target.result;
       console.log(`Connected`);
     }
-    result.onupgradeneeded = (event) => {
+    request.onupgradeneeded = (event) => {
       this.db = event.target.result;
 
       // create the Contacts object store 

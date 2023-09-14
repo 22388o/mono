@@ -7,14 +7,14 @@
 
 import { Buffer } from 'buffer'
 import { log } from './helpers'
-import { Sdk } from '@portaldefi/sdk'
+import { SDK } from '@portaldefi/sdk';
 
 /**
   * Exports an implementation of a client
   * @type {Client}
   */
-export default class Client extends Sdk {
-  /**
+export default class Client extends SDK {
+   /**
     * Creates a new instance of Client
     * @param {Object} props Properties of the client
     * @param {String} props.id The unique name of the client
