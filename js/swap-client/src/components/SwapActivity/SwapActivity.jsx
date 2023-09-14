@@ -1,19 +1,17 @@
-import React, { useCallback, useEffect, useSyncExternalStore } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 import { Box, Grid, Stack, Divider } from '@mui/material';
 import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
 import styles from '../../styles/SwapActivity.module.css';
 import { log } from '../../utils/helpers';
 import { ActivityDetailModal } from './ActivityDetailModal';
-import { activitiesStore } from '../../syncstore/activitiesstore';
 import { IndexedDB } from '@portaldefi/sdk';
 
 export const SwapActivity = () => {
-  const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
-  const indexed_store = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
   const [showIndex, setShowIndex] = useState(-1);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
+  const activities = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
 
   const onShowDetails = useCallback((index) => {
     setShowIndex(index)
