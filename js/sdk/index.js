@@ -4,12 +4,13 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
+const Store = require('./lib/store');
 
 /**
  * Export the class
  * @type {SDK}
  */
-module.exports = class SDK extends BaseClass {
+class SDK extends BaseClass {
   constructor (props) {
     super()
 
@@ -150,4 +151,7 @@ module.exports = class SDK extends BaseClass {
   send (...args) {
     return this.sdk.network.send(...args)
   }
+}
+module.exports = {
+  SDK, Store
 }
