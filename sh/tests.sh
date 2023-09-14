@@ -40,15 +40,6 @@ run_unit_tests() {
   done
 }
 
-run_integration_tests() {
-  echo "Performing integration tests"
-  pushd "$PORTAL_ROOT/js/swap-client"
-  npm run dev >/dev/null 2>&1 & # TODO: Use process-compose instead
-  wait_for_open_port 5173 20
-  npm run test:swap
-  popd
-}
-
 run_nixos_tests() {
   echo "Performing NixOS service verification tests"
   nix-build --option sandbox false --attr checks.portaldefi.integration-tests.portal
@@ -56,7 +47,7 @@ run_nixos_tests() {
 
 main() {
   if [ "$#" -eq 0 ]; then
-    echo "No command specified. Usage: tests {unit|integration|nixos}"
+    echo "No command specified. Usage: tests {unit|nixos}"
     exit 1
   fi
 
@@ -67,9 +58,8 @@ main() {
 
   case "$command" in
     "unit") run_unit_tests ;;
-    "integration") run_integration_tests ;;
     "nixos") run_nixos_tests ;;
-    *) echo "Unknown command. Usage: tests {unit|integration|nixos}" ;;
+    *) echo "Unknown command. Usage: tests {unit|nixos}" ;;
   esac
 
   popd
