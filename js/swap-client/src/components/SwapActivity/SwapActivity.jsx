@@ -10,7 +10,7 @@ import { IndexedDB } from '@portaldefi/sdk';
 
 export const SwapActivity = () => {
   const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
-  const indexed_store = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getSnapshot);
+  const indexed_store = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
   const [showIndex, setShowIndex] = useState(-1);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -26,10 +26,6 @@ export const SwapActivity = () => {
     setDetailModalOpen(true);
   }, [activities]);
 
-  useEffect(() => {
-    console.log(indexed_store);
-  }, [indexed_store]);
-  
   return (
     <>
       <Box className={`${styles.activitiesContainer} activitiesContainer`}>
