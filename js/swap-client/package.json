@@ -1,6 +1,5 @@
 {
   "name": "swap-client",
-  "proxy": "http://localhost:35133/api",
   "private": true,
   "version": "0.0.2",
   "scripts": {
