@@ -43,7 +43,7 @@ describe('Portal SDK for node.js', function () {
    * - Initializes and starts a peer
    * - Initializes and starts SDK instances for each user
    */
-  before(async function () {
+  before('Setup the test environment', async function () {
     // override/install globals
     for (const key in GLOBALS) {
       const existing = global[key]
@@ -74,7 +74,7 @@ describe('Portal SDK for node.js', function () {
    * - Stops the peer
    * - Restores the global functions that were overridden during setup
    */
-  after(async function () {
+  after('Teardown the test environment', async function () {
     await Promise.all(USERS.map(name => this.test.ctx[name].stop()))
     await this.test.ctx.peer.stop()
 
