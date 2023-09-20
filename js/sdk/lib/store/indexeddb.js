@@ -12,7 +12,9 @@ const IndexedDB = {
 
       request.onupgradeneeded = event => {
         IndexedDB.db = event.target.result;
-        IndexedDB.db.createObjectStore(IndexedDB.storeName, { autoIncrement: true });
+        const store = IndexedDB.db.createObjectStore(IndexedDB.storeName, { keyPath: 'id', autoIncrement: true });
+
+        store.createIndex('secretHash', 'secretHash', { unique: false });
       };
 
       request.onsuccess = event => {
@@ -31,17 +33,16 @@ const IndexedDB = {
     const store = transaction.objectStore(IndexedDB.storeName);
     const request = store.put(value);
     request.onsuccess = (event) => {
-      console.log('emitted the change');
     }
     request.onerror = () => {
       console.error('Error!');
     }
   },
 
-  async get(key, value) {
+  async get(value) {
     const transaction = IndexedDB.db.transaction(IndexedDB.storeName, 'readonly');
     const store = transaction.objectStore(IndexedDB.storeName);
-    const index = store.index(key);
+    const index = store.index('secretHash');
     return new Promise((resolve, reject) => {
       const request = index.get(value);
       request.onsuccess = event => {
@@ -120,18 +121,20 @@ const IndexedDB = {
   },
 
   async dispatch(action) {
+    console.log('dispatch called', action.type);
     switch(action.type) {
       case 'ADD_SWAP_ITEM':
         await IndexedDB.put(action.payload);
         break;
       case 'UPDATE_SWAP_STATUS':
-        const toUpdate = IndexedDB.get('secretHash', action.payload.secretHash);
+        const toUpdate = await IndexedDB.get(action.payload.secretHash);
+        console.log('to update data', toUpdate)
         console.log("updating activity " + action.payload.secretHash)
         console.log(action.payload)
-        if(toUpdate.length > 0){
-          if(action.payload.status) toUpdate[0].status = action.payload.status;
-          if(action.payload.paymentAddress) toUpdate[0].paymentAddress = action.payload.paymentAddress;
-          if(action.payload.tx) toUpdate[0].tx = action.payload.tx;
+        if(toUpdate){
+          if(action.payload.status) toUpdate.status = action.payload.status;
+          if(action.payload.paymentAddress) toUpdate.paymentAddress = action.payload.paymentAddress;
+          if(action.payload.tx) toUpdate.tx = action.payload.tx;
         } 
         IndexedDB.put(toUpdate);
         break;
@@ -139,17 +142,18 @@ const IndexedDB = {
         await IndexedDB.delete_last();
         break;;
       case 'CANCEL_SWAP':
-        const toDelete = IndexedDB.get('secretHash', action.payload.secretHash);
+        const toDelete = await IndexedDB.get(action.payload.secretHash);
         await IndexedDB.delete(toDelete.key);
         break;
     }
-    IndexedDB.emitChanges();
+    setTimeout(() => IndexedDB.emitChanges(), 1000);
   },
 
   emitChanges() {
     for(let listener of IndexedDB.listeners) {
       listener();
     }
+    console.log(`emitted the change to ${IndexedDB.listeners.length} listeners`);
   }
 }
 

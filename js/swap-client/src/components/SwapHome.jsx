@@ -16,6 +16,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { version } from '../../package.json'
 import { useEffect } from 'react'
+import { IndexedDB } from '@portaldefi/sdk';
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
@@ -37,15 +38,7 @@ export const SwapHome = () => {
   }, [])
 
   useEffect(() => {
-    /*setTimeout(() => {
-      // Initialization
-      IndexedDB.init().then(() => {
-        // Using the DB after initializing
-        IndexedDB.put({ name: 'John', age: 30 }).then(key => {
-          console.log('Added with key', 1);
-        });
-      });
-    }, 2000);*/
+    IndexedDB.init();
   }, []);
 
   // Client ws
