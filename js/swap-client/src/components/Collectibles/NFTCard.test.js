@@ -6,7 +6,10 @@ describe('AccessOptionComponent', () => {
     let tree
     const card = {
       img_url: '123',
-      title: 'card'
+      title: 'card',
+      info: {
+        inscription: '123512341234jaspdofijaos'
+      }
     }
     const handleClick = jest.fn()
 

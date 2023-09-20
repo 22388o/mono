@@ -6,7 +6,7 @@ exports[`AccessOptionComponent should work 1`] = `
   onClick={[Function]}
 >
   <div
-    className="MuiStack-root css-nen11g-MuiStack-root"
+    className="MuiStack-root undefined nft-card css-nen11g-MuiStack-root"
   >
     <div
       className="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
@@ -31,7 +31,7 @@ exports[`AccessOptionComponent should work 1`] = `
       className="MuiGrid-root MuiGrid-item css-10omzie-MuiGrid-root"
     >
       <h4>
-        card
+        1235123
       </h4>
     </div>
   </div>
