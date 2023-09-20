@@ -15,7 +15,7 @@ class Invoice {
   field: string;
 
   // Address paying the invoice
-  payor: string;
+  payer: string;
 
   // Address receiving the payment
   payee: string;
@@ -26,7 +26,7 @@ class Invoice {
     amount: number,
     network: string,
     field: string,
-    payor: string,
+    payer: string,
     payee: string
   ) {
     this.id = id;
@@ -34,7 +34,7 @@ class Invoice {
     this.amount = amount;
     this.network = network;
     this.field = field;
-    this.payor = payor;
+    this.payer = payer;
     this.payee = payee;
   }
 }
