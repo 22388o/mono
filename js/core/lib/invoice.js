@@ -1,3 +1,13 @@
+interface InvoiceProps {
+  id: string;
+  timestamp: Date;
+  amount: number;
+  network: string;
+  field: string;
+  payer: string;
+  payee: string;
+}
+
 class Invoice {
   // Unique identifier for the invoice
   id: string;
@@ -20,34 +30,26 @@ class Invoice {
   // Address receiving the payment
   payee: string;
 
-  constructor(
-    id: string,
-    timestamp: Date,
-    amount: number,
-    network: string,
-    field: string,
-    payer: string,
-    payee: string
-  ) {
-    this.id = id;
-    this.timestamp = timestamp;
-    this.amount = amount;
-    this.network = network;
-    this.field = field;
-    this.payer = payer;
-    this.payee = payee;
+  constructor(props: InvoiceProps) {
+    this.id = props.id;
+    this.timestamp = props.timestamp;
+    this.amount = props.amount;
+    this.network = props.network;
+    this.field = props.field;
+    this.payer = props.payer;
+    this.payee = props.payee;
   }
 }
 
 // Example usage:
-const myInvoice = new Invoice(
-  "hashOfInvoiceHere",
-  new Date(),
-  21.0,
-  "Bitcoin",
-  "",
-  "AliceAddress",
-  "BobAddress"
-);
+const myInvoice = new Invoice({
+  id: "hashOfInvoiceHere",
+  timestamp: new Date(),
+  amount: 21.0,
+  network: "Bitcoin",
+  field: "",
+  payer: "AliceAddress",
+  payee: "BobAddress"
+});
 
 console.log(myInvoice);
