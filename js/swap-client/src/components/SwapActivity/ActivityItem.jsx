@@ -6,13 +6,14 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 //import { activitiesStore } from '../../syncstore/activitiesstore';
 import { walletStore } from '../../syncstore/walletstore';
 import { IndexedDB } from '@portaldefi/sdk';
+import { IndexedDB_dispatch } from '../../utils/indexeddb';
 
 export const ActivityItem = ({ activity, index, handleClick }) => {
   const link='https://ordinals.com/tx/' + activity.hash;
   
   const onCancelSwap = useCallback((e) => {
     e.stopPropagation();
-    IndexedDB.dispatch({ type: 'CANCEL_SWAP', payload: index });
+    IndexedDB_dispatch({ type: 'CANCEL_SWAP', payload: index });
     if(activity.baseAsset === 'BTC') walletStore.dispatch({ type: 'ADD_NODE_BALANCE', payload: activity.baseQuantity });
     else if(activity.baseAsset === 'ETH') walletStore.dispatch({ type: 'ADD_WALLET_BALANCE', payload: activity.baseQuantity });
     else walletStore.dispatch({ type: 'ADD_NFT_BALANCE', payload: {type: activity.baseAsset, balance: 1} });

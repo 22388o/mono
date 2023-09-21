@@ -15,6 +15,7 @@ import { userStore } from "../../syncstore/userstore";
 import { walletStore } from "../../syncstore/walletstore";
 import { SWAP_PAIRS } from "../../config/swap_pairs";
 import { IndexedDB } from "@portaldefi/sdk";
+import { IndexedDB_dispatch } from "../../utils/indexeddb";
 
 export const SwapCreate = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
@@ -156,7 +157,7 @@ export const SwapCreate = () => {
       if(activity.status === 0) {
         log("swapState: swap begins ", activity.status);
         // setTimeout(() => { 
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 1} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 1} });
           log("swapState: swap iter: activity.secretHash  ", activity.secretHash);
           log("swapState: swap iter: activity.status  ", activity.status);
         // }, 50);
@@ -189,7 +190,7 @@ export const SwapCreate = () => {
           user.user.swapOpen(swap, { ...credentials });
 
           // TODO: right now only checking activity item with the same status
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
           // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: swap.secretHash, status: fNext} });
         }
         } else {
@@ -217,12 +218,12 @@ export const SwapCreate = () => {
 
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: fNext} });
           } else {
 
           // TODO: right now only checking activity item with the same status
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeekerer.orderId, status: 2} });
           }
         }
@@ -245,7 +246,7 @@ export const SwapCreate = () => {
           log("swapOpen (secretHolder) requested, settingSwapState to 2");
 
           // TODO: right now only checking activity item with the same status
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
           // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: fNext} });
         } else {
           if(activity.status !== 2 || user.user.id == substrname(swap.secretSeeker.id)) {
@@ -273,12 +274,12 @@ export const SwapCreate = () => {
             log("swapOpen (secretSeeker) requested, sent settingSwapState to 3");
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: fNext} });
           } else {
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 3} });
           }
         }
@@ -301,7 +302,7 @@ export const SwapCreate = () => {
 
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {
             //   orderId: swap.secretSeeker.orderId, 
             //   status: 4} });
@@ -323,12 +324,12 @@ export const SwapCreate = () => {
           activity.orderId !== swap.secretSeeker.orderId)) return;
         log('swap.opened event received', swap)
         if(user.user.id == substrname(swap.secretHolder.id)){
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', 
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', 
             payload: {
               orderId: swap.secretHolder.orderId, 
               paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
         } else {          
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', 
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', 
             payload: {
               orderId: swap.secretSeeker.orderId, 
               paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]} });
@@ -356,9 +357,9 @@ export const SwapCreate = () => {
 
             }
           });
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 5} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 5} });
         } else {
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
         }
       });
     });
@@ -378,19 +379,19 @@ export const SwapCreate = () => {
             log("secretHolder credentials", credentials);
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 4} });
           }
         } else {
           if(user.user.id == substrname(swap.secretSeeker.id)){
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 5} });
           } else {
 
             // TODO: right now only checking activity item with the same status
-            IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
+            IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: fNext} });
             // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
           }
         }   
@@ -406,7 +407,7 @@ export const SwapCreate = () => {
           ethBal = wallet.balance + fromWei(swap.secretHolder.quantity);
 
           // TODO: right now only checking activity item with the same status
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 5} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 5} });
           // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretSeeker.orderId, status: 5} });
           walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: ethBal });
         } else {
@@ -414,7 +415,7 @@ export const SwapCreate = () => {
           //ethBal = wallet.balance - fromSats(swap.secretSeeker.quantity) * curPrices.BTC / curPrices.ETH;
 
           // TODO: right now only checking activity item with the same status
-          IndexedDB.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 5} });
+          IndexedDB_dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {secretHash: activity.secretHash, status: 5} });
           // activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: {orderId: swap.secretHolder.orderId, status: 5} });
           walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: btcBal });
         }
@@ -549,7 +550,7 @@ export const SwapCreate = () => {
         quote: baseQ
       };          
 
-      IndexedDB.dispatch({ type: 'ADD_SWAP_ITEM', payload: {
+      IndexedDB_dispatch({ type: 'ADD_SWAP_ITEM', payload: {
         key: data.id,
         orderId: data.id,
         ts: data.ts,
