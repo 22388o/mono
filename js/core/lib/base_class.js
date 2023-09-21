@@ -9,12 +9,6 @@
 const INSTANCES = new WeakMap()
 
 /**
- * The levels at which information is logged
- * @type {Array}
- */
-const LOG_LEVELS = ['debug', 'info', 'warn', 'error']
-
-/**
  * A base class for all other classes/types.
  *
  * This class provides the following abstractions:
@@ -30,30 +24,14 @@ module.exports = class BaseClass {
   /**
    * Constructs a new instance of the class
    */
-  constructor (props) {
+  constructor () {
     if (this.constructor === BaseClass) {
       throw Error('cannot instantiate directly!')
-    } else if (props != null && typeof props.id !== 'string') {
-      throw Error(`expected props.id to be a string; got "${typeof props.id}"!`)
     }
 
-    const id = props && props.id
-
-    INSTANCES.set(this, { id, events: new Map() })
-
-    LOG_LEVELS.forEach(level => {
-      this[level] = (id == null)
-        ? (event, ...args) => this.emit('log', level, event, ...args)
-        : (event, ...args) => this.emit('log', level, `${id}.${event}`, ...args)
+    INSTANCES.set(this, {
+      events: new Map()
     })
-  }
-
-  /**
-   * Returns the unique identifier of the instance
-   * @returns {String}
-   */
-  get id () {
-    return INSTANCES.get(this).id
   }
 
   /**
@@ -69,99 +47,90 @@ module.exports = class BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    const obj = { '@type': this.constructor.name }
-    if (this.id != null) obj.id = this.id
-    return obj
+    return {}
   }
 
   /**
    * Emits an event
    * @param {String} eventName The name of the event
-   * @param {*} args Arguments supplied to the event listener(s)
+   * @param {*} args Arguments supplied to the event handler(s)
    * @returns {Boolean} true, if the event was handled; otherwise false
    */
   emit (eventName, ...args) {
     const { events } = INSTANCES.get(this)
     if (!events.has(eventName)) return false
 
-    const listeners = events.get(eventName)
-    const result = listeners.size !== 0
+    const handlers = events.get(eventName)
+    const result = handlers.size !== 0
 
-    for (const listener of listeners) {
-      listener.call(this, ...args)
+    for (const handler of handlers) {
+      handler.call(this, ...args)
     }
 
     return result
   }
 
   /**
-   * Executes the listener whenever the event fires
+   * Executes the handler whenever the event fires
    * @param {String} eventName The name of the event
-   * @param {Function} listener The function to execute when the event fires
+   * @param {Function} handler The function to execute when the event fires
    * @returns {BaseClass}
    */
-  on (eventName, listener) {
+  on (eventName, handler) {
     const { events } = INSTANCES.get(this)
-
     events.has(eventName) || events.set(eventName, new Set())
-    this.emit('newListener', eventName, listener)
 
-    const listeners = events.get(eventName)
-    listeners.add(listener)
+    const handlers = events.get(eventName)
+    handlers.add(handler)
 
     return this
   }
 
   /**
-   * Executes the listener exactly once when the event fires
+   * Executes the handler exactly once when the event fires
    * @param {String} eventName The name of the event
-   * @param {Function} listener The function to execute when the event fires
+   * @param {Function} handler The function to execute when the event fires
    * @returns {BaseClass}
    */
-  once (eventName, listener) {
+  once (eventName, handler) {
     const { events } = INSTANCES.get(this)
-
     events.has(eventName) || events.set(eventName, new Set())
-    this.emit('newListener', eventName, listener)
 
-    const listeners = events.get(eventName)
+    const handlers = events.get(eventName)
     const wrapper = function (...args) {
-      listeners.delete(wrapper)
-      if (listeners.size === 0) events.delete(eventName)
-      listener(...args)
+      handlers.delete(wrapper)
+      handler(...args)
     }
-    listeners.add(wrapper)
+    handlers.add(wrapper)
 
     return this
   }
 
   /**
-   * Removes the listener from the list of listeners for the event
+   * Removes the handler from the list of handlers for the event
    * @param {String} eventName The name of the event
-   * @param {Function} listener The function to remove
+   * @param {Function} handler The function to remove
    * @returns {BaseClass}
    */
-  off (eventName, listener) {
+  off (eventName, handler) {
     const { events } = INSTANCES.get(this)
+    events.has(eventName) || events.set(eventName, new Set())
 
-    if (events.has(eventName)) {
-      const listeners = events.get(eventName)
-      listeners.delete(listener)
-      if (listeners.size === 0) events.delete(eventName)
-      this.emit('removeListener', eventName, listener)
-    }
+    const handlers = events.get(eventName)
+    handlers.delete(handler)
 
     return this
   }
 
   /**
-   * Executes the listener whenever the event fires; alias of on()
+   * Alias of off()
+   * Removes the handler from the list of handlers for the event
    * @param {String} eventName The name of the event
-   * @param {Function} listener The function to execute when the event fires
+   * @param {Function} handler The function to remove
    * @returns {BaseClass}
    */
-  addListener (eventName, listener) {
-    return this.on(eventName, listener)
+  removeAllListener (eventName, handler) {
+    return this.off(eventName, handler)
   }
 
   /**
@@ -169,51 +138,51 @@ module.exports = class BaseClass {
    * @param {String} eventName The name of the event
    * @returns {BaseClass}
    */
-  removeAllListeners (eventName) {
+  removeAllListeners () {
     const { events } = INSTANCES.get(this)
-
-    if (events.has(eventName)) {
-      const listeners = events.get(eventName)
-      events.delete(eventName)
-
-      for (const listener of listeners) {
-        this.emit('removeListener', eventName, listener)
-      }
-    }
+    
+    events.clear();
 
     return this
   }
 
   /**
-   * Removes a listener for the event; alias of off()
-   * @param {String} eventName The name of the event
-   * @param {Function} listener The function to remove
-   * @returns {BaseClass}
+   * Emits a debug log event
+   * @param {String} eventName The name of the event that triggered the log
+   * @param {*} args Arguments supplied to the event handler(s)
+   * @returns {Boolean} true, if the event was handled; otherwise false
    */
-  removeListener (eventName, listener) {
-    return this.off(eventName, listener)
+  debug (eventName, ...args) {
+    this.emit('log', 'debug', eventName, ...args)
   }
 
   /**
-   * Returns an array listing the events that have listeners
-   * @returns {Array<String>}
+   * Emits an info log event
+   * @param {String} eventName The name of the event that triggered the log
+   * @param {*} args Arguments supplied to the event handler(s)
+   * @returns {Boolean} true, if the event was handled; otherwise false
    */
-  eventNames () {
-    const { events } = INSTANCES.get(this)
-    return Array.from(events.keys())
+  info (eventName, ...args) {
+    this.emit('log', 'info', eventName, ...args)
   }
 
   /**
-   * Returns an array of listeners for the specified event
-   *
-   * This is subtly different from `EventEmitter` in that it returns listeners
-   * wrapped by the `.once()` method.
-   * @returns {Array<Function>}
+   * Emits a warn log event
+   * @param {String} eventName The name of the event that triggered the log
+   * @param {*} args Arguments supplied to the event handler(s)
+   * @returns {Boolean} true, if the event was handled; otherwise false
    */
-  listeners (eventName) {
-    const { events } = INSTANCES.get(this)
-    return events.has(eventName)
-      ? Array.from(events.get(eventName))
-      : []
+  warn (eventName, ...args) {
+    this.emit('log', 'warn', eventName, ...args)
+  }
+
+  /**
+   * Emits an error log event
+   * @param {String} eventName The name of the event that triggered the log
+   * @param {*} args Arguments supplied to the event handler(s)
+   * @returns {Boolean} true, if the event was handled; otherwise false
+   */
+  error (eventName, ...args) {
+    this.emit('log', 'error', eventName, ...args)
   }
 }

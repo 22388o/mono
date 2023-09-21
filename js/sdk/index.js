@@ -2,37 +2,33 @@
  * @file The Portal SDK
  */
 
-const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
-const IndexedDB = require('./lib/store/indexeddb');
+const { IndexedDB } = require('./lib/store/browser');
 
 /**
  * Export the class
  * @type {SDK}
  */
-class SDK extends BaseClass {
+class SDK {
   constructor (props) {
-    super()
+    //super()
+
+    /**
+     * Client credentials for the blockchains
+     * @type {Object}
+     * @todo Refactor these out of the client altogether!
+     */
+    this.credentials = props.credentials
 
     /**
      * The Portal SDK instance
      * @type {Sdk}
      */
-    this.sdk = new Sdk(props)
-      .on('order.created', (...args) => this.emit('order.created', ...args))
-      .on('order.opened', (...args) => this.emit('order.opened', ...args))
-      .on('order.closed', (...args) => this.emit('order.closed', ...args))
-      .on('swap.created', (...args) => this.emit('swap.created', ...args))
-      .on('swap.opening', (...args) => this.emit('swap.opening', ...args))
-      .on('swap.opened', (...args) => this.emit('swap.opened', ...args))
-      .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
-      .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
-      .on('message', (...args) => this.emit('message', ...args))
-      .on('log', (...args) => this.emit('log', ...args))
+    this.sdk = new Sdk(props);
   }
 
   get id () {
-    return this.sdk.id
+    return this.sdk.network.id
   }
 
   get isConnected () {
@@ -44,7 +40,33 @@ class SDK extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    return Object.assign(super.toJSON(), { sdk: this.sdk })
+    const { network, store, blockchains, orderbooks, swaps } = this
+    return { network, store, blockchains, orderbooks, swaps }
+  }
+
+  /**
+   * Directly forwards to websocket on method in Network class
+   * @param {string} eventName Event Name
+   * @param {function} handler  handler function
+   */
+  on (eventName, handler) {
+    this.sdk.network.on(eventName, handler);
+  }
+
+  /**
+   * Directly forwards to websocket off method in Network class
+   * @param {string} eventName Event Name
+   * @param {function} handler  handler function
+   */
+  off (eventName, handler) {
+    this.sdk.network.off(eventName, handler);
+  }
+
+  /**
+   * Directly forwards to websocket removeAllListeners method in Network class
+   */
+  removeAllListeners () {
+    this.sdk.network.removeAllListeners();
   }
 
   /**
@@ -68,7 +90,19 @@ class SDK extends BaseClass {
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
-    return this.sdk.orderbooks.submitLimitOrder(order)
+    return this.sdk.network.request({
+      method: 'PUT',
+      path: '/api/v1/orderbook/limit'
+    }, {
+      side: order.side,
+      hash: order.hash,
+      baseAsset: order.baseAsset,
+      baseNetwork: order.baseNetwork,
+      baseQuantity: order.baseQuantity,
+      quoteAsset: order.quoteAsset,
+      quoteNetwork: order.quoteNetwork,
+      quoteQuantity: order.quoteQuantity
+    })
   }
 
   /**
@@ -76,7 +110,14 @@ class SDK extends BaseClass {
    * @param {Object} order The limit order to delete the orderbook
    */
   cancelLimitOrder (order) {
-    return this.sdk.orderbooks.cancelLimitOrder(order)
+    return this.sdk.network.request({
+      method: 'DELETE',
+      path: '/api/v1/orderbook/limit'
+    }, {
+      id: order.id,
+      baseAsset: order.baseAsset,
+      quoteAsset: order.quoteAsset
+    })
   }
 
   /**
@@ -86,7 +127,10 @@ class SDK extends BaseClass {
    * @returns {Swap}
    */
   swapOpen (swap, opts) {
-    return this.sdk.swaps.swapOpen(swap, opts)
+    return this.sdk.network.request({
+      method: 'PUT',
+      path: '/api/v1/swap'
+    }, { swap, opts })
   }
 
   /**
@@ -96,7 +140,10 @@ class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapCommit (swap, opts) {
-    return this.sdk.swaps.swapCommit(swap, opts)
+    return this.sdk.network.request({
+      method: 'POST',
+      path: '/api/v1/swap'
+    }, { swap, opts })
   }
 
   /**
@@ -106,7 +153,10 @@ class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapAbort (swap, opts) {
-    return this.sdk.swaps.swapAbort(swap, opts)
+    return this.sdk.network.request({
+      method: 'DELETE',
+      path: '/api/v1/swap'
+    }, { swap, opts })
   }
 
   request (...args) {
