@@ -2,17 +2,16 @@
  * @file The Portal SDK
  */
 
-const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
-const IndexedDB = require('./lib/store/indexeddb');
+const { IndexedDB } = require('./lib/store/browser');
 
 /**
  * Export the class
  * @type {SDK}
  */
-class SDK extends BaseClass {
+class SDK {
   constructor (props) {
-    super()
+    //super()
 
     /**
      * Client credentials for the blockchains
@@ -25,16 +24,7 @@ class SDK extends BaseClass {
      * The Portal SDK instance
      * @type {Sdk}
      */
-    this.sdk = new Sdk(props)
-      .on('order.created', (...args) => this.emit('order.created', ...args))
-      .on('order.opened', (...args) => this.emit('order.opened', ...args))
-      .on('order.closed', (...args) => this.emit('order.closed', ...args))
-      .on('swap.created', (...args) => this.emit('swap.created', ...args))
-      .on('swap.opening', (...args) => this.emit('swap.opening', ...args))
-      .on('swap.opened', (...args) => this.emit('swap.opened', ...args))
-      .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
-      .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
-      .on('message', (...args) => this.emit('message', ...args))
+    this.sdk = new Sdk(props);
   }
 
   get id () {
@@ -52,6 +42,31 @@ class SDK extends BaseClass {
   toJSON () {
     const { network, store, blockchains, orderbooks, swaps } = this
     return { network, store, blockchains, orderbooks, swaps }
+  }
+
+  /**
+   * Directly forwards to websocket on method in Network class
+   * @param {string} eventName Event Name
+   * @param {function} handler  handler function
+   */
+  on (eventName, handler) {
+    this.sdk.network.on(eventName, handler);
+  }
+
+  /**
+   * Directly forwards to websocket off method in Network class
+   * @param {string} eventName Event Name
+   * @param {function} handler  handler function
+   */
+  off (eventName, handler) {
+    this.sdk.network.off(eventName, handler);
+  }
+
+  /**
+   * Directly forwards to websocket removeAllListeners method in Network class
+   */
+  removeAllListeners () {
+    this.sdk.network.removeAllListeners();
   }
 
   /**

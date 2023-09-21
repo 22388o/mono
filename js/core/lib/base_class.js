@@ -138,12 +138,10 @@ module.exports = class BaseClass {
    * @param {String} eventName The name of the event
    * @returns {BaseClass}
    */
-  removeAllListeners (eventName) {
+  removeAllListeners () {
     const { events } = INSTANCES.get(this)
-    events.has(eventName) || events.set(eventName, new Set())
-
-    const handlers = events.get(eventName)
-    handlers.clear()
+    
+    events.clear();
 
     return this
   }

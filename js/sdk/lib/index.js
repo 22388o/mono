@@ -26,16 +26,6 @@ module.exports = class Sdk extends BaseClass {
      * @type {Network}
      */
     this.network = new Network(props.network)
-      // TODO: Refactor these to be less coupled with the Sdk class
-      .on('order.created', (...args) => this.emit('order.created', ...args))
-      .on('order.opened', (...args) => this.emit('order.opened', ...args))
-      .on('order.closed', (...args) => this.emit('order.closed', ...args))
-      .on('swap.created', (...args) => this.emit('swap.created', ...args))
-      .on('swap.opening', (...args) => this.emit('swap.opening', ...args))
-      .on('swap.opened', (...args) => this.emit('swap.opened', ...args))
-      .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
-      .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
-      .on('message', (...args) => this.emit('message', ...args))
 
     /**
      * Interface to the underlying data store (browser/node.js)

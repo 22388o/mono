@@ -143,9 +143,9 @@ module.exports = class Network extends BaseClass {
   _onMessage (data) {
     let event, arg
     try {
-      arg = JSON.parse(data)
+      arg = JSON.parse(data.data)
       event = (arg['@type'] != null && arg.status != null)
-        ? `${arg['@type'].toLowerCase()}.${arg.status}`
+        ? arg.status//`${arg['@type'].toLowerCase()}.*/${arg.status}`
         : 'message'
     } catch (err) {
       event = 'error'
