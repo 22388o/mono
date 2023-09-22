@@ -1,5 +1,10 @@
 import { IndexedDB } from "@portaldefi/sdk";
 
+
+/**
+ * Bridge to the IndexedDB store management class in SDK
+ * @param {object} action Info about the dispatch function
+ */
 export const IndexedDB_dispatch = async (action) => {
   switch(action.type) {
     case 'ADD_SWAP_ITEM':
