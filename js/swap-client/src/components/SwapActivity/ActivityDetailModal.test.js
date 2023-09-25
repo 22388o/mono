@@ -1,14 +1,13 @@
-import { create, act } from 'react-test-renderer'
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom'; // For the "toBeInTheDocument" matcher
 import { ActivityDetailModal } from './ActivityDetailModal'
 
-describe('ActivityDetailModal test', () => {
-  let tree, handleClosefn;
-  handleClosefn = jest.fn();
-  it('should work', () => {
-    act(() => {
-      tree = create(
-        <ActivityDetailModal
-          handleClose={handleClosefn}
+describe('CollectiblesModal component test', () => {
+  it('renders component', () => {
+
+    const {container} = render(
+      <ActivityDetailModal
+          handleClose={() => {}}
           open={false}
           activity={{
             tx: '1',
@@ -38,10 +37,8 @@ describe('ActivityDetailModal test', () => {
 
           }}
         />
-      )
-    })
+    );
 
-    expect(tree).toMatchSnapshot()
-  })
-  afterAll(() => jest.resetModules())
-})
+    expect(container).toMatchSnapshot();
+  });
+});
