@@ -16,6 +16,8 @@ import 'react-toastify/dist/ReactToastify.css'
 import { version } from '../../package.json'
 import { useEffect } from 'react'
 import { IndexedDB } from '@portaldefi/sdk';
+import { isMobile } from 'react-device-detect';
+import { MobileWarningPage } from './MobileWarningPage'
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
@@ -79,6 +81,8 @@ export const SwapHome = () => {
     console.log(user)
     return // Promise.all([user.user.stop()])
   }, [userStore, walletStore])
+
+  if (isMobile) return <MobileWarningPage />
 
   return (
     <Grid container direction='column' style={{ backgroundColor: '#242424' }}>
