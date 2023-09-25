@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CollectiblesModal component test renders component 1`] = `
+<div
+  aria-hidden="true"
+/>
+`;
