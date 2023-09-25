@@ -1,20 +1,31 @@
-import { create, act } from 'react-test-renderer'
-import { MyModal } from './MyModal'
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom'; // For the "toBeInTheDocument" matcher
+import { MyModal } from './MyModal';
 
-describe('MyModal test', () => {
-  let tree
-  it('should work', () => {
-    act(() => {
-      tree = create(
-        <MyModal
-          classme={null}
-          children={null}
-          open={false}
-        />
-      )
-    })
+describe('<MyModal />', () => {
+  it('renders children when passed in', () => {
+    const childText = "Hello Modal!";
 
-    expect(tree).toMatchSnapshot()
-  })
-  afterAll(() => jest.resetModules())
-})
+    render(
+      <MyModal open={true}>
+        {childText}
+      </MyModal>
+    );
+
+    expect(screen).toMatchSnapshot();
+    expect(screen.getByText(childText)).toBeInTheDocument();
+  });
+
+  it('does not render when open is false', () => {
+    const childText = "Hello Modal!";
+
+    const { container } = render(
+      <MyModal open={false}>
+        {childText}
+      </MyModal>
+    );
+
+    expect(container.querySelector('.modal-container')).not.toBeInTheDocument();
+  });
+});
