@@ -3,9 +3,9 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const Bitcoind = require('./bitcoind')
-const Geth = require('./geth')
-const Lnd = require('./lnd')
+const Bitcoin = require('./bitcoin')
+const Ethereum = require('./ethereum')
+const Lightning = require('./lightning')
 
 /**
  * Expose the interface to all supported blockchains
@@ -15,14 +15,14 @@ const Lnd = require('./lnd')
  * @type {Blockchains}
  */
 module.exports = class Blockchains extends BaseClass {
-  constructor (sdk) {
+  constructor (sdk, props) {
     super()
 
     this.sdk = sdk
 
-    this.bitcoind = new Bitcoind(this)
-    this.geth = new Geth(this)
-    this.lnd = new Lnd(this)
+    this.bitcoin = new Bitcoin(this, props.bitcoin)
+    this.ethereum = new Ethereum(this, props.ethereum)
+    this.lightning = new Lightning(this, props.lightning)
 
     Object.seal(this)
   }
@@ -33,9 +33,9 @@ module.exports = class Blockchains extends BaseClass {
    */
   connect () {
     return Promise.all([
-      this.bitcoind.connect(),
-      this.geth.connect(),
-      this.lnd.connect()
+      this.bitcoin.connect(),
+      this.ethereum.connect(),
+      this.lightning.connect()
     ])
   }
 
@@ -45,9 +45,9 @@ module.exports = class Blockchains extends BaseClass {
    */
   disconnect () {
     return Promise.all([
-      this.bitcoind.disconnect(),
-      this.geth.disconnect(),
-      this.lnd.disconnect()
+      this.bitcoin.disconnect(),
+      this.ethereum.disconnect(),
+      this.lightning.disconnect()
     ])
   }
 }

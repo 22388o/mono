@@ -1,10 +1,10 @@
 /**
- * @file Interface to the geth network
+ * @file Interface to the bitcoind network
  */
 
 const { BaseClass } = require('@portaldefi/core')
 
-module.exports = class Geth extends BaseClass {
+module.exports = class Bitcoind extends BaseClass {
   constructor (blockchains) {
     super()
 
@@ -19,6 +19,10 @@ module.exports = class Geth extends BaseClass {
    */
   connect () {
     return Promise.resolve(this)
+  }
+
+  createInvoice (swap) {
+    throw Error('not implemented')
   }
 
   /**
