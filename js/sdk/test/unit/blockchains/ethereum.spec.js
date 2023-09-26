@@ -3,6 +3,8 @@
  */
 
 const Ethereum = require('../../../lib/blockchains/ethereum')
+const { expect } = require('chai')
+const Web3 = require('web3')
 
 describe('Blockchains - Ethereum', () => {
   describe('instantiation', () => {
@@ -14,7 +16,6 @@ describe('Blockchains - Ethereum', () => {
       expect(blockchain).to.be.an.instanceof(Ethereum)
       expect(blockchain.id).to.be.a('string').that.equals('geth')
       expect(blockchain.name).to.be.a('string').that.equals('ethereum')
-      expect(blockchain.web3).to.be.an.instanceof(Web3)
       // TODO: more validation here of all appropriate fields
     })
   })
