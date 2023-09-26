@@ -15,7 +15,6 @@ module.exports = class Ethereum extends BaseClass {
 
     this.id = 'geth'
     this.name = 'ethereum'
-    this.web3 = new Web3(props.url)
 
     Object.seal(this)
   }
