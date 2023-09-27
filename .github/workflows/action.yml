@@ -35,9 +35,7 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
     - name: Install direnv
-      uses: HatsuneMiku3939/direnv-action@v1
-      with:
-        direnvVersion: 2.32.1
+      run: nix-env -iA direnv
 
     - name: Load environment with direnv
       run: direnv allow
