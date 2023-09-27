@@ -14,11 +14,10 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [macOS-latest]
+        # os: [ubuntu-latest]
         # os: [ubuntu-latest, macOS-latest]
-
     runs-on: ${{ matrix.os }}
-
     steps:
     - name: Checkout branch
       uses: actions/checkout@v3
