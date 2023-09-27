@@ -48,15 +48,15 @@ in
       }
 
       # Puppeteer
-      {
-        name = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD";
-        value = "1";
-      }
-      {
-        # TODO: We should ensure a specific version of chromium to avoid compatibility issues
-        name = "PUPPETEER_EXECUTABLE_PATH";
-        value = "${pkgs.chromium}/bin/chromium";
-      }
+      # {
+      #   name = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD";
+      #   value = "1";
+      # }
+      # {
+      #   # TODO: We should ensure a specific version of chromium to avoid compatibility issues
+      #   name = "PUPPETEER_EXECUTABLE_PATH";
+      #   value = "${pkgs.chromium}/bin/chromium";
+      # }
     ];
 
     commands = [

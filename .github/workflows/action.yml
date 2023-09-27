@@ -14,7 +14,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest]
+        # os: [ubuntu-latest, macOS-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -35,10 +36,15 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
     - name: Install direnv
-      run: nix-env -iA direnv
+      uses: HatsuneMiku3939/direnv-action@v1
+      with:
+        direnvVersion: 2.32.1
 
-    - name: Load environment with direnv
-      run: direnv allow
+    # - name: Load environment with direnv
+    #   run: direnv allow
+
+    - name: Install Chrome for integration tests
+      run: direnv exec . npx @puppeteer/browsers install $PUPPETEER_CHROME_FLAVOR@$PUPPETEER_CHROME_VERSION
 
     - name: Start devenv
       run: direnv exec . devenv up --watch 
@@ -52,6 +58,7 @@ jobs:
 
     - name: Build PortalDefi packages
       run: nix-build --option sandbox false --attr packages
+      if: matrix.os == 'ubuntu-latest'
 
     # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
     - uses: actions/upload-artifact@v3
