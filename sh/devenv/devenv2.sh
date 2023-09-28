@@ -59,7 +59,7 @@ devenv_up() {
   check_port_availability
 
   log_info "Starting development environment..."
-  nohup process-compose --port=$PORT --tui=false --config $PORTAL_ROOT/sh/process-compose.yaml up >/dev/null 2>&1 &
+  nohup process-compose --port=$PORT --tui=false --config $PORTAL_ROOT/sh/devenv/process-compose.yaml up >/dev/null 2>&1 &
   echo $! >$PID_FILE
   log_info "Started process-compose with PID $!"
 

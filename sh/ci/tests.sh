@@ -57,9 +57,9 @@ main() {
   pushd "$PORTAL_ROOT"
 
   case "$command" in
-    "unit") run_unit_tests ;;
-    "nixos") run_nixos_tests ;;
-    *) echo "Unknown command. Usage: tests {unit|nixos}" ;;
+  "unit") run_unit_tests ;;
+  "nixos") run_nixos_tests ;;
+  *) echo "Unknown command. Usage: tests {unit|nixos}" ;;
   esac
 
   popd

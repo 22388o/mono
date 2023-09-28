@@ -2,6 +2,7 @@
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="1"
 export PUPPETEER_CHROME_FLAVOR="chrome"
 export PUPPETEER_CHROME_VERSION="115.0.5790.98" # Chrome for Testing 115.0.5790.98 - Puppeteer v20.9.0 (https://pptr.dev/chromium-support)
+export PUPPETEER_BROWSER=$PUPPETEER_CHROME_FLAVOR@$PUPPETEER_CHROME_VERSION
 
 if [[ $RUNNER_OS == "Linux" ]]; then
   export PUPPETEER_EXECUTABLE_PATH="$PRJ_ROOT/chrome/linux-${PUPPETEER_CHROME_VERSION}/chrome-linux64/chrome"
