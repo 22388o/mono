@@ -85,7 +85,7 @@ export const SwapHome = () => {
   if (isMobile) return <MobileWarningPage />
 
   return (
-    <Grid container direction='column' style={{ backgroundColor: '#242424' }}>
+    <Grid container direction='column' sx={{backgroundColor:'#101010'}}>
       <Grid direction='row' container className={styles['page-header']}>
         <Grid item xs={1}>
           <img style={{ width: '24px' }} src='https://i.imgur.com/ztFM4Jq.png' />

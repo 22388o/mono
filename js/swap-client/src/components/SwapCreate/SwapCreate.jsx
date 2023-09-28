@@ -594,9 +594,9 @@ export const SwapCreate = () => {
 
   return (
     <Box className={styles.SwapCreateContainer}>
-      <Stack spacing={1}>
-        <Grid container height={35}>
-          <Grid item xs={4} textAlign='left' style={{display:'flex',alignItems:'flex-start'}}><h3>Swap</h3></Grid>
+      <Stack sx={{alignItems: 'center'}}>
+        <Grid container height={35} sx={{marginBottom:'1em'}}>
+          <Grid item xs={4} textAlign='left' style={{display:'flex', alignItems:'center'}}><h3>Swap</h3></Grid>
           <Grid item xs={8} textAlign='right'>
             <IconButton className={classNames({"gradient-btn": settingModalOpen})} size="medium" style={{color:'grey'}} onClick={handleClickSetting} ><SettingsIcon /></IconButton>
             <Popover 
@@ -673,7 +673,7 @@ export const SwapCreate = () => {
             onCoinTypeChange={(asset) => {coinTypeChanged(true, asset);}}
             limitOrder={limitOrder}
           />
-          <Divider style={{borderColor:'#202020',marginTop:'0.5em'}} />
+          <Divider style={{borderColor:'#202020',margin: '0.5em -1em 0 -1em'}} />
           <IconButton className={`${styles.exchange} exchange`} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
           <SwapAmountItem
             className='mt-m1 mb-0'
@@ -686,7 +686,7 @@ export const SwapCreate = () => {
             limitOrder={limitOrder}
             />
         </Grid>
-        <Grid>
+        <Grid sx={{width:'100%', marginTop:'1.5em'}}>
           { (nodeConnected && walletConnected)
               ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
                 ? <>
