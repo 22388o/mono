@@ -8,6 +8,7 @@
     "coverage": "c8 mocha",
     "credentials": "export PORTAL_ROOT=../../ && node credentials.js",
     "dev": "npm run credentials && node test/dev.js",
+    "dev:vite": "vite",
     "dev:force": "npm run credentials && vite --force",
     "lint": "standard",
     "lint-fix": "standard --fix",
