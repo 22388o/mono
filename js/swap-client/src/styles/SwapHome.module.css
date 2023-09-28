@@ -1,4 +1,11 @@
 .page-header {
   background-color: #101010;
-  padding: 1em;
+  padding: 2em;
+  justify-content: center;
+  align-items: center;
+}
+.title {
+  color: var(--bw-4-a, #4A4A4A);
+  font-family: 'NotoBold' !important;
+  font-size: 25px !important;
 }

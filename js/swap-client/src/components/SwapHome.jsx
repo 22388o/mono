@@ -4,16 +4,14 @@ import { SwapCreate } from './SwapCreate/SwapCreate'
 import { SwapActivity } from './SwapActivity/SwapActivity'
 import { WalletComponent } from './Wallet/WalletComponent'
 import { ConnectionComponent } from './Wallet/Connection'
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import { getAlice, getBob } from '../utils/constants'
 import Sdk from '@portaldefi/sdk'
-import { Menu, MenuItem, Button, Grid } from '@mui/material'
+import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
 import styles from '../styles/SwapHome.module.css'
 import { userStore } from '../syncstore/userstore'
 import { walletStore } from '../syncstore/walletstore'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { version } from '../../package.json'
 import { useEffect } from 'react'
 import { IndexedDB } from '@portaldefi/sdk';
 import { isMobile } from 'react-device-detect';
@@ -87,20 +85,14 @@ export const SwapHome = () => {
   return (
     <Grid container direction='column' sx={{backgroundColor:'#101010'}}>
       <Grid direction='row' container className={styles['page-header']}>
-        <Grid item xs={1}>
-          <img style={{ width: '24px' }} src='https://i.imgur.com/ztFM4Jq.png' />
+        <Grid item xs={3}>
+          <img style={{ width: '40px' }} src='logo.png' />
         </Grid>
-        <Grid item xs={10} className='flex-center'>
-          {user.isLoggedIn
-            ? <ConnectionComponent />
-            : <h4 className='flex-center'><RectangleRoundedIcon />&nbsp;Disconnected</h4>}
+        <Grid item xs={6} className='flex-center'>
+          <Typography className={styles['title']}>P2P DEX</Typography>
         </Grid>
-        <Grid item xs={1}>
-          <h4>v {version}</h4>
-        </Grid>
-      </Grid>
-      <Grid item container justifyContent='flex-end' style={{ padding: '1em 2em' }}>
-        {!user.isLoggedIn
+        <Grid item xs={3} className='flex-center'>
+          {!user.isLoggedIn
           ? <>
             <Button 
               className='gradient-border-btn'
@@ -135,6 +127,10 @@ export const SwapHome = () => {
             ><b>Logout</b>
             </Button>
           </span>}
+        </Grid>
+      </Grid>
+      <Grid item container justifyContent='flex-end' style={{ padding: '1em 2em' }}>
+        
       </Grid>
       <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
