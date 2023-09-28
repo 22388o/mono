@@ -215,3 +215,46 @@ input, textarea {
 a {
   cursor: pointer;
 }
+
+.gradient-border-btn {
+  border: none;
+  outline: none;
+  position: relative;
+  z-index: 1;
+  padding-left: 1.5em !important;
+  padding-right: 1.5em !important;
+  border-radius: 1em !important;
+  background: linear-gradient(to right, #8179FE, #A54FFF);
+  cursor: pointer;
+}
+.gradient-border-btn::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  bottom: 2px;
+  background-color: #101010;
+  z-index: -1;
+  transition: 200ms;
+  border-radius: 1em !important;
+}
+.gradient-border-btn::after {
+  content: attr(data);
+  color: white;
+  font-size: 16px;
+  background: linear-gradient(to left, #00FFA3, #DC1FFF);
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: 200ms
+}
+/* .gradient-border-btn:hover::before {
+  opacity: 50%;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+} */
+.gradient-border-btn:hover::after{
+  color: #101010;
+}

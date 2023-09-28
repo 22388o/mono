@@ -102,17 +102,15 @@ export const SwapHome = () => {
       <Grid item container justifyContent='flex-end' style={{ padding: '1em 2em' }}>
         {!user.isLoggedIn
           ? <>
-            <Button
+            <Button 
+              className='gradient-border-btn'
               id='connect-wallet'
               aria-controls={open ? 'connect-wallet' : undefined}
               aria-haspopup='true'
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
-              variant='contained'
               style={{ color: 'white' }}
-            >
-              <BusinessCenterIcon />Connect Wallet
-            </Button>
+            >Connect Wallet(s)</Button>
             <Menu
               id='connect-wallet'
               anchorEl={anchorEl}
