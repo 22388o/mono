@@ -39,24 +39,24 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
       <Grid container direction='row' className={className}>
         {!asset.isNFT
           ? <Grid item xs={7} container direction='column' textAlign='left'>
-            <input
-              className={`${styles['qty-input']} qty-input`}
-              placeholder={availQty}
-              type='number'
-              value={(amount === 0) ? '' : amount}
-              onChange={onAmountChange}
-              onKeyDown={onKeyDown}
-            />
-            {unitPrice * amount > 0 ? <span className={styles.prices}>${unitPrice * amount}</span> : ''}
+              <input
+                className={`${styles['qty-input']} qty-input`}
+                placeholder={availQty}
+                type='number'
+                value={(amount === 0) ? '' : amount}
+                onChange={onAmountChange}
+                onKeyDown={onKeyDown}
+              />
+              {unitPrice * amount > 0 ? <span className={styles.prices}>${unitPrice * amount}</span> : ''}
             </Grid>
           : <Grid item xs={7} container direction='row' textAlign='left'>
-            <img className={styles['nft-asset-image']} src={asset.img_url} />
-            <Stack direction='column' spacing={1}>
-              <span>{asset.detail}</span>
-              <span>{asset.info.inscription.slice(0, 3)}...{asset.info.inscription.slice(-3)}</span>
-            </Stack>
+              <img className={styles['nft-asset-image']} src={asset.img_url} />
+              <Stack direction='column' spacing={1}>
+                <span>{asset.detail}</span>
+                <span>{asset.info.inscription.slice(0, 3)}...{asset.info.inscription.slice(-3)}</span>
+              </Stack>
             </Grid>}
-        <Grid item xs={5} textAlign='right'>
+        <Grid item xs={5} textAlign='right' sx={{display:'flex',alignItems:'center',justifyContent:'flex-end'}}>
           <Button className={`${styles['coin-select']} coin-select`} onClick={() => setAssetStep(1)}><img src={asset.img_url} />{asset.type.split('-')[0]}</Button>
         </Grid>
       </Grid>

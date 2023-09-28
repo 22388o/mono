@@ -10,7 +10,7 @@ Feature: Perform a BTCORD to BTC swap
     And Bob logs in - F1
 
   Scenario: Alice & Bob Performs Swap
-    Given Alice & Bob is logged in - F1
+    Given Alice & Bob are logged in - F1
     When Alice creates an order from BTCORD to BTC - F1
     And Bob creates an order from BTC to BTCORD - F1
     Then Swap fills and completes - F1
