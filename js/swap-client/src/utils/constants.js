@@ -1,3 +1,4 @@
+import { createTheme } from '@mui/material'
 import alice from './credentials/alice.json'
 import bob from './credentials/bob.json'
 /**
@@ -97,3 +98,9 @@ export const WALLETS = [{
   title: 'Coinbase Wallet',
   img: 'https://explorer-api.walletconnect.com/v3/logo/lg/a5ebc364-8f91-4200-fcc6-be81310a0000?projectId=2f05ae7f1116030fde2d36508f472bfb'
 }]
+
+export const DEFAULT_THEME = createTheme({
+  typography: {
+    fontFamily: 'NotoRegular'
+  }
+})

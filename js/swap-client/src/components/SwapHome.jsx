@@ -16,6 +16,7 @@ import { useEffect } from 'react'
 import { IndexedDB } from '@portaldefi/sdk';
 import { isMobile } from 'react-device-detect';
 import { MobileWarningPage } from './MobileWarningPage'
+import { Footer } from './Footer'
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
@@ -133,6 +134,11 @@ export const SwapHome = () => {
         
       </Grid>
       <Grid item container direction='row'>
+        <Grid item container xs={user.isLoggedIn ? 10 : 12}>
+          <SwapCreate />
+        </Grid>
+      </Grid>
+      {/* <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
             <WalletComponent />
@@ -146,7 +152,8 @@ export const SwapHome = () => {
             <SwapActivity />
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
+      <Footer />
       <ToastContainer />
     </Grid>
   )
