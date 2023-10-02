@@ -17,7 +17,7 @@ wait_for_open_port() {
 
 run_unit_tests() {
   # Tests need to be performed in this order to work properly
-  directories=("core" "portal" "sdk")
+  directories=("core" "evm" "portal" "sdk")
 
   for dir in "${directories[@]}"; do
     echo "-------------------------"

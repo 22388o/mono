@@ -4,6 +4,7 @@
   "description": "EVM contracts for Portal",
   "main": "lib/index.js",
   "scripts": {
+    "build": "node build.js",
     "clean": "rm -rf build node_modules package-lock.json",
     "lint": "solhint contracts/*.sol",
     "lint-fix": "solhint --fix contracts/*.sol",

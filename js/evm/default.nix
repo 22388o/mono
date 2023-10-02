@@ -1,35 +1,51 @@
-{ pkgs ? import ../../nix { inherit system; }
-, nodejs ? pkgs.portaldefi.nodejs
-, system ? builtins.currentSystem
+{
+  pkgs ? import ../../nix {inherit system;},
+  system ? builtins.currentSystem,
+  nodejs ? pkgs.portaldefi.nodejs,
 }:
+pkgs.stdenv.mkDerivation {
+  name = "evm";
+  version = "0.0.0";
 
-let
-  node_modules_attrs = {
-    sourceOverrides = with pkgs.npmlock2nix.v2.node_modules; {
-      "ganache" = packageRequirePatchShebangs;
-    };
-  };
+  src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
 
-in
+  __noChroot = true;
 
-pkgs.npmlock2nix.v2.build {
-  inherit node_modules_attrs nodejs;
+  doCheck = false;
 
-  src = pkgs.nix-gitignore.gitignoreSourcePure [./.gitignore] ./.;
-  buildCommands = ["HOME=$PWD npm run build"];
-  nativeBuildInputs = [ pkgs.solc pkgs.jq pkgs.moreutils ];
-  installPhase = "cp -r build/* $out";
-  prePatch = ''
-    # Patching the truffle config. We want to use the nixpkgs-provided solc
-    # compiler instead of using the truffle-provided one.
-    jq '.compilers.solc.version="native"' truffle-config.json | sponge truffle-config.json
+  buildInputs = [
+    nodejs
+    pkgs.cacert
+    pkgs.git
+    pkgs.makeWrapper
+    pkgs.moreutils
+    pkgs.openssh
+    pkgs.solc
+  ];
 
-    # Patching the contracts solidity pragmas.
-    # For some reason, the nixpkgs-solc is failing to parse its own version.
-    # TODO: fix the nixpkgs solc derivation.
-    for contract in contracts/*; do
-      sed -i 's/pragma solidity.*$/pragma solidity *;/g' "$contract"
-    done
+  # Avoid issues with npm + git when trying to use ssh
+  GIT_CONFIG_GLOBAL = pkgs.writeText "gitconfig" ''
+    [url "https://github.com/"]
+      insteadOf = "ssh://git@github.com/"
   '';
-  passthru.node_modules_attrs = node_modules_attrs;
+
+  preBuild = ''
+    # npm needs a user HOME.
+    export HOME=$(mktemp -d)
+  '';
+
+  buildPhase = ''
+    runHook preBuild
+
+    # Install the packages
+    npm install
+
+    # Perform the build
+    npm run build
+  '';
+
+  installPhase = ''
+    mkdir -p $out
+    cp -R dist/* $out/
+  '';
 }
