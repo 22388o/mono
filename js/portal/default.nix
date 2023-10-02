@@ -21,7 +21,6 @@ pkgs.stdenv.mkDerivation {
     pkgs.jq
     pkgs.makeWrapper
     pkgs.openssh
-    pkgs.solc
   ];
 
   # Avoid issues with npm + git when trying to use ssh
