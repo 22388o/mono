@@ -7,9 +7,6 @@
 with lib; let
   cfg = config.portaldefi.portal.server;
   cfgEthereum = config.services.geth.default;
-
-  # TODO: Harcoded values for contracts for now, it should come from custom derivation
-  contracts = ../../playnet/contracts.json;
 in {
   options.portaldefi.portal.server = {
     hostname = mkOption {
@@ -43,7 +40,7 @@ in {
 
         PORTAL_ETHEREUM_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
         PORTAL_ETHEREUM_CHAINID = "0x539";
-        PORTAL_ETHEREUM_CONTRACTS = contracts; # pkgs.portaldefi.demo.contracts
+        PORTAL_ETHEREUM_CONTRACTS = "${pkgs.portaldefi.evm}/abi.json";
       };
       serviceConfig = {
         # Dynamic user prevents connection to geth
