@@ -21,6 +21,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.jq
     pkgs.makeWrapper
     pkgs.openssh
+    pkgs.solc
   ];
 
   # Avoid issues with npm + git when trying to use ssh
@@ -85,7 +86,7 @@ pkgs.stdenv.mkDerivation {
     done
 
     # Copy the relevant files to the build result directory
-    cp -R {bin,contracts,lib,node_modules,package.json} $out
+    cp -R {bin,lib,node_modules,package.json} $out
 
     chmod +x $out/bin/portal
     wrapProgram $out/bin/portal \
