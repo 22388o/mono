@@ -63,16 +63,6 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: nix-build --option sandbox false --attr packages
 
-    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - name: Upload playnet state
-      uses: actions/upload-artifact@v3
-      if: matrix.os == 'ubuntu-latest'
-      with:
-        name: playnet
-        path: |
-          playnet/
-          !playnet/**/*.ipc
-
   deploy:
     needs: build
     runs-on: [ubuntu-latest]
@@ -95,13 +85,6 @@ jobs:
 
     - name: Install nix magic cache
       uses: DeterminateSystems/magic-nix-cache-action@v2
-
-    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - name: Restore playnet state
-      uses: actions/download-artifact@v3
-      with:
-        name: playnet
-        path: playnet/
 
     - name: Build PortalOS closure
       id: build-machine-closure
