@@ -2,6 +2,7 @@
 
 # Nix
 result*
+repl-result*
 
 # Node.js
 .parcel-cache
@@ -36,10 +37,12 @@ docs/package-lock.json
 # ---------------------------------------------------------------------
 
 # Remove unnecessary folders as well
+README.md
 docs
 tf
 nix
 *.nix
+.github
 
 # Playnet-related stuff
 playnet/*
