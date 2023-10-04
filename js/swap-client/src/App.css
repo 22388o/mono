@@ -193,10 +193,10 @@ button:focus, button:focus-visible { outline: none !important; }
 .css-1ycede1-MuiGrid-root { margin-top: 0 !important; }
 
 .modal-container {
-  background: #2B2B2B;
+  background: #1A1A1A;
   border-radius: 1.5em;
-  border: 1px solid #6b6b6b;
-  padding: 2em;
+  border: 5px solid #2A2A2A;
+  padding: 1.5em 2em 2em 2em;
   margin: auto;
 }
 .modal-container * {

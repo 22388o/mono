@@ -62,14 +62,19 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
       </Grid>
       <MyModal open={assetStep === 1}>
         <Grid container direction='column' spacing={1}>
-          <Grid item container direction='row' width={350}>
+          <Grid item container direction='row' width={350} sx={{ marginBottom: '1em'}}>
             <Grid item xs={1}><IconButton onClick={() => setAssetStep(0)}><KeyboardBackspaceIcon /></IconButton></Grid>
             <Grid item xs={10} className='flex-center flex-middle'><h3>Select Asset</h3></Grid>
             <Grid item xs={1} textAlign='right'><IconButton onClick={() => setAssetStep(0)}><Close /></IconButton></Grid>
           </Grid>
           {
-          assetTypes.map((asset, idx) => <span key={idx}><AssetItem asset={asset} handleClick={onClickAsset} /><Divider style={{ borderColor: '#3A3A3A', margin: '0.3em' }} /></span>)
-        }
+            assetTypes.map((asset, idx) => 
+              <span key={idx}>
+                <AssetItem asset={asset} handleClick={onClickAsset} />
+                { idx !== assetTypes.length - 1 && <Divider style={{ borderColor: '#3A3A3A', margin: '0.5em' }} /> }
+              </span>
+            )
+          }
         </Grid>
       </MyModal>
       <CollectiblesModal open={assetStep === 2} handleItemClick={handleItemClick} handleClose={() => setAssetStep(0)} />
