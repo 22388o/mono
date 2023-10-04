@@ -14,7 +14,6 @@
   align-items: center;
   justify-content: space-between;
 }
-
 .tab-item {
   color: #6d6d6d;
   font-size: 20px !important;
@@ -27,6 +26,8 @@
   border-radius: 20px;
   color: white;
 }
+
+/** Sub Tab */
 .sub-tab-item {
   font-size: 16px;
   color: #b1b1b1;
@@ -106,9 +107,20 @@
 .activities-container {
   padding: 10px;
 }
-
 .activity-item {
   padding-left: 10px;
   padding-right: 10px;
   justify-content: space-between;
+}
+.cancel-btn {
+  background: transparent;
+  color: #FF5959 !important;
+  border: 2px solid #FF5959 !important;
+  border-radius: 1em !important;
+  padding: 0 !important;
+  width: 80px;
+  margin-top:0.3em !important;
+}
+.cancel-btn:hover {
+  background: #ff4d4d31 !important;
 }
