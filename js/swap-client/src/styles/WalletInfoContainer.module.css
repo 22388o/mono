@@ -113,3 +113,14 @@
   font-family: 'NotoBold' !important;
   font-size: 18px !important;
 }
+
+/** Activity Tab */
+.activities-container {
+  padding: 10px;
+}
+
+.activity-item {
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: space-between;
+}
