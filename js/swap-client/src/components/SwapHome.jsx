@@ -163,8 +163,8 @@ export const SwapHome = () => {
           </Grid>
         </Grid>
       </Grid> */}
-      {/* <WalletComponent />
-      <SwapActivity /> */}
+      <WalletComponent />
+      <SwapActivity />
 
       <ConnectWalletContainer show={!isStart && !isMinimized} setIsMinimized={setIsMinimized} />
       <WalletInfoContainer show={user.isLoggedIn && !isMinimized} setIsMinimized={setIsMinimized} />

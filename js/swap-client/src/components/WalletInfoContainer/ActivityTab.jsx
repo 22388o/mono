@@ -1,31 +1,37 @@
-import { useState } from "react";
-import { Divider, Stack, Typography } from "@mui/material"
+import { useState, useSyncExternalStore } from "react";
+import { Button, Divider, Stack, Typography } from "@mui/material"
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 import styles from "../../styles/WalletInfoContainer.module.css";
+import { IndexedDB } from "@portaldefi/sdk";
+import { SWAP_STATUS, getStringFromDate } from "../../utils/helpers";
 
 export const ActivityTab = () => {
-  const [activeTab, setActiveTab] = useState('coins');
+  const activities = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
 
-  const renderActivity = () => {
+  const renderActivity = (activity) => {
     return (
       <Stack className={styles['activity-item']} direction='row'>
         <Stack direction='row' gap={2}>
           <ArrowOutwardIcon sx={{color:'#6A6A6A', borderRadius: '50%', backgroundColor:'#101010', fontSize: '15px', padding: '5px' }} />
           <Stack sx={{alignItems:'flex-start'}}>
-            <Typography>Sent BTC</Typography>
-            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}}>Oct 19, 22</Typography>
+            <Typography>{ SWAP_STATUS[activity.status] }</Typography>
+            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}}>{ getStringFromDate(activity.createdDate) }</Typography>
+            <Typography sx={{fontSize:'12px'}}>{ activity.status === 5 && activity.hash.slice(0, 20) + '...'  }</Typography>
           </Stack>
         </Stack>
         <Stack>
           <Stack direction='row' gap={1}>
-            <Typography>-0.002</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>BTC</Typography>
+            <Typography>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}}>{activity.baseAsset.toLowerCase()}</Typography>
           </Stack>
           <Stack direction='row' gap={1}>
-            <Typography sx={{color: '#6A6A6A'}}>+38.57</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>BTC</Typography>
+            <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset.toLowerCase()}</Typography>
           </Stack>
+          { activity.status < 5 && <span><Button onClick={onCancelSwap} className={styles['cancel-btn']}>
+            Cancel
+          </Button></span> }
         </Stack>
       </Stack>
     )
@@ -35,15 +41,15 @@ export const ActivityTab = () => {
 
   return (
     <Stack className={styles['activities-container']}>
-      { renderActivity() }
-      { renderDivider() }
-      { renderActivity() }
-      { renderDivider() }
-      { renderActivity() }
-      { renderDivider() }
-      { renderActivity() }
-      { renderDivider() }
-      { renderActivity() }
+      { [...activities].reverse().map((activity, index) =>
+          <div>
+            {index > 0 && renderDivider() }
+            { renderActivity(activity) }
+          </div>
+        )
+      }
+
+      { activities.length === 0 && <Typography sx={{ color: '#555555', fontSize: '20px', marginTop: '100px' }}>No Activities</Typography>}
     </Stack>
   )
 }
