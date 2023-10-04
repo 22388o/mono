@@ -1,15 +1,15 @@
 import { useCallback, useSyncExternalStore } from "react";
-import { Container, Divider, Stack, Typography } from "@mui/material"
+import { Button, Container, Divider, IconButton, Stack, Typography } from "@mui/material"
 import styles from '../../styles/ConnectWalletContainer.module.css';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { getEthAddress, getEthBalance } from "../../utils/web3";
 import { walletStore } from "../../syncstore/walletstore";
-import { toast } from "react-toastify";
 import { getAlice } from "../../utils/constants";
 import { getAddress } from "sats-connect";
 import { toastError, toastSuccess } from "../../utils/helpers";
+import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
-export const ConnectWalletContainer = ({ show }) => {
+export const ConnectWalletContainer = ({ show, isMinimized, setIsMinimized }) => {
 
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const node = globalWallet.assets[0] // Bitcoin
@@ -106,13 +106,20 @@ export const ConnectWalletContainer = ({ show }) => {
     core()
   }, [unisat, walletStore])
 
+  if(isMinimized)
+    return (
+      <Button className={styles['show-wallets-btn']} onClick={() => setIsMinimized(false)}>
+        <KeyboardDoubleArrowLeft style={{color: '#6A6A6A', marginRight: '5px'}}/>
+        Wallets
+      </Button>
+    )
 
   return (
     <Container className={styles.container} style={{display: show ? 'block' : 'none'}}>
       <Stack>
         <Stack direction='row' className={styles.header}>
           <Typography className={styles['header-font']}>Connect Wallet</Typography>
-          <KeyboardDoubleArrowRightIcon className={styles['header-font']} />
+          <IconButton onClick={() => setIsMinimized(true)}><KeyboardDoubleArrowRightIcon className={styles['header-font']} /></IconButton>
         </Stack>
         <Stack className={styles['item-container']}>
           <Stack direction='row' className={styles['wallet-item']} onClick={onConnectMetamask}>
