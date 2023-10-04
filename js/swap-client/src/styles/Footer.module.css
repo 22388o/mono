@@ -1,6 +1,8 @@
 .footer-container {
   position: absolute;
+  width: 100%;
   bottom: 0;
-  padding: 5px;
   border-top: 1px solid #4A4A4A;
+  padding-left: 20px;
+  padding-right: 20px;
 }
