@@ -2,24 +2,25 @@
  * @file An interface to all swaps
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const { BaseClass, Swap } = require('@portaldefi/core')
 
 /**
  * Expose the interface to all swaps
  * @type {Swaps}
  */
 module.exports = class Swaps extends BaseClass {
-  constructor (sdk) {
+  constructor (sdk, props) {
     super()
 
+    // Wire up swap events
     this.sdk = sdk
-    // .on('swap.created', (...args) => this.onSwapCreated(...args))
-    // .on('swap.opening', (...args) => this.onSwapOpening(...args))
-    // .on('swap.opened', (...args) => this.onSwapOpened(...args))
-    // .on('swap.committing', (...args) => this.onSwapCommitting(...args))
-    // .on('swap.committed', (...args) => this.onSwapCommitted(...args))
-    // .on('swap.aborting', (...args) => this.onSwapAborting(...args))
-    // .on('swap.aborted', (...args) => this.onSwapAborted(...args))
+      .on('swap.created', (...args) => this._onEvent('created', ...args))
+      .on('swap.opening', (...args) => this._onEvent('opening', ...args))
+      .on('swap.opened', (...args) => this._onEvent('opened', ...args))
+      .on('swap.committing', (...args) => this._onEvent('committing', ...args))
+      .on('swap.committed', (...args) => this._onEvent('committed', ...args))
+      .on('swap.aborting', (...args) => this._onEvent('aborting', ...args))
+      .on('swap.aborted', (...args) => this._onEvent('aborted', ...args))
 
     Object.seal(this)
   }
@@ -35,41 +36,150 @@ module.exports = class Swaps extends BaseClass {
   }
 
   /**
-   * Create the required state for an atomic swap
-   * @param {Swap|Object} swap The swap to open
-   * @param {Object} opts Options for the operation
-   * @returns {Swap}
+   * Handles incoming swap events
+   * @param {String} event The name of the event
+   * @param {Object} obj The JSON object representing the swap
+   * @returns {Void}
    */
-  swapOpen (swap, opts) {
-    return this.sdk.helpers.request({
-      method: 'PUT',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+  _onEvent (event, obj) {
+    try {
+      const swap = Swap.fromJSON(obj)
+      const handler = `_on${event[0].toUpperCase()}${event.slice(1)}`
+      if (typeof this[handler] !== 'function') {
+        throw Error(`unknown event "${event}"!`)
+      }
+
+      this.debug(`swap.${event}`, swap)
+      this[handler](swap)
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      this.emit('error', err, swap)
+    }
   }
 
   /**
-   * Completes the atomic swap
-   * @param {Swap|Object} swap The swap to commit
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
+   * Handles the creation of a swap
+   * @param {Swap} swap The swap that was created
+   * @returns {Void}
    */
-  swapCommit (swap, opts) {
-    return this.sdk.helpers.request({
-      method: 'POST',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+  async _onCreated (swap) {
+    try {
+      // Secret seeker goes first
+      if (swap.secretSeeker.id !== this.sdk.id) return
+
+      // generate an invoice to send to the secret holder
+      const { secretHash, secretHolder } = swap
+      const { id, asset, blockchain: blockchainName, quantity } = secretHolder
+      const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
+      const invoiceArgs = { id, secretHash, asset, quantity }
+
+      // NOTE: MUTATION!
+      secretHolder.invoice = await blockchain.createInvoice(invoiceArgs)
+
+      // IIFE implementing infinite retries until success
+      // TODO: fix this to be more reasonable through state persistance
+      const sendInvoice = async args => {
+        try {
+          this.info('swap.sendInvoice', args, swap)
+          await this.sdk.network.request(args, { swap })
+        } catch (err) {
+          this.error('swap.sendInvoice', err, args, swap)
+          setTimeout(sendInvoice, 1000, args) // FIXME: Hardcoded value
+        }
+      }
+
+      sendInvoice({ method: 'PUT', path: '/api/v1/swap' })
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      this.emit('error', err, swap)
+    }
   }
 
   /**
-   * Abort the atomic swap optimistically and returns funds to owners
-   * @param {Swap|Object} swap The swap to abort
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
+   * Handles the opening of a swap
+   * @param {Swap} swap The swap that is opening
+   * @returns {Void}
    */
-  swapAbort (swap, opts) {
-    return this.sdk.helpers.request({
-      method: 'DELETE',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+  async _onOpening (swap) {
+    try {
+      // Secret holder goes next
+      if (swap.secretHolder.id !== this.sdk.id) return
+
+      // generate an invoice to send to the secret holder
+      const { secretHash, secretSeeker } = swap
+      const { id, asset, blockchain: blockchainName, quantity } = secretSeeker
+      const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
+      const invoiceArgs = { id, secretHash, asset, quantity }
+
+      // NOTE: MUTATION!
+      secretSeeker.invoice = await blockchain.createInvoice(invoiceArgs)
+
+      // IIFE implementing infinite retries until success
+      // TODO: fix this to be more reasonable through state persistance
+      const sendInvoice = async args => {
+        try {
+          this.info('swap.sendInvoice', args, swap)
+          await this.sdk.network.request(args, { swap })
+        } catch (err) {
+          this.error('swap.sendInvoice', err, args, swap)
+          setTimeout(sendInvoice, 1000, args) // FIXME: Hardcoded value
+        }
+      }
+
+      sendInvoice({ method: 'PUT', path: '/api/v1/swap' })
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      process.exit(1)
+      this.emit('error', err)
+    }
+  }
+
+  /**
+   * Handles a swap that was opened
+   * @param {Swap} swap The swap that was opened
+   * @returns {Void}
+   */
+  _onOpened (swap) {
+    if (swap.isSecretSeeker(this.sdk.id)) {
+
+    }
+  }
+
+  /**
+   * Handles a swap that is committing
+   * @param {Swap} swap The swap that is committing
+   * @returns {Void}
+   */
+  _onCommitting (swap) {
+    if (swap.isSecretHolder(this.sdk.id)) {
+
+    }
+  }
+
+  /**
+   * Handles a swap that was committed
+   * @param {Swap} swap The swap that was committed
+   * @returns {Void}
+   */
+  _onCommitted (swap) {
+    // TODO: clean up
+  }
+
+  /**
+   * Handles a swap that is aborting
+   * @param {Swap} swap The swap that is aborting
+   * @returns {Void}
+   */
+  _onAborting (obj) {
+    throw Error('not implemented')
+  }
+
+  /**
+   * Handles a swap that was aborted
+   * @param {Swap} swap The swap that was aborted
+   * @returns {Void}
+   */
+  _onAborted (obj) {
+    throw Error('not implemented')
   }
 }

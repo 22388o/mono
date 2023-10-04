@@ -1,16 +1,24 @@
 /**
- * @file Interface to the bitcoind network
+ * @file Interface to the Bitcoin network
  */
 
 const { BaseClass } = require('@portaldefi/core')
 
-module.exports = class Bitcoind extends BaseClass {
+module.exports = class Bitcoin extends BaseClass {
   constructor (blockchains) {
     super()
 
     this.blockchains = blockchains
 
     Object.seal(this)
+  }
+
+  /**
+   * Returns the JSON representation of the swap
+   * @returns {Object}
+   */
+  toJSON () {
+    return Object.assign(super.toJSON(), { })
   }
 
   /**

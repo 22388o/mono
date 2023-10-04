@@ -14,13 +14,6 @@ module.exports = class SDK extends BaseClass {
     super()
 
     /**
-     * Client credentials for the blockchains
-     * @type {Object}
-     * @todo Refactor these out of the client altogether!
-     */
-    this.credentials = props.credentials
-
-    /**
      * The Portal SDK instance
      * @type {Sdk}
      */
@@ -34,10 +27,11 @@ module.exports = class SDK extends BaseClass {
       .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
       .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
       .on('message', (...args) => this.emit('message', ...args))
+      .on('log', (level, ...args) => this[level](...args))
   }
 
   get id () {
-    return this.sdk.network.id
+    return this.sdk.id
   }
 
   get isConnected () {
@@ -49,8 +43,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    const { network, store, blockchains, orderbooks, swaps } = this
-    return { network, store, blockchains, orderbooks, swaps }
+    return Object.assign(super.toJSON(), { sdk: this.sdk })
   }
 
   /**
@@ -111,10 +104,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Swap}
    */
   swapOpen (swap, opts) {
-    return this.sdk.network.request({
-      method: 'PUT',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this.sdk.swaps.swapOpen(swap, opts)
   }
 
   /**
@@ -124,10 +114,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapCommit (swap, opts) {
-    return this.sdk.network.request({
-      method: 'POST',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this.sdk.swaps.swapCommit(swap, opts)
   }
 
   /**
@@ -137,10 +124,7 @@ module.exports = class SDK extends BaseClass {
    * @returns {Promise<Void>}
    */
   swapAbort (swap, opts) {
-    return this.sdk.network.request({
-      method: 'DELETE',
-      path: '/api/v1/swap'
-    }, { swap, opts })
+    return this.sdk.swaps.swapAbort(swap, opts)
   }
 
   request (...args) {

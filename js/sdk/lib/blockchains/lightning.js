@@ -1,23 +1,51 @@
 /**
- * @file Interface to the lnd network
+ * @file Interface to the Lightning network
  */
 
 const { BaseClass, Invoice } = require('@portaldefi/core')
 const ln = require('lightning')
 
-module.exports = class Lnd extends BaseClass {
-  constructor (blockchains, props) {
-    super()
+/**
+ * Holds private fields for instances of the class
+ * @type {WeakMap}
+ */
+const INSTANCES = new WeakMap()
 
-    this.blockchains = blockchains
-    this.props = props
+/**
+ * Interface to the Lightning network
+ * @type {Lightning}
+ */
+module.exports = class Lightning extends BaseClass {
+  constructor (sdk, props) {
+    super({ id: 'lightning' })
 
-    Object.seal(this)
+    INSTANCES.set(this, {
+      socket: props.socket,
+      cert: props.cert,
+      admin: props.admin,
+      invoice: props.invoice
+    })
+
+    Object.freeze(this)
   }
 
   /**
-   * Initializes the bitcoind network connections
-   * @returns {Promise<Bitcoind>}
+   * Returns the JSON representation of the swap
+   * @returns {Object}
+   */
+  toJSON () {
+    const { socket, cert, admin, invoice } = INSTANCES.get(this)
+    return Object.assign(super.toJSON(), {
+      socket,
+      cert: `${cert.substr(0, 6)}***...***`,
+      admin: `${admin.substr(0, 6)}***...***`,
+      invoice: `${invoice.substr(0, 6)}***...***`
+    })
+  }
+
+  /**
+   * Initializes the network connections
+   * @returns {Promise<Lightning>}
    */
   connect () {
     return Promise.resolve(this)
@@ -25,26 +53,29 @@ module.exports = class Lnd extends BaseClass {
 
   /**
    * Creates a HODL Invoice
-   * @param {Swap} swap The swap for which the invoice is being created
-   * @returns {Promise} [description]
+   * @param {Object} args Arguments for the operation
+   * @returns {Promise<String>} The BOLT-11 Payment Request
    */
-  async createInvoice (swap) {
-    const grpc = ln.authenticatedLndGrpc({
-      cert: this.opts.lightning.cert,
-      macaroon: this.opts.lightning.invoice,
-      socket: this.opts.lightning.socket
-    })
-    const lnArgs = Object.assign(grpc, {
-      id: swap.secretHash,
-      tokens: swap['lightning'].quantity
-    })
-    const hodlInvoice = await ln.createHodlInvoice(lnArgs)
-    return Invoice.fromHodlInvoice(hodlInvoice)
+  async createInvoice (args) {
+    try {
+      const { id, secretHash, asset, quantity } = args
+      const { socket, cert, invoice: macaroon } = INSTANCES.get(this)
+      const grpc = ln.authenticatedLndGrpc({ socket, cert, macaroon })
+      const lnArgs = Object.assign(grpc, { id: secretHash, tokens: quantity })
+
+      const invoice = await ln.createHodlInvoice(lnArgs)
+      this.info('createInvoice', invoice, this)
+
+      return invoice.request
+    } catch (err) {
+      this.error('createInvoice', args, this, err)
+      throw err
+    }
   }
 
   /**
-   * Gracefully disconnects from the bitcoind network
-   * @returns {Promise<Bitcoind>}
+   * Gracefully disconnects from the network
+   * @returns {Promise<Lightning>}
    */
   disconnect () {
     return Promise.resolve(this)

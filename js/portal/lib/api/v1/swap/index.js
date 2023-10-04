@@ -12,7 +12,7 @@ const HTTP_METHODS = module.exports
  * @returns {Void}
  */
 HTTP_METHODS.PUT = function swapOpen (req, res, ctx) {
-  const swap = req.json.swap
+  const { swap } = req.json
   const party = { id: req.user }
   const opts = req.json.opts
 

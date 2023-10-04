@@ -12,11 +12,9 @@ module.exports = class Network extends BaseClass {
   constructor (props) {
     super()
 
-    this.id = props.id
     this.hostname = props.hostname || 'localhost'
     this.port = props.port || 80
     this.pathname = props.pathname || '/api/v1/updates'
-    this.credentials = props.credentials
     this.websocket = null
 
     Object.seal(this)
@@ -35,14 +33,11 @@ module.exports = class Network extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    return {
-      '@type': this.constructor.name,
-      id: this.id,
+    return Object.assign(super.toJSON(), {
       hostname: this.hostname,
       port: this.port,
-      pathname: this.pathname,
-      credentials: this.credentials
-    }
+      pathname: this.pathname
+    })
   }
 
   /**

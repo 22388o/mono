@@ -16,15 +16,38 @@ const Lightning = require('./lightning')
  */
 module.exports = class Blockchains extends BaseClass {
   constructor (sdk, props) {
-    super()
+    super({ id: 'blockchains' })
 
     this.sdk = sdk
 
-    this.bitcoin = new Bitcoin(this, props.bitcoin)
-    this.ethereum = new Ethereum(this, props.ethereum)
-    this.lightning = new Lightning(this, props.lightning)
+    this.bitcoin = new Bitcoin(sdk, props.bitcoin)
+      .on('log', (level, ...args) => this[level](...args))
+    this.ethereum = new Ethereum(sdk, props.ethereum)
+      .on('log', (level, ...args) => this[level](...args))
+    this.lightning = new Lightning(sdk, props.lightning)
+      .on('log', (level, ...args) => this[level](...args))
 
     Object.seal(this)
+  }
+
+  /**
+   * Returns the current state of the server as a JSON string
+   * @type {String}
+   */
+  [Symbol.for('nodejs.util.inspect.custom')] () {
+    return this.toJSON()
+  }
+
+  /**
+   * Returns the JSON representation of the swap
+   * @returns {Object}
+   */
+  toJSON () {
+    return Object.assign(super.toJSON(), {
+      bitcoin: this.bitcoin,
+      ethereum: this.ethereum,
+      lightning: this.lightning
+    })
   }
 
   /**

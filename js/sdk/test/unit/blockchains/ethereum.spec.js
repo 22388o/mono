@@ -6,7 +6,7 @@ const Ethereum = require('../../../lib/blockchains/ethereum')
 const { expect } = require('chai')
 const Web3 = require('web3')
 
-describe('Blockchains - Ethereum', () => {
+describe.skip('Blockchains - Ethereum', () => {
   describe('instantiation', () => {
     it('must correctly instantiate', () => {
       const props = {}

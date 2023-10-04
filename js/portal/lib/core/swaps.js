@@ -2,8 +2,7 @@
  * @file Exposes all in-progress atomic swaps
  */
 
-const { EventEmitter } = require('events')
-const Swap = require('./swap')
+const { BaseClass, Swap } = require('@portaldefi/core')
 
 /**
  * Forwards events to the specified EventEmitter instance
@@ -22,7 +21,7 @@ function forwardEvent (self, event) {
  * Exposes all in-progress atomic swaps
  * @type {Swaps}
  */
-module.exports = class Swaps extends EventEmitter {
+module.exports = class Swaps extends BaseClass {
   constructor (props, ctx) {
     super()
 
@@ -50,33 +49,83 @@ module.exports = class Swaps extends EventEmitter {
           .once('committing', forwardEvent(this, 'committing'))
           .once('committed', forwardEvent(this, 'committed'))
 
-        this.swaps.has(swap.id) || this.swaps.set(swap.id, swap)
+        if (this.swaps.has(swap.id)) {
+          throw Error(`swap "${swap.id}" already exists!`)
+        } else {
+          this.swaps.set(swap.id, swap)
+          resolve(swap)
+        }
       } catch (err) {
         return reject(err)
       }
-
-      resolve(swap)
     })
   }
 
   /**
    * Handles the opening of a swap by a user that is a party to the swap
-   * @param {Swap} swap The swap to open
-   * @param {String} swap.id The unique identifier of the swap to be opened
-   * @param {Party|Object} party The party that is opening the swap
+   * @param {Object} swapObj The swap to open
+   * @param {String} swapObj.id The unique identifier of the swap to be opened
+   * @param {String} swapObj.secretHolder.invoice The invoice to be paid by the secret holder
+   * @param {String} swapObj.secretSeeker.invoice The invoice to be paid by the secret seeker
+   * @param {Object} partyObj The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Swap>}
    */
-  open (swap, party, opts) {
-    if (swap == null || swap.id == null) {
+  open (swapObj, partyObj, opts) {
+    if (swapObj == null || swapObj.id == null) {
       return Promise.reject(Error('unknown swap!'))
-    } else if (!this.swaps.has(swap.id)) {
-      return Promise.reject(Error(`unknown swap "${swap.id}"!`))
-    } else {
-      return this.swaps.get(swap.id).open(party, opts)
+    } else if (!this.swaps.has(swapObj.id)) {
+      return Promise.reject(Error(`unknown swap "${swapObj.id}"!`))
     }
+
+    const swap = this.swaps.get(swapObj.id)
+    const { secretHolder, secretSeeker, status } = swap
+    const isHolder = partyObj.id === secretHolder.id
+    const isSeeker = partyObj.id === secretSeeker.id
+    const isBoth = isHolder && isSeeker
+    const isNeither = !isHolder && !isSeeker
+
+    if (isBoth || isNeither) {
+      const err = isBoth
+        ? Error('self-swapping is not allowed!')
+        : Error(`"${partyObj.id}" not a party to swap "${swap.id}"!`)
+      return Promise.reject(err)
+    }
+
+    if (swap.isCreated) {
+      swap.secretHolder.invoice = swapObj.secretHolder.invoice
+      swap.status = 'opening'
+    } else if (swap.isOpening) {
+      swap.secretSeeker.invoice = swapObj.secretSeeker.invoice
+      swap.status = 'opened'
+    } else {
+      const err = Error(`cannot open swap "${this.id}" when ${status}!`)
+      return Promise.reject(err)
+    }
+
+    this.emit(swap.status, swap)
+    return Promise.resolve(swap)
   }
+
+  // /**
+  //  * Handles the opening of a swap by a user that is a party to the swap
+  //  * @param {Swap} swap The swap to open
+  //  * @param {String} swap.id The unique identifier of the swap to be opened
+  //  * @param {Party|Object} party The party that is opening the swap
+  //  * @param {String} party.id The unique identifier of the party
+  //  * @param {Object} opts Configuration options for the operation
+  //  * @returns {Promise<Swap>}
+  //  */
+  // open (swap, party, opts) {
+  //   if (swap == null || swap.id == null) {
+  //     return Promise.reject(Error('unknown swap!'))
+  //   } else if (!this.swaps.has(swap.id)) {
+  //     return Promise.reject(Error(`unknown swap "${swap.id}"!`))
+  //   } else {
+  //     return this.swaps.get(swap.id).open(party, opts)
+  //   }
+  // }
 
   /**
    * Handles commiting to a swap by a user that is a party to id
