@@ -218,14 +218,14 @@ const IndexedDB = {
 
   /**
    * Deletes an item with the specific secretHash
-   * @param {*} key secretHash to delete
+   * @param {*} id id to delete
    * @returns Promise when finished
    */
-  async delete(key) {
+  async delete(id) {
     const transaction = IndexedDB.db.transaction(IndexedDB.storeName, 'readwrite');
     const store = transaction.objectStore(IndexedDB.storeName);
     return new Promise((resolve, reject) => {
-      const request = store.delete(key);
+      const request = store.delete(id);
       request.onsuccess = event => {
         resolve(event.target.result);
       };
