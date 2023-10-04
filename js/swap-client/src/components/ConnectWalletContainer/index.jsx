@@ -4,7 +4,6 @@ import { getAddress } from "sats-connect";
 // mui imports
 import { Button, Container, Divider, IconButton, Stack, Typography } from "@mui/material"
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
-import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
 // proj imports
 import styles from '../../styles/ConnectWalletContainer.module.css';
@@ -13,7 +12,7 @@ import { walletStore } from "../../syncstore/walletstore";
 import { getAlice } from "../../utils/constants";
 import { toastError, toastSuccess } from "../../utils/helpers";
 
-export const ConnectWalletContainer = ({ show, isMinimized, setIsMinimized }) => {
+export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
 
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const node = globalWallet.assets[0] // Bitcoin
@@ -109,14 +108,6 @@ export const ConnectWalletContainer = ({ show, isMinimized, setIsMinimized }) =>
     }
     core()
   }, [unisat, walletStore])
-
-  if(isMinimized)
-    return (
-      <Button className={styles['show-wallets-btn']} onClick={() => setIsMinimized(false)}>
-        <KeyboardDoubleArrowLeft style={{color: '#6A6A6A', marginRight: '5px'}}/>
-        Wallets
-      </Button>
-    )
 
   return (
     <Container className={styles.container} style={{display: show ? 'block' : 'none'}}>
