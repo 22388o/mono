@@ -7,6 +7,7 @@ const { compile, deploy } = require('../../../portal/test/helpers')
 const Peer = require('@portaldefi/peer')
 const chai = require('chai')
 const { writeFileSync } = require('fs')
+const { inspect } = require('util')
 const { Web3 } = require('web3')
 
 /**
@@ -19,7 +20,13 @@ const isDebugEnabled = process.argv.includes('--debug')
  * Prints logs from the peer and the SDK instances, when debug mode is enabled
  * @type {Function}
  */
-const log = isDebugEnabled ? (...args) => console.log(...args) : function () {}
+const log = !isDebugEnabled
+  ? function () { }
+  : (...args) => console.error(...(args.map(arg => inspect(arg, {
+    showHidden: false,
+    depth: null,
+    colors: true
+  }))))
 
 /**
  * Maps globally visible keys to their values for the duration of the tests

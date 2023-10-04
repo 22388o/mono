@@ -36,12 +36,29 @@ module.exports = class Ethereum extends BaseClass {
     // account and wallet
     const wallet = web3.eth.accounts.wallet.add(`0x${props.private}`)
 
-    // smart contracts
+    // default configuration
+    web3.eth.defaultAccount = wallet[0].address
     web3.eth.Contract.handleRevert = true
+
+    // smart contracts
     const contracts = {}
     for (const name in props.contracts) {
       const { abi, address } = props.contracts[name]
-      const contract = new web3.eth.Contract(abi, address)
+      const { address: from } = wallet[0]
+      const contract = new web3.eth.Contract(abi, address, { from })
+
+      // contract configuration
+      contract.handleRevert = true
+      contract.defaultAccount = wallet[0].address
+      contract.defaultChain = 'mainnet'
+      contract.defaultHardfork = 'petersburg'
+      contract.defaultNetworkId = props.chainId
+      contract.defaultCommon = {
+        name: 'playnet',
+        chainId: props.chainId,
+        networkId: props.chainId
+      }
+
       contracts[name] = contract
     }
 
@@ -117,20 +134,16 @@ module.exports = class Ethereum extends BaseClass {
       // TODO: Fix the hard coded values to account for ERC-20 tokens as well
       const transaction = Swap.methods.createInvoice(
         '0x0000000000000000000000000000000000000000',
-        `0x${quantity.toString(16)}`,
+        web3.utils.toHex(quantity),
         '0'
       )
-      const receipt = await web3.eth.sendTransaction({
-        from: wallet.get(0).address,
-        value: `0x${quantity.toString(16)}`
-      })
-      console.log('receipt', receipt)
+      const gas = await transaction.estimateGas()
+      const receipt = await transaction.send({ gas })
       const hex = receipt.logs[0].data.substr(2, 64)
       const dec = parseInt(hex, 16)
       return dec.toString()
     } catch (err) {
       this.error('createInvoice', err, this)
-      process.exit(1)
       throw err
     }
   }
