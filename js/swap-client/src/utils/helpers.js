@@ -60,3 +60,16 @@ export const toastError = (msg) => {
     }
   )
 }
+
+export function formatNumber(num) {
+  const numStr = num.toString();
+  const numArr = numStr.split('');
+  numArr.reverse();
+
+  for (let i = 3; i < numArr.length; i += 4) {
+    numArr.splice(i, 0, ',');
+  }
+  const formattedNum = numArr.reverse().join('');
+
+  return formattedNum;
+}

@@ -17,6 +17,8 @@ import { ConnectWalletContainer } from './ConnectWalletContainer'
 import { WalletInfoContainer } from './WalletInfoContainer'
 import { IndexedDB } from '@portaldefi/sdk';
 import Sdk from '@portaldefi/sdk';
+import { WalletComponent } from './Wallet/WalletComponent';
+import { SwapActivity } from './SwapActivity/SwapActivity';
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
@@ -146,6 +148,23 @@ export const SwapHome = () => {
           <SwapCreate />
         </Grid>
       </Grid>
+      {/* <Grid item container direction='row'>
+        <Grid item container direction='column' md={6} sm={12} spacing={6}>
+          <Grid item>
+            <WalletComponent />
+          </Grid>
+        </Grid>
+        <Grid item container direction='column' md={6} sm={12} spacing={6}>
+          <Grid item>
+            <SwapCreate />
+          </Grid>
+          <Grid item>
+            <SwapActivity />
+          </Grid>
+        </Grid>
+      </Grid> */}
+      {/* <WalletComponent />
+      <SwapActivity /> */}
 
       <ConnectWalletContainer show={!isStart && !isMinimized} setIsMinimized={setIsMinimized} />
       <WalletInfoContainer show={user.isLoggedIn && !isMinimized} setIsMinimized={setIsMinimized} />

@@ -45,6 +45,8 @@
   color: #919191 !important;
   width: 100%;
   font-size: 0.8em;
+  margin-top: 0em;
+  margin-bottom: 1em;
 }
 .coin-select {
   color: white !important;

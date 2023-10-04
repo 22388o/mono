@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Grid, Stack, Typography } from "@mui/material"
 
 import styles from "../../styles/WalletInfoContainer.module.css";
 import { CoinsSubTab } from "./CoinsSubTab";
+import { walletStore } from "../../syncstore/walletstore";
+import { formatNumber } from "../../utils/helpers";
 
 export const AssetsTab = () => {
   const [activeTab, setActiveTab] = useState('coins');
+  const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
+  const assets = globalWallet.assets;
+  const coin_prices = globalWallet.coin_prices;
+
+  const getTotalBalance = () => {
+    let sum = 0;
+    assets.filter(asset => asset.isNFT === false && !asset.isSubNet).forEach(asset => sum += coin_prices[asset.type] * asset.balance);
+    return sum;
+  }
 
   return (
     <>
       <Stack direction='row' sx={{justifyContent:'center', display:'flex'}} gap={1}>
-        <Typography sx={{color: 'white', fontSize: '32px', fontFamily: 'NotoBold'}}>1293.00</Typography>
+        <Typography sx={{color: 'white', fontSize: '32px', fontFamily: 'NotoBold'}}>{ formatNumber(getTotalBalance()) }</Typography>
         <Typography sx={{color: '#6A6A6A', fontSize: '16px', marginTop: '18px'}}>USD</Typography>
       </Stack>
       <Grid container sx={{marginTop: '30px'}}>

@@ -61,6 +61,7 @@ const walletStore = {
     assets: initialAssets,
     receivingProcess: 0,
     sendingProcess: 0,
+    coin_prices: { fetching: true, USDT: 1 },
     curAdditionalInput: -1,
     useAdditionalInput: true
   },
@@ -72,6 +73,11 @@ const walletStore = {
         newState.assets[0].connected = true
         newState.assets[0].data = action.payload
         return newState
+      case 'SET_COIN_PRICES':
+        newState.coin_prices['BTC'] = action.payload.BTC;
+        newState.coin_prices['ETH'] = action.payload.ETH;
+        newState.coin_prices.fetching = false;
+        return newState;
       case 'SET_WALLET_DATA':
         newState.assets[1].connected = true
         newState.assets[1].data = action.payload

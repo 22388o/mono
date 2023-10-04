@@ -686,7 +686,7 @@ export const SwapCreate = () => {
             limitOrder={limitOrder}
             />
         </Grid>
-        <Grid sx={{width:'100%', marginTop:'1.5em'}}>
+        <Grid sx={{width:'100%', marginTop:'1em'}}>
           { (nodeConnected && walletConnected)
               ? ((ASSET_TYPES[baseAsset].isNFT || baseQuantity) && (ASSET_TYPES[quoteAsset].isNFT || quoteQuantity)
                 ? <>
