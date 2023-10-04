@@ -3,6 +3,7 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
+const { Buffer } = require('buffer');
 
 /**
  * Network implementation for the browser
