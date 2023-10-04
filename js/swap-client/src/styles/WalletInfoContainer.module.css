@@ -98,6 +98,10 @@
   padding: 10px 0 10px 20px;
   justify-content: space-between;
 }
+.wallet-collectible-item{
+  padding: 15px 0 15px 20px;
+  justify-content: space-between;
+}
 .wallet-item-title {
   font-family: 'NotoBold' !important;
   font-size: 18px !important;
