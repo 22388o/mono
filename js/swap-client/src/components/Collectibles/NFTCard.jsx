@@ -14,7 +14,7 @@ export const NFTCard = ({ card, handleClick }) => {
             <img className={styles['btc-logo']} width='20px' src='https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true' />Ordinal
           </h4>
         </Grid>
-        <Grid item textAlign='center'>
+        <Grid item textAlign='center' sx={{marginBottom:'0.5em'}}>
           <h4>{card.info.inscription.slice(0, 7)}</h4>
         </Grid>
       </Stack>

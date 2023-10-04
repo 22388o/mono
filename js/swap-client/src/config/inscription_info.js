@@ -6,7 +6,7 @@ export const INSCRIPTIONS = [
     detail: 'Inscription',
     rate: 1,
     isNFT: true,
-    img_url: 'http://localhost/content/90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0',
+    img_url: '/nft/1.png',
     balance: 1,
     options: [
       {
@@ -18,7 +18,7 @@ export const INSCRIPTIONS = [
     info: {
       inscription: '90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0',
       location: '90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103:0:0',
-      explorer: 'http://localhost/inscription/90f2eed86a6b9e9d685fe8da374cb8d0e4632a8896d5c73fffe853b2d010e103i0'
+      explorer: '/nft/2.png'
     }
   },
   {
@@ -28,7 +28,7 @@ export const INSCRIPTIONS = [
     detail: 'Inscription',
     rate: 1,
     isNFT: true,
-    img_url: 'http://localhost/content/2c0c7244e6dfa2f1d4002060fd182b8e55298d593c3b01afdab936d8e0c4fccei0',
+    img_url: '/nft/2.png',
     balance: 1,
     options: [
       {
@@ -50,7 +50,7 @@ export const INSCRIPTIONS = [
     detail: 'Inscription',
     rate: 1,
     isNFT: true,
-    img_url: 'http://localhost/content/71d98e67db44e5f4af1c75c4189e501554bc5042263f5f291dc0f4f9378460fei0',
+    img_url: '/nft/3.png',
     balance: 1,
     options: [
       {
