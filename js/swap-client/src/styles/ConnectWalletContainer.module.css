@@ -1,0 +1,45 @@
+.container {
+  position:absolute;
+  right: 30px;
+  height: calc(90vh - 30px);
+  background-color: #1A1A1A;
+  margin-top: 5vh;
+  border-radius: 40px;
+  border: 2px solid #2A2A2A;
+  width: 400px !important;
+  padding: 15px;
+}
+
+.header-font {
+  color: #A0A0A0;
+  font-size: 20px !important;
+  font-family: NotoBold !important;
+}
+
+.header {
+  margin: 10px 0 20px 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-container {
+  background-color: #202020;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.wallet-item {
+  padding: 10px;
+  align-items: center;
+  gap: 10px;
+}
+.wallet-title {
+  color: white;
+  font-size: 16px !important;
+  font-family: NotoBold !important;
+}
+.divider {
+  border-color: #2A2A2A !important;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

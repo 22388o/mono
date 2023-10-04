@@ -1,4 +1,4 @@
-import React, { useCallback, useSyncExternalStore } from 'react'
+import React, { useCallback, useState, useSyncExternalStore } from 'react'
 import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded'
 import { SwapCreate } from './SwapCreate/SwapCreate'
 import { SwapActivity } from './SwapActivity/SwapActivity'
@@ -17,13 +17,16 @@ import { IndexedDB } from '@portaldefi/sdk';
 import { isMobile } from 'react-device-detect';
 import { MobileWarningPage } from './MobileWarningPage'
 import { Footer } from './Footer'
+import { ConnectWalletContainer } from './ConnectWalletContainer'
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const wallet = globalWallet.assets[1]
 
-  const [anchorEl, setAnchorEl] = React.useState(null)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [isStart, setIsStart] = useState(true)
+
   const open = anchorEl !== null
   const handleClick = useCallback((event) => {
     setAnchorEl(event.currentTarget)
@@ -93,8 +96,8 @@ export const SwapHome = () => {
           <Typography className={styles['title']}>P2P DEX</Typography>
         </Grid>
         <Grid item xs={3} className='flex-center'>
-          {!user.isLoggedIn
-          ? <>
+          {(!user.isLoggedIn && isStart)
+          && <>
             <Button 
               className='gradient-border-btn'
               id='connect-wallet'
@@ -102,6 +105,11 @@ export const SwapHome = () => {
               aria-haspopup='true'
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
+              sx={{ color: 'white', marginRight: '10px' }}
+            >Demo</Button>
+            <Button 
+              className='gradient-border-btn'
+              onClick={() => setIsStart(false)}
               style={{ color: 'white' }}
             >Connect Wallet(s)</Button>
             <Menu
@@ -118,7 +126,7 @@ export const SwapHome = () => {
               <MenuItem onClick={() => selectUser('bob')}>Bob</MenuItem>
             </Menu>
           </>
-          : <span>
+          /*: <span>
             Signed in as&nbsp;<u>{user.user.id.toUpperCase()}</u>&nbsp;
             <Button
               id='logout'
@@ -127,17 +135,19 @@ export const SwapHome = () => {
               onClick={e => logOut()}
             ><b>Logout</b>
             </Button>
-          </span>}
+            </span>*/}
         </Grid>
       </Grid>
       <Grid item container justifyContent='flex-end' style={{ padding: '1em 2em' }}>
         
       </Grid>
       <Grid item container direction='row'>
-        <Grid item container xs={user.isLoggedIn ? 10 : 12}>
+        <Grid item container xs={(user.isLoggedIn || !isStart) ? 10 : 12}>
           <SwapCreate />
         </Grid>
       </Grid>
+
+      <ConnectWalletContainer show={!isStart} />
       {/* <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
