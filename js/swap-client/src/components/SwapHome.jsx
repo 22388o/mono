@@ -1,20 +1,20 @@
-import React, { useCallback, useState, useSyncExternalStore } from 'react'
+import React, { useEffect, useCallback, useState, useSyncExternalStore } from 'react'
+import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
+import { ToastContainer } from 'react-toastify'
+import { isMobile } from 'react-device-detect';
+
 import { SwapCreate } from './SwapCreate/SwapCreate'
 import { getAlice, getBob } from '../utils/constants'
-import Sdk from '@portaldefi/sdk'
-import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
 import styles from '../styles/SwapHome.module.css'
 import { userStore } from '../syncstore/userstore'
 import { walletStore } from '../syncstore/walletstore'
-import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { useEffect } from 'react'
-import { IndexedDB } from '@portaldefi/sdk';
-import { isMobile } from 'react-device-detect';
 import { MobileWarningPage } from './MobileWarningPage'
 import { Footer } from './Footer'
 import { ConnectWalletContainer } from './ConnectWalletContainer'
 import { WalletInfoContainer } from './WalletInfoContainer'
+import { IndexedDB } from '@portaldefi/sdk';
+import Sdk from '@portaldefi/sdk';
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)

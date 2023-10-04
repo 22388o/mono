@@ -1,7 +1,14 @@
 import React, { useCallback, useEffect, useSyncExternalStore, useState } from 'react'
+
 import { Box, Button, ButtonGroup, Divider, Grid, Stack, IconButton, TextField, Input } from '@mui/material'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { toast } from 'react-toastify'
+import QRCode from 'qrcode'
+
+import { Web3ModalSign, useConnect } from '@web3modal/sign-react'
+import { getAddress, signTransaction } from 'sats-connect'
+
 import { WalletItem } from './WalletItem'
-import styles from '../../styles/wallet/WalletComponent.module.css'
 import Client from '../../utils/client'
 import { ReceiveFunds } from './ReceiveFunds'
 import { SendFunds } from './SendFunds'
@@ -10,16 +17,12 @@ import { Close, West } from '@mui/icons-material'
 import { CollectiblesModal } from '../Collectibles/CollectiblesModal'
 import { getAvailableNFTCount } from '../../selector'
 import { AddOtherAssetsModal } from './AddOtherAssetsModal'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import QRCode from 'qrcode'
 import { getEthAddress, getEthBalance } from '../../utils/web3'
 import { WalletConnectModal } from './WalletConnectModal'
 import { userStore } from '../../syncstore/userstore'
 import { walletStore } from '../../syncstore/walletstore'
-import { Web3ModalSign, useConnect } from '@web3modal/sign-react'
 import { getAlice } from '../../utils/constants'
-import { getAddress, signTransaction } from 'sats-connect'
-import { toast } from 'react-toastify'
+import styles from '../../styles/wallet/WalletComponent.module.css'
 
 export const WalletComponent = () => {
   const [nodeModalOpen, setNodeModalOpen] = useState(false)

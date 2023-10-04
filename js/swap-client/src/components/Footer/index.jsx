@@ -1,8 +1,11 @@
+// mui imports
 import { Grid, Typography } from "@mui/material"
-import styles from '../../styles/Footer.module.css';
-import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
+import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded';
+
+// proj imports
 import { version } from '../../../package.json';
+import styles from '../../styles/Footer.module.css';
 
 export const Footer = () => {
   return (

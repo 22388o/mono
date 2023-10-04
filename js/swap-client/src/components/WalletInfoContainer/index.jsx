@@ -1,8 +1,11 @@
 import { useState } from "react";
+
+// mui imports
 import { Button, Container, IconButton, Stack, Typography } from "@mui/material";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
+//proj imports
 import styles from "../../styles/WalletInfoContainer.module.css";
 import { AssetsTab } from "./AssetsTab";
 import { ActivityTab } from "./ActivityTab";

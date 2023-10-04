@@ -1,8 +1,12 @@
-import { Button, Grid, IconButton } from '@mui/material'
 import React, { useState, useSyncExternalStore } from 'react'
-import { MyModal } from '../MyModal/MyModal'
+
+// mui imports
+import { Button, Grid, IconButton } from '@mui/material'
 import { Close, West } from '@mui/icons-material'
+
+// proj imports
 import { NFTCard } from './NFTCard'
+import { MyModal } from '../MyModal/MyModal'
 import { walletStore } from '../../syncstore/walletstore'
 import styles from '../../styles/collectibles/index.module.css'
 

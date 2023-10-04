@@ -1,13 +1,17 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { getAddress } from "sats-connect";
+
+// mui imports
 import { Button, Container, Divider, IconButton, Stack, Typography } from "@mui/material"
-import styles from '../../styles/ConnectWalletContainer.module.css';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
+
+// proj imports
+import styles from '../../styles/ConnectWalletContainer.module.css';
 import { getEthAddress, getEthBalance } from "../../utils/web3";
 import { walletStore } from "../../syncstore/walletstore";
 import { getAlice } from "../../utils/constants";
-import { getAddress } from "sats-connect";
 import { toastError, toastSuccess } from "../../utils/helpers";
-import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
 export const ConnectWalletContainer = ({ show, isMinimized, setIsMinimized }) => {
 

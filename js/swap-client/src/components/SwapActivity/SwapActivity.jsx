@@ -1,11 +1,12 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
 import { Box, Grid, Stack, Divider } from '@mui/material';
+
+import { IndexedDB } from '@portaldefi/sdk';
 import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
 import styles from '../../styles/SwapActivity.module.css';
 import { log } from '../../utils/helpers';
 import { ActivityDetailModal } from './ActivityDetailModal';
-import { IndexedDB } from '@portaldefi/sdk';
 
 export const SwapActivity = () => {
   const [showIndex, setShowIndex] = useState(-1);

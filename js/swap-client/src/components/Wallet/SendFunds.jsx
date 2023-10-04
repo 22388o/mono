@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import classNames from 'classnames'
+
 import { Button, Divider, Grid, Stack, IconButton, CircularProgress } from '@mui/material'
+import { Close, West } from '@mui/icons-material'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+
+import { getMinimizedAssets } from '../../selector'
 import styles from '../../styles/wallet/SendFunds.module.css'
 import { validateInvoiceAddress } from '../../utils/helpers'
 import { MyModal } from '../MyModal/MyModal'
-import { Close, West } from '@mui/icons-material'
-import classNames from 'classnames'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { getMinimizedAssets } from '../../selector'
 import { AssetItem } from '../common/AssetItem'
 import { CollectiblesModal } from '../Collectibles/CollectiblesModal'
 import { AddOtherAssetsModal } from './AddOtherAssetsModal'
