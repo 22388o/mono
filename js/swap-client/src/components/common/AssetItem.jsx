@@ -1,19 +1,28 @@
 import React from 'react'
 // mui import
-import { Grid } from '@mui/material'
+import { Grid, Stack, Typography } from '@mui/material'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 
 export const AssetItem = ({ asset, handleClick }) => {
   return (
-    <Grid item container direction='row' onClick={e => handleClick(asset)} style={{ cursor: 'pointer' }} className='asset-item'>
-      <Grid item xs={1.5}><img width='32px' src={asset.img_url} /></Grid>
-      <Grid item xs={5} container direction='column' textAlign='left'>
-        <span><h4>{asset.title}</h4></span>
-        {asset.type && <span><h5 style={{ fontSize: '0.8em', color: 'grey' }}>{asset.type}</h5></span>}
-      </Grid>
-      <Grid item xs={5.5} textAlign='right' alignItems='center'>
-        {asset.amount}<span style={{ color: 'grey', fontSize: '0.7em' }}>{asset.type && asset.type.toUpperCase()}</span><NavigateNextIcon />
-      </Grid>
-    </Grid>
+    <Stack 
+      direction='row' 
+      onClick={e => handleClick(asset)} style={{ cursor: 'pointer' }}
+      className='asset-item'
+      sx={{ justifyContent: 'space-between' }}
+    >
+      <Stack direction='row' spacing={0.5} sx={{alignItems:'center'}}>
+        <img width={32} height={32} src={asset.img_url} />
+        <Stack>
+          <Typography>{ asset.title }</Typography>
+          {asset.type && <h5 style={{ fontSize: '0.8em', color: 'grey' }}>{asset.type}</h5>}
+        </Stack>
+      </Stack>
+      <Stack direction='row' alignItems='center' gap={0.5}>
+        { asset.amount }
+        <span style={{ color: 'grey', fontSize: '0.7em' }}>{asset.type && asset.type.toUpperCase()}</span>
+        <NavigateNextIcon />
+      </Stack>
+    </Stack>
   )
 }
