@@ -5,6 +5,7 @@ import styles from "../../styles/WalletInfoContainer.module.css";
 import { CoinsSubTab } from "./CoinsSubTab";
 import { walletStore } from "../../syncstore/walletstore";
 import { formatNumber } from "../../utils/helpers";
+import { CollectiblesSubTab } from "./CollectiblesSubTab";
 
 export const AssetsTab = () => {
   const [activeTab, setActiveTab] = useState('coins');
@@ -48,6 +49,7 @@ export const AssetsTab = () => {
       </Grid>
       <Grid className={styles['sub-container']}>
         { activeTab === 'coins' && <CoinsSubTab />}
+        { activeTab === 'coll' && <CollectiblesSubTab />}
       </Grid>
     </>
   )
