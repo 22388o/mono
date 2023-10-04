@@ -1,5 +1,6 @@
-import { Grid, IconButton, Stack } from '@mui/material'
 import React from 'react'
+// mui import
+import { Grid } from '@mui/material'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 
 export const AssetItem = ({ asset, handleClick }) => {

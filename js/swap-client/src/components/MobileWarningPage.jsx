@@ -1,6 +1,8 @@
+// mui imports
 import { Button, Container, Divider, OutlinedInput, Stack, Typography } from "@mui/material";
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ComputerIcon from '@mui/icons-material/Computer';
+// proj imports
 import styles from '../styles/MobileWarningPage.module.css';
 
 export const MobileWarningPage = () => {

@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Divider, Grid, Stack, Typography } from "@mui/material"
+import { Divider, Stack, Typography } from "@mui/material"
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 import styles from "../../styles/WalletInfoContainer.module.css";
-import { CoinsSubTab } from "./CoinsSubTab";
 
 export const ActivityTab = () => {
   const [activeTab, setActiveTab] = useState('coins');

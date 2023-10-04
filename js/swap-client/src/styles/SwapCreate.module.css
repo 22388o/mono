@@ -10,12 +10,15 @@
 
 .qty-input {
   background: none;
-  color: #6A6A6A;
+  color: #AAAAAA;
   border: none;
   font-size: 1.5em;
 }
 .qty-input:focus {
   outline: none;
+}
+.qty-input::placeholder {
+  color: #4A4A4A;
 }
 
 .swapExCont {

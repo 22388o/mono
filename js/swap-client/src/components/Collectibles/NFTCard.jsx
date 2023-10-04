@@ -1,5 +1,5 @@
-import { Grid, Stack } from '@mui/material'
 import React from 'react'
+import { Grid, Stack } from '@mui/material'
 import styles from '../../styles/collectibles/index.module.css'
 
 export const NFTCard = ({ card, handleClick }) => {

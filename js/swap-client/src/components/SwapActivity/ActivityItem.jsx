@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react';
 import { Button, Grid, Stack } from '@mui/material';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import { getStringFromDate, SWAP_STATUS } from '../../utils/helpers';
 import styles from '../../styles/ActivityItem.module.css'
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
-//import { activitiesStore } from '../../syncstore/activitiesstore';
 import { walletStore } from '../../syncstore/walletstore';
-import { IndexedDB } from '@portaldefi/sdk';
 import { IndexedDB_dispatch } from '../../utils/indexeddb';
+import { IndexedDB } from '@portaldefi/sdk';
 
 export const ActivityItem = ({ activity, index, handleClick }) => {
   const link='https://ordinals.com/tx/' + activity.hash;

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { MyModal } from '../MyModal/MyModal'
-import { Button, Divider, Grid, IconButton, Input } from '@mui/material'
+
 import { CheckCircle, Close, West } from '@mui/icons-material'
-import { SWAP_STATUS, log } from '../../utils/helpers'
+import { Button, Divider, Grid, IconButton, Input } from '@mui/material'
 import QRCode from 'qrcode'
+import { MyModal } from '../MyModal/MyModal'
+import { SWAP_STATUS, log } from '../../utils/helpers'
 
 export const ActivityDetailModal = ({ open, handleClose, activity }) => {
   const [qrData, setQrData] = useState('')

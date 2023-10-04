@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useSyncExternalStore } from 'react'
+import React, { useCallback, useState } from 'react'
 import { MyModal } from '../MyModal/MyModal'
 import { Button, Divider, Grid, IconButton, Input } from '@mui/material'
 import { Close, West } from '@mui/icons-material'
