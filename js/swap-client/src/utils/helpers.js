@@ -1,3 +1,5 @@
+import { toast } from "react-toastify"
+
 export const SWAP_STATUS = [
   'Submitting order',
   'Finding match',
@@ -36,4 +38,25 @@ export const log = (message, obj, title = 'SwapCreate') => {
 
 export const validateInvoiceAddress = (addr) => {
   return addr && addr.length > 6
+}
+
+
+export const toastSuccess = (msg) => {
+  toast.success(
+    msg,
+    {
+      theme: 'colored',
+      autoClose: 1000
+    }
+  )
+}
+
+export const toastError = (msg) => {
+  toast.error(
+    msg,
+    {
+      theme: 'colored',
+      autoClose: 1000
+    }
+  )
 }
