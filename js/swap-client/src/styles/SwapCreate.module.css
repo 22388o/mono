@@ -45,8 +45,7 @@
   color: #919191 !important;
   width: 100%;
   font-size: 0.8em;
-  margin-top: 0em;
-  margin-bottom: 1em;
+  margin-top: -5px;
 }
 .coin-select {
   color: white !important;
@@ -64,8 +63,8 @@
   margin-right: 0.3em;
 }
 .nft-asset-image {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   border-radius: 0.5em;
   margin-right: 0.5em;
 }

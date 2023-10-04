@@ -18,7 +18,7 @@ export const CollectiblesModal = ({ open, handleClose, handleItemClick = () => {
 
   return (
     <>
-      <MyModal open={open}>
+      <MyModal open={open} handleClose={handleClose}>
         <Stack>
           <Grid item container direction='row' width={800} sx={{ marginBottom: '20px' }} alignItems='center' >
             <Grid item xs={1} />
@@ -31,7 +31,7 @@ export const CollectiblesModal = ({ open, handleClose, handleItemClick = () => {
           <a onClick={() => setCustomOrdModalOpen(true)} className={styles['add-custom-button']}>+ Add Custom Ordinal</a>
         </Stack>
       </MyModal>
-      <MyModal open={customOrdModalOpen}>
+      <MyModal open={customOrdModalOpen} handleClose={() => setCustomOrdModalOpen(false)}>
         <Stack gap={2}>
           <Stack direction='row' sx={{justifyContent:'space-between', width: '400px', alignItems: 'center'}}>
             <IconButton onClick={() => setCustomOrdModalOpen(false)}><West /></IconButton>
