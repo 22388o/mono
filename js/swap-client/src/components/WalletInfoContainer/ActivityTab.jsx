@@ -11,15 +11,16 @@ import { walletStore } from "../../syncstore/walletstore";
 export const ActivityTab = () => {
   const activities = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
 
-  const onCancelSwap = useCallback((e, activity, index) => {
+  const onCancelSwap = useCallback((e, activity) => {
+    console.log('Cancel Called', activity);
     e.stopPropagation();
-    IndexedDB_dispatch({ type: 'CANCEL_SWAP', payload: index });
+    IndexedDB_dispatch({ type: 'CANCEL_SWAP', payload: { secretHash: activity.hash } });
     if(activity.baseAsset === 'BTC') walletStore.dispatch({ type: 'ADD_NODE_BALANCE', payload: activity.baseQuantity });
     else if(activity.baseAsset === 'ETH') walletStore.dispatch({ type: 'ADD_WALLET_BALANCE', payload: activity.baseQuantity });
     else walletStore.dispatch({ type: 'ADD_NFT_BALANCE', payload: {type: activity.baseAsset, balance: 1} });
   }, [walletStore, IndexedDB]);
 
-  const renderActivity = (activity, index) => {
+  const renderActivity = (activity) => {
     return (
       <Stack className={styles['activity-item']} direction='row'>
         <Stack direction='row' gap={2}>
@@ -39,7 +40,7 @@ export const ActivityTab = () => {
             <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
             <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset}</Typography>
           </Stack>
-          { activity.status < 5 && <span><Button onClick={(e) => onCancelSwap(e, activity, index)} className={styles['cancel-btn']}>
+          { activity.status < 5 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={styles['cancel-btn']}>
             Cancel
           </Button></span> }
         </Stack>
@@ -54,7 +55,7 @@ export const ActivityTab = () => {
       { [...activities].reverse().map((activity, index) =>
           <div>
             {index > 0 && renderDivider() }
-            { renderActivity(activity, index) }
+            { renderActivity(activity) }
           </div>
         )
       }

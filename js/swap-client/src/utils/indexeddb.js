@@ -26,7 +26,8 @@ export const IndexedDB_dispatch = async (action) => {
       break;
     case 'CANCEL_SWAP':
       const toDelete = await IndexedDB.get(action.payload.secretHash);
-      await IndexedDB.delete(toDelete.key);
+      console.log(toDelete);
+      await IndexedDB.delete(toDelete.id);
       break;
   }
   setTimeout(() => IndexedDB.emitChanges(), 1000);
