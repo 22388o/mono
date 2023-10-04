@@ -14,7 +14,7 @@ export const AssetItem = ({ asset, handleClick }) => {
       <Stack direction='row' spacing={0.5} sx={{alignItems:'center'}}>
         <img width={32} height={32} src={asset.img_url} />
         <Stack>
-          <Typography>{ asset.title }</Typography>
+          <Typography>{ asset.short }</Typography>
           {asset.type && <h5 style={{ fontSize: '0.8em', color: 'grey' }}>{asset.type}</h5>}
         </Stack>
       </Stack>
