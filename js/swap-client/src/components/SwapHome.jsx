@@ -1,7 +1,9 @@
 import React, { useEffect, useCallback, useState, useSyncExternalStore } from 'react'
-import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
 import { ToastContainer } from 'react-toastify'
 import { isMobile } from 'react-device-detect';
+
+import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
+import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
 import { SwapCreate } from './SwapCreate/SwapCreate'
 import { getAlice, getBob } from '../utils/constants'
@@ -145,25 +147,17 @@ export const SwapHome = () => {
         </Grid>
       </Grid>
 
-      <ConnectWalletContainer show={!isStart} isMinimized={isMinimized} setIsMinimized={setIsMinimized} />
-      <WalletInfoContainer show={user.isLoggedIn} isMinimized={isMinimized} setIsMinimized={setIsMinimized} />
-      {/* <Grid item container direction='row'>
-        <Grid item container direction='column' md={6} sm={12} spacing={6}>
-          <Grid item>
-            <WalletComponent />
-          </Grid>
-        </Grid>
-        <Grid item container direction='column' md={6} sm={12} spacing={6}>
-          <Grid item>
-            <SwapCreate />
-          </Grid>
-          <Grid item>
-            <SwapActivity />
-          </Grid>
-        </Grid>
-      </Grid> */}
+      <ConnectWalletContainer show={!isStart && !isMinimized} setIsMinimized={setIsMinimized} />
+      <WalletInfoContainer show={user.isLoggedIn && !isMinimized} setIsMinimized={setIsMinimized} />
       <Footer />
       <ToastContainer />
+      
+      { isMinimized 
+        && <Button className='show-right-container-btn' onClick={() => setIsMinimized(false)}>
+            <KeyboardDoubleArrowLeft style={{color: '#6A6A6A', marginRight: '5px'}}/>
+            Wallets
+          </Button>
+      }
     </Grid>
   )
 }
