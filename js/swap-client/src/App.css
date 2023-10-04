@@ -245,6 +245,7 @@ a {
   font-size: 16px;
   background: linear-gradient(to left, #00FFA3, #DC1FFF);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   transition: 200ms
 }
