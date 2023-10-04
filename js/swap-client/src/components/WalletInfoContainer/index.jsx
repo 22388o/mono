@@ -5,6 +5,7 @@ import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
 import styles from "../../styles/WalletInfoContainer.module.css";
 import { AssetsTab } from "./AssetsTab";
+import { ActivityTab } from "./ActivityTab";
 
 export const WalletInfoContainer = ({ show, isMinimized, setIsMinimized }) => {
   const [activeTab, setActiveTab] = useState('assets');
@@ -37,6 +38,7 @@ export const WalletInfoContainer = ({ show, isMinimized, setIsMinimized }) => {
           </IconButton>
         </Stack>
         { activeTab === 'assets' && <AssetsTab /> }
+        { activeTab !== 'assets' && <ActivityTab /> }
       </Stack>
     </Container>
   );
