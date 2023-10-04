@@ -32,28 +32,20 @@ export const CollectiblesModal = ({ open, handleClose, handleItemClick = () => {
         </Stack>
       </MyModal>
       <MyModal open={customOrdModalOpen}>
-        <Grid container direction='column' rowSpacing={1}>
-          <Grid item container direction='row'>
-            <Grid item xs={1} textAlign='center'>
-              <IconButton onClick={() => setCustomOrdModalOpen(false)}><West /></IconButton>
-            </Grid>
-            <Grid item xs={10} textAlign='center' width={250}>
-              <h3>Add Custom Ordinal</h3>
-            </Grid>
-            <Grid item xs={1} textAlign='center'>
-              <IconButton onClick={() => setCustomOrdModalOpen(false)}><Close /></IconButton>
-            </Grid>
-          </Grid>
-          <Grid item>
-            <h4>Address</h4>
-          </Grid>
-          <Grid item>
+        <Stack gap={2}>
+          <Stack direction='row' sx={{justifyContent:'space-between', width: '400px', alignItems: 'center'}}>
+            <IconButton onClick={() => setCustomOrdModalOpen(false)}><West /></IconButton>
+            <h3>Add Custom Ordinal</h3>
+            <IconButton onClick={() => setCustomOrdModalOpen(false)}><Close /></IconButton>
+          </Stack>
+          <Stack>
+            <Typography sx={{fontSize:'20px', color: '#AAAAAA'}}>Address</Typography>
             <input className={styles['recipient-addr']} placeholder='Enter Address' />
-          </Grid>
+          </Stack>
           <Grid item>
             <Button className='gradient-btn w-100'>Continue</Button>
           </Grid>
-        </Grid>
+        </Stack>
       </MyModal>
     </>
   )
