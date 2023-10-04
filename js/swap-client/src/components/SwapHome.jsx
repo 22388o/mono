@@ -18,6 +18,7 @@ import { isMobile } from 'react-device-detect';
 import { MobileWarningPage } from './MobileWarningPage'
 import { Footer } from './Footer'
 import { ConnectWalletContainer } from './ConnectWalletContainer'
+import { WalletInfoContainer } from './WalletInfoContainer'
 
 export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
@@ -148,6 +149,7 @@ export const SwapHome = () => {
       </Grid>
 
       <ConnectWalletContainer show={!isStart} />
+      <WalletInfoContainer show={user.isLoggedIn} />
       {/* <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
