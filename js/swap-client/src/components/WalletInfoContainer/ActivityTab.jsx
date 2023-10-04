@@ -1,15 +1,25 @@
-import { useState, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { Button, Divider, Stack, Typography } from "@mui/material"
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 import styles from "../../styles/WalletInfoContainer.module.css";
 import { IndexedDB } from "@portaldefi/sdk";
 import { SWAP_STATUS, getStringFromDate } from "../../utils/helpers";
+import { IndexedDB_dispatch } from "../../utils/indexeddb";
+import { walletStore } from "../../syncstore/walletstore";
 
 export const ActivityTab = () => {
   const activities = useSyncExternalStore(IndexedDB.subscribe, IndexedDB.getAllActivities);
 
-  const renderActivity = (activity) => {
+  const onCancelSwap = useCallback((e, activity, index) => {
+    e.stopPropagation();
+    IndexedDB_dispatch({ type: 'CANCEL_SWAP', payload: index });
+    if(activity.baseAsset === 'BTC') walletStore.dispatch({ type: 'ADD_NODE_BALANCE', payload: activity.baseQuantity });
+    else if(activity.baseAsset === 'ETH') walletStore.dispatch({ type: 'ADD_WALLET_BALANCE', payload: activity.baseQuantity });
+    else walletStore.dispatch({ type: 'ADD_NFT_BALANCE', payload: {type: activity.baseAsset, balance: 1} });
+  }, [walletStore, IndexedDB]);
+
+  const renderActivity = (activity, index) => {
     return (
       <Stack className={styles['activity-item']} direction='row'>
         <Stack direction='row' gap={2}>
@@ -23,13 +33,13 @@ export const ActivityTab = () => {
         <Stack>
           <Stack direction='row' gap={1}>
             <Typography>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>{activity.baseAsset.toLowerCase()}</Typography>
+            <Typography sx={{color: '#6A6A6A'}}>{activity.baseAsset}</Typography>
           </Stack>
           <Stack direction='row' gap={1}>
             <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset.toLowerCase()}</Typography>
+            <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset}</Typography>
           </Stack>
-          { activity.status < 5 && <span><Button onClick={onCancelSwap} className={styles['cancel-btn']}>
+          { activity.status < 5 && <span><Button onClick={(e) => onCancelSwap(e, activity, index)} className={styles['cancel-btn']}>
             Cancel
           </Button></span> }
         </Stack>
@@ -44,7 +54,7 @@ export const ActivityTab = () => {
       { [...activities].reverse().map((activity, index) =>
           <div>
             {index > 0 && renderDivider() }
-            { renderActivity(activity) }
+            { renderActivity(activity, index) }
           </div>
         )
       }
