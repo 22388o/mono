@@ -25,7 +25,7 @@ export const ActivityDetailModal = ({ open, handleClose, activity }) => {
   }, [activity.paymentAddress, activity.tx])
 
   return (
-    <MyModal open={open}>
+    <MyModal open={open} handleClose={handleClose}>
       <Grid container direction='column' spacing={1}>
         <Grid item container direction='row' style={{ minWidth: 400 }}>
           <Grid item xs={1}><IconButton onClick={() => setSelectedAsset(null)}><West /></IconButton></Grid>
