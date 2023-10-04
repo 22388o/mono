@@ -20,10 +20,10 @@ export const WalletInfoContainer = ({ show, setIsMinimized }) => {
       <Stack sx={{height:'100%'}}>
         <Stack direction="row" className={styles.header}>
           <Stack direction='row' gap={0.5}>
-            <Typography className={[styles["tab-item"], activeTab === 'assets' && styles['active-tab']]} onClick={() => setActiveTab('assets')}>
+            <Typography className={`${styles["tab-item"]} ${activeTab === 'assets' && styles['active-tab']}`} onClick={() => setActiveTab('assets')}>
               Assets
             </Typography>
-            <Typography className={[styles["tab-item"], activeTab === 'activity' && styles['active-tab']]} onClick={() => setActiveTab('activity')}>
+            <Typography className={`${styles["tab-item"]} ${activeTab === 'activity' && styles['active-tab']}`} onClick={() => setActiveTab('activity')}>
               Activity
             </Typography>
           </Stack>

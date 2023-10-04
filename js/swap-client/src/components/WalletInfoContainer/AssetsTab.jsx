@@ -26,20 +26,20 @@ export const AssetsTab = () => {
       </Stack>
       <Grid container sx={{marginTop: '30px'}}>
         <Grid item xs={6}>
-          <Typography className={[
-              styles['sub-tab-item'], 
-              activeTab === 'coins' ? styles['left-sub-tab-active'] : styles['sub-tab-inactive']
-            ]}
+          <Typography className={`
+              ${styles['sub-tab-item']} 
+              ${activeTab === 'coins' ? styles['left-sub-tab-active'] : styles['sub-tab-inactive']}
+            `}
             onClick={() => setActiveTab('coins')}
           >
             Coins
           </Typography>
         </Grid>
         <Grid item xs={6}>
-          <Typography className={[
-              styles['sub-tab-item'], 
-              activeTab === 'coll' ? styles['right-sub-tab-active'] : styles['sub-tab-inactive']
-            ]}
+          <Typography className={`
+              ${styles['sub-tab-item']} 
+              ${activeTab === 'coll' ? styles['right-sub-tab-active'] : styles['sub-tab-inactive']}
+            `}
             onClick={() => setActiveTab('coll')}
           >
             Collectibles
