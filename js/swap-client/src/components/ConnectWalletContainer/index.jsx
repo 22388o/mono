@@ -22,12 +22,16 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
   const onConnectMetamask = useCallback(async () => {
     if (window.ethereum) {
       // user.user.ethereum = window.ethereum;
-      const accounts = await getEthAddress()
-      const balance = await getEthBalance(accounts[0]) / wallet.rate
-      walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: accounts[0] })
-      walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: balance })
-      console.log('Metamask Wallet Connected: ', accounts)
-      toastSuccess('Metamask Wallet Connected!');
+      try {
+        const accounts = await getEthAddress()
+        const balance = await getEthBalance(accounts[0]) / wallet.rate
+        walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: accounts[0] })
+        walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: balance })
+        console.log('Metamask Wallet Connected: ', accounts)
+        toastSuccess('Metamask Wallet Connected!');  
+      } catch (e) {
+        throw (e);
+      }
     }
   }, [walletStore])
 
@@ -48,7 +52,7 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
         }
       } catch (error) {
         console.log(error)
-        toastError('Lightning Wallet not found!');
+        toastError('Something Went Wrong!');
       }
     }
     core()
@@ -61,17 +65,21 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
     if (selWal == 1) {
       /** Unisat Wallet Extension Connection */
       if (unisat) {
-        const result = await unisat.requestAccounts()
-        const publicKey = await unisat.getPublicKey()
-        const balance = await unisat.getBalance()
-        const network = await unisat.getNetwork()
+        try {
+          const result = await unisat.requestAccounts()
+          const publicKey = await unisat.getPublicKey()
+          const balance = await unisat.getBalance()
+          const network = await unisat.getNetwork()
 
-        console.log('Unisat Wallet Connected! ' + JSON.stringify(result))
+          console.log('Unisat Wallet Connected! ' + JSON.stringify(result))
 
-        walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning })
-        walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
-        setIsBtcWalletConnected('unisat');
-        toastSuccess('Unisat Wallet Connected!');
+          walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning })
+          walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
+          setIsBtcWalletConnected('unisat');
+          toastSuccess('Unisat Wallet Connected!');
+        } catch (e) {
+          toastError('Something Went Wrong!');
+        }
         // user.user.unisat = unisat;
       } else {
         toastError('Unisat not found!');
