@@ -16,7 +16,8 @@ export const getMinimizedAssets = (wallet) => {
   assets.forEach(asset => {
     if (asset.isNFT === false && !asset.isSubNet) {
       arr.push({
-        title: asset.title.indexOf('Bitcoin') !== -1 ? 'Bitcoin' : asset.title,
+        title: asset.title,
+        short: asset.title.indexOf('Bitcoin') !== -1 ? 'Bitcoin' : asset.title,
         type: asset.type,
         amount: 0.53,
         isNFT: false,
