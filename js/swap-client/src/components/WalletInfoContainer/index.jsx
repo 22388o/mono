@@ -1,12 +1,21 @@
 import { useState } from "react";
-import { Container, Stack, Typography } from "@mui/material";
+import { Button, Container, IconButton, Stack, Typography } from "@mui/material";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 
 import styles from "../../styles/WalletInfoContainer.module.css";
 import { AssetsTab } from "./AssetsTab";
 
-export const WalletInfoContainer = ({ show }) => {
+export const WalletInfoContainer = ({ show, isMinimized, setIsMinimized }) => {
   const [activeTab, setActiveTab] = useState('assets');
+
+  if(isMinimized)
+    return (
+      <Button className={styles['show-wallets-btn']} onClick={() => setIsMinimized(false)}>
+        <KeyboardDoubleArrowLeft style={{color: '#6A6A6A', marginRight: '5px'}}/>
+        Wallets
+      </Button>
+    )
 
   return (
     <Container
@@ -23,7 +32,9 @@ export const WalletInfoContainer = ({ show }) => {
               Activity
             </Typography>
           </Stack>
-          <KeyboardDoubleArrowRightIcon className={styles["tab-item"]} />
+          <IconButton onClick={() => setIsMinimized(true)}>
+            <KeyboardDoubleArrowRightIcon className={styles["tab-item"]} />
+          </IconButton>
         </Stack>
         { activeTab === 'assets' && <AssetsTab /> }
       </Stack>

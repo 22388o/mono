@@ -24,6 +24,7 @@ export const SwapHome = () => {
   const user = useSyncExternalStore(userStore.subscribe, () => userStore.currentState)
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const wallet = globalWallet.assets[1]
+  const [isMinimized, setIsMinimized] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState(null)
   const [isStart, setIsStart] = useState(true)
@@ -143,13 +144,13 @@ export const SwapHome = () => {
         
       </Grid>
       <Grid item container direction='row'>
-        <Grid item container xs={(user.isLoggedIn || !isStart) ? 10 : 12}>
+        <Grid item container xs={((user.isLoggedIn || !isStart) && !isMinimized) ? 10 : 12}>
           <SwapCreate />
         </Grid>
       </Grid>
 
       <ConnectWalletContainer show={!isStart} />
-      <WalletInfoContainer show={user.isLoggedIn} />
+      <WalletInfoContainer show={user.isLoggedIn} isMinimized={isMinimized} setIsMinimized={setIsMinimized} />
       {/* <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
           <Grid item>
