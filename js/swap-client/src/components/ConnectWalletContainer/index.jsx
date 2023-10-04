@@ -7,6 +7,7 @@ import { walletStore } from "../../syncstore/walletstore";
 import { toast } from "react-toastify";
 import { getAlice } from "../../utils/constants";
 import { getAddress } from "sats-connect";
+import { toastError, toastSuccess } from "../../utils/helpers";
 
 export const ConnectWalletContainer = ({ show }) => {
 
@@ -23,6 +24,7 @@ export const ConnectWalletContainer = ({ show }) => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: accounts[0] })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: balance })
       console.log('Metamask Wallet Connected: ', accounts)
+      toastSuccess('Metamask Wallet Connected!');
     }
   }, [walletStore])
 
@@ -36,21 +38,14 @@ export const ConnectWalletContainer = ({ show }) => {
           // setIsBtcWalletConnected(true);
           const info = await window.webln.getInfo()
           console.log('Alby Wallet Connected: ', info)
-
-          // user.user.webln = window.webln;
+          toastSuccess('Alby Wallet Connected!');
 
           walletStore.dispatch({ type: 'SET_LIGHTNING_DATA', payload: getAlice().lightning })
           walletStore.dispatch({ type: 'SET_LIGHTNING_BALANCE', payload: 1000 })
         }
       } catch (error) {
         console.log(error)
-        toast.error(
-          'Lightning Wallet not found!',
-          {
-            theme: 'colored',
-            autoClose: 1000
-          }
-        )
+        toastError('Lightning Wallet not found!');
       }
     }
     core()
@@ -72,16 +67,11 @@ export const ConnectWalletContainer = ({ show }) => {
 
         walletStore.dispatch({ type: 'SET_NODE_DATA', payload: getAlice().lightning })
         walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
-        setIsBtcWalletConnected('unisat')
+        setIsBtcWalletConnected('unisat');
+        toastSuccess('Unisat Wallet Connected!');
         // user.user.unisat = unisat;
       } else {
-        toast.error(
-          'Unisat not found!',
-          {
-            theme: 'colored',
-            autoClose: 1000
-          }
-        )
+        toastError('Unisat not found!');
       }
       return
     }
@@ -104,25 +94,13 @@ export const ConnectWalletContainer = ({ show }) => {
             console.log('Xverse Wallet Connected! Address: ' + JSON.stringify(response))
           },
           onCancel: () => {
-            toast.error(
-              'Request Canceled',
-              {
-                theme: 'colored',
-                autoClose: 1000
-              }
-            )
+            toastError('Request Canceled');
           }
         }
 
         await getAddress(getAddressOptions)
       } catch (error) {
-        toast.error(
-          'Xverse not found!',
-          {
-            theme: 'colored',
-            autoClose: 1000
-          }
-        )
+        toastError('Xverse not found!');
       }
     }
     core()
