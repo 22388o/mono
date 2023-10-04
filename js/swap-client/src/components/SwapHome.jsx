@@ -1,9 +1,5 @@
 import React, { useCallback, useState, useSyncExternalStore } from 'react'
-import RectangleRoundedIcon from '@mui/icons-material/RectangleRounded'
 import { SwapCreate } from './SwapCreate/SwapCreate'
-import { SwapActivity } from './SwapActivity/SwapActivity'
-import { WalletComponent } from './Wallet/WalletComponent'
-import { ConnectionComponent } from './Wallet/Connection'
 import { getAlice, getBob } from '../utils/constants'
 import Sdk from '@portaldefi/sdk'
 import { Menu, MenuItem, Button, Grid, Typography } from '@mui/material'
@@ -149,7 +145,7 @@ export const SwapHome = () => {
         </Grid>
       </Grid>
 
-      <ConnectWalletContainer show={!isStart} />
+      <ConnectWalletContainer show={!isStart} isMinimized={isMinimized} setIsMinimized={setIsMinimized} />
       <WalletInfoContainer show={user.isLoggedIn} isMinimized={isMinimized} setIsMinimized={setIsMinimized} />
       {/* <Grid item container direction='row'>
         <Grid item container direction='column' md={6} sm={12} spacing={6}>
