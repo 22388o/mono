@@ -11,6 +11,18 @@
         "url": "https://github.com/numtide/devshell/archive/d208c58e2f7afef838add5f18a9936b12a71d695.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "ethw": {
+        "branch": "main",
+        "description": null,
+        "homepage": null,
+        "owner": "aldoborrero",
+        "repo": "ethw",
+        "rev": "f0ec3a877874dc8b7d264503566937f2f7369605",
+        "sha256": "1aprpjcdz2wzkld971l650kz0riadpns6iy2v54f9fzblpjymr7x",
+        "type": "tarball",
+        "url": "https://github.com/aldoborrero/ethw/archive/f0ec3a877874dc8b7d264503566937f2f7369605.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",
