@@ -6,7 +6,6 @@
 }:
 with lib; let
   cfg = config.portaldefi.portal.server;
-  cfgEthereum = config.services.geth.default;
 in {
   options.portaldefi.portal.server = {
     hostname = mkOption {
@@ -20,35 +19,67 @@ in {
       type = types.port;
       default = 1337;
     };
+
+    package = mkOption {
+      type = types.package;
+      description = ''The portaldefi portal package to use'';
+      default = pkgs.portaldefi.portal;
+    };
+
+    packageUi = mkOption {
+      type = types.package;
+      description = ''The portaldefi ui package to use'';
+      default = pkgs.portaldefi.demo;
+    };
+
+    ethereum = {
+      url = mkOption {
+        description = "The URL for the Ethereum service";
+        type = types.str;
+        default = "http://127.0.0.1:8545";
+      };
+
+      chainId = mkOption {
+        description = "The Chain ID for the Ethereum network";
+        type = types.str;
+        default = "0x539";
+      };
+
+      contracts = mkOption {
+        description = "The path to the ABI JSON file for Ethereum contracts";
+        type = types.path;
+        default = "${pkgs.portaldefi.contracts}/portal/contracts.json";
+      };
+    };
+
+    additionalAfter = mkOption {
+      description = "Additional services that portal should wait for";
+      type = types.listOf types.str;
+      default = [
+        "bitcoind-regest.service"
+        "geth-default.service"
+      ];
+    };
   };
 
   config = {
-    environment.systemPackages = [pkgs.portaldefi.demo];
-
     systemd.services.portal = {
       description = "Portal Server";
       wantedBy = ["multi-user.target"];
-      after = [
-        "network.target"
-        "bitcoind-regest.service" # TODO: Don't hardcode this value, obtain it properly from defined service
-        "geth-default.service" # TODO: Don't hardcode this value, obtain it properly from defined service
-      ];
+      after = ["network.target"] ++ cfg.additionalAfter;
       environment = {
-        PORTAL_HTTP_ROOT = toString pkgs.portaldefi.demo;
+        PORTAL_HTTP_ROOT = toString cfg.packageUi;
         PORTAL_HTTP_HOSTNAME = cfg.hostname;
         PORTAL_HTTP_PORT = toString cfg.port;
-
-        PORTAL_ETHEREUM_URL = "http://${cfgEthereum.http.address}:${toString cfgEthereum.http.port}";
-        PORTAL_ETHEREUM_CHAINID = "0x539";
-        PORTAL_ETHEREUM_CONTRACTS = "${pkgs.portaldefi.evm}/abi.json";
+        PORTAL_ETHEREUM_URL = cfg.ethereum.url;
+        PORTAL_ETHEREUM_CHAINID = cfg.ethereum.chainId;
+        PORTAL_ETHEREUM_CONTRACTS = cfg.ethereum.contracts;
       };
       serviceConfig = {
-        # Dynamic user prevents connection to geth
-        # DynamicUser = true;
         Restart = "always";
         StateDirectory = "portal";
-        ExecStart = "${pkgs.portaldefi.portal}/bin/portal";
-        # Basic Hardening measures
+        ExecStart = "${lib.getExe cfg.package}";
+        # Hardening Options
         NoNewPrivileges = "true";
         PrivateDevices = "true";
         PrivateTmp = "true";
