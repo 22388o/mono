@@ -34,15 +34,15 @@ Helpers.compile()
   })
   // Write to separate files for each inner contract
   .then(({ contracts, portalContracts }) => {
+    // Write each contract separately with extra information
     for (const [contractName, contractData] of Object.entries(contracts)) {
       const filePath = path.join(OUT_ABI_DIR_PATH, `${contractName}.json`);
       fs.writeFileSync(filePath, JSON.stringify(contractData, null, 2));
     }
 
-    for (const [contractName, contractData] of Object.entries(portalContracts)) {
-      const filePath = path.join(OUT_PORTAL_DIR_PATH, `${contractName}.json`);
-      fs.writeFileSync(filePath, JSON.stringify(contractData, null, 2));
-    }
+    // Write the output the rest of the project expects
+    const filePath = path.join(OUT_PORTAL_DIR_PATH, `contracts.json`);
+    fs.writeFileSync(filePath, JSON.stringify(portalContracts, null, 2));
   })
   // Handle errors
   .catch(err => {
