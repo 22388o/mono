@@ -15,12 +15,23 @@
   };
 
   packages = {
-    inherit (pkgs.portaldefi) app demo portal sdk;
+    inherit
+      (pkgs.portaldefi)
+      app
+      contracts
+      demo
+      portal
+      sdk
+      ;
   };
 
   checks = {
     portaldefi.integration-tests = {
-      inherit (pkgs.portaldefi.integration-tests) portal lnd;
+      inherit
+        (pkgs.portaldefi.integration-tests)
+        portal
+        lnd
+        ;
     };
   };
 }

@@ -3,7 +3,7 @@
   system ? builtins.currentSystem,
   nodejs ? pkgs.portaldefi.nodejs,
 }:
-pkgs.stdenv.mkDerivation {
+pkgs.stdenv.mkDerivation rec {
   name = "portal";
   version = "0.0.0";
 
@@ -94,6 +94,6 @@ pkgs.stdenv.mkDerivation {
   '';
 
   meta = {
-    mainProgram = "portal";
+    mainProgram = name;
   };
 }

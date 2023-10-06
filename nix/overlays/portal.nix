@@ -8,8 +8,8 @@ in {
 
     # apps
     app = import ../../js/app {inherit nodejs pkgs;};
+    contracts = import ../../js/evm {inherit nodejs pkgs;};
     demo = import ../../js/swap-client {inherit nodejs pkgs;};
-    evm = import ../../js/evm {inherit nodejs pkgs;};
     portal = import ../../js/portal {inherit nodejs pkgs;};
     sdk = import ../../js/sdk {inherit nodejs pkgs;};
 

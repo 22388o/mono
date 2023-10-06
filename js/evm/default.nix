@@ -4,7 +4,7 @@
   nodejs ? pkgs.portaldefi.nodejs,
 }:
 pkgs.stdenv.mkDerivation {
-  name = "evm";
+  name = "contracts";
   version = "0.0.0";
 
   src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./.;
