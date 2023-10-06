@@ -29,10 +29,10 @@
         "homepage": null,
         "owner": "aldoborrero",
         "repo": "ethw",
-        "rev": "f0ec3a877874dc8b7d264503566937f2f7369605",
-        "sha256": "1aprpjcdz2wzkld971l650kz0riadpns6iy2v54f9fzblpjymr7x",
+        "rev": "f14c2dbefe109efacde9c098c4d82eee8fcea711",
+        "sha256": "1dnz03zsd04q7pjcnk30075r9lvnmxxs7kwg34g8q95r1xrlrfr1",
         "type": "tarball",
-        "url": "https://github.com/aldoborrero/ethw/archive/f0ec3a877874dc8b7d264503566937f2f7369605.tar.gz",
+        "url": "https://github.com/aldoborrero/ethw/archive/f14c2dbefe109efacde9c098c4d82eee8fcea711.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
