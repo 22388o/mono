@@ -118,11 +118,11 @@ describe.only('Swaps - Arbitrum/Lightning', function () {
    * Once Bob has opened the swap, Alice (the secret-holder) proceeds to open
    * the swap.
    */
-  it('must allow Alice to open the swap', function () {
+  it('must allow Alice to open the swap',  async function () {
     const { alice } = this.test.ctx
     const { arbitrum } = alice.credentials
     const secret = SECRET.toString('hex')
-    return alice.swapOpen(aliceSwapCreated, { arbitrum, secret })
+    return await alice.swapOpen(aliceSwapCreated, { arbitrum, secret })
   })
 
   it('must broadcast the opened swap to Alice and Bob', function () {

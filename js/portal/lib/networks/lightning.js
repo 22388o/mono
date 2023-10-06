@@ -138,10 +138,11 @@ module.exports = class Lightning extends Network {
           debug(party.id, '(secretSeeker) settling invoice now...')
 
           try {
+            debug(party.id, "Trying to use secret", JSON.stringify(secret));
             await ln.settleHodlInvoice(Object.assign({ secret }, grpc))
             debug(party.id, '(secretSeeker) settled invoice')
           } catch (err) {
-            debug(party.id, '(secretHolder) settleHodlInvoice', err)
+            debug(party.id, '(secretHolder) settleHodlInvoice Error', err)
             if (err instanceof Array) {
               // ln errors are arrays with 3 elements
               // 0: Numeric error code (HTTP status code)

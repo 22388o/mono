@@ -22,6 +22,7 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
+    "@aeternity/aepp-sdk": "^13.2.1",
     "@ethersproject/bignumber": "^5.7.0",
     "debug": "^4.3.4",
     "ethereumjs-common": "^1.5.2",
