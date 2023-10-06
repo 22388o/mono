@@ -2,16 +2,18 @@
   sources = import ./sources.nix;
 
   # overlays
-  sourcesOverlay = self: super: {inherit sources;};
+  ethereum-nix = import sources."ethereum.nix";
   ethw = import sources.ethw;
-  overlays = import ./overlays;
+  localOverlays = import ./overlays;
+  sourcesOverlay = self: super: {inherit sources;};
 in
   import sources.nixpkgs {
     inherit system;
     overlays =
       [
-        sourcesOverlay
+        ethereum-nix.overlays.default
         ethw.overlays.default
+        sourcesOverlay
       ]
-      ++ overlays;
+      ++ localOverlays;
   }
