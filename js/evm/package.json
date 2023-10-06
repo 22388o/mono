@@ -46,5 +46,8 @@
       "expect",
       "it"
     ]
+  },
+  "dependencies": {
+    "rimraf": "^5.0.5"
   }
 }

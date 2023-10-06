@@ -45,7 +45,9 @@ pkgs.stdenv.mkDerivation {
   '';
 
   installPhase = ''
-    mkdir -p $out
-    cp -R dist/* $out/
+    mkdir -p $out/{contracts,abi,portal}
+    cp -R contracts/* $out/contracts/
+    cp -R dist/abi/* $out/abi/
+    cp -R dist/portal/* $out/portal/
   '';
 }
