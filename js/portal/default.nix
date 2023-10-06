@@ -92,4 +92,8 @@ pkgs.stdenv.mkDerivation {
       --set NODE_ENV production \
       --set NODE_PATH "$out/node_modules"
   '';
+
+  meta = {
+    mainProgram = "portal";
+  };
 }
