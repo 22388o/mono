@@ -11,14 +11,16 @@ in
 
     packages = with pkgs; [
       alejandra
-      bash
       bitcoind
       coreutils
+      ethereal
+      ethw
       git
       go-ethereum
       jq
       less
       lnd
+      lndinit
       lsof
       niv
       nix-diff
