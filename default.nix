@@ -3,11 +3,11 @@
   pkgs ? import ./nix {inherit system;},
 }: {
   nixosConfigurations = {
-    portalos = let
+    ci = let
       os = pkgs.nixos {
         imports = [
           ./tf/playnet-equinix/nix/node/configuration.nix
-          ./nix/hosts/portalos/configuration.nix
+          ./nix/hosts/ci/configuration.nix
         ];
       };
     in

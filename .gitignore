@@ -29,7 +29,7 @@ docs/package-lock.json
 **/.vscode/settings.json
 
 # Playnet-related stuff
-playnet
+/playnet
 !playnet/bitcoind*
 !playnet/geth*
 !playnet/lnd*
@@ -41,3 +41,6 @@ playnet
 
 # puppeteer
 /chrome/
+
+# qemu
+*.qcow2

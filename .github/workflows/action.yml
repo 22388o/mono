@@ -86,10 +86,10 @@ jobs:
     - name: Install nix magic cache
       uses: DeterminateSystems/magic-nix-cache-action@v2
 
-    - name: Build PortalOS closure
+    - name: Build PortalOS closure for CI
       id: build-machine-closure
       run: |
-        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
+        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.ci)
         echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
 
     - name: Setup NixOS deploy env

@@ -40,25 +40,24 @@ in {
       };
 
       chainId = mkOption {
-        description = "The Chain ID for the Ethereum network";
+        description = "The Chain Id for the Ethereum network";
         type = types.str;
         default = "0x539";
       };
 
       contracts = mkOption {
-        description = "The path to the ABI JSON file for Ethereum contracts";
+        description = "The path to the ABI JSON file for the Ethereum Swap contract";
         type = types.path;
         default = "${pkgs.portaldefi.contracts}/portal/contracts.json";
       };
     };
 
-    additionalAfter = mkOption {
-      description = "Additional services that portal should wait for";
-      type = types.listOf types.str;
-      default = [
-        "bitcoind-regest.service"
-        "geth-default.service"
-      ];
+    systemd = {
+      additionalAfter = mkOption {
+        description = "Additional services that portal should wait for";
+        type = types.listOf types.str;
+        default = [];
+      };
     };
   };
 
@@ -66,7 +65,7 @@ in {
     systemd.services.portal = {
       description = "Portal Server";
       wantedBy = ["multi-user.target"];
-      after = ["network.target"] ++ cfg.additionalAfter;
+      after = ["network.target"] ++ cfg.systemd.additionalAfter;
       environment = {
         PORTAL_HTTP_ROOT = toString cfg.packageUi;
         PORTAL_HTTP_HOSTNAME = cfg.hostname;
@@ -77,7 +76,12 @@ in {
       };
       serviceConfig = {
         Restart = "always";
+        WorkingDirectory = "/var/lib/portal";
         StateDirectory = "portal";
+        StateDirectoryMode = "0755";
+        ExecStartPre = pkgs.writeShellScript "contract-deployer" ''
+
+        '';
         ExecStart = "${lib.getExe cfg.package}";
         # Hardening Options
         NoNewPrivileges = "true";

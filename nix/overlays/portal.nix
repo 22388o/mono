@@ -15,8 +15,8 @@ in {
 
     # tests
     integration-tests = {
-      portal = import ../vm-tests/portal.nix {inherit pkgs;};
-      lnd = import ../vm-tests/lnd.nix {inherit pkgs;};
+      portal = import ../nixos/vm-tests/portal.nix {inherit pkgs;};
+      lnd = import ../nixos/vm-tests/lnd.nix {inherit pkgs;};
     };
   };
 }
