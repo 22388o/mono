@@ -166,7 +166,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * received by both alice and bob, and that the fields are as expected, esp.
    * the secret hash.
    */
-  it('must broadcast match-trigged swap to Alice and Bob', function (done) {
+  it('must handle the swap between to Alice and Bob', function (done) {
     const { alice, bob } = this.test.ctx
     const swaps = {
       alice: {
@@ -204,20 +204,31 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
       switch (status) {
         case 'created': {
-          const aliceInvoice = swaps.alice[status].secretHolder.invoice
-          const bobInvoice = swaps.bob[status].secretHolder.invoice
-          expect(aliceInvoice).to.be.a('string')
-          expect(bobInvoice).to.be.a('string')
-          expect(aliceInvoice).to.equal(bobInvoice)
+          const aliceHolderInvoice = swaps.alice[status].secretHolder.invoice
+          const bobHolderInvoice = swaps.bob[status].secretHolder.invoice
+          expect(aliceHolderInvoice).to.be.a('string')
+          expect(bobHolderInvoice).to.be.a('string')
+          expect(aliceHolderInvoice).to.equal(bobHolderInvoice)
+
+          const aliceSeekerInvoice = swaps.alice[status].secretSeeker.invoice
+          const bobSeekerInvoice = swaps.bob[status].secretSeeker.invoice
+          expect(aliceSeekerInvoice).to.be.equal(null)
+          expect(bobSeekerInvoice).to.be.equal(null)
           break
         }
 
         case 'opening': {
-          const aliceInvoice = swaps.alice[status].secretSeeker.invoice
-          const bobInvoice = swaps.bob[status].secretSeeker.invoice
-          expect(aliceInvoice).to.be.a('string')
-          expect(bobInvoice).to.be.a('string')
-          expect(aliceInvoice).to.equal(bobInvoice)
+          const aliceHolderInvoice = swaps.alice[status].secretHolder.invoice
+          const bobHolderInvoice = swaps.bob[status].secretHolder.invoice
+          expect(aliceHolderInvoice).to.be.a('string')
+          expect(bobHolderInvoice).to.be.a('string')
+          expect(aliceHolderInvoice).to.equal(bobHolderInvoice)
+
+          const aliceSeekerInvoice = swaps.alice[status].secretSeeker.invoice
+          const bobSeekerInvoice = swaps.bob[status].secretSeeker.invoice
+          expect(aliceSeekerInvoice).to.be.null
+          expect(bobSeekerInvoice).to.be.null
+          expect(aliceSeekerInvoice).to.equal(bobSeekerInvoice)
           break
         }
 

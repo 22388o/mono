@@ -20,72 +20,84 @@ module.exports = class Ethereum extends BaseClass {
     super({ id: 'ethereum' })
 
     const log = (level, event) => {
-      return [event, (...args) => this[level](event, ...args)]
+      return [event, (...args) => this[level](`provider.${event}`, ...args)]
     }
+
+    // web3-provider
     const provider = new WebSocketProvider(props.url)
-    provider.on(...log('error', 'error'))
-    provider.on(...log('debug', 'message'))
-    provider.on(...log('debug', 'connect'))
-    provider.on(...log('debug', 'chainChanged'))
-    provider.on(...log('debug', 'accountsChanged'))
-    provider.on(...log('debug', 'disconnect'))
 
     // web3
     const web3 = new Web3(provider)
 
-    // account and wallet
+    // account/wallet
     const wallet = web3.eth.accounts.wallet.add(`0x${props.private}`)
 
     // default configuration
     web3.eth.defaultAccount = wallet[0].address
     web3.eth.Contract.handleRevert = true
 
-    // smart contracts
-    const contracts = {}
-    for (const name in props.contracts) {
-      const { abi, address } = props.contracts[name]
-      const { address: from } = wallet[0]
-      const contract = new web3.eth.Contract(abi, address, { from })
-
-      // contract configuration
-      contract.handleRevert = true
-      contract.defaultAccount = wallet[0].address
-      contract.defaultChain = 'mainnet'
-      contract.defaultHardfork = 'petersburg'
-      contract.defaultNetworkId = props.chainId
-      contract.defaultCommon = {
-        name: 'playnet',
-        chainId: props.chainId,
-        networkId: props.chainId
-      }
-
-      contracts[name] = contract
+    // swap contract
+    const { abi, address } = props.contracts.Swap
+    const { address: from } = wallet[0]
+    const contract = new web3.eth.Contract(abi, address, { from })
+    contract.handleRevert = true
+    contract.defaultAccount = wallet[0].address
+    contract.defaultChain = 'mainnet'
+    contract.defaultHardfork = 'petersburg'
+    contract.defaultNetworkId = props.chainId
+    contract.defaultCommon = {
+      name: 'playnet',
+      chainId: props.chainId,
+      networkId: props.chainId
     }
 
-    // subscriptions
-    const subscriptions = {
-      logs: null,
-      newBlockHeaders: null,
-      newPendingTransactions: null,
-      syncing: null
+    // swap contract events
+    const events = contract.events.allEvents()
+    events.on('connected', id => this.debug('contract.events', { id }))
+    events.on('data', data => {
+      const { event, address, returnValues } = data
+      this.info(`contract.${event}`, data)
+
+      if (contract._address !== address) {
+        const err = Error(`got event from ${address} instead of ${contract._address}`)
+        this.emit('error', err)
+      }
+
+      switch (event) {
+        case 'InvoiceCreated': {
+          const { invoiceId: id } = returnValues
+          this.emit('invoice.created', { id })
+          break
+        }
+
+        case 'InvoicePaid': {
+          const { invoiceId: id } = returnValues
+          this.emit('invoice.paid', { id })
+          break
+        }
+
+        case 'Claimed': {
+          const { invoiceId: id, secret: bytesSecret } = returnValues
+          const bnSecret = web3.utils.toBN(bytesSecret)
+          const secret = bnSecret.toHexString().substr(2)
+          this.emit('invoice.settled', { id, secret })
+          break
+        }
+
+        default:
+          this.debug('event', data)
+      }
+    })
+    events.on('changed', data => this.warn('subscription.changed', data))
+    events.on('error', (err, receipt) => this.error('subscription.error', err, receipt))
+
+    // json
+    const json = {
+      wallet: wallet[0].address,
+      contract: { address: contract._address }
     }
 
-    INSTANCES.set(this, Object.seal({
-      web3,
-      wallet,
-      contracts,
-      subscriptions,
-      json: {
-        wallet: wallet[0].address,
-        contracts: Object.keys(contracts).reduce((obj, name) => {
-          obj[name] = {
-            address: contracts[name]._address,
-            config: contracts[name].config
-          }
-          return obj
-        }, {})
-      }
-    }))
+    INSTANCES.set(this, Object.seal({ web3, wallet, contract, events, json }))
 
     Object.freeze(this)
   }
@@ -105,16 +117,7 @@ module.exports = class Ethereum extends BaseClass {
    */
   async connect () {
     try {
-      const { web3, subscriptions } = INSTANCES.get(this)
-
-      for (const name in subscriptions) {
-        const subscription = await web3.eth.subscribe(name)
-        subscription.on('connected', (...args) => console.log(`subscription.${name}.connected`, ...args))
-        subscription.on('data', (...args) => console.log(`subscription.${name}.data`, ...args))
-        subscription.on('error', (...args) => console.log(`subscription.${name}.error`, ...args))
-        subscriptions[name] = subscription
-      }
-
+      this.emit('connect', this)
       return this
     } catch (err) {
       this.error('connect', err, this)
@@ -124,15 +127,18 @@ module.exports = class Ethereum extends BaseClass {
 
   /**
    * Creates an invoice
-   * @param {Object} args Arguments for the operation
+   * @param {Party} party The party that is creating the invoice
+   * @param {Number} party.quantity The number of tokens to be invoiced
+   * @param {Swap} party.swap The parent swap of the party
+   * @param {String} party.swap.secretHash The hash of the secret of the swap
    * @returns {Promise<String>} The invoice generated by the Swap contract
    */
-  async createInvoice (args) {
+  async createInvoice(party) {
     try {
-      const { web3, wallet, contracts: { Swap } } = INSTANCES.get(this)
-      const { id, secretHash, asset, quantity } = args
+      const { web3, contract } = INSTANCES.get(this)
+      const { id, secretHash, asset, quantity } = party
       // TODO: Fix the hard coded values to account for ERC-20 tokens as well
-      const transaction = Swap.methods.createInvoice(
+      const transaction = contract.methods.createInvoice(
         '0x0000000000000000000000000000000000000000',
         web3.utils.toHex(quantity),
         '0'
@@ -143,7 +149,53 @@ module.exports = class Ethereum extends BaseClass {
       const dec = parseInt(hex, 16)
       return dec.toString()
     } catch (err) {
-      this.error('createInvoice', err, this)
+      this.error('createInvoice', err, party, this)
+      throw err
+    }
+  }
+
+  /**
+   * Pays an invoice
+   * @param {Party} party The party that is paying the invoice
+   * @param {Number} party.invoice The invoice to be paid
+   * @param {Number} party.quantity The number of tokens to be invoiced
+   * @param {Swap} party.swap The parent swap of the party
+   * @param {String} party.swap.secretHash The hash of the secret of the swap
+   * @returns {Promise<Void>}
+   */
+  async payInvoice(party) {
+    try {
+      const { web3, contract } = INSTANCES.get(this)
+      const { swap: { secretHash }, quantity, invoice: invoiceId } = party
+      const value = `0x${quantity.toString(16)}`
+      const transaction = contract.methods.payInvoice(invoiceId, `0x${secretHash}`)
+      const gas = await transaction.estimateGas({ value })
+      // TODO: fix value to only be used for ETH transactions
+      const receipt = await transaction.send({ gas, value })
+      console.log('got receipt', receipt)
+    } catch (err) {
+      this.error('payInvoice', err, party, this)
+      throw err
+    }
+  }
+
+  /**
+   * Settles an invoice
+   * @param {Party} party The party that is settling the invoice
+   * @param {Number} party.invoice The invoice to be settled
+   * @param {String} secret The secret to be revealed during settlement
+   * @returns {Promise<Void>}
+   */
+  async settleInvoice(party, secret) {
+    try {
+      const { web3, contract } = INSTANCES.get(this)
+      const transaction = contracts.methods.claim(`0x${secret}`)
+      const gas = await transaction.estimateGas()
+      // TODO: fix value to only be used for ETH transactions
+      const receipt = await transaction.send({ gas })
+      console.log('got receipt', receipt)
+    } catch (err) {
+      this.error('payInvoice', err, party, this)
       throw err
     }
   }
@@ -158,10 +210,13 @@ module.exports = class Ethereum extends BaseClass {
 
       for (const name in subscriptions) {
         const subscription = subscriptions[name]
-        await subscription.unsubscribe()
-        subscriptions[name] = null
+        if (subscription != null) {
+          await subscription.unsubscribe()
+          subscriptions[name] = null
+        }
       }
 
+      this.emit('disconnect', this)
       return this
     } catch (err) {
       this.error('disconnect', err, this)

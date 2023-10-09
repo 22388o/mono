@@ -27,7 +27,7 @@ module.exports = class SDK extends BaseClass {
       .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
       .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
       .on('message', (...args) => this.emit('message', ...args))
-      .on('log', (level, ...args) => this[level](...args))
+      .on('log', (...args) => this.emit('log', ...args))
   }
 
   get id () {

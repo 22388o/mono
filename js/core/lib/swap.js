@@ -40,15 +40,31 @@ module.exports = class Swap extends BaseClass {
   constructor (props) {
     super({ id: props.id })
 
+    this._status = props.status || SWAP_STATUS[0]
     this.secretHash = props.secretHash
+
     this.secretHolder = new Party(this, props.secretHolder)
+      .once('invoice.created', party => this._onInvoiceCreated(party))
+      .on('invoice.paid', party => { })
+      .on('invoice.settled', party => { })
+
     this.secretSeeker = new Party(this, props.secretSeeker)
-    this.status = props.status || SWAP_STATUS[0]
+      .once('invoice.created', party => this._onInvoiceCreated(party))
+      .on('invoice.paid', party => { })
+      .on('invoice.settled', party => { })
 
     Object.seal(this)
 
-    // Fire the event after allowing time for handlers to be registerd
+    // Fire the event after allowing time for handlers to be registered
     setImmediate(() => this.emit(this.status, this))
+  }
+
+  /**
+   * Returns the status of the swap
+   * @returns {String}
+   */
+  get status() {
+    return this._status
   }
 
   /**
@@ -56,7 +72,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isCreated () {
-    return this.status === SWAP_STATUS[0]
+    return this._status === SWAP_STATUS[0]
   }
 
   /**
@@ -64,7 +80,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isOpening () {
-    return this.status === SWAP_STATUS[1]
+    return this._status === SWAP_STATUS[1]
   }
 
   /**
@@ -72,7 +88,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isOpened () {
-    return this.status === SWAP_STATUS[2]
+    return this._status === SWAP_STATUS[2]
   }
 
   /**
@@ -80,7 +96,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isCommitting () {
-    return this.status === SWAP_STATUS[3]
+    return this._status === SWAP_STATUS[3]
   }
 
   /**
@@ -88,7 +104,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isCommitted () {
-    return this.status === SWAP_STATUS[4]
+    return this._status === SWAP_STATUS[4]
   }
 
   /**
@@ -96,7 +112,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isAborting () {
-    return this.status === SWAP_STATUS[5]
+    return this._status === SWAP_STATUS[5]
   }
 
   /**
@@ -104,7 +120,7 @@ module.exports = class Swap extends BaseClass {
    * @returns {Boolean}
    */
   get isAborted () {
-    return this.status === SWAP_STATUS[6]
+    return this._status === SWAP_STATUS[6]
   }
 
   /**
@@ -113,6 +129,27 @@ module.exports = class Swap extends BaseClass {
    */
   [Symbol.for('nodejs.util.inspect.custom')] () {
     return this.toJSON()
+  }
+
+  /**
+   * Handles the creation of invoices by either party, and updates the state of
+   * the swap accordingly.
+   * 
+   * @returns {Void}
+   */
+  _onInvoiceCreated() {
+    const holderInvoiced = (this.secretHolder.invoice != null)
+    const seekerInvoiced = (this.secretSeeker.invoice != null)
+
+    if (this.isCreated && (holderInvoiced || seekerInvoiced)) {
+      this._status = SWAP_STATUS[1]
+      return this.emit(this.status, this)
+    } else if (this.isOpening && (holderInvoiced && seekerInvoiced)) {
+      this._status = SWAP_STATUS[2]
+      return this.emit(this.status, this)
+    } else {
+      this.emit('error', Error('unknown invoice creation!'), this)
+    }
   }
 
   /**
@@ -177,19 +214,16 @@ module.exports = class Swap extends BaseClass {
  * Defines a party to a swap
  * @type {Party}
  */
-class Party {
+class Party extends BaseClass {
   constructor (swap, props) {
+    super({ id: props.id })
+
     /**
      * The parent swap for the party
      * @type {Swap}
      */
     this.swap = swap
 
-    /**
-     * The unique identifier of the user
-     * @type {String}
-     */
-    this.id = props.id
     /**
      * The unique identifier of the asset
      * @type {String}
@@ -209,9 +243,34 @@ class Party {
      * The invoice to be paid by the party
      * @type {String}
      */
-    this.invoice = null
+    this._invoice = null
 
-    Object.seal(this)
+    // If the invoice is available, then freeze the party, else seal it
+    if (props.invoice != null) {
+      this._invoice = props.invoice
+      Object.freeze(this)
+    } else {
+      Object.seal(this)
+    }
+  }
+
+  /**
+   * Returns the invoice, if available
+   * @returns {String}
+   */
+  get invoice() {
+    return this._invoice
+  }
+
+  /**
+   * Sets the invoice to be paid by the party, and freezes the instance to
+   * prevent futher modifications
+   * @returns {Void}
+   */
+  set invoice(val) {
+    this._invoice = val
+    Object.freeze(this)
+    this.emit('invoice.created', this)
   }
 
   /**

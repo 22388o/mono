@@ -41,7 +41,6 @@ module.exports = class Sdk extends BaseClass {
      * @type {Network}
      */
     this.network = new Network(this, props.network)
-      // TODO: Refactor these to be less coupled with the Sdk class
       .on('order.created', forwardEvent(this, 'order.created'))
       .on('order.opened', forwardEvent(this, 'order.opened'))
       .on('order.closed', forwardEvent(this, 'order.closed'))

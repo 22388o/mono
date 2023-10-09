@@ -3,6 +3,7 @@
  */
 
 const { BaseClass, Swap } = require('@portaldefi/core')
+const { log } = require('util')
 
 /**
  * Expose the interface to all swaps
@@ -68,27 +69,26 @@ module.exports = class Swaps extends BaseClass {
       if (swap.secretSeeker.id !== this.sdk.id) return
 
       // generate an invoice to send to the secret holder
-      const { secretHash, secretHolder } = swap
+      const { secretHolder } = swap
       const { id, asset, blockchain: blockchainName, quantity } = secretHolder
       const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
-      const invoiceArgs = { id, secretHash, asset, quantity }
 
       // NOTE: MUTATION!
-      secretHolder.invoice = await blockchain.createInvoice(invoiceArgs)
+      secretHolder.invoice = await blockchain.createInvoice(secretHolder)
 
       // IIFE implementing infinite retries until success
       // TODO: fix this to be more reasonable through state persistance
-      const sendInvoice = async args => {
+      const notifyCounterParty = async args => {
         try {
-          this.info('swap.sendInvoice', args, swap)
+          this.info('swap.notifyCounterParty', args, swap)
           await this.sdk.network.request(args, { swap })
         } catch (err) {
-          this.error('swap.sendInvoice', err, args, swap)
-          setTimeout(sendInvoice, 1000, args) // FIXME: Hardcoded value
+          this.error('swap.notifyCounterParty', err, args, swap)
+          setTimeout(notifyCounterParty, 1000, args) // FIXME: Hardcoded value
         }
       }
 
-      sendInvoice({ method: 'PUT', path: '/api/v1/swap' })
+      notifyCounterParty({ method: 'PUT', path: '/api/v1/swap' })
     } catch (err) {
       this.error('swap.error', err, swap)
       this.emit('error', err, swap)
@@ -106,27 +106,26 @@ module.exports = class Swaps extends BaseClass {
       if (swap.secretHolder.id !== this.sdk.id) return
 
       // generate an invoice to send to the secret holder
-      const { secretHash, secretSeeker } = swap
+      const { secretSeeker } = swap
       const { id, asset, blockchain: blockchainName, quantity } = secretSeeker
       const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
-      const invoiceArgs = { id, secretHash, asset, quantity }
 
       // NOTE: MUTATION!
-      secretSeeker.invoice = await blockchain.createInvoice(invoiceArgs)
+      secretSeeker.invoice = await blockchain.createInvoice(secretSeeker)
 
       // IIFE implementing infinite retries until success
       // TODO: fix this to be more reasonable through state persistance
-      const sendInvoice = async args => {
+      const notifyCounterParty = async args => {
         try {
-          this.info('swap.sendInvoice', args, swap)
+          this.info('swap.notifyCounterParty', args, swap)
           await this.sdk.network.request(args, { swap })
         } catch (err) {
-          this.error('swap.sendInvoice', err, args, swap)
-          setTimeout(sendInvoice, 1000, args) // FIXME: Hardcoded value
+          this.error('swap.notifyCounterParty', err, args, swap)
+          setTimeout(notifyCounterParty, 1000, args) // FIXME: Hardcoded value
         }
       }
 
-      sendInvoice({ method: 'PUT', path: '/api/v1/swap' })
+      notifyCounterParty({ method: 'PUT', path: '/api/v1/swap' })
     } catch (err) {
       this.error('swap.error', err, swap)
       process.exit(1)
@@ -139,9 +138,54 @@ module.exports = class Swaps extends BaseClass {
    * @param {Swap} swap The swap that was opened
    * @returns {Void}
    */
-  _onOpened (swap) {
-    if (swap.isSecretSeeker(this.sdk.id)) {
+  async _onOpened(swap) {
+    try {
+      // Secret seeker goes next
+      if (swap.secretSeeker.id !== this.sdk.id) return
 
+      // handle the payment of the invoice sent previously
+      const { secretHolder } = swap
+      const { id, asset, blockchain: blockchainName, quantity } = secretHolder
+      const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
+
+      blockchain
+        .once('invoice.paid', async (invoice, party, blockchain) => {
+          console.log(blockchainName, 'invoice.paid here')
+
+          try {
+            // when the seeker's invoice is paid, settle the holder's invoice
+            const { secretSeeker } = swap
+            const { blockchain: blockchainName } = secretSeeker
+            const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
+
+            await blockchain
+              .once('invoice.settled', (invoice, party, blockchain) => {
+                console.log('invoice.settled here', invoice, party, blockchain)
+              })
+              .payInvoice(secretSeeker)
+            console.log(blockchainName, 'invoice.paid here')
+          } catch (err) {
+            this.error('swap.error', err, swap)
+            this.emit('error', err, swap)
+          }
+        })
+
+      // IIFE implementing infinite retries until success
+      // TODO: fix this to be more reasonable through state persistance
+      const notifyCounterParty = async args => {
+        try {
+          this.info('swap.notifyCounterParty', args, swap)
+          await this.sdk.network.request(args, { swap })
+        } catch (err) {
+          this.error('swap.notifyCounterParty', err, args, swap)
+          setTimeout(notifyCounterParty, 1000, args) // FIXME: Hardcoded value
+        }
+      }
+
+      notifyCounterParty({ method: 'POST', path: '/api/v1/swap' })
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      this.emit('error', err, swap)
     }
   }
 
@@ -150,9 +194,21 @@ module.exports = class Swaps extends BaseClass {
    * @param {Swap} swap The swap that is committing
    * @returns {Void}
    */
-  _onCommitting (swap) {
-    if (swap.isSecretHolder(this.sdk.id)) {
+  async _onCommitting(swap) {
+    try {
+      // Secret holder goes next
+      if (swap.secretHolder.id !== this.sdk.id) return
 
+      // handle the payment of the invoice sent previously
+      const { secretHolder } = swap
+      const { blockchain: blockchainName } = secretHolder
+      const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
+
+      await blockchain.payInvoice(secretHolder)
+      console.log('lightning payment made')
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      this.emit('error', err, swap)
     }
   }
 
@@ -162,7 +218,7 @@ module.exports = class Swaps extends BaseClass {
    * @returns {Void}
    */
   _onCommitted (swap) {
-    // TODO: clean up
+    console.log('committed', swap)
   }
 
   /**

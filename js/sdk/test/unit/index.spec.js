@@ -65,11 +65,11 @@ before(async function () {
     GLOBALS[key] = existing
   }
 
-  // compile and deploy the smart-contracts
+  // compile and deploy the smart-contracts, and export the abi/address details
   const web3 = this.web3 = new Web3(process.env.PORTAL_ETHEREUM_URL)
   const contracts = this.contracts = await deploy(await compile(), web3)
   const abiFile = process.env.PORTAL_ETHEREUM_CONTRACTS
-  writeFileSync(abiFile, JSON.stringify(contracts))
+  writeFileSync(abiFile, JSON.stringify(contracts, null, 2))
 
   // load the configuration
   // NOTE: This MUST happen after the smart-contract compilation/deployment
