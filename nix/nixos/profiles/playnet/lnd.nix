@@ -1,5 +1,4 @@
 {
-  # TODO: This will configured per host. As right now we only have the definition of portalos, here's enough.
   services.lnd = {
     alice = {
       enable = true;

@@ -77,7 +77,7 @@ jobs:
 
     - name: Build PortalOS closure
       run: |
-        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
+        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.ci)
         echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
       id: build-machine-closure
 
