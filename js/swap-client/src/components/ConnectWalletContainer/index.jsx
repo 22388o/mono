@@ -17,6 +17,8 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const node = globalWallet.assets[0] // Bitcoin
   const wallet = globalWallet.assets[1] // Ethereum
+  
+  const unisat = window.unisat
 
   /** Connect Metamask */
   const onConnectMetamask = useCallback(async () => {
@@ -125,22 +127,22 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
           <IconButton onClick={() => setIsMinimized(true)}><KeyboardDoubleArrowRightIcon className={styles['header-font']} /></IconButton>
         </Stack>
         <Stack className={styles['item-container']}>
-          <Stack direction='row' className={styles['wallet-item']} onClick={onConnectMetamask}>
+          <Stack direction='row' id='metamask-connect-btn' className={styles['wallet-item']} onClick={onConnectMetamask}>
             <img style={{ borderRadius: '5px' }} width={32} src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMJyiAlYerxZx6dsXo5Pzv5gLdCrHKJ-5gnEs9RTGQ70RNCHoICMQ8&usqp=CAE&s' />
             <Typography className={styles['wallet-title']}>Metamask</Typography>
           </Stack>
           <Divider className={styles['divider']} />
-          <Stack direction='row' className={styles['wallet-item']} onClick={onConnectLightning}>
+          <Stack direction='row' id='alby-connect-btn' className={styles['wallet-item']} onClick={onConnectLightning}>
             <img style={{ borderRadius: '5px' }} width={32} src='https://seeklogo.com/images/W/walletconnect-logo-EE83B50C97-seeklogo.com.png' />
             <Typography className={styles['wallet-title']}>Alby</Typography>
           </Stack>
           <Divider className={styles['divider']} />
-          <Stack direction='row' className={styles['wallet-item']} onClick={() => onConnectBtcWallet(1)}>
+          <Stack direction='row' id='unisat-connect-btn' className={styles['wallet-item']} onClick={() => onConnectBtcWallet(1)}>
             <img style={{ borderRadius: '5px' }} width={32} src='https://seeklogo.com/images/W/walletconnect-logo-EE83B50C97-seeklogo.com.png' />
             <Typography className={styles['wallet-title']}>Unisat</Typography>
           </Stack>
           <Divider className={styles['divider']} />
-          <Stack direction='row' className={styles['wallet-item']} onClick={() => onConnectBtcWallet(2)}>
+          <Stack direction='row' id='xverse-connect-btn' className={styles['wallet-item']} onClick={() => onConnectBtcWallet(2)}>
             <img style={{ borderRadius: '5px' }} width={32} src='https://seeklogo.com/images/W/walletconnect-logo-EE83B50C97-seeklogo.com.png' />
             <Typography className={styles['wallet-title']}>Xverse</Typography>
           </Stack>

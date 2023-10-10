@@ -11,15 +11,9 @@ const wait = (t) => {
 }
 
 async function runTests () {
-  Given('Test Browser is opened - FM', { timeout: 100000 }, async () => {
-    await openTestBrowser()
-  })
-  When('Create MetaMask Wallet - FM', { timeout: 100000 }, async () => {
-    await createMetamaskWallet()
-  })
-  Then('Connect MetaMask Wallet - FM', { timeout: 100000 }, async () => {
-    await connectMetamaskWallet()
-  })
+  await openTestBrowser()
+  await createMetamaskWallet()
+  await connectMetamaskWallet()
 }
 
 const openTestBrowser = async () => {
@@ -68,8 +62,12 @@ const createMetamaskWallet = async () => {
 }
 
 const connectMetamaskWallet = async () => {
-  await (await projPage.$('.connect-ethereum')).click()
-  await (await projPage.$('#connect-metamask')).click()
+  const [walletConnectBtn] = await projPage.$x("//button[contains(., 'Connect Wallet')]");
+  await walletConnectBtn.click();
+  await wait(1000);
+  await (await projPage.$('#metamask-connect-btn')).click() // Next
+  
+  //await (await projPage.$('#connect-metamask')).click()
 
   await wait(4000)
   const dlgWindow = (await browser.pages())[1]
