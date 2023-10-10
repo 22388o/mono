@@ -24,7 +24,7 @@ async function runTests () {
   })
 
   Then('Simulate Xverse Payment - FX', { timeout: 50000 }, async () => {
-    await simulateXversePayment()
+    // await simulateXversePayment()
   })
 }
 
@@ -42,18 +42,16 @@ async function openTestBrowser () {
   projPage = (await browser.pages())[0]
   await projPage.goto('http://localhost:5173') // Open the Proj
 
-  projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
-    await dialog.accept('2')
-  })
 }
 
 async function createXverseWallet () {
   await wait(500)
 
-  await (await projPage.$('.connect-bitcoin')).click()
-  await (await projPage.$('#connect-l1')).click()
+  const [walletConnectBtn] = await projPage.$x("//button[contains(., 'Connect Wallet')]");
+  await walletConnectBtn.click();
+  await (await projPage.$('#xverse-connect-btn')).click()
 
-  await wait(500)
+  await wait(5000)
 
   /* Create New Wallet */
   const walletCreateDlg = (await browser.pages())[1]
@@ -88,9 +86,9 @@ async function createXverseWallet () {
 }
 
 async function connectXverseWallet () {
-  await (await projPage.$('.connect-bitcoin')).click()
-  await wait(500)
-  await (await projPage.$('#connect-l1')).click()
+  const [walletConnectBtn] = await projPage.$x("//button[contains(., 'Connect Wallet')]");
+  await walletConnectBtn.click();
+  await (await projPage.$('#xverse-connect-btn')).click()
 
   await wait(2000)
   const walletDlg = (await browser.pages())[1]

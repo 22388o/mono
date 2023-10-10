@@ -70,8 +70,10 @@ const createMetamaskWallet = async () => {
 }
 
 const connectMetamaskWallet = async () => {
-  await (await projPage.$('.connect-ethereum')).click()
-  await (await projPage.$('#connect-metamask')).click()
+  const [walletConnectBtn] = await projPage.$x("//button[contains(., 'Connect Wallet')]");
+  await walletConnectBtn.click();
+  await wait(1000);
+  await (await projPage.$('#metamask-connect-btn')).click() // Next
 
   await wait(4000)
   const dlgWindow = (await browser.pages())[1]
