@@ -21,8 +21,8 @@ const openTestBrowser = async () => {
   const unisatExtPath = path.join(process.cwd(), 'test/ui/crx/alby')
 
   browser = await puppeteer.launch({
-    headless: 'new',
-    // headless: false,
+    //headless: 'new',
+    headless: false,
     args: [
       `--disable-extensions-except=${unisatExtPath}`,
       `--load-extension=${unisatExtPath}`

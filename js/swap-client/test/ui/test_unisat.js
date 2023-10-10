@@ -11,26 +11,18 @@ const wait = (t) => {
 let browser, projPage
 
 async function runTests () {
-  Given('Test Browser is opened - FU', { timeout: 100000 }, async () => {
-    await openTestBrowser()
-  })
-  When('Create Unisat Wallet - FU', { timeout: 100000 }, async () => {
-    await createUnisatWallet()
-  })
-  Then('Connect Unisat Wallet - FU', { timeout: 100000 }, async () => {
-    await connectUnisatWallet()
-  })
-  Then('Simulate Unisat Payment - FU', { timeout: 100000 }, async () => {
-    await simulateUnisatPayment()
-  })
+  await openTestBrowser()
+  await createUnisatWallet()
+  await connectUnisatWallet()
+  await simulateUnisatPayment()
 }
 
 const openTestBrowser = async () => {
   const unisatExtPath = path.join(process.cwd(), 'test/ui/crx/unisat')
 
   browser = await puppeteer.launch({
-    headless: 'new',
-    // headless: false,
+    //headless: 'new',
+    headless: false,
     args: [
       `--disable-extensions-except=${unisatExtPath}`,
       `--load-extension=${unisatExtPath}`
