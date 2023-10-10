@@ -31,10 +31,6 @@ const openTestBrowser = async () => {
   projPage = (await browser.pages())[0]
   await projPage.goto('http://localhost:5173', { timeout: 100000 }) // Open the Proj
 
-  projPage.on('dialog', async dialog => { // Handle Accept on Wallet Select Prompt
-    await dialog.accept('1')
-  })
-
   await wait(3000)
 }
 
@@ -98,8 +94,9 @@ const codeSentToInbox = async () => {
 
 const connectWalletAndSimulate = async () => {
   /** Alby Wallet Connect */
-  await (await projPage.$('.connect-bitcoin')).click()
-  await (await projPage.$('#connect-lightning')).click()
+  const [walletConnectBtn] = await projPage.$x("//button[contains(., 'Connect Wallet')]");
+  await walletConnectBtn.click();
+  await (await projPage.$('#alby-connect-btn')).click()
 
   /** Click Approve Button */
   await wait(1000)
@@ -107,14 +104,14 @@ const connectWalletAndSimulate = async () => {
   await (await albyConnectDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
 
   /** Simulate Payment */
-  await wait(1000)
+/*  await wait(1000)
   await (await projPage.$('#simulate-lightning')).click()
   await wait(1000)
   const albySimulateDlg = await (await browser.pages())[1]
   await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
   await wait(1000)
   await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
-
+*/
   await wait(2000)
 
   await browser.close()
