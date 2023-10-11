@@ -1,4 +1,36 @@
 # Expose Playnet variables
-export PORTAL_ETHEREUM_URL="http://$(awk -F "= " '/HTTPHost/ {gsub(/[\47]/, "", $2); print $2}' $PLAYNET_ROOT/geth.portal.toml):$(awk -F "= " '/HTTPPort/ {gsub(/[\47]/, "", $2); print $2}' $PLAYNET_ROOT/geth.portal.toml)"
+# NOTE: These variables are just meant for running locally playnet
+
+# General Ethereum settings
+local ETHEREUM_HOST=$(dasel -f "$PLAYNET_ROOT/geth.portal.toml" -r toml ".Node.HTTPHost")
+local ETHEREUM_PORT=$(dasel -f "$PLAYNET_ROOT/geth.portal.toml" -r toml ".Node.HTTPPort")
+
+# Portal settings
+export PORTAL_ETHEREUM_URL="http://${ETHEREUM_HOST}:${ETHEREUM_PORT}"
 export PORTAL_ETHEREUM_CHAINID="0x539"
 export PORTAL_ETHEREUM_CONTRACTS="$PLAYNET_ROOT/contracts.json"
+
+export PORTAL_ETHEREUM_GETH_DIR="$PLAYNET_ROOT/state/portal/geth/"
+export PORTAL_ETHEREUM_WALLET_SEED="area area area area area area area area area area area area"
+export PORTAL_ETHEREUM_WALLET_PASS="portal"
+local PORTAL_ETHEREUM_WALLET="$(ethw wallet create --json --seeds="$PORTAL_ETHEREUM_WALLET_SEED" | jq '.[0]')"
+export PORTAL_ETHEREUM_WALLET_ADDRESS="$(echo $PORTAL_ETHEREUM_WALLET | jq -r '.address')"
+export PORTAL_ETHEREUM_WALLET_KEY="$(echo $PORTAL_ETHEREUM_WALLET | jq -r '.private_key')"
+
+# Alice settings
+export ALICE_ETHEREUM_GETH_DIR="$PLAYNET_ROOT/state/alice/geth/"
+export ALICE_ETHEREUM_WALLET_SEED="hold hold hold hold hold hold hold hold hold hold hold hold"
+export ALICE_ETHEREUM_WALLET_PASS="alice"
+local ALICE_ETHEREUM_WALLET="$(ethw wallet create --json --seeds="$ALICE_ETHEREUM_WALLET_SEED" | jq '.[0]')"
+export ALICE_ETHEREUM_WALLET_ADDRESS="$(echo $ALICE_ETHEREUM_WALLET | jq -r '.address')"
+export ALICE_ETHEREUM_WALLET_KEY="$(echo $ALICE_ETHEREUM_WALLET | jq -r '.private_key')"
+
+# Bob settings
+export BOB_ETHEREUM_GETH_DIR="$PLAYNET_ROOT/state/bob/geth/"
+export BOB_ETHEREUM_WALLET_SEED="able able able able able able able able able able able able"
+export BOB_ETHEREUM_WALLET_PASS="bob"
+local BOB_ETHEREUM_WALLET="$(ethw wallet create --json --seeds="$BOB_ETHEREUM_WALLET_SEED" | jq '.[0]')"
+export BOB_ETHEREUM_WALLET_ADDRESS="$(echo $BOB_ETHEREUM_WALLET | jq -r '.address')"
+export BOB_ETHEREUM_WALLET_KEY="$(echo $BOB_ETHEREUM_WALLET | jq -r '.private_key')"
+
+export BOB_LIGHTNING_WALLET_SEED="${BOB_ETHEREUM_WALLET_SEED} ${BOB_ETHEREUM_WALLET_SEED}"

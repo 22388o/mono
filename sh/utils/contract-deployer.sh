@@ -29,8 +29,8 @@ update_json() {
 main() {
   local CONNECTION="$PORTAL_ETHEREUM_URL"
   local ABI_PATH="${PRJ_ROOT}/js/evm/dist/abi/Swap.json"
-  local FROM="$PORTAL_ETHEREUM_PORTAL_WALLET_ADDRESS"
-  local PRIVATE_KEY="$PORTAL_ETHEREUM_PORTAL_WALLET_KEY"
+  local FROM="$PORTAL_ETHEREUM_WALLET_ADDRESS"
+  local PRIVATE_KEY="$PORTAL_ETHEREUM_WALLET_KEY"
 
   local DATA=$(fetch_contract_data "$ABI_PATH")
 

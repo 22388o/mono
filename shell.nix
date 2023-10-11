@@ -5,6 +5,17 @@
 with lib; let
   devshell = import pkgs.sources.devshell {};
   treefmt-nix = import pkgs.sources.treefmt-nix;
+
+  # Function to generate environment variable definitions
+  mkEnv = name: value: {inherit name value;};
+
+  # Function to abstract the common shell script generation operation
+  mkScriptCommand = category: name: help: scriptPath: {
+    inherit category name help;
+    command = let
+      script = pkgs.writeShellScriptBin name (builtins.readFile scriptPath);
+    in ''${script}/bin/${name} "$@"'';
+  };
 in
   devshell.mkShell {
     name = "mono";
@@ -32,33 +43,16 @@ in
 
     env = [
       # Configure nix to use our defined nixpkgs
-      {
-        name = "NIX_PATH";
-        value = "nixpkgs=${toString pkgs.path}";
-      }
+      (mkEnv "NIX_PATH" "nixpkgs=${toString pkgs.path}")
 
       # Define PORTAL_ROOT (used by some scripts, although we can use $PRJ_ROOT as well)
-      {
-        name = "PORTAL_ROOT";
-        value = "${toString ./.}";
-      }
+      (mkEnv "PORTAL_ROOT" "${toString ./.}")
 
       # Define PLAYNET_ROOT
-      {
-        name = "PLAYNET_ROOT";
-        value = "${toString ./.}/playnet";
-      }
+      (mkEnv "PLAYNET_ROOT" "${toString ./.}/playnet")
     ];
 
     commands = [
-      {
-        category = "DevOps";
-        name = "tf-get";
-        help = "Obtain the deployment public or private key from terraform state";
-        command = let
-          script = pkgs.writeShellScriptBin "tf-get" (builtins.readFile ./sh/utils/tf-get.sh);
-        in ''${script}/bin/tf-get $@'';
-      }
       {
         category = "Tools";
         name = "fmt";
@@ -69,35 +63,33 @@ in
             programs = {
               alejandra.enable = true;
               mdformat.enable = true;
-              prettier.enable = false; # TODO: consider using prettier to autoformat code for js/
               shfmt.enable = true;
               terraform.enable = true;
             };
           };
         in ''${fmt}/bin/treefmt'';
       }
+
       {
         category = "Nix";
         name = "update";
         help = "Update all inputs with niv";
         command = ''${getExe pkgs.niv} update'';
       }
-      {
-        category = "Dev";
-        name = "devenv";
-        help = "Development Environment Control Script";
-        command = let
-          script = pkgs.writeShellScriptBin "devenv" (builtins.readFile ./sh/devenv/devenv2.sh);
-        in ''${script}/bin/devenv $@'';
-      }
-      {
-        category = "Tests";
-        name = "tests";
-        help = "Run tests";
-        command = let
-          script = pkgs.writeShellScriptBin "tests" (builtins.readFile ./sh/ci/tests.sh);
-        in ''${script}/bin/tests $@'';
-      }
+
+      (mkScriptCommand "DevOps" "tf-get" "Obtain the deployment public or private key from terraform state" ./sh/utils/tf-get.sh)
+
+      (mkScriptCommand "Dev" "devenv" "Development Environment Control Script" ./sh/devenv/devenv2.sh)
+
+      (mkScriptCommand "Dev" "bitcoin-cli-dev" "bitcoin-cli with dev settings enabled" ./sh/aliases/bitcoin-cli-dev.sh)
+      (mkScriptCommand "Dev" "bitcoind-dev" "bitcoind with dev settings enabled" ./sh/aliases/bitcoind-dev.sh)
+      (mkScriptCommand "Dev" "geth-dev" "Geth with dev settings enabled" ./sh/aliases/geth-dev.sh)
+      (mkScriptCommand "Dev" "lncli-alice" "lncli with dev settings enabled for Alice" ./sh/aliases/lncli-alice.sh)
+      (mkScriptCommand "Dev" "lncli-bob" "lncli with dev settings enabled for Bob" ./sh/aliases/lncli-bob.sh)
+      (mkScriptCommand "Dev" "lnd-alice" "lnd with dev settings enabled for Alice" ./sh/aliases/lnd-alice.sh)
+      (mkScriptCommand "Dev" "lnd-bob" "lnd with dev settings enabled for Bob" ./sh/aliases/lnd-bob.sh)
+
+      (mkScriptCommand "Tests" "tests" "Run tests" ./sh/ci/tests.sh)
     ];
 
     # TODO: Remove this entry once devenv2 is ready
