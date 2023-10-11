@@ -44,11 +44,6 @@ module.exports = class Sdk extends BaseClass {
       .on('order.created', forwardEvent(this, 'order.created'))
       .on('order.opened', forwardEvent(this, 'order.opened'))
       .on('order.closed', forwardEvent(this, 'order.closed'))
-      .on('swap.created', forwardEvent(this, 'swap.created'))
-      .on('swap.opening', forwardEvent(this, 'swap.opening'))
-      .on('swap.opened', forwardEvent(this, 'swap.opened'))
-      .on('swap.committing', forwardEvent(this, 'swap.committing'))
-      .on('swap.committed', forwardEvent(this, 'swap.committed'))
 
     /**
      * Interface to the underlying data store (browser/node.js)
@@ -148,40 +143,5 @@ module.exports = class Sdk extends BaseClass {
         this.emit('stop')
         return this
       })
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to add the orderbook
-   */
-  submitLimitOrder (order) {
-    return this.network.request({
-      method: 'PUT',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      side: order.side,
-      hash: order.hash,
-      baseAsset: order.baseAsset,
-      baseNetwork: order.baseNetwork,
-      baseQuantity: order.baseQuantity,
-      quoteAsset: order.quoteAsset,
-      quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
-    })
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to delete the orderbook
-   */
-  cancelLimitOrder (order) {
-    return this.network.request({
-      method: 'DELETE',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      id: order.id,
-      baseAsset: order.baseAsset,
-      quoteAsset: order.quoteAsset
-    })
   }
 }

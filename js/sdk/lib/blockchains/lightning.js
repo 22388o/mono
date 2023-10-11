@@ -105,7 +105,6 @@ module.exports = class Lightning extends BaseClass {
       // create a HODL invoice
       const { swap, quantity: tokens } = party
       const { id: description, secretHash: id } = swap
-      console.log({ id, description, tokens })
       const invoice = await createHodlInvoice({ lnd, id, description, tokens })
       this.info('createInvoice', invoice, this)
 

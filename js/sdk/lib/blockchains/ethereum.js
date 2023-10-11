@@ -65,22 +65,24 @@ module.exports = class Ethereum extends BaseClass {
 
       switch (event) {
         case 'InvoiceCreated': {
-          const { invoiceId: id } = returnValues
-          this.emit('invoice.created', { id })
+          const { id, swap, payee, asset, quantity } = returnValues
+          this.emit('invoice.created', { id, swap: { id: swap }, payee, asset, quantity })
           break
         }
 
         case 'InvoicePaid': {
-          const { invoiceId: id } = returnValues
-          this.emit('invoice.paid', { id })
+          const { id, swap, payer, asset, quantity } = returnValues
+          this.emit('invoice.paid', { id, swap: { id: swap }, payer, asset, quantity })
           break
         }
 
-        case 'Claimed': {
-          const { invoiceId: id, secret: bytesSecret } = returnValues
-          const bnSecret = web3.utils.toBN(bytesSecret)
+        case 'InvoiceSettled': {
+          const { id, swap, payer, payee, asset, quantity } = returnValues
+          const bnSecret = web3.utils.toBN(returnValues.secret)
+          console.log('bnSecret', bnSecret)
           const secret = bnSecret.toHexString().substr(2)
-          this.emit('invoice.settled', { id, secret })
+          console.log('secret', secret)
+          this.emit('invoice.settled', { id, swap: { id: swap, secret }, payer, payee, asset, quantity })
           break
         }
 
@@ -136,18 +138,21 @@ module.exports = class Ethereum extends BaseClass {
   async createInvoice(party) {
     try {
       const { web3, contract } = INSTANCES.get(this)
-      const { id, secretHash, asset, quantity } = party
+      const { swap: { id, secretHash }, asset, quantity } = party
+      const value = web3.utils.toHex(quantity)
       // TODO: Fix the hard coded values to account for ERC-20 tokens as well
+      console.log('createInvoice', value)
       const transaction = contract.methods.createInvoice(
+        `0x${secretHash}`,
+        `0x${id}`,
         '0x0000000000000000000000000000000000000000',
-        web3.utils.toHex(quantity),
-        '0'
+        value
       )
       const gas = await transaction.estimateGas()
       const receipt = await transaction.send({ gas })
-      const hex = receipt.logs[0].data.substr(2, 64)
-      const dec = parseInt(hex, 16)
-      return dec.toString()
+      this.info('createInvoice', receipt, party, this)
+
+      return id
     } catch (err) {
       this.error('createInvoice', err, party, this)
       throw err
@@ -166,13 +171,17 @@ module.exports = class Ethereum extends BaseClass {
   async payInvoice(party) {
     try {
       const { web3, contract } = INSTANCES.get(this)
-      const { swap: { secretHash }, quantity, invoice: invoiceId } = party
-      const value = `0x${quantity.toString(16)}`
-      const transaction = contract.methods.payInvoice(invoiceId, `0x${secretHash}`)
-      const gas = await transaction.estimateGas({ value })
+      const { swap: { id, secretHash }, asset, quantity } = party
+      const value = web3.utils.toHex(quantity)
+      const transaction = contract.methods.payInvoice(
+        `0x${secretHash}`,
+        `0x${id}`,
+        '0x0000000000000000000000000000000000000000',
+        value
+      )
       // TODO: fix value to only be used for ETH transactions
+      const gas = await transaction.estimateGas({ value })
       const receipt = await transaction.send({ gas, value })
-      console.log('got receipt', receipt)
     } catch (err) {
       this.error('payInvoice', err, party, this)
       throw err
@@ -189,13 +198,17 @@ module.exports = class Ethereum extends BaseClass {
   async settleInvoice(party, secret) {
     try {
       const { web3, contract } = INSTANCES.get(this)
-      const transaction = contracts.methods.claim(`0x${secret}`)
+      const { swap: { id } } = party
+      const transaction = contract.methods.settleInvoice(
+        `0x${secret.toString('hex')}`,
+        `0x${id}`
+      )
       const gas = await transaction.estimateGas()
       // TODO: fix value to only be used for ETH transactions
       const receipt = await transaction.send({ gas })
       console.log('got receipt', receipt)
     } catch (err) {
-      this.error('payInvoice', err, party, this)
+      this.error('settleInvoice', err, party, this)
       throw err
     }
   }

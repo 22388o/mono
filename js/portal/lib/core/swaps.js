@@ -39,10 +39,8 @@ module.exports = class Swaps extends BaseClass {
    */
   fromOrders (maker, taker) {
     return new Promise((resolve, reject) => {
-      let swap
-
       try {
-        swap = Swap.fromOrders(maker, taker, this.ctx)
+        const swap = Swap.fromOrders(maker, taker, this.ctx)
           .once('created', forwardEvent(this, 'created'))
           .once('opening', forwardEvent(this, 'opening'))
           .once('opened', forwardEvent(this, 'opened'))
@@ -50,7 +48,7 @@ module.exports = class Swaps extends BaseClass {
           .once('committed', forwardEvent(this, 'committed'))
 
         if (this.swaps.has(swap.id)) {
-          throw Error(`swap "${swap.id}" already exists!`)
+          reject(Error(`swap "${swap.id}" already exists!`))
         } else {
           this.swaps.set(swap.id, swap)
           resolve(swap)
@@ -65,84 +63,60 @@ module.exports = class Swaps extends BaseClass {
    * Handles the opening of a swap by a user that is a party to the swap
    * @param {Object} swapObj The swap to open
    * @param {String} swapObj.id The unique identifier of the swap to be opened
-   * @param {String} swapObj.secretHolder.invoice The invoice to be paid by the secret holder
-   * @param {String} swapObj.secretSeeker.invoice The invoice to be paid by the secret seeker
+   * @param {String} [swapObj.secretHolder.invoice] The invoice to be paid by the secret holder
+   * @param {String} [swapObj.secretSeeker.invoice] The invoice to be paid by the secret seeker
    * @param {Object} partyObj The party that is opening the swap
    * @param {String} party.id The unique identifier of the party
    * @param {Object} opts Configuration options for the operation
    * @returns {Promise<Swap>}
    */
   open (swapObj, partyObj, opts) {
-    if (swapObj == null || swapObj.id == null) {
-      return Promise.reject(Error('unknown swap!'))
-    } else if (!this.swaps.has(swapObj.id)) {
-      return Promise.reject(Error(`unknown swap "${swapObj.id}"!`))
-    }
+    return new Promise((resolve, reject) => {
+      if (swapObj == null || swapObj.id == null) {
+        return reject(Error('unknown swap!'))
+      } else if (!this.swaps.has(swapObj.id)) {
+        return reject(Error(`unknown swap "${swapObj.id}"!`))
+      }
 
-    const swap = this.swaps.get(swapObj.id)
-    const { secretHolder, secretSeeker, status } = swap
-    const isHolder = partyObj.id === secretHolder.id
-    const isSeeker = partyObj.id === secretSeeker.id
-    const isBoth = isHolder && isSeeker
-    const isNeither = !isHolder && !isSeeker
+      const swap = this.swaps.get(swapObj.id)
+      const { secretHolder, secretSeeker, status } = swap
+      const isHolder = partyObj.id === secretHolder.id
+      const isSeeker = partyObj.id === secretSeeker.id
+      const isBoth = isHolder && isSeeker
+      const isNeither = !isHolder && !isSeeker
 
-    if (isBoth || isNeither) {
-      const err = isBoth
-        ? Error('self-swapping is not allowed!')
-        : Error(`"${partyObj.id}" not a party to swap "${swap.id}"!`)
-      return Promise.reject(err)
-    }
+      if (isBoth || isNeither) {
+        const err = isBoth
+          ? Error('self-swapping is not allowed!')
+          : Error(`"${partyObj.id}" not a party to swap "${swap.id}"!`)
+        return reject(err)
+      }
 
-    if (swap.isCreated) {
-      if (isSeeker) {
+      if (swap.isCreated && isHolder) {
+        swap.secretHash = swapObj.secretHash
+        swap.secretSeeker.invoice = swapObj.secretSeeker.invoice
+      } else if (swap.isOpening && isSeeker) {
         swap.secretHolder.invoice = swapObj.secretHolder.invoice
       } else {
-        const err = Error('waiting for counterparty to open!')
-        return Promise.reject(err)
+        const err = swap.isCreated || swap.isOpening
+          ? Error('waiting for counterparty to open!')
+          : Error(`cannot open swap "${swap.id}" when ${status}!`)
+        return reject(err)
       }
-    } else if (swap.isOpening) {
-      if (isHolder) {
-        swap.secretSeeker.invoice = swapObj.secretSeeker.invoice
-      } else {
-        const err = Error('waiting for counterparty to open!')
-        return Promise.reject(err)
-      }
-    } else {
-      const err = Error(`cannot open swap "${swap.id}" when ${status}!`)
-      return Promise.reject(err)
-    }
 
-    return Promise.resolve(swap)
+      return resolve(swap)
+    })
   }
 
-  // /**
-  //  * Handles the opening of a swap by a user that is a party to the swap
-  //  * @param {Swap} swap The swap to open
-  //  * @param {String} swap.id The unique identifier of the swap to be opened
-  //  * @param {Party|Object} party The party that is opening the swap
-  //  * @param {String} party.id The unique identifier of the party
-  //  * @param {Object} opts Configuration options for the operation
-  //  * @returns {Promise<Swap>}
-  //  */
-  // open (swap, party, opts) {
-  //   if (swap == null || swap.id == null) {
-  //     return Promise.reject(Error('unknown swap!'))
-  //   } else if (!this.swaps.has(swap.id)) {
-  //     return Promise.reject(Error(`unknown swap "${swap.id}"!`))
-  //   } else {
-  //     return this.swaps.get(swap.id).open(party, opts)
-  //   }
-  // }
-
   /**
- * Handles commiting to a swap by a user that is a party to id
- * @param {Object} swapObj The swap being committed
- * @param {String} swapObj.id The unique identifier of the swap
- * @param {Object} partyObj The party that is committing the swap
- * @param {String} party.id The unique identifier of the party
- * @param {Object} opts Configuration options for the operation
- * @returns {Promise<Swap>}
- */
+   * Handles commiting to a swap by a user that is a party to id
+   * @param {Object} swapObj The swap being committed
+   * @param {String} swapObj.id The unique identifier of the swap
+   * @param {Object} partyObj The party that is committing the swap
+   * @param {String} party.id The unique identifier of the party
+   * @param {Object} opts Configuration options for the operation
+   * @returns {Promise<Swap>}
+   */
   commit(swapObj, partyObj, opts) {
     try {
       if (swapObj == null || swapObj.id == null) {
@@ -191,38 +165,4 @@ module.exports = class Swaps extends BaseClass {
       return Promise.reject(err)
     }
   }
-
-  // /**
-  //  * Handles commiting to a swap by a user that is a party to id
-  //  * @param {Swap} swap The swap being committed
-  //  * @param {String} swap.id The unique identifier of the swap to be committed
-  //  * @param {Party} party The party that is committing the swap
-  //  * @param {String} party.id The unique identifier of the party
-  //  * @param {Object} opts Configuration options for the operation
-  //  * @returns {Promise<Swap>}
-  //  */
-  // commit (swap, party, opts) {
-  //   if (swap == null || swap.id == null) {
-  //     throw new Error('unknown swap!')
-  //   } else if (!this.swaps.has(swap.id)) {
-  //     throw new Error(`unknown swap "${swap.id}"!`)
-  //   } else {
-  //     return this.swaps.get(swap.id).commit(party, opts)
-  //   }
-  // }
-
-  // /**
-  //  * Aborts a swap gracefully
-  //  * @param {Swap} swap The swap to be aborted
-  //  * @param {String} swap.id The unique identifier of the swap to be aborted
-  //  * @param {Party} party The party that is aborting the swap
-  //  * @param {String} party.id The unique identifier of the party
-  //  * @param {Object} opts Configuration options for the operation
-  //  * @returns {Promise<Void>}
-  //  */
-  // abort (swap, party, opts) {
-  //   return new Promise((resolve, reject) => {
-  //     reject(Error('not implemented yet!'))
-  //   })
-  // }
 }

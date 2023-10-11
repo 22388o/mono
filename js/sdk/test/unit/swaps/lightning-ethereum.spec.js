@@ -78,7 +78,6 @@ describe.only('Swaps - Lightning/Ethereum', function () {
         expect(order.uid).to.be.a('string').that.equals('alice')
         expect(order.type).to.be.a('string').that.equals('limit')
         expect(order.side).to.be.a('string').that.equals('ask')
-        expect(order.hash).to.be.a('string').that.equals(SECRET_HASH)
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
         expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
@@ -94,7 +93,6 @@ describe.only('Swaps - Lightning/Ethereum', function () {
         expect(order.uid).to.be.a('string').that.equals('alice')
         expect(order.type).to.be.a('string').that.equals('limit')
         expect(order.side).to.be.a('string').that.equals('ask')
-        expect(order.hash).to.be.a('string').that.equals(SECRET_HASH)
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
         expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
@@ -105,10 +103,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
         done()
       })
-      .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
-        hash: SECRET_HASH,
-        side: 'ask'
-      }))
+      .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'ask' }))
       .catch(done)
   })
 
@@ -125,7 +120,6 @@ describe.only('Swaps - Lightning/Ethereum', function () {
         expect(order.uid).to.be.a('string').that.equals('bob')
         expect(order.type).to.be.a('string').that.equals('limit')
         expect(order.side).to.be.a('string').that.equals('bid')
-        expect(order.hash).to.be.a('string').that.equals('ignored')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
         expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
@@ -141,7 +135,6 @@ describe.only('Swaps - Lightning/Ethereum', function () {
         expect(order.uid).to.be.a('string').that.equals('bob')
         expect(order.type).to.be.a('string').that.equals('limit')
         expect(order.side).to.be.a('string').that.equals('bid')
-        expect(order.hash).to.be.a('string').that.equals('ignored')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
         expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
@@ -152,10 +145,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
         done()
       })
-      .submitLimitOrder(Object.assign({}, ORDER_PROPS, {
-        hash: 'ignored',
-        side: 'bid'
-      }))
+      .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'bid' }))
       .catch(done)
   })
 
@@ -253,104 +243,4 @@ describe.only('Swaps - Lightning/Ethereum', function () {
       .once('swap.committing', swap => validate(swap, 'bob', 'committing'))
       .once('swap.committed', swap => validate(swap, 'bob', 'committed'))
   })
-
-  // it('must broadcast the opening swap to Alice and Bob', function () {
-  //   const { alice, bob } = this.test.ctx
-  //
-  //   expect(aliceState.opening).to.be.an('object')
-  //   expect(bobState.opening).to.be.an('object')
-  //   expect(aliceState.opening).to.deep.equal(bobState.opening)
-  //
-  //   const swap = aliceState.opening
-  //   expect(swap.id).to.be.a('string').that.equals(aliceState.created.id)
-  //   expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-  //   expect(swap.status).to.be.a('string').that.equals('opening')
-  //
-  //   expect(swap.secretHolder).to.be.an('object')
-  //   expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
-  //   expect(swap.secretHolder.state).to.be.an('object')
-  //   expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork]).to.be.an('object')
-  //   expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork].invoice).to.be.an('object')
-  //
-  //   expect(swap.secretSeeker).to.be.an('object')
-  //   expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
-  //   expect(swap.secretSeeker.state).to.be.an('object')
-  //   expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork]).to.be.an('object')
-  //   expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork].invoice).to.be.an('object')
-  // })
-  //
-  // it('must broadcast the opened swap to Alice and Bob', function () {
-  //   const { alice, bob } = this.test.ctx
-  //
-  //   expect(aliceState.opened).to.be.an('object')
-  //   expect(bobState.opened).to.be.an('object')
-  //   expect(aliceState.opened).to.deep.equal(bobState.opened)
-  //
-  //   const swap = aliceState.opened
-  //   expect(swap.id).to.be.a('string').that.equals(aliceState.created.id)
-  //   expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-  //   expect(swap.status).to.be.a('string').that.equals('opened')
-  //
-  //   expect(swap.secretHolder).to.be.an('object')
-  //   expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
-  //   expect(swap.secretHolder.state).to.be.an('object')
-  //   expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork]).to.be.an('object')
-  //   expect(swap.secretHolder.state[ORDER_PROPS.baseNetwork].invoice).to.be.an('object')
-  //
-  //   expect(swap.secretSeeker).to.be.an('object')
-  //   expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
-  //   expect(swap.secretSeeker.state).to.be.an('object')
-  //   expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork]).to.be.an('object')
-  //   expect(swap.secretSeeker.state[ORDER_PROPS.quoteNetwork].invoice).to.be.an('object')
-  // })
-  //
-  // it('must broadcast the committing swap to Alice and Bob', function () {
-  //   const { alice, bob } = this.test.ctx
-  //
-  //   expect(aliceState.committing).to.be.an('object')
-  //   expect(bobState.committing).to.be.an('object')
-  //   expect(aliceState.committing).to.deep.equal(bobState.committing)
-  //
-  //   const swap = aliceState.committing
-  //   expect(swap.id).to.be.a('string').that.equals(aliceState.Created.id)
-  //   expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-  //   expect(swap.status).to.be.a('string').that.equals('committing')
-  //
-  //   expect(swap.secretHolder).to.be.an('object')
-  //   expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
-  //   expect(swap.secretHolder.state).to.be.an('object')
-  //   expect(swap.secretHolder.state['lightning.btc']).to.be.an('object')
-  //   expect(swap.secretHolder.state['lightning.btc'].invoice).to.be.an('object')
-  //
-  //   expect(swap.secretSeeker).to.be.an('object')
-  //   expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
-  //   expect(swap.secretSeeker.state).to.be.an('object')
-  //   expect(swap.secretSeeker.state.ethereum).to.be.an('object')
-  //   expect(swap.secretSeeker.state.ethereum.invoice).to.be.an('object')
-  // })
-  //
-  // it('must broadcast the committed swap to Alice and Bob', function () {
-  //   const { alice, bob } = this.test.ctx
-  //
-  //   expect(aliceState.committed).to.be.an('object')
-  //   expect(bobState.committed).to.be.an('object')
-  //   expect(aliceState.committed).to.deep.equal(bobState.committed)
-  //
-  //   const swap = aliceState.committed
-  //   expect(swap.id).to.be.a('string').that.equals(aliceState.Created.id)
-  //   expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-  //   expect(swap.status).to.be.a('string').that.equals('committed')
-  //
-  //   expect(swap.secretHolder).to.be.an('object')
-  //   expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
-  //   expect(swap.secretHolder.state).to.be.an('object')
-  //   expect(swap.secretHolder.state['lightning.btc']).to.be.an('object')
-  //   expect(swap.secretHolder.state['lightning.btc'].invoice).to.be.an('object')
-  //
-  //   expect(swap.secretSeeker).to.be.an('object')
-  //   expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
-  //   expect(swap.secretSeeker.state).to.be.an('object')
-  //   expect(swap.secretSeeker.state.ethereum).to.be.an('object')
-  //   expect(swap.secretSeeker.state.ethereum.invoice).to.be.an('object')
-  // })
 })

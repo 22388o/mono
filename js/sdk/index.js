@@ -67,19 +67,7 @@ module.exports = class SDK extends BaseClass {
    * @param {Object} order The limit order to add the orderbook
    */
   submitLimitOrder (order) {
-    return this.sdk.network.request({
-      method: 'PUT',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      side: order.side,
-      hash: order.hash,
-      baseAsset: order.baseAsset,
-      baseNetwork: order.baseNetwork,
-      baseQuantity: order.baseQuantity,
-      quoteAsset: order.quoteAsset,
-      quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
-    })
+    return this.sdk.orderbooks.submitLimitOrder(order)
   }
 
   /**
@@ -87,14 +75,7 @@ module.exports = class SDK extends BaseClass {
    * @param {Object} order The limit order to delete the orderbook
    */
   cancelLimitOrder (order) {
-    return this.sdk.network.request({
-      method: 'DELETE',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      id: order.id,
-      baseAsset: order.baseAsset,
-      quoteAsset: order.quoteAsset
-    })
+    return this.sdk.orderbooks.cancelLimitOrder(order)
   }
 
   /**

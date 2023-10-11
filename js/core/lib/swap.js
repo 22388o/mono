@@ -181,11 +181,15 @@ module.exports = class Swap extends BaseClass {
    * @returns {Swap}
    */
   static fromJSON (obj) {
+    if (obj['@type'] !== 'Swap') {
+      throw Error('invalid swap object!')
+    }
+
     return new Swap(obj)
   }
 
   /**
-   * Creates an atomic swap for settling a pair of orders
+   * Creates a swap for settling a pair of orders matched by the DEX
    * @param {Order} maker The maker of the order
    * @param {Order} taker The taker of the order
    * @returns {Swap}
@@ -193,7 +197,6 @@ module.exports = class Swap extends BaseClass {
   static fromOrders (maker, taker) {
     return new Swap({
       id: hash(maker.id, taker.id),
-      secretHash: maker.hash,
       secretHolder: {
         id: maker.uid,
         asset: maker.isAsk ? maker.baseAsset : maker.quoteAsset,
