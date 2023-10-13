@@ -3,7 +3,7 @@
 exports[`CollectiblesModal component test renders component 1`] = `
 <div>
   <div
-    class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
+    class="MuiGrid-root MuiGrid-container css-1tj2tdk-MuiGrid-root"
   >
     <div
       class="MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-direction-xs-column MuiGrid-grid-xs-7 css-1smoqvn-MuiGrid-root"
@@ -15,7 +15,7 @@ exports[`CollectiblesModal component test renders component 1`] = `
       />
     </div>
     <div
-      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-1olnuyg-MuiGrid-root"
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-14m1l2r-MuiGrid-root"
     >
       <button
         class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium undefined coin-select css-1e6y48t-MuiButtonBase-root-MuiButton-root"

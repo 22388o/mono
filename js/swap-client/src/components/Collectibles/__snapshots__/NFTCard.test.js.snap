@@ -28,7 +28,7 @@ exports[`AccessOptionComponent should work 1`] = `
       </h4>
     </div>
     <div
-      className="MuiGrid-root MuiGrid-item css-10omzie-MuiGrid-root"
+      className="MuiGrid-root MuiGrid-item css-tness-MuiGrid-root"
     >
       <h4>
         1235123
