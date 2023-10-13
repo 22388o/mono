@@ -144,7 +144,7 @@ export const SwapHome = () => {
         
       </Grid>
       <Grid item container direction='row'>
-        <Grid item container xs={((user.isLoggedIn || !isStart) && !isMinimized) ? 10 : 12}>
+        <Grid item container xs={((user.isLoggedIn || !isStart) && !isMinimized) ? 10 : 12} sx={{ transition: 'all 0.5s ease-in-out' }}>
           <SwapCreate />
         </Grid>
       </Grid>
