@@ -125,8 +125,11 @@ async function createOrder (browser, identifier) {
 
   await page.waitForSelector('.activitiesContainer')
   // await page.screenshot({ path: 'debug_screenshot.png' });
-  await page.waitForTimeout(1000) // wait for 5 seconds
-  const activities = await page.$$('.activitiesContainer .activity-item')
+  await page.waitForTimeout(1000)
+  const [activityBtn] = await page.$x("//p[contains(., 'Activity')]");
+  await activityBtn.click();
+
+  const activities = await page.$$('.activity-item')
   if (!activities || activities.length === 0) {
     throw new Error(`Activity items not found for ${identifier}`)
   }
