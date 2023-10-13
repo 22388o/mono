@@ -107,11 +107,11 @@ contract Swap {
 
     /// Settles an invoice
     function settleInvoice(
-        uint secret,
+        bytes32 secret,
         bytes32 swap) public {
 
         // generate the hash of the secret
-        bytes32 id = toHash(uint(secret));
+        bytes32 id = sha256(abi.encodePacked(secret));
 
         // ensure the invoice is valid
         require(ids[id] == true, "No invoice found for the provided secret!");
@@ -141,21 +141,6 @@ contract Swap {
         }
 
         // emit the invoice settled event
-        emit InvoiceSettled(id, swap, payer, payee, asset, quantity, id);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Utility functions
-    ////////////////////////////////////////////////////////////////////////////
-
-    function toHash(uint secret) public pure returns (bytes32 secretHash) {
-        secretHash = sha256(toBytes(secret));
-    }
-
-    function toBytes(uint256 x) internal pure returns (bytes memory b) {
-        b = new bytes(32);
-        // solhint-disable-next-line no-inline-assembly
-        assembly { mstore(add(b, 32), x) }
-        return b;
+        emit InvoiceSettled(id, swap, payer, payee, asset, quantity, secret);
     }
 }

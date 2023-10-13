@@ -83,7 +83,9 @@ module.exports = class Lightning extends BaseClass {
       this.emit('connect', this)
       return this
     } catch (err) {
-      err = Error(err[2].err.details)
+      err = err.length === 3
+        ? Error(err[2].err.details)
+        : Error(err[1])
       this.error('connect', err, this)
       throw err
     }
@@ -91,7 +93,7 @@ module.exports = class Lightning extends BaseClass {
 
   /**
    * Creates a HODL Invoice
-   * @param {Party} party The party that is creating the invoice
+   * @param {Party} party The party that will pay the invoice
    * @param {Number} party.quantity The number of tokens to be invoiced
    * @param {Swap} party.swap The parent swap of the party
    * @param {String} party.swap.secretHash The hash of the secret of the swap
@@ -132,7 +134,9 @@ module.exports = class Lightning extends BaseClass {
       // return the BOLT-11 payment request string
       return invoice.request
     } catch (err) {
-      err = Error(err[2].err.details)
+      err = err.length === 3
+        ? Error(err[2].err.details)
+        : Error(err[1])
       this.error('createInvoice', err, party, this)
       throw err
     }
@@ -164,7 +168,9 @@ module.exports = class Lightning extends BaseClass {
       const payment = await payViaPaymentRequest({ lnd, request })
       return payment
     } catch (err) {
-      err = Error(err[2].err.details)
+      err = err.length === 3
+        ? Error(err[2].err.details)
+        : Error(err[1])
       this.error('payInvoice', err, party, this)
       throw err
     }
@@ -183,9 +189,12 @@ module.exports = class Lightning extends BaseClass {
       const { lnd } = INSTANCES.get(this).grpcs.invoice
 
       // settle the invoice
-      await settleHodlInvoice({ lnd, secret })
+      console.log('using secret', secret, secret.toString('hex'))
+      await settleHodlInvoice({ lnd, secret: secret.toString('hex') })
     } catch (err) {
-      err = Error(err[2].err.details)
+      err = err.length === 3
+        ? Error(err[2].err.details)
+        : Error(err[1])
       this.error('settleInvoice', err, party, this)
       throw err
     }
@@ -200,7 +209,9 @@ module.exports = class Lightning extends BaseClass {
       this.emit('disconnect', this)
       return this
     } catch (err) {
-      err = Error(err[2].err.details)
+      err = err.length === 3
+        ? Error(err[2].err.details)
+        : Error(err[1])
       this.error('disconnect', err, this)
       throw err
     }
