@@ -20,7 +20,6 @@
    },
    "description": "A Bitcoin Wallet for Web3",
    "devtools_page": "devtools.html",
-   "differential_fingerprint": "1.1f27522b229113772f91f9974df982c0568556959cc233fbc934bceac0df0f88",
    "host_permissions": [ "*://*/*" ],
    "icons": {
       "128": "xverse_icon.png"
@@ -31,7 +30,7 @@
    "options_page": "options.html",
    "permissions": [ "storage" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "0.15.0",
+   "version": "0.20.0",
    "web_accessible_resources": [ {
       "matches": [ "*://*/*" ],
       "resources": [ "inpage.js" ]

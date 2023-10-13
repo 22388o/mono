@@ -1,10 +1,9 @@
 const puppeteer = require('puppeteer')
 const path = require('path')
-const { Given, When, Then } = require('@cucumber/cucumber')
 
 const wait = (t) => {
   return new Promise((res, rej) => {
-    setTimeout(res, t)
+    setTimeout(() => { res() }, t)
   })
 }
 

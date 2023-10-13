@@ -6,7 +6,7 @@ let browser, projPage
 
 const wait = (t) => {
   return new Promise((res, rej) => {
-    setTimeout(res, t)
+    setTimeout(() => { res() }, t)
   })
 }
 

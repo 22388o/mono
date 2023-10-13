@@ -68,7 +68,7 @@
     "mocha": "^10.2.0",
     "path": "^0.12.7",
     "postcss": "8.4.19",
-    "puppeteer": "^21.1.1",
+    "puppeteer": "^21.3.8",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

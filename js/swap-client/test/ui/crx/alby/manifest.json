@@ -32,12 +32,7 @@
    },
    "content_scripts": [ {
       "all_frames": true,
-      "js": [ "js/contentScriptOnEndWebLN.bundle.js", "js/contentScriptOnEndAlby.bundle.js", "js/contentScriptOnEndNostr.bundle.js", "js/contentScriptOnEndWebBTC.bundle.js" ],
-      "matches": [ "*://*/*" ],
-      "run_at": "document_end"
-   }, {
-      "all_frames": true,
-      "js": [ "js/contentScriptOnStart.bundle.js" ],
+      "js": [ "js/contentScriptOnStart.bundle.js", "js/contentScriptWebLN.bundle.js", "js/contentScriptAlby.bundle.js", "js/contentScriptLiquid.bundle.js", "js/contentScriptNostr.bundle.js", "js/contentScriptWebBTC.bundle.js" ],
       "matches": [ "*://*/*" ],
       "run_at": "document_start"
    } ],
@@ -45,7 +40,6 @@
       "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
    },
    "description": "The Bitcoin Lightning wallet for direct payments across the globe, Bitcoin Lightning applications and passwordless logins.",
-   "differential_fingerprint": "1.19f52431cd9da6dcdd288588528ac8b0855709831db3aec315e1941f44efa7a4",
    "homepage_url": "https://getAlby.com/",
    "host_permissions": [ "*://*/*" ],
    "icons": {
@@ -62,11 +56,7 @@
       "open_in_tab": true,
       "page": "options.html"
    },
-   "permissions": [ "activeTab", "nativeMessaging", "notifications", "storage", "tabs", "unlimitedStorage", "identity" ],
+   "permissions": [ "nativeMessaging", "notifications", "scripting", "storage", "tabs", "unlimitedStorage", "identity" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "3.0.0",
-   "web_accessible_resources": [ {
-      "matches": [ "file://*/*", "http://*/*", "https://*/*" ],
-      "resources": [ "js/inpageScript.bundle.js", "js/inpageScriptWebLN.bundle.js", "js/inpageScriptWebBTC.bundle.js", "js/inpageScriptNostr.bundle.js", "js/inpageScriptAlby.bundle.js" ]
-   } ]
+   "version": "3.2.1"
 }

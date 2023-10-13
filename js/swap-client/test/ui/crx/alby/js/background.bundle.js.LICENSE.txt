@@ -19,9 +19,15 @@
 
 /*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 
-/*! scure-bip39 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
-
 /*! scure-btc-signer - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+
+/**
+ * @license BitSet.js v5.1.1 2/1/2020
+ * http://www.xarg.org/2014/03/javascript-bit-array/
+ *
+ * Copyright (c) 2020, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
 
 /**
  * @license React
