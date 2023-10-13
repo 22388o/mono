@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CollectiblesSubTab component test renders component 1`] = `
+exports[`WalletInfoContainer component test renders component 1`] = `
 <div>
   <div
     class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"

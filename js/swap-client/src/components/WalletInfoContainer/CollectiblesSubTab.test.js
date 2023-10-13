@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom'; // For the "toBeInTheDocument" matcher
 import { CollectiblesSubTab } from './CollectiblesSubTab';
 
@@ -11,12 +11,14 @@ global.fetch = jest.fn(() =>
 
 
 describe('CollectiblesSubTab component test', () => {
-  it('renders component', () => {
+  it('renders component', async () => {
 
     const {container} = render(
       <CollectiblesSubTab />
     );
 
-    expect(container).toMatchSnapshot();
+    await waitFor(() => {
+      expect(container).toMatchSnapshot();
+    })
   });
 });
