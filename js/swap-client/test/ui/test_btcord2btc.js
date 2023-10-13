@@ -47,6 +47,7 @@ function processLogs (logs, identifier) {
 async function setupBrowser () {
   const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] })
   const page = (await browser.pages())[0]
+  await page.setViewport({width:1600, height: 900});
   await page.goto('http://localhost:5173')
   return { browser, page }
 }
@@ -91,7 +92,7 @@ async function createOrder (browser, identifier) {
     await (await page.$('.coin-select')).click()
 
     await page.waitForTimeout(500)
-    await (await (await page.$('.modal-container')).$$('.asset-item'))[4].click()
+    await (await (await page.$('.modal-container')).$$('.asset-item'))[3].click()
 
     await page.waitForTimeout(1500)
     await (await (await page.$('.modal-container')).$$('.nft-card'))[0].click()
@@ -105,7 +106,7 @@ async function createOrder (browser, identifier) {
     await (await page.$$('.coin-select'))[1].click()
 
     await page.waitForTimeout(500)
-    await (await (await page.$('.modal-container')).$$('.asset-item'))[4].click()
+    await (await (await page.$('.modal-container')).$$('.asset-item'))[3].click()
 
     await page.waitForTimeout(1500)
     await (await (await page.$('.modal-container')).$$('.nft-card'))[0].click()
