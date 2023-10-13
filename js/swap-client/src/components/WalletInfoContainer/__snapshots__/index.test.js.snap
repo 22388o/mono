@@ -1,0 +1,309 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CollectiblesSubTab component test renders component 1`] = `
+<div>
+  <div
+    class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+    style="display: block;"
+  >
+    <div
+      class="MuiStack-root css-1rzuxdl-MuiStack-root"
+    >
+      <div
+        class="MuiStack-root css-m69qwo-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-313u06-MuiStack-root"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 undefined undefined css-ahj2mt-MuiTypography-root"
+          >
+            Assets
+          </p>
+          <p
+            class="MuiTypography-root MuiTypography-body1 undefined false css-ahj2mt-MuiTypography-root"
+          >
+            Activity
+          </p>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+            data-testid="KeyboardDoubleArrowRightIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"
+            />
+            <path
+              d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
+        class="MuiStack-root css-18yyqbo-MuiStack-root"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-7ut9zg-MuiTypography-root"
+        >
+          NaN
+        </p>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-fqcpc4-MuiTypography-root"
+        >
+          USD
+        </p>
+      </div>
+      <div
+        class="MuiGrid-root MuiGrid-container css-544k9b-MuiGrid-root"
+      >
+        <div
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1osj8n2-MuiGrid-root"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 
+              undefined 
+              undefined
+             css-ahj2mt-MuiTypography-root"
+          >
+            Coins
+          </p>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1osj8n2-MuiGrid-root"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 
+              undefined 
+              undefined
+             css-ahj2mt-MuiTypography-root"
+          >
+            Collectibles
+          </p>
+        </div>
+      </div>
+      <div
+        class="MuiGrid-root css-vj1n65-MuiGrid-root"
+      >
+        <div
+          class="MuiStack-root css-nen11g-MuiStack-root"
+        >
+          <div>
+            <div
+              class="MuiStack-root css-m69qwo-MuiStack-root"
+            >
+              <div
+                class="MuiStack-root css-o389km-MuiStack-root"
+              >
+                <img
+                  src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true"
+                  width="32"
+                />
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                >
+                  BTC
+                </p>
+              </div>
+              <div
+                class="MuiStack-root css-1qxw92a-MuiStack-root"
+              >
+                <div
+                  class="MuiStack-root css-1qvzoxq-MuiStack-root"
+                >
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+                    />
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+                    >
+                      BTC
+                    </p>
+                  </div>
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1b9ac31-MuiTypography-root"
+                    >
+                      NaN
+                    </p>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ajxvt4-MuiTypography-root"
+                    >
+                      USD
+                    </p>
+                  </div>
+                </div>
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="KeyboardArrowRightIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+            />
+          </div>
+          <div>
+            <div
+              class="MuiStack-root css-m69qwo-MuiStack-root"
+            >
+              <div
+                class="MuiStack-root css-o389km-MuiStack-root"
+              >
+                <img
+                  src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true"
+                  width="32"
+                />
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                >
+                  ETH
+                </p>
+              </div>
+              <div
+                class="MuiStack-root css-1qxw92a-MuiStack-root"
+              >
+                <div
+                  class="MuiStack-root css-1qvzoxq-MuiStack-root"
+                >
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+                    />
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+                    >
+                      ETH
+                    </p>
+                  </div>
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1b9ac31-MuiTypography-root"
+                    >
+                      NaN
+                    </p>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ajxvt4-MuiTypography-root"
+                    >
+                      USD
+                    </p>
+                  </div>
+                </div>
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="KeyboardArrowRightIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+            />
+          </div>
+          <div>
+            <div
+              class="MuiStack-root css-m69qwo-MuiStack-root"
+            >
+              <div
+                class="MuiStack-root css-o389km-MuiStack-root"
+              >
+                <img
+                  src="https://seeklogo.com/images/T/tether-usdt-logo-FA55C7F397-seeklogo.com.png"
+                  width="32"
+                />
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                >
+                  USDT
+                </p>
+              </div>
+              <div
+                class="MuiStack-root css-1qxw92a-MuiStack-root"
+              >
+                <div
+                  class="MuiStack-root css-1qvzoxq-MuiStack-root"
+                >
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+                    >
+                      1000
+                    </p>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+                    >
+                      USDT
+                    </p>
+                  </div>
+                  <div
+                    class="MuiStack-root css-7vetex-MuiStack-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1b9ac31-MuiTypography-root"
+                    >
+                      1,000
+                    </p>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ajxvt4-MuiTypography-root"
+                    >
+                      USD
+                    </p>
+                  </div>
+                </div>
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="KeyboardArrowRightIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
