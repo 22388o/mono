@@ -29,7 +29,7 @@
     "test:metamask0": "node src/test/ntest_metamask.js",
     "test:unisat0": "node src/test/ntest_unisat.js",
     "test:xverse0": "node src/test/ntest_xverse.js",
-    "test:jest": "jest --env=jsdom -u",
+    "test:jest": "jest --env=jsdom -u --coverage",
     "test1": "node src/test/test2.js",
     "watch": "npm run test -- --watch",
     "debug": "npm run test -- --debug"

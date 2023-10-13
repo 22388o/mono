@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MobileWarningPage component test renders component 1`] = `
+<div>
+  <div
+    class="MuiContainer-root MuiContainer-maxWidthLg css-a8rwrm-MuiContainer-root"
+  >
+    <div
+      class="MuiStack-root css-b0wcx0-MuiStack-root"
+    >
+      <div
+        class="MuiStack-root css-1tgn0hz-MuiStack-root"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-31k6lm-MuiTypography-root"
+        >
+          P
+        </p>
+        <img
+          height="50"
+          src="circle.png"
+          width="50"
+        />
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-31k6lm-MuiTypography-root"
+        >
+          RTAL
+        </p>
+      </div>
+      <hr
+        class="MuiDivider-root MuiDivider-fullWidth css-pe13p2-MuiDivider-root"
+      />
+      <div
+        class="MuiStack-root css-mqdbk5-MuiStack-root"
+      >
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1m9u4ux-MuiSvgIcon-root"
+          data-testid="ComputerIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"
+          />
+        </svg>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-w0vq2a-MuiTypography-root"
+        >
+          The Portal DEX is not available on mobile, yet
+        </p>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-ohsm56-MuiTypography-root"
+        >
+          Use a desktop web browser to access the app.
+        </p>
+      </div>
+      <div
+        class="MuiStack-root css-1ucnu3w-MuiStack-root"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1e1gjrx-MuiTypography-root"
+        >
+          Get notified when it's available
+        </p>
+        <input
+          placeholder="Email"
+        />
+        <button
+          circular="true"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium w-100 gradient-btn-disabled css-r2a59y-MuiButtonBase-root-MuiButton-root"
+          disabled=""
+          secondary="true"
+          tabindex="-1"
+          type="button"
+        >
+          Sign up to Newsletter
+        </button>
+      </div>
+      <div
+        class="MuiStack-root css-1t9prg1-MuiStack-root"
+      >
+        <hr
+          class="MuiDivider-root MuiDivider-fullWidth css-kpuxg6-MuiDivider-root"
+        />
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-52y4mu-MuiTypography-root"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-u499xv-MuiSvgIcon-root"
+            data-testid="HelpOutlineOutlinedIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"
+            />
+          </svg>
+          Contact US
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
