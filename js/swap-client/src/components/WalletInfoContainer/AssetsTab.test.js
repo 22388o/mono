@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom'; // For the "toBeInTheDocument" matcher
 import { AssetsTab } from './AssetsTab';
 
@@ -11,12 +11,18 @@ global.fetch = jest.fn(() =>
 describe('AssetsTab component test', () => {
   it('renders component', async () => {
 
-    const {container} = render(
+    const { container, getByText, asFragment } = render(
       <AssetsTab />
     );
 
     await waitFor(() => {
       expect(container).toMatchSnapshot();
+
+      const collectiblesTab = getByText('Collectibles');
+      fireEvent.click(collectiblesTab);
+      
+      expect(collectiblesTab).toBeInTheDocument();
+      expect(asFragment()).toMatchSnapshot();
     });
   });
 });

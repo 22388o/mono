@@ -257,3 +257,211 @@ exports[`AssetsTab component test renders component 1`] = `
   </div>
 </div>
 `;
+
+exports[`AssetsTab component test renders component 2`] = `
+<DocumentFragment>
+  <div
+    class="MuiStack-root css-18yyqbo-MuiStack-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-7ut9zg-MuiTypography-root"
+    >
+      NaN
+    </p>
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-fqcpc4-MuiTypography-root"
+    >
+      USD
+    </p>
+  </div>
+  <div
+    class="MuiGrid-root MuiGrid-container css-544k9b-MuiGrid-root"
+  >
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1osj8n2-MuiGrid-root"
+    >
+      <p
+        class="MuiTypography-root MuiTypography-body1 
+              undefined 
+              undefined
+             css-ahj2mt-MuiTypography-root"
+      >
+        Coins
+      </p>
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1osj8n2-MuiGrid-root"
+    >
+      <p
+        class="MuiTypography-root MuiTypography-body1 
+              undefined 
+              undefined
+             css-ahj2mt-MuiTypography-root"
+      >
+        Collectibles
+      </p>
+    </div>
+  </div>
+  <div
+    class="MuiGrid-root css-vj1n65-MuiGrid-root"
+  >
+    <div
+      class="MuiStack-root css-nen11g-MuiStack-root"
+    >
+      <div>
+        <div
+          class="MuiStack-root css-m69qwo-MuiStack-root"
+        >
+          <div
+            class="MuiStack-root css-1tjhhxk-MuiStack-root"
+          >
+            <img
+              src="/nft/1.png"
+              width="45"
+            />
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              Inscription #0
+            </p>
+          </div>
+          <div
+            class="MuiStack-root css-1qxw92a-MuiStack-root"
+          >
+            <div
+              class="MuiStack-root css-7vetex-MuiStack-root"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+              >
+                1
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+              >
+                BTCORD-0
+              </p>
+            </div>
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="KeyboardArrowRightIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+              />
+            </svg>
+          </div>
+        </div>
+        <hr
+          class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+        />
+      </div>
+      <div>
+        <div
+          class="MuiStack-root css-m69qwo-MuiStack-root"
+        >
+          <div
+            class="MuiStack-root css-1tjhhxk-MuiStack-root"
+          >
+            <img
+              src="/nft/2.png"
+              width="45"
+            />
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              Inscription #1
+            </p>
+          </div>
+          <div
+            class="MuiStack-root css-1qxw92a-MuiStack-root"
+          >
+            <div
+              class="MuiStack-root css-7vetex-MuiStack-root"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+              >
+                1
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+              >
+                BTCORD-1
+              </p>
+            </div>
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="KeyboardArrowRightIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+              />
+            </svg>
+          </div>
+        </div>
+        <hr
+          class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+        />
+      </div>
+      <div>
+        <div
+          class="MuiStack-root css-m69qwo-MuiStack-root"
+        >
+          <div
+            class="MuiStack-root css-1tjhhxk-MuiStack-root"
+          >
+            <img
+              src="/nft/3.png"
+              width="45"
+            />
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              Inscription #2
+            </p>
+          </div>
+          <div
+            class="MuiStack-root css-1qxw92a-MuiStack-root"
+          >
+            <div
+              class="MuiStack-root css-7vetex-MuiStack-root"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1fmxcpf-MuiTypography-root"
+              >
+                1
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-xrfphg-MuiTypography-root"
+              >
+                BTCORD-2
+              </p>
+            </div>
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="KeyboardArrowRightIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+              />
+            </svg>
+          </div>
+        </div>
+        <hr
+          class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+        />
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
