@@ -8,7 +8,7 @@ const { uuid } = require('./util')
  * A list of supported assets
  * @type {Map}
  */
-const ASSETS = require('../../portal/lib/core/assets')
+const ASSETS = require('../../core/lib/assets')
 
 /**
  * A list of supported networks

@@ -2,7 +2,7 @@
  * @file Defines an instance of an atomic swap
  */
 
-const Party = require('../../portal/lib/core/party')
+const Party = require('../../core/lib/party')
 const { hash, uuid } = require('./util')
 const BaseClass = require('./base_class')
 
