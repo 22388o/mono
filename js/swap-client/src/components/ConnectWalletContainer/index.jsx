@@ -195,7 +195,7 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
               <Typography className={styles['wallet-title']}>Alby</Typography>
             </Stack>
             { albyConnected && <Stack>
-              <Button color='primary' className='simulate-l1' variant='contained' onClick={() => onPaymentSimulateAlby()}>Simulate</Button>
+              <Button color='primary' className='simulate-alby' variant='contained' onClick={() => onPaymentSimulateAlby()}>Simulate</Button>
             </Stack> }
           </Stack>
           <Divider className={styles['divider']} />
@@ -205,7 +205,7 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
               <Typography className={styles['wallet-title']}>Unisat</Typography>
             </Stack>
             { unisatConnected && <Stack>
-              <Button color='primary' className='simulate-l1' variant='contained' onClick={() => onPaymentSimulateUnisat()}>Simulate</Button>
+              <Button color='primary' className='simulate-unisat' variant='contained' onClick={() => onPaymentSimulateUnisat()}>Simulate</Button>
             </Stack> }
           </Stack>
           <Divider className={styles['divider']} />
@@ -215,7 +215,7 @@ export const ConnectWalletContainer = ({ show, setIsMinimized }) => {
               <Typography className={styles['wallet-title']}>Xverse</Typography>
             </Stack>
             { xverseConnected && <Stack>
-              <Button color='primary' className='simulate-l1' variant='contained' onClick={() => onPaymentSimulateXverse()}>Simulate</Button>
+              <Button color='primary' className='simulate-xverse' variant='contained' onClick={() => onPaymentSimulateXverse()}>Simulate</Button>
             </Stack> }
           </Stack>
         </Stack>

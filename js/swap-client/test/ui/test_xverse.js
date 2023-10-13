@@ -13,7 +13,7 @@ async function runTests () {
   await openTestBrowser()
   await createXverseWallet()
   await connectXverseWallet()
-  //await simulateXversePayment()
+  await simulateXversePayment()
 }
 
 async function openTestBrowser () {
@@ -92,7 +92,7 @@ async function connectXverseWallet () {
 }
 
 async function simulateXversePayment () {
-  await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click() // Simulate Payment
+  await (await projPage.$('.simulate-xverse')).click() // Simulate Payment
   await wait(2000)
 
   const approveDlg = (await browser.pages())[1]

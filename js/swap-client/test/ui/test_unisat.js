@@ -14,7 +14,7 @@ async function runTests () {
   await openTestBrowser()
   await createUnisatWallet()
   await connectUnisatWallet()
-  //await simulateUnisatPayment()
+  await simulateUnisatPayment()
 }
 
 const openTestBrowser = async () => {
@@ -80,7 +80,7 @@ const connectUnisatWallet = async () => {
 }
 
 const simulateUnisatPayment = async () => {
-  await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click()
+  await (await projPage.$('.simulate-unisat')).click()
 
   await wait(3000)
 
