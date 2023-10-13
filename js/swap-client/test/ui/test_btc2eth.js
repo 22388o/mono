@@ -17,8 +17,8 @@ async function runTests () {
 }
 
 async function setupBrowser () {
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--window-size=1920,1096'] })
-  const page = await browser.newPage()
+  const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] })
+  const page = (await browser.pages())[0]
   await page.goto('http://localhost:5173')
   return browser
 }
@@ -31,7 +31,7 @@ async function performLogin (browser, index) {
   // Debugging output
   console.log(`Attempting to login with index: ${index}`)
 
-  await page.waitForSelector('#connect-wallet', { timeout: 1000 }) // Wait up to 1 seconds
+  await page.waitForSelector('#connect-wallet', { timeout: 10000 }) // Wait up to 1 seconds
   await page.click('#connect-wallet')
 
   try {
@@ -56,7 +56,7 @@ async function performLogin (browser, index) {
 
 async function createOrder (browser, identifier) {
   const pages = await browser.pages()
-  const page = pages[pages.length - 1] // Get the last page
+  const page = pages[0] // Get the last page
 
   if (identifier === 'bob') { // TODO: Remove bob check and manually choose opposite pairs (remove state)
     const exchangeButton = await page.$('.exchange')
@@ -79,10 +79,12 @@ async function createOrder (browser, identifier) {
   }
   await swapButton.click()
 
-  await page.waitForSelector('.activitiesContainer')
   // await page.screenshot({ path: 'debug_screenshot.png' });
-  await page.waitForTimeout(1000) // wait for 5 seconds
-  const activities = await page.$$('.activitiesContainer .activity-item')
+  await page.waitForTimeout(3000)
+  const [activityBtn] = await page.$x("//p[contains(., 'Activity')]");
+  await activityBtn.click();
+
+  const activities = await page.$$('.activity-item')
   if (!activities || activities.length === 0) {
     throw new Error(`Activity items not found for ${identifier}`)
   }
