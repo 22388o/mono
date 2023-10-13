@@ -19,8 +19,8 @@ async function runTests () {
 const openTestBrowser = async () => {
   const metamaskPath = path.join(process.cwd(), 'test/ui/crx/metamask')
   browser = await puppeteer.launch({
-    headless: 'new',
-    // headless: false,
+    //headless: 'new',
+    headless: false,
     args: [
       `--disable-extensions-except=${metamaskPath}`,
       `--load-extension=${metamaskPath}`

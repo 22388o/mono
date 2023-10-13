@@ -24,7 +24,7 @@ async function runTests () {
   })
 
   Then('Simulate Xverse Payment - FX', { timeout: 50000 }, async () => {
-    // await simulateXversePayment()
+    await simulateXversePayment()
   })
 }
 
@@ -104,7 +104,7 @@ async function connectXverseWallet () {
 }
 
 async function simulateXversePayment () {
-  await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click() // Simulate Payment
+  await (await projPage.$('.simulate-xverse')).click() // Simulate Payment
   await wait(2000)
 
   const approveDlg = (await browser.pages())[1]

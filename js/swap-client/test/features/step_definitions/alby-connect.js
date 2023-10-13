@@ -118,14 +118,14 @@ const connectWalletAndSimulate = async () => {
   await (await albyConnectDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
 
   /** Simulate Payment */
-  /*await wait(1000)
-  await (await projPage.$('#simulate-lightning')).click()
+  await wait(1000)
+  await (await projPage.$('.simulate-alby')).click()
   await wait(1000)
   const albySimulateDlg = await (await browser.pages())[1]
   await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
   await wait(1000)
   await (await albySimulateDlg.$('button.px-0.py-2.bg-primary-gradient')).click()
-*/
+
   await wait(2000)
 
   await browser.close()

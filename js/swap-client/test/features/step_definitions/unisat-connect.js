@@ -24,7 +24,7 @@ async function runTests () {
   })
 
   Then('Simulate Unisat Payment - FU', { timeout: 50000 }, async () => {
-    //await simulateUnisatPayment()
+    await simulateUnisatPayment()
   })
 }
 
@@ -92,7 +92,7 @@ const connectUnisatWallet = async () => {
 }
 
 const simulateUnisatPayment = async () => {
-  await (await (await projPage.$('.connect-modal-color')).$('.simulate-l1')).click()
+  await (await projPage.$('.simulate-unisat')).click()
 
   await wait(3000)
 
