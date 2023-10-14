@@ -63,19 +63,19 @@ module.exports = class SDK extends BaseClass {
   }
 
   /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to add the orderbook
+   * Submits a limit order to the DEX
+   * @param {Object} order The limit order to add to the DEX
    */
   submitLimitOrder (order) {
-    return this.sdk.orderbooks.submitLimitOrder(order)
+    return this.sdk.dex.submitLimitOrder(order)
   }
 
   /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to delete the orderbook
+   * Cancels a previously submitted limit order
+   * @param {Object} order The limit order to delete the DEX
    */
   cancelLimitOrder (order) {
-    return this.sdk.orderbooks.cancelLimitOrder(order)
+    return this.sdk.dex.cancelLimitOrder(order)
   }
 
   /**
