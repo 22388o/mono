@@ -19,12 +19,8 @@ module.exports = class Swaps extends BaseClass {
       .on('swap.created', (...args) => this._onEvent('created', ...args))
       .on('swap.opening', (...args) => this._onEvent('opening', ...args))
       .on('swap.opened', (...args) => this._onEvent('opened', ...args))
-      .on('swap.committing', (...args) => this._onEvent('committing', ...args))
-      .on('swap.committed', (...args) => this._onEvent('committed', ...args))
-      .on('swap.aborting', (...args) => this._onEvent('aborting', ...args))
-      .on('swap.aborted', (...args) => this._onEvent('aborted', ...args))
 
-    Object.seal(this)
+    Object.freeze(this)
   }
 
   /**
@@ -86,40 +82,44 @@ module.exports = class Swaps extends BaseClass {
     const { blockchains, network } = this.sdk
     const { secretHolder, secretSeeker } = swap
 
-    // The secret-seeker waits for the secret-holder to deliver an invoice
+    // the seeker waits for the holder to deliver the holder-invoice
     if (secretSeeker.id === this.sdk.id) return
 
-    // For the secret-holder, start by generating a secret for the swap
+    // the holder first generates a secret for the swap, and hashes it
     const secret = Util.random()
     swap.secretHash = Util.hash(secret) // NOTE: SWAP STATE MUTATION!
-    console.log('here we are', secret.toString('hex'), swap.secretHash)
-    this.info('swap.created', swap)
+    this.sdk.emit('swap.created', swap)
 
-    // generate an invoice to send to the secret-seeker, and watch for when the
-    // secret-seeker pays the invoice, so it can be settled immediately.
-    const ethereum = blockchains[secretSeeker.blockchain.split('.')[0]]
-    const invoice = secretSeeker.invoice = await ethereum.createInvoice(secretSeeker)
-    ethereum.once('invoice.paid', async (...args) => {
-      console.log(this.sdk.id, '(holder) notified of', ethereum.id, 'invoice being paid.', ...args)
-      // this.info('invoice.settling', invoice, swap, ethereum, this)
-      console.log(this.sdk.id, '(holder) settling', ethereum.id, 'invoice using secret', secret, '...')
-      await ethereum
-        .once('invoice.settled', (...args) => {
-          console.log(this.sdk.id, '(holder) settled', ethereum.id, 'invoice using secret', secret)
+    // the holder generates the holder-invoice on the seeker-chain
+    const seekerChain = blockchains[secretSeeker.blockchain.split('.')[0]]
+    await seekerChain.createInvoice(secretSeeker)
+
+    // when the seeker pays the holder-invoice on the seeker-chain, the holder
+    // uses the secret to immediately settle it on the seeker-chain, thereby
+    // receiving the funds on the seeker-chain
+    seekerChain.once('invoice.paid', () => {
+      this.info('swap.seekerPaid', swap)
+      this.sdk.emit('swap.seekerPaid', swap)
+
+      seekerChain
+        .once('invoice.settled', () => {
+          this.info('swap.holderSettled', swap)
+          this.sdk.emit('swap.holderSettled', swap)
         })
         .settleInvoice(secretHolder, secret)
-      // this.info('invoice.settled', invoice, swap, ethereum, this)
     })
-    console.log(this.sdk.id, '(holder) created invoice on', ethereum.id, invoice)
 
-    // Notify the secret-seeker
+    // finally, the holder sends the holder-invoice to the seeker
     const args = { method: 'PUT', path: '/api/v1/swap' }
     try {
       this.info('swap.notifyCounterParty', args, swap)
       await network.request(args, { swap })
+
+      this.info('swap.holderInvoiced', swap)
+      this.sdk.emit('swap.holderInvoiced', swap)
     } catch (err) {
       this.error('swap.notifyCounterParty', err, args, swap)
-      setTimeout(notifyCounterParty, 1000, args) // FIXME: Hardcoded value
+      this.sdk.emit('swap.error', err, swap)
     }
   }
 
@@ -135,43 +135,48 @@ module.exports = class Swaps extends BaseClass {
   async _onOpening (swap) {
     const { blockchains, network } = this.sdk
     const { secretHolder, secretSeeker } = swap
-    const lightning = blockchains[secretHolder.blockchain.split('.')[0]]
-    const ethereum = blockchains[secretSeeker.blockchain.split('.')[0]]
-    this.info('swap.opening', swap)
+    const seekerChain = blockchains[secretSeeker.blockchain.split('.')[0]]
 
-    // The secret-holder waits for the secret-seeker to deliver an invoice
+    // the holder waits for the seeker to deliver the seeker-invoice
     if (secretHolder.id === this.sdk.id) return
 
-    // generate an invoice to send to the secret-holder, and watch for when the
-    // secret-holder pays the invoice, so the secret-holder's invoice can be
-    // paid. Finally, when the secret-holder settles the invoice, use the
-    // secret to settle our own invoice.
-    const seekerInvoice = secretHolder.invoice = await lightning.createInvoice(secretHolder)
-    console.log(this.sdk.id, 'created invoice on', lightning.id, seekerInvoice)
+    // the seeker generates the seeker-invoice on the holder-chain
+    const holderChain = blockchains[secretHolder.blockchain.split('.')[0]]
+    await holderChain.createInvoice(secretHolder)
 
-    lightning.once('invoice.paid', async (...args) => {
-      console.log(this.sdk.id, '(seeker) notified of', lightning.id, 'invoice being paid.', ...args)
-      console.log(this.sdk.id, ' (seeker) paying', ethereum.id, 'invoice...')
-      await ethereum.payInvoice(secretSeeker)
-      console.log(this.sdk.id, '(seeker) paid', ethereum.id, 'invoice')
+    // when the holder pays the seeker's invoice on the holder-chain, the
+    // seeker pays the holder's invoice on the seeker-chain
+    holderChain.once('invoice.paid', () => {
+      this.info('swap.holderPaid', swap)
+      this.sdk.emit('swap.holderPaid', swap)
+
+      seekerChain.payInvoice(secretSeeker)
     })
 
-    ethereum.once('invoice.settled', async args => {
-      console.log(this.sdk.id, '(seeker) noticed settlement of', ethereum.id, 'invoice...', args)
-      console.log(this.sdk.id, '(seeker) settling', lightning.id, 'invoice using secret "', args.swap.secret, '"...')
-      await lightning.settleInvoice(secretHolder, args.swap.secret)
-      console.log(this.sdk.id, '(seeker) settled', lightning.id, 'invoice')
+    // when the holder settles the holder-invoice on the seeker-chain, the
+    // seeker uses the secret revealed during the settlement to settle the
+    // seeker-invoice on the holder-chain
+    seekerChain.once('invoice.settled', args => {
+      holderChain
+        .once('invoice.settled', () => {
+          this.info('swap.seekerSettled', swap)
+          this.sdk.emit('swap.seekerSettled', swap)
+        })
+        .settleInvoice(secretHolder, args.swap.secret)
     })
 
     // Notify the secret-holder
     const args = { method: 'PUT', path: '/api/v1/swap' }
-      try {
-        this.info('swap.notifyCounterParty', args, swap)
-        await network.request(args, { swap })
-      } catch (err) {
-        this.error('swap.notifyCounterParty', err, args, swap)
-        setTimeout(notifyCounterParty, 1000, args) // FIXME: Hardcoded value
-      }
+    try {
+      this.info('swap.notifyCounterParty', args, swap)
+      await network.request(args, { swap })
+
+      this.info('swap.seekerInvoiced', swap)
+      this.sdk.emit('swap.seekerInvoiced', swap)
+    } catch (err) {
+      this.error('swap.notifyCounterParty', err, args, swap)
+      this.sdk.emit('swap.error', err, swap)
+    }
   }
 
   /**
@@ -192,10 +197,8 @@ module.exports = class Swaps extends BaseClass {
     this.info('swap.opened', swap)
 
     // handle the payment of the invoice sent previously
-    const lightning = blockchains[secretHolder.blockchain.split('.')[0]]
-    console.log(this.sdk.id, 'paying', lightning.id, 'invoice...')
-    await lightning.payInvoice(secretHolder)
-    console.log(this.sdk.id, 'paid', lightning.id, 'invoice')
+    const holderChain = blockchains[secretHolder.blockchain.split('.')[0]]
+    holderChain.payInvoice(secretHolder)
   }
 
   /**
@@ -204,20 +207,7 @@ module.exports = class Swaps extends BaseClass {
    * @returns {Void}
    */
   async _onCommitting(swap) {
-    try {
-      // Secret holder goes next
-      if (swap.secretHolder.id !== this.sdk.id) return
-
-      // handle the payment of the invoice sent previously
-      const { secretHolder } = swap
-      const { blockchain: blockchainName } = secretHolder
-      const blockchain = this.sdk.blockchains[blockchainName.split('.')[0]]
-
-      await blockchain.payInvoice(secretHolder)
-    } catch (err) {
-      this.error('swap.error', err, swap)
-      this.emit('error', err, swap)
-    }
+    throw Error('not implemented')
   }
 
   /**
@@ -226,7 +216,7 @@ module.exports = class Swaps extends BaseClass {
    * @returns {Void}
    */
   _onCommitted (swap) {
-    console.log('committed', swap)
+    throw Error('not implemented')
   }
 
   /**
