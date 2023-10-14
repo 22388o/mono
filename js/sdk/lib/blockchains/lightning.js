@@ -107,23 +107,23 @@ module.exports = class Lightning extends BaseClass {
       // create a HODL invoice
       const { swap, quantity: tokens } = party
       const { id: description, secretHash: id } = swap
-      party.invoice = await createHodlInvoice({ lnd, id, description, tokens })
-      this.info('createInvoice', party.invoice, this)
+      const invoice = await createHodlInvoice({ lnd, id, description, tokens })
+      this.info('createInvoice', invoice, this)
 
       // subscribe to updates on the HODL invoice
       const subscription = subscribeToInvoice({ lnd, id })
       const onInvoiceUpdated = invoice => {
         if (invoice.is_held) {
-          this.info('invoice.paid', party, this)
-          this.emit('invoice.paid', party, this)
+          this.info('invoice.paid', invoice, party, this)
+          this.emit('invoice.paid', invoice, party, this)
         } else if (invoice.is_confirmed) {
           subscription.off('invoice_updated', onInvoiceUpdated)
-          this.info('invoice.settled', party, this)
-          this.emit('invoice.settled', party, this)
+          this.info('invoice.settled', invoice, party, this)
+          this.emit('invoice.settled', invoice, party, this)
         } else if (invoice.is_cancelled) {
           subscription.off('invoice_updated', onInvoiceUpdated)
-          this.info('invoice.cancelled', party, this)
-          this.emit('invoice.cancelled', party, this)
+          this.info('invoice.cancelled', invoice, party, this)
+          this.emit('invoice.cancelled', invoice, party, this)
         }
       }
       subscription.on('invoice_updated', onInvoiceUpdated)
@@ -132,6 +132,7 @@ module.exports = class Lightning extends BaseClass {
       this.emit('invoice.created', invoice)
 
       // return the BOLT-11 payment request string
+      party.invoice = invoice.request
       return invoice.request
     } catch (err) {
       err = err.length === 3
@@ -166,6 +167,7 @@ module.exports = class Lightning extends BaseClass {
 
       // pay the invoice
       const payment = await payViaPaymentRequest({ lnd, request })
+      this.info('payInvoice', payment, party, this)
       return payment
     } catch (err) {
       err = err.length === 3
@@ -191,6 +193,7 @@ module.exports = class Lightning extends BaseClass {
       // settle the invoice
       console.log('using secret', secret, secret.toString('hex'))
       await settleHodlInvoice({ lnd, secret: secret.toString('hex') })
+      this.info('settleInvoice', party, this)
     } catch (err) {
       err = err.length === 3
         ? Error(err[2].err.details)
