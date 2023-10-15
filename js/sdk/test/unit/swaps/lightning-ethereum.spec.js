@@ -19,57 +19,11 @@ describe.only('Swaps - Lightning/Ethereum', function () {
     quoteQuantity: 100000
   }
 
-  let aliceState = {
-    created: null,
-    opening: null,
-    opened: null,
-    committing: null,
-    committed: null,
-    aborting: null,
-    aborted: null
-  }
-  let bobState = {
-    created: null,
-    opening: null,
-    opened: null,
-    committing: null,
-    committed: null,
-    aborting: null,
-    aborted: null
-  }
-
-  /**
-   * Sets up listeners for incoming messages from the server
-   *
-   * Over the course of this test, the server will send updates to the clients
-   * at certain points, such as when the orders are matched and a swap is
-   * created.
-   *
-   * We record these events for both Alice and Bob and use them later.
-   */
-  // before('Watch for updates for the server', async function () {
-  //   const { alice, bob } = this.test.ctx
-  //
-  //   alice.on('swap.created', swap => {
-  //     if (aliceState.created != null) {
-  //       throw Error('swap.created fired multiple times for alice!')
-  //     }
-  //     aliceState.created = swap
-  //   })
-  //
-  //   bob.on('swap.created', swap => {
-  //     if (bobState.created != null) {
-  //       throw Error('swap.created fired multiple times for bob!')
-  //     }
-  //     bobState.created = swap
-  //   })
-  // })
-
   /**
    * Alice places an order using the secret hash. The test waits for the order
    * to be opened on the orderbook.
    */
-  it('must allow Alice to place an order', function (done) {
+  it.only('must allow Alice to place an order', function (done) {
     this.test.ctx.alice
       .once('order.created', order => {
         expect(order).to.be.an('object')
@@ -103,6 +57,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
         done()
       })
+      .once('order.closed', order => done(Error('order unexpected closed!')))
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'ask' }))
       .catch(done)
   })
@@ -111,7 +66,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * Bob places the counter-order that would match with Alice's order, and waits
    * for the order to be opened on the orderbook.
    */
-  it('must allow Bob to place an order', function (done) {
+  it.only('must allow Bob to place an order', function (done) {
     this.test.ctx.bob
       .once('order.created', order => {
         expect(order).to.be.an('object')
@@ -145,6 +100,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
         done()
       })
+      .once('order.closed', order => done(Error('order unexpected closed!')))
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'bid' }))
       .catch(done)
   })
@@ -156,7 +112,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * received by both alice and bob, and that the fields are as expected, esp.
    * the secret hash.
    */
-  it('must handle the swap between to Alice and Bob', function (done) {
+  it.only('must handle the swap between to Alice and Bob', function (done) {
     const { alice, bob } = this.test.ctx
     const swaps = {
       alice: {

@@ -224,6 +224,15 @@ module.exports = class Order extends BaseClass {
       this.quoteNetwork === target.quoteNetwork
   }
 
+  static fromJSON (obj) {
+    if (obj['@type'] !== 'Order') {
+      this.warn(`order.error`, obj)
+      throw Error(`expected type "Order", but got "${obj['@type']}"!`)
+    }
+
+    return new Order(obj)
+  }
+
   /**
    * Returns an asset-pair, given a JSON object with the base/quote assets
    * @param {Object} obj JSON object representing the order

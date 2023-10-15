@@ -149,13 +149,10 @@ module.exports = class Ethereum extends BaseClass {
       const tx = createInvoice(id, swap, asset, value)
       const gas = await tx.estimateGas()
       const receipt = await tx.send({ gas })
-
-      // TODO: Create an Invoice instance here from the receipt
-      party.invoice = id // NOTE: Swap Party Mutation!
       this.info('createInvoice', receipt, party, this)
 
-      // TODO: This should be an Invoice object
-      return id
+      const { blockHash, from, to, transactionHash } = receipt
+      return { blockHash, from, to, transactionHash }
     } catch (err) {
       this.error('createInvoice', err, party, this)
       throw err

@@ -2,7 +2,8 @@
  * @file An interface to all swaps
  */
 
-const { BaseClass, Swap, Util } = require('@portaldefi/core')
+const { BaseClass, Order, Util } = require('@portaldefi/core')
+const Swap = require('./swap')
 
 /**
  * Expose the interface to all swaps
@@ -14,11 +15,11 @@ module.exports = class Swaps extends BaseClass {
 
     this.sdk = sdk
 
-    // Wire up swap events
+    // Read swap events from the network
     this.sdk.network
-      .on('swap.created', (...args) => this._onEvent('created', ...args))
-      .on('swap.opening', (...args) => this._onEvent('opening', ...args))
-      .on('swap.opened', (...args) => this._onEvent('opened', ...args))
+      .on('swap.received', obj => this._onSwap(obj))
+      .on('swap.holder.invoice.sent', obj => this._onSwap(obj))
+      .on('swap.seeker.invoice.sent', obj => this._onSwap(obj))
 
     Object.freeze(this)
   }
@@ -31,6 +32,134 @@ module.exports = class Swaps extends BaseClass {
     // TODO: Fix this to load from the store on startup
     // TODO: Fix this to write to the store on shutdown
     return Promise.resolve(this)
+  }
+
+  /**
+   * Handles the swap as it transitions through its states
+   * @param {Object} obj The JSON represetation of the swap that was received
+   * @returns {Void}
+   */
+  async _onSwap (obj) {
+    const { sdk } = this
+    const { store } = sdk
+    let swap = null
+
+    try {
+      // Convert the JSON representation of the swap into a Swap instance.
+      swap = Swap.fromJSON(obj, sdk)
+
+      // If this is a new swap, save it to the store. If not, then retrieve the
+      // existing swap from the store and update it with the incoming swap.
+      if (swap.status === 'received') {
+        await store.put('swaps', swap.id, swap.toJSON())
+      } else {
+        const swapObj = await store.get('swaps', swap.id)
+        const swapp = Swap.fromJSON(swapObj, sdk)
+        swapp.update(swap)
+        swap = swapp
+      }
+
+      // Now check the status of the swap and take action accordingly
+      switch (swap.status) {
+        case 'received': {
+          this.info(`swap.received`, swap)
+          if (swap.party.isSeeker) return
+
+          const secret = Util.random()
+          const secretHash = Util.hash(secret)
+          await store.put('secrets', secretHash, secret)
+
+          // NOTE: Swap mutation causes status to transition to 'created'
+          swap.secretHash = secretHash
+
+          // NOTE: fallthru to the next state
+        }
+
+        case 'created': {
+          if (swap.party.isSeeker) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'holder.invoicing'
+          await swap.createInvoice()
+        }
+        // NOTE: fallthru to the next state
+
+        case 'holder.invoice.created': {
+          if (swap.party.isSeeker) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'holder.invoiced'
+          await swap.sendInvoice()
+          break
+        }
+
+        case 'holder.invoice.sent': {
+          if (swap.party.isHolder) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
+          await swap.createInvoice()
+        }
+        // NOTE: fallthru to the next state
+
+        case 'seeker.invoice.created': {
+          if (swap.party.isHolder) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoiced'
+          await swap.sendInvoice()
+          break
+        }
+
+        case 'seeker.invoice.sent': {
+          if (swap.party.isSeeker) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'holder.paid'
+          await swap.payInvoice()
+          break
+        }
+
+        case 'holder.invoice.paid': {
+          if (swap.party.isHolder) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'seeker.paid'
+          await swap.payInvoice()
+          break
+        }
+
+        case 'seeker.invoice.paid': {
+          if (swap.party.isSeeker) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'holder.settled'
+          await swap.settleInvoice()
+          break
+        }
+
+        case 'holder.invoice.settled': {
+          if (swap.party.isHolder) return
+          this.info(`swap.${swap.status}`, swap)
+
+          // NOTE: Swap mutation causes status to transition to 'seeker.settled'
+          await swap.settleInvoice()
+          break
+        }
+
+        case 'seeker.invoice.settled': {
+          this.info(`swap.${swap.status}`, swap)
+          break
+        }
+
+        default:
+          const err = Error(`unknown status "${swap.status}"!`)
+          this.error(`swap.error`, err, swap)
+      }
+    } catch (err) {
+      this.error('swap.error', err, swap)
+      this.emit('error', err, swap)
+    }
   }
 
   /**
@@ -67,14 +196,6 @@ module.exports = class Swaps extends BaseClass {
 
   /**
    * Handles the creation of a new swap
-   * 
-   * Upon creation, the exchange-designated secret-holder generates the secret
-   * and its hash, creates an invoice for the counter-party, and sends the
-   * details to the counterparty.
-   * 
-   * The exchange-designated secret-seeker, simply stores the swap in the store
-   * and waits for the secret-holder to send the secret-hash and invoice.
-   * 
    * @param {Swap} swap The newly created swap
    * @returns 
    */
@@ -125,10 +246,6 @@ module.exports = class Swaps extends BaseClass {
 
   /**
    * Handles the opening of a swap
-   * 
-   * Once a secret-holder notifies the secret-seeker of the secret-hash, the
-   * secret-seeker creates an invoice and sends it over to the secret holder.
-   * 
    * @param {Swap} swap The swap that is opening
    * @returns {Void}
    */
@@ -181,10 +298,6 @@ module.exports = class Swaps extends BaseClass {
 
   /**
    * Handles a swap once it is opened from both sides
-   * 
-   * At this step, the secret-holder must pay the secret-seeker's invoice and
-   * lock funds in the network.
-   * 
    * @param {Swap} swap 
    * @returns 
    */
