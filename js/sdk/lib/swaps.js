@@ -81,6 +81,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'holder.invoicing'
           await swap.createInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
         }
         // NOTE: fallthru to the next state
 
@@ -90,6 +91,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'holder.invoiced'
           await swap.sendInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
@@ -99,6 +101,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
           await swap.createInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
         }
         // NOTE: fallthru to the next state
 
@@ -108,6 +111,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'seeker.invoiced'
           await swap.sendInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
@@ -117,6 +121,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'holder.paid'
           await swap.payInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
@@ -126,6 +131,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'seeker.paid'
           await swap.payInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
@@ -135,6 +141,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'holder.settled'
           await swap.settleInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
@@ -144,6 +151,7 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'seeker.settled'
           await swap.settleInvoice()
+          await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 

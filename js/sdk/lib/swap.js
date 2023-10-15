@@ -303,7 +303,6 @@ class Swap {
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
     this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
     INSTANCES.get(this).status = `${this.partyType}.invoice.created`
-    await store.put('swaps', this.id, this.toJSON())
   }
 
   /**
@@ -321,8 +320,6 @@ class Swap {
       INSTANCES.get(this).status = `${this.partyType}.invoice.created`
       throw err
     }
-
-    await store.put('swaps', this.id, this.toJSON())
   }
 
   /**
@@ -334,7 +331,6 @@ class Swap {
     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
     this.party.payment = await blockchain.payInvoice(this.party)
     INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
-    await store.put('swaps', this.id, this.toJSON())
   }
 
   /**
@@ -346,7 +342,6 @@ class Swap {
     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
     INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
     const receipt = await blockchain.settleInvoice(this)
-    await store.put('swaps', this.id, this.toJSON())
   }
 }
 
