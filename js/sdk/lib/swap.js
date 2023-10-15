@@ -301,7 +301,23 @@ class Swap {
   async createInvoice () {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
-    this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
+    this.counterparty.invoice = await blockchain
+      .on('invoice.paid', (invoice, party, swap, blockchain) => {
+        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
+        if (this.party.isSeeker) {
+          INSTANCES.get(this).status = `holder.invoice.paid`
+          this.payInvoice()
+        } else if (this.party.isHolder) {
+          INSTANCES.get(this).status = `seeker.invoice.paid`
+          this.settleInvoice()
+        } else {
+          throw Error('unexpected code branch!')
+        }
+      })
+      .on('invoice.settled', invoice => {
+        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
+      })
+      .createInvoice(this.counterparty)
     INSTANCES.get(this).status = `${this.partyType}.invoice.created`
   }
 
@@ -327,10 +343,15 @@ class Swap {
    * @return {Promise<Void>}
    */
   async payInvoice () {
-    const { blockchains, store } = this.sdk
-    const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-    this.party.payment = await blockchain.payInvoice(this.party)
-    INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
+    try {
+      const { blockchains, store } = this.sdk
+      const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+      this.party.payment = await blockchain.payInvoice(this.party)
+      console.log('swap.payInvoice', Error().stack)
+      INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
+    } catch (err) {
+      console.log('swap.payInvoice', err)
+    }
   }
 
   /**
@@ -409,6 +430,7 @@ class Party {
    * @returns {Void}
    */
   set payment (val) {
+    console.log('setting payment for', this.id, val)
     const state = INSTANCES.get(this)
     if (state.payment != null) {
       throw Error('payment already created!')
