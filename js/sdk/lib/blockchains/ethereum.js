@@ -19,10 +19,6 @@ module.exports = class Ethereum extends BaseClass {
   constructor (sdk, props) {
     super({ id: 'ethereum' })
 
-    const log = (level, event) => {
-      return [event, (...args) => this[level](`provider.${event}`, ...args)]
-    }
-
     // web3-provider
     const provider = new WebSocketProvider(props.url)
     // provider.on('message', (...args) => this.debug('provider.message', ...args))
@@ -98,7 +94,7 @@ module.exports = class Ethereum extends BaseClass {
       contract: { address: contract._address }
     }
 
-    INSTANCES.set(this, Object.seal({ web3, wallet, contract, events, json }))
+    INSTANCES.set(this, Object.seal({ web3, wallet, contract, json }))
 
     Object.freeze(this)
   }
@@ -108,8 +104,7 @@ module.exports = class Ethereum extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    const { json } = INSTANCES.get(this)
-    return Object.assign(super.toJSON(), json)
+    return Object.assign(super.toJSON(), INSTANCES.get(this).json)
   }
 
   /**
@@ -141,6 +136,42 @@ module.exports = class Ethereum extends BaseClass {
       const { methods: { createInvoice } } = contract
       const { toHex } = web3.utils
 
+      // const subscriptionArgs = {
+      //   filter: { swap: toHex(party.swap.id) },
+      //   fromBlock: 'latest'
+      // }
+      // const subscription = contract.events.allEvents(subscriptionArgs)
+      // subscription.on('data', data => {
+      //   const { event, returnValues } = data
+
+      //   switch (event) {
+      //     case 'InvoiceCreated': break // Ignore
+
+      //     case 'InvoicePaid': {
+      //       this.info('invoice.paid', data, party, this)
+      //       this.emit('invoice.paid', returnValues, party, this)
+      //       break
+      //     }
+
+      //     case 'InvoiceSettled': {
+      //       this.info('invoice.settled', data, party, this)
+      //       this.emit('invoice.settled', returnValues, party, this)
+      //       subscription.unsubscribe()
+      //       break
+      //     }
+
+      //     case 'InvoiceCancelled': {
+      //       this.info('invoice.cancelled', data, party, this)
+      //       this.emit('invoice.cancelled', returnValues, party, this)
+      //       subscription.unsubscribe()
+      //       break
+      //     }
+
+      //     default:
+      //       this.warn('event', data)
+      //   }
+      // })
+
       const id = toHex(party.swap.secretHash)
       const swap = toHex(party.swap.id)
       const asset = '0x0000000000000000000000000000000000000000'
@@ -149,10 +180,10 @@ module.exports = class Ethereum extends BaseClass {
       const tx = createInvoice(id, swap, asset, value)
       const gas = await tx.estimateGas()
       const receipt = await tx.send({ gas })
-
       this.info('createInvoice', receipt, party, this)
-      // TODO: This should be an Invoice object
-      return id
+
+      const { blockHash, from, to, transactionHash } = receipt
+      return { blockHash, from, to, transactionHash }
     } catch (err) {
       this.error('createInvoice', err, party, this)
       throw err
@@ -169,7 +200,7 @@ module.exports = class Ethereum extends BaseClass {
    * @param {String} party.swap.secretHash The hash of the secret of the swap
    * @returns {Promise<Void>}
    */
-  async payInvoice(party) {
+  async payInvoice (party) {
     try {
       const { web3, contract } = INSTANCES.get(this)
       const { methods: { payInvoice } } = contract
@@ -198,19 +229,17 @@ module.exports = class Ethereum extends BaseClass {
    * Settles an invoice
    * @param {Party} party The party that is settling the invoice
    * @param {Number} party.invoice The invoice to be settled
-   * @param {Buffer} secretBytes A buffer containing the secret to be revealed
+   * @param {String} secret The secret to be revealed
    * @returns {Promise<Void>}
    */
-  async settleInvoice(party, secretBytes) {
+  async settleInvoice (party, secret) {
     try {
       const { web3, contract } = INSTANCES.get(this)
       const { methods: { settleInvoice } } = contract
-      const { bytesToHex, toHex } = web3.utils
+      const { toHex } = web3.utils
 
-      const secret = bytesToHex(secretBytes)
       const swap = toHex(party.swap.id)
-
-      const tx = settleInvoice(secret, swap)
+      const tx = settleInvoice(`0x${secret}`, swap)
       const gas = await tx.estimateGas()
       const receipt = await tx.send({ gas })
 

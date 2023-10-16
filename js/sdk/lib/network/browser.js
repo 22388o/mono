@@ -3,7 +3,6 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const { Buffer } = require('buffer');
 
 /**
  * Network implementation for the browser
@@ -139,15 +138,23 @@ module.exports = class Network extends BaseClass {
   _onMessage (data) {
     let event, arg
     try {
-      arg = JSON.parse(data.data)
-      event = (arg['@type'] != null && arg.status != null)
-        ? arg.status//`${arg['@type'].toLowerCase()}.*/${arg.status}`
-        : 'message'
+      arg = JSON.parse(data)
+
+      if (arg['@type'] != null && arg.status != null) {
+        event = `${arg['@type'].toLowerCase()}.${arg.status}`
+        arg = [arg]
+      } else if (arg['@event'] != null && arg['@data'] != null) {
+        event = arg['@event']
+        arg = arg['@data']
+      } else {
+        event = 'message'
+        arg = [arg]
+      }
     } catch (err) {
       event = 'error'
       arg = err
     } finally {
-      this.emit(event, arg)
+      this.emit(event, ...arg)
     }
   }
 }

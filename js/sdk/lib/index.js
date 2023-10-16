@@ -4,10 +4,19 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const Blockchains = require('./blockchains')
-const Orderbooks = require('./orderbooks')
+const Dex = require('./dex')
 const Network = require('./network')
 const Store = require('./store')
 const Swaps = require('./swaps')
+
+/**
+ * Creates and returns an event-handler that forwards the specified event
+ * @param {String} event The name of the event
+ * @returns {Function}
+ */
+function forwardEvent (self, event) {
+  return function (...args) { self.emit(event, ...args) }
+}
 
 /**
  * The Portal SDK
@@ -17,21 +26,30 @@ module.exports = class Sdk extends BaseClass {
   /**
    * Creates a new instance of the Portal SDK
    * @param {Object} props Properties of the instance
+   * @param {String} props.id Unique identifier of the instance
+   * @param {Object} props.network Properties of the network
+   * @param {Object} props.store Properties of the store
+   * @param {Object} props.blockchains Properties of the supported blockchains
+   * @param {Object} props.dex Properties of the dex
+   * @param {Object} props.swaps Properties of the swaps
    */
   constructor (props) {
-    super()
+    super({ id: props.id })
 
     /**
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = new Network(props.network)
+    this.network = new Network(this, props.network)
+      .on('order.created', forwardEvent(this, 'order.created'))
+      .on('order.opened', forwardEvent(this, 'order.opened'))
+      .on('order.closed', forwardEvent(this, 'order.closed'))
 
     /**
      * Interface to the underlying data store (browser/node.js)
      * @type {Store}
      */
-    this.store = new Store(props.store)
+    this.store = new Store(this, props.store)
 
     /**
      * Interface to all the blockchain networks
@@ -40,10 +58,10 @@ module.exports = class Sdk extends BaseClass {
     this.blockchains = new Blockchains(this, props.blockchains)
 
     /**
-     * Interface to the DEX orderbooks
-     * @type {Orderbooks}
+     * Interface to the decentralized exchange
+     * @type {Dex}
      */
-    this.orderbooks = new Orderbooks(this, props.orderbooks)
+    this.dex = new Dex(this, props.dex)
 
     /**
      * Interface to atomic swaps
@@ -51,11 +69,14 @@ module.exports = class Sdk extends BaseClass {
      */
     this.swaps = new Swaps(this, props.swaps)
 
-    Object.freeze(this)
-  }
+    // Bubble up the log events
+    this.network.on('log', (level, ...args) => this[level](...args))
+    this.store.on('log', (level, ...args) => this[level](...args))
+    this.blockchains.on('log', (level, ...args) => this[level](...args))
+    this.dex.on('log', (level, ...args) => this[level](...args))
+    this.swaps.on('log', (level, ...args) => this[level](...args))
 
-  get id () {
-    return this.network.id
+    Object.freeze(this)
   }
 
   /**
@@ -71,126 +92,56 @@ module.exports = class Sdk extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    const { network, store, blockchains, orderbooks, swaps } = this
-    return { network, store, blockchains, orderbooks, swaps }
+    return Object.assign(super.toJSON(), {
+      network: this.network,
+      store: this.store,
+      blockchains: this.blockchains,
+      dex: this.dex,
+      swaps: this.swaps
+    })
   }
 
   /**
-   * Starts the Portal SDK.
-   *
-   * The peer connects to the network intermittently and syncs up state. This
-   * method initializes the network sub-system to allow the peer to communicate
-   * with the rest of the network.
-   *
+   * Starts the Portal SDK
    * @returns {Sdk}
    */
   start () {
+    this.debug('starting', this)
     const operations = [
       this.network.connect(),
       this.store.open(),
       this.blockchains.connect(),
-      this.orderbooks.open(),
+      this.dex.open(),
       this.swaps.sync()
     ]
 
     return Promise.all(operations)
-      .then(([network, store, blockchains, orderbooks, swaps]) => {
+      .then(([network, store, blockchains, dex, swaps]) => {
+        this.info('start', this)
         this.emit('start')
         return this
       })
   }
 
   /**
-   * Gracefully terminates the network connection.
+   * Gracefully closes the Portal SDK.
    * @returns {Sdk}
    */
   stop () {
+    this.debug('stopping', this)
     const operations = [
       this.network.disconnect(),
       this.store.close(),
       this.blockchains.disconnect(),
-      this.orderbooks.close(),
+      this.dex.close(),
       this.swaps.sync()
     ]
 
     return Promise.all(operations)
-      .then(([network, store, blockchains, orderbooks, swaps]) => {
+      .then(([network, store, blockchains, dex, swaps]) => {
+        this.info('stop', this)
         this.emit('stop')
         return this
       })
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to add the orderbook
-   */
-  submitLimitOrder (order) {
-    return this.network.request({
-      method: 'PUT',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      side: order.side,
-      hash: order.hash,
-      baseAsset: order.baseAsset,
-      baseNetwork: order.baseNetwork,
-      baseQuantity: order.baseQuantity,
-      quoteAsset: order.quoteAsset,
-      quoteNetwork: order.quoteNetwork,
-      quoteQuantity: order.quoteQuantity
-    })
-  }
-
-  /**
-   * Adds a limit order to the orderbook
-   * @param {Object} order The limit order to delete the orderbook
-   */
-  cancelLimitOrder (order) {
-    return this.network.request({
-      method: 'DELETE',
-      path: '/api/v1/orderbook/limit'
-    }, {
-      id: order.id,
-      baseAsset: order.baseAsset,
-      quoteAsset: order.quoteAsset
-    })
-  }
-
-  /**
-   * Create the required state for an atomic swap
-   * @param {Swap|Object} swap The swap to open
-   * @param {Object} opts Options for the operation
-   * @returns {Swap}
-   */
-  swapOpen (swap, opts) {
-    return this.network.request({
-      method: 'PUT',
-      path: '/api/v1/swap'
-    }, { swap, opts })
-  }
-
-  /**
-   * Completes the atomic swap
-   * @param {Swap|Object} swap The swap to commit
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapCommit (swap, opts) {
-    return this.network.request({
-      method: 'POST',
-      path: '/api/v1/swap'
-    }, { swap, opts })
-  }
-
-  /**
-   * Abort the atomic swap optimistically and returns funds to owners
-   * @param {Swap|Object} swap The swap to abort
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapAbort (swap, opts) {
-    return this.network.request({
-      method: 'DELETE',
-      path: '/api/v1/swap'
-    }, { swap, opts })
   }
 }

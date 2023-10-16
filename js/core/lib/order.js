@@ -253,6 +253,15 @@ module.exports = class Order {
       this.quoteNetwork === target.quoteNetwork
   }
 
+  static fromJSON (obj) {
+    if (obj['@type'] !== 'Order') {
+      this.warn(`order.error`, obj)
+      throw Error(`expected type "Order", but got "${obj['@type']}"!`)
+    }
+
+    return new Order(obj)
+  }
+
   /**
    * Validates a matched order-pair
    * @param {Object<Order>} maker The maker order of the match order-pair

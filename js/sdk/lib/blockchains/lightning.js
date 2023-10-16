@@ -131,8 +131,7 @@ module.exports = class Lightning extends BaseClass {
       // notify the creation of a new invoice
       this.emit('invoice.created', invoice)
 
-      // return the BOLT-11 payment request string
-      return invoice.request
+      return { id, description, request: invoice.request }
     } catch (err) {
       err = err.length === 3
         ? Error(err[2].err.details)
@@ -154,7 +153,7 @@ module.exports = class Lightning extends BaseClass {
       const { lnd } = INSTANCES.get(this).grpcs.admin
 
       // decode the invoice
-      const { invoice: request } = party
+      const { invoice: { request } } = party
       const paymentRequest = await decodePaymentRequest({ lnd, request })
 
       // validate the invoice
@@ -162,12 +161,26 @@ module.exports = class Lightning extends BaseClass {
         const expected = party.swap.secretHash
         const actual = paymentRequest.id
         throw Error(`expected swap hash "${expected}"; got "${actual}"`)
+      } else if (paymentRequest.description !== party.swap.id) {
+        const expected = party.swap.id
+        const actual = paymentRequest.description
+        throw Error(`expected swap identifier "${expected}"; got "${actual}"`)
+      } else if (paymentRequest.tokens !== party.quantity) {
+        const expected = party.quantity
+        const actual = paymentRequest.tokens
+        throw Error(`expected swap quantity "${expected}"; got "${actual}"`)
       }
 
       // pay the invoice
-      const payment = await payViaPaymentRequest({ lnd, request })
-      return payment
+      const receipt = await payViaPaymentRequest({ lnd, request })
+      // TODO: Ensure this appears in the logs
+      this.info('payInvoice', receipt, party, this)
+
+      // return the payment receipt
+      const { id, expires_at, payment } = receipt
+      return { id, expires_at, payment }
     } catch (err) {
+      console.log(err)
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -190,8 +203,11 @@ module.exports = class Lightning extends BaseClass {
 
       // settle the invoice
       console.log('using secret', secret, secret.toString('hex'))
-      await settleHodlInvoice({ lnd, secret: secret.toString('hex') })
+      const receipt = await settleHodlInvoice({ lnd, secret })
+      this.info('settleInvoice', receipt, party, this)
+      return receipt
     } catch (err) {
+      console.log('here', err)
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])

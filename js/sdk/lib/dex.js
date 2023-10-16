@@ -1,14 +1,14 @@
 /**
- * @file An interface to all orderbooks
+ * @file The interface to the decentralized exchange
  */
 
 const { BaseClass, Util: { uuid } } = require('@portaldefi/core')
 
 /**
- * Expose the interface to all orderbooks
- * @type {Orderbooks}
+ * The interface to the decentralized exchange
+ * @type {Dex}
  */
-module.exports = class Orderbooks extends BaseClass {
+module.exports = class Dex extends BaseClass {
   constructor (sdk) {
     super()
 
@@ -24,7 +24,7 @@ module.exports = class Orderbooks extends BaseClass {
 
   /**
    * Opens the orderbooks
-   * @returns {Promise<Orderbooks>}
+   * @returns {Promise<Dex>}
    */
   open () {
     return Promise.resolve(this)
@@ -32,7 +32,7 @@ module.exports = class Orderbooks extends BaseClass {
 
   /**
    * Closes the orderbooks
-   * @returns {Promise<Orderbooks>}
+   * @returns {Promise<Dex>}
    */
   close () {
     return Promise.resolve(this)

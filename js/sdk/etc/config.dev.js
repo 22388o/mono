@@ -24,6 +24,6 @@ module.exports = {
     },
     lightning: {}
   },
-  orderbooks: {},
+  dex: {},
   swaps: {}
 }
