@@ -28,6 +28,62 @@ export const getBob = () => {
  * @returns {JSON}
  */
 
+export const WALLET_COINS = [{
+  title: 'Bitcoin-Taproot',
+  type: 'BTC',
+  rate: 100000000,
+  connected: false,
+  network: 'lightning.btc',
+  img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
+  isNFT: false,
+  data: null,
+  options: []
+}, {
+  title: 'Ethereum',
+  type: 'ETH',
+  rate: 1000000000000000000,
+  connected: false,
+  network: 'ethereum',
+  img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true',
+  isNFT: false,
+  data: null
+}, {
+  title: 'Bitcoin-lightning',
+  type: 'BTC',
+  rate: 100000000,
+  connected: false,
+  network: 'lightning.btc',
+  img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
+  isNFT: false,
+  data: null,
+  options: [],
+  isSubNet: true
+}, {
+  title: 'Tether',
+  type: 'USDT',
+  rate: 1000000000000000000,
+  connected: false,
+  network: 'eth-l2.eth',
+  img_url: 'https://seeklogo.com/images/T/tether-usdt-logo-FA55C7F397-seeklogo.com.png',
+  isNFT: false,
+  data: null,
+  balance: 1000,
+  options: [{
+    type: 'paddingAmount',
+    title: 'Padding Amount',
+    value: 4000
+  }, {
+    type: 'feeAmount',
+    title: 'Fee To Pay',
+    value: 1000
+  }],
+  info: {
+    inscription: 'e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0',
+    location: 'e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49f:0:0',
+    explorer: 'http://localhost/inscription/e89c85f571f5bc32430270d6fcd65087f68f66e494596889497e12022fd6f49fi0'
+  }
+}];
+
 export const WALLETS = [{
   title: 'Rainbow',
   img: 'https://explorer-api.walletconnect.com/v3/logo/lg/7a33d7f1-3d12-4b5c-f3ee-5cd83cb1b500?projectId=2f05ae7f1116030fde2d36508f472bfb'

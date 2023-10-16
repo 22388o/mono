@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WalletItem component test renders component 1`] = `
+exports[`WalletItem component test Bitcoin-Lightning WalletItem renders 1`] = `
 <div>
   <div
     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 css-a5rdam-MuiGrid-root"
@@ -11,7 +11,55 @@ exports[`WalletItem component test renders component 1`] = `
     >
       <img
         class="ui avatar image"
-        src=""
+        src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true"
+        width="32"
+      />
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-32joun-MuiGrid-root"
+    >
+      <div
+        class="MuiStack-root css-nen11g-MuiStack-root"
+      >
+        <b>
+          Bitcoin
+        </b>
+        <span
+          style="font-size: 0.8em; color: grey; margin-top: -5px;"
+        >
+          BTC
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1gejpqg-MuiGrid-root"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium gradient-btn connect-undefined css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WalletItem component test Bitcoin-Taproot WalletItem renders 1`] = `
+<div>
+  <div
+    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 css-a5rdam-MuiGrid-root"
+    style="padding-top: 15px;"
+  >
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-kj2nox-MuiGrid-root"
+    >
+      <img
+        class="ui avatar image"
+        src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true"
         width="32"
       />
     </div>
@@ -40,6 +88,55 @@ exports[`WalletItem component test renders component 1`] = `
         type="button"
       >
         Connect Networks
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WalletItem component test Ethereum WalletItem renders 1`] = `
+<div>
+  <div
+    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 css-a5rdam-MuiGrid-root"
+    style="padding-top: 15px;"
+  >
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-kj2nox-MuiGrid-root"
+    >
+      <img
+        class="ui avatar image"
+        src="https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/ethereum/info/logo.png?raw=true"
+        width="32"
+      />
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-32joun-MuiGrid-root"
+    >
+      <div
+        class="MuiStack-root css-nen11g-MuiStack-root"
+      >
+        <b>
+          Ethereum
+        </b>
+        <span
+          style="font-size: 0.8em; color: grey; margin-top: -5px;"
+        >
+          ETH
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-6 css-1gejpqg-MuiGrid-root"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium gradient-btn connect-ethereum css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Connect Wallet
         <span
           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
         />
