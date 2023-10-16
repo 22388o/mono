@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CollectiblesModal component test renders component 1`] = `
-<div>
+exports[`CollectiblesModal component test renders coin component 1`] = `
+<div
+  aria-hidden="true"
+>
   <div
     class="MuiGrid-root MuiGrid-container css-1tj2tdk-MuiGrid-root"
   >
@@ -10,9 +12,14 @@ exports[`CollectiblesModal component test renders component 1`] = `
     >
       <input
         class="undefined qty-input"
+        placeholder="1000"
         type="number"
-        value=""
+        value="1000"
       />
+      <span>
+        $
+        28000000
+      </span>
     </div>
     <div
       class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-14m1l2r-MuiGrid-root"
