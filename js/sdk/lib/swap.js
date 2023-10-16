@@ -301,23 +301,47 @@ class Swap {
   async createInvoice () {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
-    this.counterparty.invoice = await blockchain
-      .on('invoice.paid', (invoice, party, swap, blockchain) => {
+
+    blockchain
+      .once('invoice.paid', invoice => {
         console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
+
         if (this.party.isSeeker) {
           INSTANCES.get(this).status = `holder.invoice.paid`
+          console.log(this.sdk.id, 'is paying his/her invoice...')
           this.payInvoice()
         } else if (this.party.isHolder) {
           INSTANCES.get(this).status = `seeker.invoice.paid`
+          console.log(this.sdk.id, 'is settling his/her invoice...')
           this.settleInvoice()
         } else {
           throw Error('unexpected code branch!')
         }
       })
-      .on('invoice.settled', invoice => {
-        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
+      .once('invoice.settled', invoice => {
+        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice settled', invoice)
       })
-      .createInvoice(this.counterparty)
+
+    if (this.party.isSeeker) {
+      const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+      console.log(this.sdk.id, 'is watching', blockchain.id, 'for invoice settlement...')
+      blockchain
+        .once('invoice.settled', async invoice => {
+          console.log(this.sdk.id, 'saw', blockchain.id, 'invoice settled', invoice)
+          console.log(this.sdk.id, 'saving secret', invoice.swap.secret, 'under secret hash', invoice.id.substr(2))
+          await store.put('secrets', invoice.id.substr(2), {
+            secret: invoice.swap.secret,
+            swap: invoice.swap.id
+          })
+          console.log(this.sdk.id, 'is settling his/her invoice...')
+          this.settleInvoice()
+        })
+    }
+
+    console.log(this.sdk.id, 'called createInvoice()')
+    this.counterparty.invoice = await blockchains[this.counterparty.blockchain.split('.')[0]].createInvoice(this.counterparty)
+    console.log(this.sdk.id, 'created invoice and saved it to counterparty', this.counterparty.invoice)
+
     INSTANCES.get(this).status = `${this.partyType}.invoice.created`
   }
 
@@ -326,7 +350,7 @@ class Swap {
    * @return {Promise<Void>}
    */
   async sendInvoice () {
-    const { network, store } = this.sdk
+    const { network } = this.sdk
 
     try {
       const args = { method: 'PATCH', path: '/api/v1/swap' }
@@ -343,15 +367,12 @@ class Swap {
    * @return {Promise<Void>}
    */
   async payInvoice () {
-    try {
-      const { blockchains, store } = this.sdk
-      const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      this.party.payment = await blockchain.payInvoice(this.party)
-      console.log('swap.payInvoice', Error().stack)
-      INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
-    } catch (err) {
-      console.log('swap.payInvoice', err)
-    }
+    const { blockchains } = this.sdk
+    const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+    console.log(this.sdk.id, 'paying', blockchain.id, 'invoice...')
+    this.party.payment = await blockchain.payInvoice(this.party)
+    console.log(this.sdk.id, 'paid', blockchain.id, 'invoice', this.party.payment)
+    INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
   }
 
   /**
@@ -359,10 +380,14 @@ class Swap {
    * @returns {Promise<Swap>}
    */
   async settleInvoice () {
-    const { blockchains } = this.sdk
-    const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+    const { blockchains, store } = this.sdk
+    const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
+    console.log(this.sdk.id, 'is reading the secret from the store using key', this.secretHash)
+    const { secret } = await store.get('secrets', this.secretHash)
+    console.log(this.sdk.id, 'settling', blockchain.id, 'invoice using secret', secret, 'retrieved using key', this.secretHash)
+    const receipt = await blockchain.settleInvoice(this.counterparty, secret)
+    console.log(this.sdk.id, 'settled', blockchain.id, 'invoice using secret', secret, receipt)
     INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
-    const receipt = await blockchain.settleInvoice(this)
   }
 }
 
@@ -430,7 +455,6 @@ class Party {
    * @returns {Void}
    */
   set payment (val) {
-    console.log('setting payment for', this.id, val)
     const state = INSTANCES.get(this)
     if (state.payment != null) {
       throw Error('payment already created!')

@@ -202,9 +202,10 @@ module.exports = class Lightning extends BaseClass {
 
       // settle the invoice
       console.log('using secret', secret, secret.toString('hex'))
-      await settleHodlInvoice({ lnd, secret: secret.toString('hex') })
+      await settleHodlInvoice({ lnd, secret })
       this.info('settleInvoice', party, this)
     } catch (err) {
+      console.log('here', err)
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])

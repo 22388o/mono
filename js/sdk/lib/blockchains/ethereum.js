@@ -49,44 +49,44 @@ module.exports = class Ethereum extends BaseClass {
     }
 
     // swap contract events
-    // const events = contract.events.allEvents()
-    // events.on('connected', id => this.debug('contract.events', { id }))
-    // events.on('data', data => {
-    //   const { event, address, returnValues } = data
+    const events = contract.events.allEvents()
+    events.on('connected', id => this.debug('contract.events', { id }))
+    events.on('data', data => {
+      const { event, address, returnValues } = data
 
-    //   if (contract._address !== address) {
-    //     const err = Error(`got event from ${address} instead of ${contract._address}`)
-    //     this.emit('error', err)
-    //   }
+      if (contract._address !== address) {
+        const err = Error(`got event from ${address} instead of ${contract._address}`)
+        this.emit('error', err)
+      }
 
-    //   switch (event) {
-    //     case 'InvoiceCreated': {
-    //       const { id, swap, payee, asset, quantity } = returnValues
-    //       this.info('invoice.created', { id, swap: { id: swap }, payee, asset, quantity })
-    //       this.emit('invoice.created', { id, swap: { id: swap }, payee, asset, quantity })
-    //       break
-    //     }
+      switch (event) {
+        case 'InvoiceCreated': {
+          const { id, swap, payee, asset, quantity } = returnValues
+          this.info('invoice.created', { id, swap: { id: swap }, payee, asset, quantity })
+          this.emit('invoice.created', { id, swap: { id: swap }, payee, asset, quantity })
+          break
+        }
 
-    //     case 'InvoicePaid': {
-    //       const { id, swap, payer, asset, quantity } = returnValues
-    //       this.info('invoice.paid', { id, swap: { id: swap }, payer, asset, quantity })
-    //       this.emit('invoice.paid', { id, swap: { id: swap }, payer, asset, quantity })
-    //       break
-    //     }
+        case 'InvoicePaid': {
+          const { id, swap, payer, asset, quantity } = returnValues
+          this.info('invoice.paid', { id, swap: { id: swap }, payer, asset, quantity })
+          this.emit('invoice.paid', { id, swap: { id: swap }, payer, asset, quantity })
+          break
+        }
 
-    //     case 'InvoiceSettled': {
-    //       const { id, swap, payer, payee, asset, quantity, secret } = returnValues
-    //       this.info('invoice.settled', { id, swap: { id: swap, secret: secret.substr(2) }, payer, payee, asset, quantity })
-    //       this.emit('invoice.settled', { id, swap: { id: swap, secret: secret.substr(2) }, payer, payee, asset, quantity })
-    //       break
-    //     }
+        case 'InvoiceSettled': {
+          const { id, swap, payer, payee, asset, quantity, secret } = returnValues
+          this.info('invoice.settled', { id, swap: { id: swap, secret: secret.substr(2) }, payer, payee, asset, quantity })
+          this.emit('invoice.settled', { id, swap: { id: swap, secret: secret.substr(2) }, payer, payee, asset, quantity })
+          break
+        }
 
-    //     default:
-    //       this.debug('event', data)
-    //   }
-    // })
-    // events.on('changed', data => this.warn('subscription.changed', data))
-    // events.on('error', (err, receipt) => this.error('subscription.error', err, receipt))
+        default:
+          this.debug('event', data)
+      }
+    })
+    events.on('changed', data => this.warn('subscription.changed', data))
+    events.on('error', (err, receipt) => this.error('subscription.error', err, receipt))
 
     // json
     const json = {
@@ -140,37 +140,37 @@ module.exports = class Ethereum extends BaseClass {
         filter: { swap: toHex(party.swap.id) },
         fromBlock: 'latest'
       }
-      const subscription = contract.events.allEvents(subscriptionArgs)
-      subscription.on('data', data => {
-        const { event, returnValues } = data
+      // const subscription = contract.events.allEvents(subscriptionArgs)
+      // subscription.on('data', data => {
+      //   const { event, returnValues } = data
 
-        switch (event) {
-          case 'InvoiceCreated': break // Ignore
+      //   switch (event) {
+      //     case 'InvoiceCreated': break // Ignore
 
-          case 'InvoicePaid': {
-            this.info('invoice.paid', data, party, this)
-            this.emit('invoice.paid', returnValues, party, this)
-            break
-          }
+      //     case 'InvoicePaid': {
+      //       this.info('invoice.paid', data, party, this)
+      //       this.emit('invoice.paid', returnValues, party, this)
+      //       break
+      //     }
 
-          case 'InvoiceSettled': {
-            this.info('invoice.settled', invoice, party, this)
-            this.emit('invoice.settled', { id, description, request }, party, this)
-            subscription.unsubscribe()
-            break
-          }
+      //     case 'InvoiceSettled': {
+      //       this.info('invoice.settled', data, party, this)
+      //       this.emit('invoice.settled', returnValues, party, this)
+      //       subscription.unsubscribe()
+      //       break
+      //     }
 
-          case 'InvoiceCancelled': {
-            this.info('invoice.cancelled', invoice, party, this)
-            this.emit('invoice.cancelled', { id, description, request }, party, this)
-            subscription.unsubscribe()
-            break
-          }
+      //     case 'InvoiceCancelled': {
+      //       this.info('invoice.cancelled', data, party, this)
+      //       this.emit('invoice.cancelled', returnValues, party, this)
+      //       subscription.unsubscribe()
+      //       break
+      //     }
 
-          default:
-            this.warn('event', data)
-        }
-      })
+      //     default:
+      //       this.warn('event', data)
+      //   }
+      // })
 
       const id = toHex(party.swap.secretHash)
       const swap = toHex(party.swap.id)
@@ -200,8 +200,7 @@ module.exports = class Ethereum extends BaseClass {
    * @param {String} party.swap.secretHash The hash of the secret of the swap
    * @returns {Promise<Void>}
    */
-  async payInvoice(party) {
-    console.log('ethereum.payInvoice', Error().stack)
+  async payInvoice (party) {
     try {
       const { web3, contract } = INSTANCES.get(this)
       const { methods: { payInvoice } } = contract
@@ -221,7 +220,6 @@ module.exports = class Ethereum extends BaseClass {
       // TODO: This should be an Invoice object
       return null
     } catch (err) {
-      console.log('ethereum.PayInvoice', err)
       this.error('payInvoice', err, party, this)
       throw err
     }
@@ -231,18 +229,16 @@ module.exports = class Ethereum extends BaseClass {
    * Settles an invoice
    * @param {Party} party The party that is settling the invoice
    * @param {Number} party.invoice The invoice to be settled
-   * @param {Buffer} secretBytes A buffer containing the secret to be revealed
+   * @param {String} secret The secret to be revealed
    * @returns {Promise<Void>}
    */
-  async settleInvoice(party, secretBytes) {
+  async settleInvoice (party, secret) {
     try {
       const { web3, contract } = INSTANCES.get(this)
       const { methods: { settleInvoice } } = contract
-      const { bytesToHex, toHex } = web3.utils
+      const { toHex } = web3.utils
 
-      const secret = bytesToHex(secretBytes)
       const swap = toHex(party.swap.id)
-
       const tx = settleInvoice(secret, swap)
       const gas = await tx.estimateGas()
       const receipt = await tx.send({ gas })

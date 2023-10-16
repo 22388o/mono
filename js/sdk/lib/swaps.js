@@ -67,7 +67,10 @@ module.exports = class Swaps extends BaseClass {
 
           const secret = Util.random()
           const secretHash = Util.hash(secret)
-          await store.put('secrets', secretHash, secret)
+          await store.put('secrets', secretHash, {
+            secret: `0x${secret.toString('hex')}`,
+            swap: swap.id
+          })
 
           // NOTE: Swap mutation causes status to transition to 'created'
           swap.secretHash = secretHash
@@ -139,7 +142,7 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isSeeker) return
           this.info(`swap.${swap.status}`, swap)
 
-          // NOTE: Swap mutation causes status to transition to 'holder.settled'
+          // NOTE: Swap mutation causes status to transition to 'holder.  ed'
           await swap.settleInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
