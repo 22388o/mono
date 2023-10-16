@@ -41,3 +41,50 @@ exports[`CollectiblesModal component test renders coin component 1`] = `
   </div>
 </div>
 `;
+
+exports[`CollectiblesModal component test renders ordinal component 1`] = `
+<div
+  aria-hidden="true"
+>
+  <div
+    class="MuiGrid-root MuiGrid-container css-1tj2tdk-MuiGrid-root"
+  >
+    <div
+      class="MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-grid-xs-7 css-1ggbfv-MuiGrid-root"
+    >
+      <img
+        src="/nft/2.png"
+      />
+      <div
+        class="MuiStack-root css-4oo209-MuiStack-root"
+      >
+        <span>
+          Inscription
+        </span>
+        <span>
+          2c0
+          ...
+          ei0
+        </span>
+      </div>
+    </div>
+    <div
+      class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-5 css-14m1l2r-MuiGrid-root"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium undefined coin-select css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        <img
+          src="/nft/2.png"
+        />
+        BTCORD
+        <span
+          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+        />
+      </button>
+    </div>
+  </div>
+</div>
+`;

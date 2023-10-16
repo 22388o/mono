@@ -32,4 +32,34 @@ describe('CollectiblesModal component test', () => {
 
     expect(onCoinTypeChange).toHaveBeenCalled(); // when coin type is changed, check if the function is called
   });
+
+  it('renders ordinal component', () => {
+
+    const onCoinTypeChange = jest.fn();
+
+    const {container, getByText} = render(
+      //coin-select
+      <SwapAmountItem
+        assetId={5}
+        unitPrice={28000}
+        amount={1}
+        availQty={1}
+        onAmountChange={() => {}}
+        onCoinTypeChange={onCoinTypeChange}
+      />
+    );
+
+    const coinSelectElement = container.querySelector('.coin-select');
+    fireEvent.click(coinSelectElement);
+
+    const modalHeader = getByText('Select Asset');
+
+    expect(container).toMatchSnapshot();
+    expect(modalHeader).toBeInTheDocument(); //when cointype select button is clicked, check if modal is opened
+    
+    const btcBtn = getByText('Bitcoin');
+    fireEvent.click(btcBtn);
+
+    expect(onCoinTypeChange).toHaveBeenCalled(); // when coin type is changed, check if the function is called
+  });
 });
