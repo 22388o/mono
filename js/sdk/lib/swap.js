@@ -61,12 +61,14 @@ module.exports = {
       id: Util.hash(maker.id, taker.id),
       secretHolder: {
         id: maker.uid,
+        oid: maker.id,
         asset: maker.isAsk ? maker.baseAsset : maker.quoteAsset,
         blockchain: maker.isAsk ? maker.baseNetwork : maker.quoteNetwork,
         quantity: maker.isAsk ? maker.baseQuantity : maker.quoteQuantity
       },
       secretSeeker: {
         id: taker.uid,
+        oid: taker.id,
         asset: taker.isAsk ? taker.baseAsset : taker.quoteAsset,
         blockchain: taker.isAsk ? taker.baseNetwork : taker.quoteNetwork,
         quantity: taker.isAsk ? taker.baseQuantity : taker.quoteQuantity
@@ -416,6 +418,7 @@ class Party {
     this.swap = swap
 
     this.id = props.id
+    this.oid = props.oid
     this.asset = props.asset
     this.quantity = props.quantity
     this.blockchain = props.blockchain
@@ -497,6 +500,7 @@ class Party {
   toJSON () {
     return {
       id: this.id,
+      oid: this.oid,
       asset: this.asset,
       quantity: this.quantity,
       blockchain: this.blockchain,
