@@ -2,7 +2,7 @@
  * @file Defines a swap and other related classes
  */
 
-const { Order, Util } = require('@portaldefi/core')
+const { BaseClass, Order, Util } = require('@portaldefi/core')
 
 /**
  * An object mapping swap status strings to the expected order of transitions
@@ -95,16 +95,34 @@ module.exports = {
  * Defines a cross-chain swap between two parties
  * @type {Swap}
  */
-class Swap {
+class Swap extends BaseClass {
   /**
    * Creates a new instance of a swap
    * @param {Object} props Properties of the instance
    * @param {Sdk} sdk 
    */
   constructor(props, sdk) {
-    this.sdk = sdk
+    if (props == null) {
+      throw Error('no properties provided for swap!')
+    } else if (props.id != null && typeof props.id !== 'string') {
+      throw Error(`expected id to be a string; got ${typeof props.id}!`)
+    } else if (props.secretHash != null) {
+      if (props.secretHash != null && typeof props.id !== 'string') {
+        throw Error(`expected secretHash to be a string; got ${typeof props.id}!`)
+      } else if (props.secretHash.length != 64) {
+        throw Error(`expected secretHash to be a sha256 hex-string; got ${props.secretHash}`)
+      } else if (props.secretHash.startsWith('0x')) {
+        throw Error(`expected secretHash to be a sha256 hex-string with the leading "0x"`)
+      }
+    } else if (props.secretHolder == null) {
+      throw Error('no secretHolder provided!')
+    } else if (props.secretSeeker == null) {
+      throw Error('no secretSeeker provided!')
+    }
 
-    this.id = props.id
+    super({ id: props.id || Util.uuid() })
+
+    this.sdk = sdk
     this.secretHolder = new Party(props.secretHolder, this)
     this.secretSeeker = new Party(props.secretSeeker, this)
 
@@ -115,6 +133,9 @@ class Swap {
     }))
 
     Object.freeze(this)
+
+    // Queue up the event to be emitted later so handlers can be attached
+    setImmediate(() => this.emit(this.status, this))
   }
 
   /**
@@ -182,12 +203,14 @@ class Swap {
    */
   set secretHash (val) {
     const state = INSTANCES.get(this)
-    if (state.secretHash != null) {
+
+    // TODO: Ensure only secret holder can set the secret hash
+    if (state.secretHash == null) {
+      state.secretHash = val
+      state.status = 'created'
+    } else {
       throw Error('cannot set secret hash anymore!')
     }
-
-    state.secretHash = val
-    state.status = 'created'
   }
 
   /**
@@ -302,25 +325,21 @@ class Swap {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
 
-    blockchain
-      .once('invoice.paid', invoice => {
-        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
+    blockchain.once('invoice.paid', invoice => {
+      console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
 
-        if (this.party.isSeeker) {
-          INSTANCES.get(this).status = `holder.invoice.paid`
-          console.log(this.sdk.id, 'is paying his/her invoice...')
-          this.payInvoice()
-        } else if (this.party.isHolder) {
-          INSTANCES.get(this).status = `seeker.invoice.paid`
-          console.log(this.sdk.id, 'is settling his/her invoice...')
-          this.settleInvoice()
-        } else {
-          throw Error('unexpected code branch!')
-        }
-      })
-      .once('invoice.settled', invoice => {
-        console.log(this.sdk.id, 'saw', blockchain.id, 'invoice settled', invoice)
-      })
+      if (this.party.isSeeker) {
+        INSTANCES.get(this).status = `holder.invoice.paid`
+        console.log(this.sdk.id, 'is paying his/her invoice...')
+        this.payInvoice()
+      } else if (this.party.isHolder) {
+        INSTANCES.get(this).status = `seeker.invoice.paid`
+        console.log(this.sdk.id, 'is settling his/her invoice...')
+        this.settleInvoice()
+      } else {
+        throw Error('unexpected code branch!')
+      }
+    })
 
     if (this.party.isSeeker) {
       const blockchain = blockchains[this.party.blockchain.split('.')[0]]
@@ -334,12 +353,13 @@ class Swap {
             swap: invoice.swap.id
           })
           console.log(this.sdk.id, 'is settling his/her invoice...')
-          this.settleInvoice()
+          const receipt = await this.settleInvoice()
+          console.log(this.sdk.id, 'settled his/her invoice', receipt)
         })
     }
 
     console.log(this.sdk.id, 'called createInvoice()')
-    this.counterparty.invoice = await blockchains[this.counterparty.blockchain.split('.')[0]].createInvoice(this.counterparty)
+    this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
     console.log(this.sdk.id, 'created invoice and saved it to counterparty', this.counterparty.invoice)
 
     INSTANCES.get(this).status = `${this.partyType}.invoice.created`

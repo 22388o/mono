@@ -136,10 +136,10 @@ module.exports = class Ethereum extends BaseClass {
       const { methods: { createInvoice } } = contract
       const { toHex } = web3.utils
 
-      const subscriptionArgs = {
-        filter: { swap: toHex(party.swap.id) },
-        fromBlock: 'latest'
-      }
+      // const subscriptionArgs = {
+      //   filter: { swap: toHex(party.swap.id) },
+      //   fromBlock: 'latest'
+      // }
       // const subscription = contract.events.allEvents(subscriptionArgs)
       // subscription.on('data', data => {
       //   const { event, returnValues } = data
