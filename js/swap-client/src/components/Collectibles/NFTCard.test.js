@@ -1,9 +1,8 @@
 import { NFTCard } from './NFTCard'
-import { create, act } from 'react-test-renderer'
+import { fireEvent, render } from '@testing-library/react'
 
 describe('AccessOptionComponent', () => {
   it('should work', () => {
-    let tree
     const card = {
       img_url: '123',
       title: 'card',
@@ -13,16 +12,18 @@ describe('AccessOptionComponent', () => {
     }
     const handleClick = jest.fn()
 
-    act(() => {
-      tree = create(
-        <NFTCard
-          card={card}
-          handleClick={handleClick}
-        />
-      )
-    })
+    const { container } = render(
+      <NFTCard
+        card={card}
+        handleClick={handleClick}
+      />
+    )
 
-    expect(tree).toMatchSnapshot()
+    const nftCard = container.querySelector('.nft-card');
+    fireEvent.click(nftCard);
+
+    expect(container).toMatchSnapshot()
+    expect(handleClick).toHaveBeenCalled();
   })
   afterAll(() => jest.resetModules())
 })
