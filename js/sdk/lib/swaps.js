@@ -68,7 +68,7 @@ module.exports = class Swaps extends BaseClass {
           const secret = Util.random()
           const secretHash = Util.hash(secret)
           await store.put('secrets', secretHash, {
-            secret: `0x${secret.toString('hex')}`,
+            secret: secret.toString('hex'),
             swap: swap.id
           })
 

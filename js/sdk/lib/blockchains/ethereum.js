@@ -239,7 +239,7 @@ module.exports = class Ethereum extends BaseClass {
       const { toHex } = web3.utils
 
       const swap = toHex(party.swap.id)
-      const tx = settleInvoice(secret, swap)
+      const tx = settleInvoice(`0x${secret}`, swap)
       const gas = await tx.estimateGas()
       const receipt = await tx.send({ gas })
 
