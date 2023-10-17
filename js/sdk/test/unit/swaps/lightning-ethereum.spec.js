@@ -160,6 +160,7 @@ describe.skip('Swaps - Lightning/Ethereum', function () {
       }
     }
 
+    /* eslint-disable-next-line no-unused-vars */
     function validate (swap, user, status) {
       console.log('validating', status, 'swap for', user, swap)
 
