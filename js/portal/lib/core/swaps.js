@@ -68,20 +68,8 @@ module.exports = class Swaps extends BaseClass {
         reject(err)
       }
 
-      switch (swap.status) {
-        case 'holder.invoice.created':
-        case 'holder.invoice.sent': {
-          break
-        }
-
-        case 'seeker.invoice.created':
-        case 'seeker.invoice.sent': {
-          break
-        }
-      }
-
-      this.emit(swap.status, swap)
       resolve(swap)
+      this.emit(swap.status, swap)
     })
   }
 }

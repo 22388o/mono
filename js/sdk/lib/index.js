@@ -67,7 +67,19 @@ module.exports = class Sdk extends BaseClass {
      * Interface to atomic swaps
      * @type {Swaps}
      */
+    const onSwap = swap => this.emit(`swap.${swap.status}`, swap)
     this.swaps = new Swaps(this, props.swaps)
+      .on('swap.received', onSwap)
+      .on('swap.created', onSwap)
+      .on('swap.holder.invoice.created', onSwap)
+      .on('swap.holder.invoice.sent', onSwap)
+      .on('swap.seeker.invoice.created', onSwap)
+      .on('swap.seeker.invoice.sent', onSwap)
+      .on('swap.holder.invoice.paid', onSwap)
+      .on('swap.seeker.invoice.paid', onSwap)
+      .on('swap.holder.invoice.settled', onSwap)
+      .on('swap.seeker.invoice.settled', onSwap)
+      .on('swap.completed', onSwap)
 
     // Bubble up the log events
     this.network.on('log', (level, ...args) => this[level](...args))

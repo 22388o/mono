@@ -50,19 +50,37 @@ module.exports = class Swaps extends BaseClass {
 
       // If this is a new swap, save it to the store. If not, then retrieve the
       // existing swap from the store and update it with the incoming swap.
-      if (swap.status === 'received') {
+      if (swap.isReceived) {
         await store.put('swaps', swap.id, swap.toJSON())
       } else {
         const swapObj = await store.get('swaps', swap.id)
-        const swapp = Swap.fromJSON(swapObj, sdk)
-        swapp.update(swap)
-        swap = swapp
+        swap = Swap.fromJSON(swapObj, sdk)
+        swap.update(Swap.fromJSON(obj, sdk))
+        this.emit(`swap.${swap.status}`, swap)
       }
+
+      swap
+        // The 'received' state is handled below in the switch case
+        // .on('received', swap => this.emit(`swap.${swap.status}`, swap))        
+        .on('created', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('holder.invoice.created', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('holder.invoice.sent', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('seeker.invoice.created', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('seeker.invoice.sent', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('holder.invoice.paid', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('seeker.invoice.paid', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('holder.invoice.settled', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('seeker.invoice.settled', swap => this.emit(`swap.${swap.status}`, swap))
+        .on('completed', swap => this.emit(`swap.${swap.status}`, swap))
 
       // Now check the status of the swap and take action accordingly
       switch (swap.status) {
         case 'received': {
-          this.info(`swap.received`, swap)
+          // This event is expected to occur on both sides of the swap. So this
+          // is handled here in the switch case. Otherwise, there is no other
+          // means to fire it reliably on both sides of the SDK.
+          this.info(`swap.${swap.status}`, swap)
+          this.emit(`swap.${swap.status}`, swap)
           if (swap.party.isSeeker) return
 
           const secret = Util.random()
@@ -80,8 +98,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'created': {
           if (swap.party.isSeeker) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'holder.invoicing'
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -90,8 +108,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'holder.invoice.created': {
           if (swap.party.isSeeker) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'holder.invoiced'
           await swap.sendInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -100,8 +118,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'holder.invoice.sent': {
           if (swap.party.isHolder) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -110,8 +128,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'seeker.invoice.created': {
           if (swap.party.isHolder) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'seeker.invoiced'
           await swap.sendInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -120,8 +138,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'seeker.invoice.sent': {
           if (swap.party.isSeeker) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'holder.paid'
           await swap.payInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -130,8 +148,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'holder.invoice.paid': {
           if (swap.party.isHolder) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'seeker.paid'
           await swap.payInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -140,8 +158,8 @@ module.exports = class Swaps extends BaseClass {
 
         case 'seeker.invoice.paid': {
           if (swap.party.isSeeker) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'holder.  ed'
           await swap.settleInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
@@ -150,15 +168,16 @@ module.exports = class Swaps extends BaseClass {
 
         case 'holder.invoice.settled': {
           if (swap.party.isHolder) return
-          this.info(`swap.${swap.status}`, swap)
 
+          this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'seeker.settled'
           await swap.settleInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
         }
 
-        case 'seeker.invoice.settled': {
+        case 'seeker.invoice.settled':
+        case 'completed': {
           this.info(`swap.${swap.status}`, swap)
           break
         }
@@ -171,193 +190,5 @@ module.exports = class Swaps extends BaseClass {
       this.error('swap.error', err, swap)
       this.emit('error', err, swap)
     }
-  }
-
-  /**
-   * Handles incoming swap events
-   * @param {String} event The name of the event
-   * @param {Object} obj The JSON object representing the swap
-   * @returns {Void}
-   */
-  _onEvent (event, obj) {
-    let swap = null
-
-    // Ensure the swap is valid and relevant to this peer
-    try {
-      swap = Swap.fromJSON(obj)
-      if (!swap.isParty(this.sdk)) return
-    } catch (err) {
-      this.error('swap.error', err, obj)
-      this.emit('error', err, obj)
-      return
-    }
-
-    // Handle the swap event
-    try {
-      const handler = `_on${event[0].toUpperCase()}${event.slice(1)}`
-      if (typeof this[handler] !== 'function') {
-        throw Error(`unknown event "${event}"!`)
-      }
-      this[handler](swap)
-    } catch (err) {
-      this.error('swap.error', err, swap)
-      this.emit('error', err, swap)
-    }
-  }
-
-  /**
-   * Handles the creation of a new swap
-   * @param {Swap} swap The newly created swap
-   * @returns 
-   */
-  async _onCreated(swap) {
-    const { blockchains, network } = this.sdk
-    const { secretHolder, secretSeeker } = swap
-
-    // the seeker waits for the holder to deliver the holder-invoice
-    if (secretSeeker.id === this.sdk.id) return
-
-    // the holder first generates a secret for the swap, and hashes it
-    const secret = Util.random()
-    swap.secretHash = Util.hash(secret) // NOTE: SWAP STATE MUTATION!
-    this.sdk.emit('swap.created', swap)
-
-    // the holder generates the holder-invoice on the seeker-chain
-    const seekerChain = blockchains[secretSeeker.blockchain.split('.')[0]]
-    await seekerChain.createInvoice(secretSeeker)
-
-    // when the seeker pays the holder-invoice on the seeker-chain, the holder
-    // uses the secret to immediately settle it on the seeker-chain, thereby
-    // receiving the funds on the seeker-chain
-    seekerChain.once('invoice.paid', () => {
-      this.info('swap.seekerPaid', swap)
-      this.sdk.emit('swap.seekerPaid', swap)
-
-      seekerChain
-        .once('invoice.settled', () => {
-          this.info('swap.holderSettled', swap)
-          this.sdk.emit('swap.holderSettled', swap)
-        })
-        .settleInvoice(secretHolder, secret)
-    })
-
-    // finally, the holder sends the holder-invoice to the seeker
-    const args = { method: 'PUT', path: '/api/v1/swap' }
-    try {
-      this.info('swap.notifyCounterParty', args, swap)
-      await network.request(args, { swap })
-
-      this.info('swap.holderInvoiced', swap)
-      this.sdk.emit('swap.holderInvoiced', swap)
-    } catch (err) {
-      this.error('swap.notifyCounterParty', err, args, swap)
-      this.sdk.emit('swap.error', err, swap)
-    }
-  }
-
-  /**
-   * Handles the opening of a swap
-   * @param {Swap} swap The swap that is opening
-   * @returns {Void}
-   */
-  async _onOpening (swap) {
-    const { blockchains, network } = this.sdk
-    const { secretHolder, secretSeeker } = swap
-    const seekerChain = blockchains[secretSeeker.blockchain.split('.')[0]]
-
-    // the holder waits for the seeker to deliver the seeker-invoice
-    if (secretHolder.id === this.sdk.id) return
-
-    // the seeker generates the seeker-invoice on the holder-chain
-    const holderChain = blockchains[secretHolder.blockchain.split('.')[0]]
-    await holderChain.createInvoice(secretHolder)
-
-    // when the holder pays the seeker's invoice on the holder-chain, the
-    // seeker pays the holder's invoice on the seeker-chain
-    holderChain.once('invoice.paid', () => {
-      this.info('swap.holderPaid', swap)
-      this.sdk.emit('swap.holderPaid', swap)
-
-      seekerChain.payInvoice(secretSeeker)
-    })
-
-    // when the holder settles the holder-invoice on the seeker-chain, the
-    // seeker uses the secret revealed during the settlement to settle the
-    // seeker-invoice on the holder-chain
-    seekerChain.once('invoice.settled', args => {
-      holderChain
-        .once('invoice.settled', () => {
-          this.info('swap.seekerSettled', swap)
-          this.sdk.emit('swap.seekerSettled', swap)
-        })
-        .settleInvoice(secretHolder, args.swap.secret)
-    })
-
-    // Notify the secret-holder
-    const args = { method: 'PUT', path: '/api/v1/swap' }
-    try {
-      this.info('swap.notifyCounterParty', args, swap)
-      await network.request(args, { swap })
-
-      this.info('swap.seekerInvoiced', swap)
-      this.sdk.emit('swap.seekerInvoiced', swap)
-    } catch (err) {
-      this.error('swap.notifyCounterParty', err, args, swap)
-      this.sdk.emit('swap.error', err, swap)
-    }
-  }
-
-  /**
-   * Handles a swap once it is opened from both sides
-   * @param {Swap} swap 
-   * @returns 
-   */
-  async _onOpened(swap) {
-    const { blockchains } = this.sdk
-    const { secretHolder, secretSeeker } = swap
-
-    // The secret-seeker waits for the secret-holder to pay the invoice
-    if (secretSeeker.id === this.sdk.id) return
-    this.info('swap.opened', swap)
-
-    // handle the payment of the invoice sent previously
-    const holderChain = blockchains[secretHolder.blockchain.split('.')[0]]
-    holderChain.payInvoice(secretHolder)
-  }
-
-  /**
-   * Handles a swap that is committing
-   * @param {Swap} swap The swap that is committing
-   * @returns {Void}
-   */
-  async _onCommitting(swap) {
-    throw Error('not implemented')
-  }
-
-  /**
-   * Handles a swap that was committed
-   * @param {Swap} swap The swap that was committed
-   * @returns {Void}
-   */
-  _onCommitted (swap) {
-    throw Error('not implemented')
-  }
-
-  /**
-   * Handles a swap that is aborting
-   * @param {Swap} swap The swap that is aborting
-   * @returns {Void}
-   */
-  _onAborting (obj) {
-    throw Error('not implemented')
-  }
-
-  /**
-   * Handles a swap that was aborted
-   * @param {Swap} swap The swap that was aborted
-   * @returns {Void}
-   */
-  _onAborted (obj) {
-    throw Error('not implemented')
   }
 }

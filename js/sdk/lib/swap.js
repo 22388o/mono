@@ -19,7 +19,7 @@ const SWAP_STATUS = [
   'seeker.invoice.paid',
   'holder.invoice.settled',
   'seeker.invoice.settled',
-  'completed'
+  'completed',
 ].reduce((obj, status, index) => {
   obj[status] = index
   return obj
@@ -109,12 +109,12 @@ class Swap extends BaseClass {
     } else if (props.id != null && typeof props.id !== 'string') {
       throw Error(`expected id to be a string; got ${typeof props.id}!`)
     } else if (props.secretHash != null) {
-      if (props.secretHash != null && typeof props.id !== 'string') {
+      if (typeof props.id !== 'string') {
         throw Error(`expected secretHash to be a string; got ${typeof props.id}!`)
+      } else if (props.secretHash.startsWith('0x')) {
+        throw Error(`expected secretHash to not include the leading "0x"`)
       } else if (props.secretHash.length != 64) {
         throw Error(`expected secretHash to be a sha256 hex-string; got ${props.secretHash}`)
-      } else if (props.secretHash.startsWith('0x')) {
-        throw Error(`expected secretHash to be a sha256 hex-string with the leading "0x"`)
       }
     } else if (props.secretHolder == null) {
       throw Error('no secretHolder provided!')
@@ -135,9 +135,6 @@ class Swap extends BaseClass {
     }))
 
     Object.freeze(this)
-
-    // Queue up the event to be emitted later so handlers can be attached
-    setImmediate(() => this.emit(this.status, this))
   }
 
   /**
@@ -210,6 +207,7 @@ class Swap extends BaseClass {
     if (state.secretHash == null) {
       state.secretHash = val
       state.status = 'created'
+      this.emit(this.status, this)
     } else {
       throw Error('cannot set secret hash anymore!')
     }
@@ -252,27 +250,12 @@ class Swap extends BaseClass {
   }
 
   /**
-   * Returns the current state of the instance
-   * @type {String}
-   */
-  [Symbol.for('nodejs.util.inspect.custom')] () {
-    return this.toJSON()
-  }
-
-  /**
    * Returns the JSON representation of the instance
    * @returns {Object}
    */
   toJSON () {
     const { id, status, secretHash, secretHolder, secretSeeker } = this
-    return {
-      '@type': this.constructor.name,
-      id,
-      status,
-      secretHash,
-      secretHolder,
-      secretSeeker
-    }
+    return Object.assign(super.toJSON(), { status, secretHash, secretHolder, secretSeeker })
   }
 
   /**
@@ -327,44 +310,35 @@ class Swap extends BaseClass {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
 
-    blockchain.once('invoice.paid', invoice => {
-      console.log(this.sdk.id, 'saw', blockchain.id, 'invoice paid', invoice)
-
+    blockchain.once('invoice.paid', invoice => setImmediate(() => {
       if (this.party.isSeeker) {
         INSTANCES.get(this).status = `holder.invoice.paid`
-        console.log(this.sdk.id, 'is paying his/her invoice...')
+        this.emit(this.status, this)
         this.payInvoice()
       } else if (this.party.isHolder) {
         INSTANCES.get(this).status = `seeker.invoice.paid`
-        console.log(this.sdk.id, 'is settling his/her invoice...')
+        this.emit(this.status, this)
         this.settleInvoice()
       } else {
         throw Error('unexpected code branch!')
       }
-    })
+    }))
 
     if (this.party.isSeeker) {
       const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      console.log(this.sdk.id, 'is watching', blockchain.id, 'for invoice settlement...')
-      blockchain
-        .once('invoice.settled', async invoice => {
-          console.log(this.sdk.id, 'saw', blockchain.id, 'invoice settled', invoice)
-          console.log(this.sdk.id, 'saving secret', invoice.swap.secret, 'under secret hash', invoice.id.substr(2))
-          await store.put('secrets', invoice.id.substr(2), {
-            secret: invoice.swap.secret,
-            swap: invoice.swap.id
-          })
-          console.log(this.sdk.id, 'is settling his/her invoice...')
-          const receipt = await this.settleInvoice()
-          console.log(this.sdk.id, 'settled his/her invoice', receipt)
+      blockchain.once('invoice.settled', invoice => setImmediate(async () => {
+        await store.put('secrets', invoice.id.substr(2), {
+          secret: invoice.swap.secret,
+          swap: invoice.swap.id
         })
+        this.settleInvoice()
+      }))
     }
 
-    console.log(this.sdk.id, 'called createInvoice()')
     this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
-    console.log(this.sdk.id, 'created invoice and saved it to counterparty', this.counterparty.invoice)
 
     INSTANCES.get(this).status = `${this.partyType}.invoice.created`
+    this.emit(this.status, this)
   }
 
   /**
@@ -378,6 +352,9 @@ class Swap extends BaseClass {
       const args = { method: 'PATCH', path: '/api/v1/swap' }
       INSTANCES.get(this).status = `${this.partyType}.invoice.sent`
       await network.request(args, { swap: this })
+      // We do not emit this event here; instead we wait for the server
+      // websocket message to trigger the event.
+      // this.emit(this.status, this)
     } catch (err) {
       INSTANCES.get(this).status = `${this.partyType}.invoice.created`
       throw err
@@ -391,10 +368,9 @@ class Swap extends BaseClass {
   async payInvoice () {
     const { blockchains } = this.sdk
     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-    console.log(this.sdk.id, 'paying', blockchain.id, 'invoice...')
     this.party.payment = await blockchain.payInvoice(this.party)
-    console.log(this.sdk.id, 'paid', blockchain.id, 'invoice', this.party.payment)
     INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
+    setTimeout(() => this.emit(this.status, this), 100)
   }
 
   /**
@@ -404,12 +380,10 @@ class Swap extends BaseClass {
   async settleInvoice () {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
-    console.log(this.sdk.id, 'is reading the secret from the store using key', this.secretHash)
     const { secret } = await store.get('secrets', this.secretHash)
-    console.log(this.sdk.id, 'settling', blockchain.id, 'invoice using secret', secret, 'retrieved using key', this.secretHash)
     const receipt = await blockchain.settleInvoice(this.counterparty, secret)
-    console.log(this.sdk.id, 'settled', blockchain.id, 'invoice using secret', secret, receipt)
     INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
+    setTimeout(() => this.emit(this.status, this), 100)
   }
 }
 
