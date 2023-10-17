@@ -27,7 +27,7 @@ Helpers.random = function (length = 32) {
  */
 Helpers.hash = function (data) {
   return crypto.createHash('sha256')
-    .update(data, 'hex')
+    .update(data)
     .digest('hex')
 }
 

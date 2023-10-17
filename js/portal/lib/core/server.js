@@ -22,7 +22,7 @@ const INSTANCES = new WeakMap()
  */
 module.exports = class Server extends BaseClass {
   constructor (props = {}) {
-    super({ id: props.id })
+    super({ id: props.id || 'server' })
 
     Object.seal(this)
 

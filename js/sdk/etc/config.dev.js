@@ -16,7 +16,6 @@ module.exports = {
   store: {},
 
   blockchains: {
-    bitcoin: {},
     ethereum: {
       url: process.env.PORTAL_ETHEREUM_URL,
       chainId: process.env.PORTAL_ETHEREUM_CHAINID,

@@ -4,6 +4,7 @@
 
 const Assets = require('./assets')
 const BaseClass = require('./base_class')
+const { uuid } = require('./util')
 
 /**
  * A list of supported networks
@@ -49,7 +50,7 @@ module.exports = class Order extends BaseClass {
    * @param {String} props.quoteQuantity The amount of quote asset being traded
    * @param {String} props.quoteNetwork The network of quote asset being traded
    */
-  constructor(props) {
+  constructor (props) {
     if (props.uid == null) {
       throw new Error('no uid specified!')
     } else if (typeof props.uid !== 'string' || props.uid.length <= 0) {
@@ -80,7 +81,7 @@ module.exports = class Order extends BaseClass {
       throw new Error(`"${props.quoteQuantity}" is not a valid quantity!`)
     }
 
-    super({ id: props.id })
+    super({ id: props.id || uuid() })
 
     Object.seal(Object.assign(this, {
       ts: props.ts || Date.now(),
@@ -103,7 +104,7 @@ module.exports = class Order extends BaseClass {
    * Returns the age of the order in milliseconds from when it was created
    * @returns {Number}
    */
-  get age() {
+  get age () {
     return Date.now() - this.ts
   }
 
@@ -111,7 +112,7 @@ module.exports = class Order extends BaseClass {
    * Returns if the order is a ask (sell)
    * @returns {Boolean}
    */
-  get isAsk() {
+  get isAsk () {
     return this.side === 'ask'
   }
 
@@ -119,7 +120,7 @@ module.exports = class Order extends BaseClass {
    * Returns if the order is a bid (buy)
    * @returns {Boolean}
    */
-  get isBid() {
+  get isBid () {
     return this.side === 'bid'
   }
 
@@ -127,7 +128,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'created' state
    * @returns {Boolean}
    */
-  get isCreated() {
+  get isCreated () {
     return this.status === ORDER_STATUS[0]
   }
 
@@ -135,7 +136,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'opened' state
    * @returns {Boolean}
    */
-  get isOpened() {
+  get isOpened () {
     return this.status === ORDER_STATUS[1]
   }
 
@@ -143,7 +144,7 @@ module.exports = class Order extends BaseClass {
    * Returns whether or not the order is in the 'closed' state
    * @returns {Boolean}
    */
-  get isClosed() {
+  get isClosed () {
     return this.status === ORDER_STATUS[2]
   }
 
@@ -151,7 +152,7 @@ module.exports = class Order extends BaseClass {
    * Returns the unit price of the base asset in terms of the quote asset
    * @returns {Number}
    */
-  get price() {
+  get price () {
     return this.quoteQuantity / this.baseQuantity
   }
 
@@ -159,7 +160,7 @@ module.exports = class Order extends BaseClass {
    * Returns the current state of the instance
    * @type {String}
    */
-  [Symbol.for('nodejs.util.inspect.custom')]() {
+  [Symbol.for('nodejs.util.inspect.custom')] () {
     return this.toJSON()
   }
 
@@ -167,7 +168,7 @@ module.exports = class Order extends BaseClass {
    * Returns the JSON representation of this instance
    * @returns {Object}
    */
-  toJSON() {
+  toJSON () {
     return Object.assign(super.toJSON(), {
       ts: this.ts,
       uid: this.uid,
@@ -188,7 +189,7 @@ module.exports = class Order extends BaseClass {
    * Opens the order on an orderbook
    * @returns {Order}
    */
-  open(reason) {
+  open (reason) {
     this.status = ORDER_STATUS[1]
     this.reason = reason || null
     return this
@@ -198,7 +199,7 @@ module.exports = class Order extends BaseClass {
    * Closes the order on an orderbook
    * @returns {Order}
    */
-  close(reason) {
+  close (reason) {
     this.status = ORDER_STATUS[2]
     this.reason = reason || null
     return this
@@ -209,7 +210,7 @@ module.exports = class Order extends BaseClass {
    * @param {Order} target The target order instance to check against this one
    * @returns {Boolean}
    */
-  equals(target) {
+  equals (target) {
     return this.id === target.id &&
       this.ts === target.ts &&
       this.uid === target.uid &&
@@ -226,7 +227,7 @@ module.exports = class Order extends BaseClass {
 
   static fromJSON (obj) {
     if (obj['@type'] !== 'Order') {
-      this.warn(`order.error`, obj)
+      this.warn('order.error', obj)
       throw Error(`expected type "Order", but got "${obj['@type']}"!`)
     }
 
@@ -239,7 +240,7 @@ module.exports = class Order extends BaseClass {
    * @param {String} obj.baseAsset The symbol of the asset being bought/sold
    * @param {String} obj.quoteAsset The symbol of the asset used for payment
    */
-  static toAssetPair(obj) {
+  static toAssetPair (obj) {
     if (obj.baseAsset == null && typeof obj.baseAsset !== 'string') {
       return null
     } else if (obj.quoteAsset == null && typeof obj.quoteAsset !== 'string') {

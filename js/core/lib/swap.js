@@ -63,7 +63,7 @@ module.exports = class Swap extends BaseClass {
    * Returns the status of the swap
    * @returns {String}
    */
-  get status() {
+  get status () {
     return this._status
   }
 
@@ -134,10 +134,10 @@ module.exports = class Swap extends BaseClass {
   /**
    * Handles the creation of invoices by either party, and updates the state of
    * the swap accordingly.
-   * 
+   *
    * @returns {Void}
    */
-  _onInvoiceCreated() {
+  _onInvoiceCreated () {
     const holderInvoiced = (this.secretHolder.invoice != null)
     const seekerInvoiced = (this.secretSeeker.invoice != null)
 
@@ -261,7 +261,7 @@ class Party extends BaseClass {
    * Returns the invoice, if available
    * @returns {String}
    */
-  get invoice() {
+  get invoice () {
     return this._invoice
   }
 
@@ -270,7 +270,7 @@ class Party extends BaseClass {
    * prevent futher modifications
    * @returns {Void}
    */
-  set invoice(val) {
+  set invoice (val) {
     this._invoice = val
     Object.freeze(this)
     this.emit('invoice.created', this)

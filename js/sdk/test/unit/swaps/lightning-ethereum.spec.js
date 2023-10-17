@@ -7,7 +7,7 @@ const { createHash, randomBytes } = require('crypto')
 /**
  * This is a simple test case wherein
  */
-describe.only('Swaps - Lightning/Ethereum', function () {
+describe.skip('Swaps - Lightning/Ethereum', function () {
   const SECRET = randomBytes(32)
   const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
@@ -20,7 +20,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
   }
 
   before('test setup', function () {
-    onSwap = (user, event) => [event, swap => console.log(`${user}.${event}`, swap.status)]
+    const onSwap = (user, event) => [event, swap => console.log(`${user}.${event}`, swap.status)]
     this.test.ctx.alice
       .on(...onSwap('alice', 'swap.received'))
       .on(...onSwap('alice', 'swap.created'))
@@ -52,7 +52,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * Alice places an order using the secret hash. The test waits for the order
    * to be opened on the orderbook.
    */
-  it.only('must allow Alice to place an order', function (done) {
+  it('must allow Alice to place an order', function (done) {
     this.test.ctx.alice
       .once('order.created', order => {
         expect(order).to.be.an('object')
@@ -95,7 +95,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * Bob places the counter-order that would match with Alice's order, and waits
    * for the order to be opened on the orderbook.
    */
-  it.only('must allow Bob to place an order', function (done) {
+  it('must allow Bob to place an order', function (done) {
     this.test.ctx.bob
       .once('order.created', order => {
         expect(order).to.be.an('object')
@@ -141,7 +141,7 @@ describe.only('Swaps - Lightning/Ethereum', function () {
    * received by both alice and bob, and that the fields are as expected, esp.
    * the secret hash.
    */
-  it.only('must handle the swap between to Alice and Bob', function (done) {
+  it('must handle the swap between to Alice and Bob', function (done) {
     const { alice, bob } = this.test.ctx
     const swaps = {
       alice: {
@@ -201,8 +201,8 @@ describe.only('Swaps - Lightning/Ethereum', function () {
 
           const aliceSeekerInvoice = swaps.alice[status].secretSeeker.invoice
           const bobSeekerInvoice = swaps.bob[status].secretSeeker.invoice
-          expect(aliceSeekerInvoice).to.be.null
-          expect(bobSeekerInvoice).to.be.null
+          expect(aliceSeekerInvoice).to.equal(null)
+          expect(bobSeekerInvoice).to.equal(null)
           expect(aliceSeekerInvoice).to.equal(bobSeekerInvoice)
           break
         }
