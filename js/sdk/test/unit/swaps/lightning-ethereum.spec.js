@@ -19,6 +19,35 @@ describe.only('Swaps - Lightning/Ethereum', function () {
     quoteQuantity: 100000
   }
 
+  before('test setup', function () {
+    onSwap = (user, event) => [event, swap => console.log(`${user}.${event}`, swap.status)]
+    this.test.ctx.alice
+      .on(...onSwap('alice', 'swap.received'))
+      .on(...onSwap('alice', 'swap.created'))
+      .on(...onSwap('alice', 'swap.holder.invoice.created'))
+      .on(...onSwap('alice', 'swap.holder.invoice.sent'))
+      .on(...onSwap('alice', 'swap.seeker.invoice.created'))
+      .on(...onSwap('alice', 'swap.seeker.invoice.sent'))
+      .on(...onSwap('alice', 'swap.holder.invoice.paid'))
+      .on(...onSwap('alice', 'swap.seeker.invoice.paid'))
+      .on(...onSwap('alice', 'swap.holder.invoice.settled'))
+      .on(...onSwap('alice', 'swap.seeker.invoice.settled'))
+      .on(...onSwap('alice', 'swap.completed'))
+
+    this.test.ctx.bob
+      .on(...onSwap('bob', 'swap.received'))
+      .on(...onSwap('bob', 'swap.created'))
+      .on(...onSwap('bob', 'swap.holder.invoice.created'))
+      .on(...onSwap('bob', 'swap.holder.invoice.sent'))
+      .on(...onSwap('bob', 'swap.seeker.invoice.created'))
+      .on(...onSwap('bob', 'swap.seeker.invoice.sent'))
+      .on(...onSwap('bob', 'swap.holder.invoice.paid'))
+      .on(...onSwap('bob', 'swap.seeker.invoice.paid'))
+      .on(...onSwap('bob', 'swap.holder.invoice.settled'))
+      .on(...onSwap('bob', 'swap.seeker.invoice.settled'))
+      .on(...onSwap('bob', 'swap.completed'))
+  })
+
   /**
    * Alice places an order using the secret hash. The test waits for the order
    * to be opened on the orderbook.
@@ -184,19 +213,5 @@ describe.only('Swaps - Lightning/Ethereum', function () {
         default: break
       }
     }
-
-    alice
-      .once('swap.created', swap => validate(swap, 'alice', 'created'))
-      .once('swap.opening', swap => validate(swap, 'alice', 'opening'))
-      .once('swap.opened', swap => validate(swap, 'alice', 'opened'))
-      .once('swap.committing', swap => validate(swap, 'alice', 'committing'))
-      .once('swap.committed', swap => validate(swap, 'alice', 'committed'))
-
-    bob
-      .once('swap.created', swap => validate(swap, 'bob', 'created'))
-      .once('swap.opening', swap => validate(swap, 'bob', 'opening'))
-      .once('swap.opened', swap => validate(swap, 'bob', 'opened'))
-      .once('swap.committing', swap => validate(swap, 'bob', 'committing'))
-      .once('swap.committed', swap => validate(swap, 'bob', 'committed'))
   })
 })

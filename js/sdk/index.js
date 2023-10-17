@@ -17,15 +17,22 @@ module.exports = class SDK extends BaseClass {
      * The Portal SDK instance
      * @type {Sdk}
      */
+    const onSwap = swap => this.emit(`swap.${swap.status}`, swap)
     this.sdk = new Sdk(props)
       .on('order.created', (...args) => this.emit('order.created', ...args))
       .on('order.opened', (...args) => this.emit('order.opened', ...args))
       .on('order.closed', (...args) => this.emit('order.closed', ...args))
-      .on('swap.created', (...args) => this.emit('swap.created', ...args))
-      .on('swap.opening', (...args) => this.emit('swap.opening', ...args))
-      .on('swap.opened', (...args) => this.emit('swap.opened', ...args))
-      .on('swap.committing', (...args) => this.emit('swap.committing', ...args))
-      .on('swap.committed', (...args) => this.emit('swap.committed', ...args))
+      .on('swap.received', onSwap)
+      .on('swap.created', onSwap)
+      .on('swap.holder.invoice.created', onSwap)
+      .on('swap.holder.invoice.sent', onSwap)
+      .on('swap.seeker.invoice.created', onSwap)
+      .on('swap.seeker.invoice.sent', onSwap)
+      .on('swap.holder.invoice.paid', onSwap)
+      .on('swap.seeker.invoice.paid', onSwap)
+      .on('swap.holder.invoice.settled', onSwap)
+      .on('swap.seeker.invoice.settled', onSwap)
+      .on('swap.completed', onSwap)
       .on('message', (...args) => this.emit('message', ...args))
       .on('log', (...args) => this.emit('log', ...args))
   }

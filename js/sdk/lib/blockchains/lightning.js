@@ -180,7 +180,6 @@ module.exports = class Lightning extends BaseClass {
       const { id, expires_at, payment } = receipt
       return { id, expires_at, payment }
     } catch (err) {
-      console.log(err)
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -202,12 +201,10 @@ module.exports = class Lightning extends BaseClass {
       const { lnd } = INSTANCES.get(this).grpcs.invoice
 
       // settle the invoice
-      console.log('using secret', secret, secret.toString('hex'))
       const receipt = await settleHodlInvoice({ lnd, secret })
       this.info('settleInvoice', receipt, party, this)
       return receipt
     } catch (err) {
-      console.log('here', err)
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
