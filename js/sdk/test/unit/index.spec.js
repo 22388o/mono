@@ -23,10 +23,10 @@ const isDebugEnabled = process.argv.includes('--debug')
 const log = !isDebugEnabled
   ? function () { }
   : (...args) => console.error(...(args.map(arg => inspect(arg, {
-    showHidden: false,
-    depth: null,
-    colors: true
-  }))))
+      showHidden: false,
+      depth: null,
+      colors: true
+    }))))
 
 /**
  * Maps globally visible keys to their values for the duration of the tests
@@ -108,10 +108,7 @@ before(async function () {
  */
 after(async function () {
   // stop the SDK instance
-  await Promise.all(USERS.map(id => {
-    this.test.ctx[id].stop()
-    this.test.ctx[id] = null
-  }))
+  await Promise.all(USERS.map(id => this.test.ctx[id].stop()))
 
   // stop the peer
   await this.test.ctx.peer.stop()

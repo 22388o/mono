@@ -2,8 +2,7 @@
  * @file An interface to all swaps
  */
 
-const { BaseClass, Order, Util } = require('@portaldefi/core')
-const Swap = require('./swap')
+const { BaseClass, Swap, Util } = require('@portaldefi/core')
 
 /**
  * Expose the interface to all swaps
@@ -61,7 +60,7 @@ module.exports = class Swaps extends BaseClass {
 
       swap
         // The 'received' state is handled below in the switch case
-        // .on('received', swap => this.emit(`swap.${swap.status}`, swap))        
+        // .on('received', swap => this.emit(`swap.${swap.status}`, swap))
         .on('created', swap => this.emit(`swap.${swap.status}`, swap))
         .on('holder.invoice.created', swap => this.emit(`swap.${swap.status}`, swap))
         .on('holder.invoice.sent', swap => this.emit(`swap.${swap.status}`, swap))
@@ -92,10 +91,10 @@ module.exports = class Swaps extends BaseClass {
 
           // NOTE: Swap mutation causes status to transition to 'created'
           swap.secretHash = secretHash
-
-          // NOTE: fallthru to the next state
         }
 
+        // NOTE: fallthru to the next state
+        /* eslint-disable-next-line no-fallthrough */
         case 'created': {
           if (swap.party.isSeeker) return
 
@@ -104,8 +103,9 @@ module.exports = class Swaps extends BaseClass {
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
         }
-        // NOTE: fallthru to the next state
 
+        // NOTE: fallthru to the next state
+        /* eslint-disable-next-line no-fallthrough */
         case 'holder.invoice.created': {
           if (swap.party.isSeeker) return
 
@@ -116,17 +116,17 @@ module.exports = class Swaps extends BaseClass {
           break
         }
 
-        case 'holder.invoice.sent': {
+        case 'holder.invoice.sent':
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
           // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
-        }
-        // NOTE: fallthru to the next state
 
-        case 'seeker.invoice.created': {
+        // NOTE: fallthru to the next state
+        /* eslint-disable-next-line no-fallthrough */
+        case 'seeker.invoice.created':
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
@@ -134,9 +134,8 @@ module.exports = class Swaps extends BaseClass {
           await swap.sendInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
-        }
 
-        case 'seeker.invoice.sent': {
+        case 'seeker.invoice.sent':
           if (swap.party.isSeeker) return
 
           this.info(`swap.${swap.status}`, swap)
@@ -144,9 +143,8 @@ module.exports = class Swaps extends BaseClass {
           await swap.payInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
-        }
 
-        case 'holder.invoice.paid': {
+        case 'holder.invoice.paid':
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
@@ -154,9 +152,8 @@ module.exports = class Swaps extends BaseClass {
           await swap.payInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
-        }
 
-        case 'seeker.invoice.paid': {
+        case 'seeker.invoice.paid':
           if (swap.party.isSeeker) return
 
           this.info(`swap.${swap.status}`, swap)
@@ -164,9 +161,8 @@ module.exports = class Swaps extends BaseClass {
           await swap.settleInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
-        }
 
-        case 'holder.invoice.settled': {
+        case 'holder.invoice.settled':
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
@@ -174,17 +170,16 @@ module.exports = class Swaps extends BaseClass {
           await swap.settleInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
-        }
 
         case 'seeker.invoice.settled':
-        case 'completed': {
+        case 'completed':
           this.info(`swap.${swap.status}`, swap)
           break
-        }
 
-        default:
+        default: {
           const err = Error(`unknown status "${swap.status}"!`)
-          this.error(`swap.error`, err, swap)
+          this.error('swap.error', err, swap)
+        }
       }
     } catch (err) {
       this.error('swap.error', err, swap)

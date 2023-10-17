@@ -2,8 +2,7 @@
  * @file Exposes all in-progress atomic swaps
  */
 
-const { BaseClass } = require('@portaldefi/core')
-const Swap = require('../../../sdk/lib/swap')
+const { BaseClass, Swap } = require('@portaldefi/core')
 
 /**
  * Exposes all in-progress atomic swaps
