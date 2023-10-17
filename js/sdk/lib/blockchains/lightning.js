@@ -2,7 +2,7 @@
  * @file Interface to the Lightning network
  */
 
-const { BaseClass, Invoice } = require('@portaldefi/core')
+const { BaseClass } = require('@portaldefi/core')
 const ln = require('lightning')
 
 /**
@@ -56,7 +56,7 @@ module.exports = class Lightning extends BaseClass {
    * Initializes the network connections
    * @returns {Promise<Lightning>}
    */
-  async connect() {
+  async connect () {
     try {
       const state = INSTANCES.get(this)
       const { socket, cert, macaroons, grpcs } = state
@@ -71,6 +71,7 @@ module.exports = class Lightning extends BaseClass {
 
       // get the wallet information
       const { getWalletInfo, getWalletStatus } = ln
+      /* eslint-disable camelcase */
       const { is_active, is_ready } = await getWalletStatus(grpcs.default)
       if (!is_active || !is_ready) {
         return is_active
@@ -79,10 +80,12 @@ module.exports = class Lightning extends BaseClass {
       }
       state.wallet = await getWalletInfo(grpcs.admin)
       state.json.publicKey = state.wallet.public_key
+      /* eslint-enable camelcase */
 
       this.emit('connect', this)
       return this
     } catch (err) {
+      /* eslint-disable-next-line no-ex-assign */
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -99,7 +102,7 @@ module.exports = class Lightning extends BaseClass {
    * @param {String} party.swap.secretHash The hash of the secret of the swap
    * @returns {Promise<String>} The BOLT-11 Payment Request
    */
-  async createInvoice(party) {
+  async createInvoice (party) {
     try {
       const { createHodlInvoice, subscribeToInvoice } = ln
       const { lnd } = INSTANCES.get(this).grpcs.invoice
@@ -133,6 +136,7 @@ module.exports = class Lightning extends BaseClass {
 
       return { id, description, request: invoice.request }
     } catch (err) {
+      /* eslint-disable-next-line no-ex-assign */
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -147,7 +151,7 @@ module.exports = class Lightning extends BaseClass {
    * @param {Number} party.invoice The invoice to be paid
    * @returns {Promise<Void>}
    */
-  async payInvoice(party) {
+  async payInvoice (party) {
     try {
       const { decodePaymentRequest, payViaPaymentRequest } = ln
       const { lnd } = INSTANCES.get(this).grpcs.admin
@@ -177,9 +181,12 @@ module.exports = class Lightning extends BaseClass {
       this.info('payInvoice', receipt, party, this)
 
       // return the payment receipt
+      /* eslint-disable camelcase */
       const { id, expires_at, payment } = receipt
       return { id, expires_at, payment }
+      /* eslint-enable camelcase */
     } catch (err) {
+      /* eslint-disable-next-line no-ex-assign */
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -195,7 +202,7 @@ module.exports = class Lightning extends BaseClass {
    * @param {String} secret The secret to be revealed during settlement
    * @returns {Promise<Void>}
    */
-  async settleInvoice(party, secret) {
+  async settleInvoice (party, secret) {
     try {
       const { settleHodlInvoice } = ln
       const { lnd } = INSTANCES.get(this).grpcs.invoice
@@ -205,6 +212,7 @@ module.exports = class Lightning extends BaseClass {
       this.info('settleInvoice', receipt, party, this)
       return receipt
     } catch (err) {
+      /* eslint-disable-next-line no-ex-assign */
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
@@ -217,11 +225,12 @@ module.exports = class Lightning extends BaseClass {
    * Gracefully disconnects from the network
    * @returns {Promise<Lightning>}
    */
-  async disconnect() {
+  async disconnect () {
     try {
       this.emit('disconnect', this)
       return this
     } catch (err) {
+      /* eslint-disable-next-line no-ex-assign */
       err = err.length === 3
         ? Error(err[2].err.details)
         : Error(err[1])
