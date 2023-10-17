@@ -3,7 +3,6 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const Bitcoin = require('./bitcoin')
 const Ethereum = require('./ethereum')
 const Lightning = require('./lightning')
 
@@ -20,8 +19,6 @@ module.exports = class Blockchains extends BaseClass {
 
     this.sdk = sdk
 
-    this.bitcoin = new Bitcoin(sdk, props.bitcoin)
-      .on('log', (level, ...args) => this[level](...args))
     this.ethereum = new Ethereum(sdk, props.ethereum)
       .on('log', (level, ...args) => this[level](...args))
     this.lightning = new Lightning(sdk, props.lightning)
@@ -44,7 +41,6 @@ module.exports = class Blockchains extends BaseClass {
    */
   toJSON () {
     return Object.assign(super.toJSON(), {
-      bitcoin: this.bitcoin,
       ethereum: this.ethereum,
       lightning: this.lightning
     })
@@ -56,7 +52,6 @@ module.exports = class Blockchains extends BaseClass {
    */
   connect () {
     return Promise.all([
-      this.bitcoin.connect(),
       this.ethereum.connect(),
       this.lightning.connect()
     ])
@@ -68,7 +63,6 @@ module.exports = class Blockchains extends BaseClass {
    */
   disconnect () {
     return Promise.all([
-      this.bitcoin.disconnect(),
       this.ethereum.disconnect(),
       this.lightning.disconnect()
     ])

@@ -52,7 +52,7 @@ module.exports = class Orderbook extends BaseClass {
   /**
    * The asset pair tracked/traded by the orderbook
    */
-  get assetPair() {
+  get assetPair () {
     return this.id
   }
 

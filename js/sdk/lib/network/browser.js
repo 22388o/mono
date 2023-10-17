@@ -10,11 +10,17 @@ const { BaseClass } = require('@portaldefi/core')
  */
 module.exports = class Network extends BaseClass {
   constructor (props) {
+    props = Object.assign({
+      hostname: 'localhost',
+      port: 80,
+      pathname: '/api/v1/updates'
+    }, props)
+
     super()
 
-    this.hostname = props.hostname || 'localhost'
-    this.port = props.port || 80
-    this.pathname = props.pathname || '/api/v1/updates'
+    this.hostname = props.hostname
+    this.port = props.port
+    this.pathname = props.pathname
     this.websocket = null
 
     Object.seal(this)

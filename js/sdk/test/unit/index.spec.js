@@ -2,13 +2,13 @@
  * @file Behavioral specification for the Portal SDK
  */
 
-const Sdk = require('../..')
-const { compile, deploy } = require('../../../portal/test/helpers')
 const Peer = require('@portaldefi/peer')
 const chai = require('chai')
 const { writeFileSync } = require('fs')
 const { inspect } = require('util')
 const { Web3 } = require('web3')
+const { compile, deploy } = require('../../../portal/test/helpers')
+const Sdk = require('../..')
 
 /**
  * Returns whether the tests are being run in debug mode
@@ -116,6 +116,9 @@ after(async function () {
   // stop the peer
   await this.test.ctx.peer.stop()
   this.test.ctx.peer = null
+
+  // tear down the web3 instance
+  this.test.ctx.web3.provider.disconnect()
 
   // override/install globals
   for (const key in GLOBALS) {

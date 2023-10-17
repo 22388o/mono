@@ -5,8 +5,9 @@
 const Sdk = require('@portaldefi/sdk')
 const chai = require('chai')
 const { writeFileSync } = require('fs')
-const Web3 = require('web3')
-const { compile, deploy } = require('../helpers')
+const { inspect } = require('util')
+const { Web3 } = require('web3')
+const { compile, deploy } = require('../../../portal/test/helpers')
 const Peer = require('../../lib/core/server')
 
 /**
@@ -14,6 +15,18 @@ const Peer = require('../../lib/core/server')
  * @type {Boolean}
  */
 const isDebugEnabled = process.argv.includes('--debug')
+
+/**
+ * Prints logs from the peer and the SDK instances, when debug mode is enabled
+ * @type {Function}
+ */
+const log = !isDebugEnabled
+  ? function () { }
+  : (...args) => console.error(...(args.map(arg => inspect(arg, {
+      showHidden: false,
+      depth: null,
+      colors: true
+    }))))
 
 /**
  * Maps globally visible keys to their values for the duration of the tests
@@ -24,7 +37,7 @@ const isDebugEnabled = process.argv.includes('--debug')
  * @type {Object}
  */
 const GLOBALS = {
-  debug: isDebugEnabled ? console.debug : function () {},
+  debug: isDebugEnabled ? console.debug : function () { },
   expect: chai.expect
 }
 
@@ -38,7 +51,13 @@ const GLOBALS = {
  */
 const USERS = ['alice', 'bob']
 
-before('Setup Test Environment', async function () {
+/**
+ * Sets up the testing environment
+ * - Sets up global functions for use within tests
+ * - Initializes and starts a peer
+ * - Initializes and starts SDK instances for each user
+ */
+before(async function () {
   // override/install globals
   for (const key in GLOBALS) {
     const existing = global[key]
@@ -46,40 +65,61 @@ before('Setup Test Environment', async function () {
     GLOBALS[key] = existing
   }
 
-  // Web3
+  // compile and deploy the smart-contracts, and export the abi/address details
   const web3 = this.web3 = new Web3(process.env.PORTAL_ETHEREUM_URL)
   const contracts = this.contracts = await deploy(await compile(), web3)
   const abiFile = process.env.PORTAL_ETHEREUM_CONTRACTS
-  writeFileSync(abiFile, JSON.stringify(contracts))
-  expect(this.test.ctx.contracts).is.an('object')
-  expect(this.test.ctx.web3).is.an.instanceof(Web3)
+  writeFileSync(abiFile, JSON.stringify(contracts, null, 2))
 
-  // Peer
-  this.peer = await new Peer()
-    .on('log', (...args) => isDebugEnabled
-      ? console.log(...args)
-      : function () {})
+  // load the configuration
+  // NOTE: This MUST happen after the smart-contract compilation/deployment
+  const config = require('../../../sdk/etc/config.dev')
+
+  // start the peer
+  const props = Object.assign({ id: 'portal' }, config.network)
+  this.peer = await new Peer(props)
+    .on('log', log)
     .start()
-  expect(this.test.ctx.peer.isListening).to.equal(true)
 
-  // SDK instances
-  const { hostname, port } = this.peer
-  await Promise.all(USERS.map(id => {
-    const credentials = require(`./${id}`)
-    this[id] = new Sdk({ credentials, network: { id, hostname, port } })
-    return this[id].start()
-  }))
-  USERS.forEach(name => {
-    expect(this.test.ctx[name].isConnected).to.equal(true)
-  })
+  // start all sdk instances
+  for (const id of USERS) {
+    const { blockchains } = config
+    const creds = require(`../../../portal/test/unit/${id}`)
+    const props = Object.assign({ id }, config, {
+      blockchains: Object.assign({}, blockchains, {
+        bitcoin: Object.assign({}, blockchains.bitcoin, creds.bitcoin),
+        ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
+        lightning: Object.assign({}, blockchains.lightning, creds.lightning)
+      })
+    })
+
+    this[id] = new Sdk(props)
+    await this[id]
+      .on('log', log)
+      .start()
+  }
 })
 
-after('Teardown Test Environment', async function () {
-  this.test.ctx.contracts = null
-  this.test.ctx.web3 = null
+/**
+ * Tears down the testing environment
+ * - Stops the SDK instances for each user
+ * - Stops the peer
+ * - Restores the global functions that were overridden during setup
+ */
+after(async function () {
+  // stop the SDK instance
+  await Promise.all(USERS.map(id => {
+    const promise = this.test.ctx[id].stop()
+    this.test.ctx[id] = null
+    return promise
+  }))
 
-  await Promise.all(USERS.map(name => this.test.ctx[name].stop()))
+  // stop the peer
   await this.test.ctx.peer.stop()
+  this.test.ctx.peer = null
+
+  // tear down the web3 instance
+  this.test.ctx.web3.provider.disconnect()
 
   // override/install globals
   for (const key in GLOBALS) {

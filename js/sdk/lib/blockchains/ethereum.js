@@ -85,8 +85,8 @@ module.exports = class Ethereum extends BaseClass {
           this.debug('event', data)
       }
     })
-    events.on('changed', data => this.warn('subscription.changed', data))
-    events.on('error', (err, receipt) => this.error('subscription.error', err, receipt))
+    events.on('changed', data => this.warn('contract.changed', data))
+    events.on('error', (err, receipt) => this.error('contract.error', err, receipt))
 
     // json
     const json = {
@@ -94,7 +94,7 @@ module.exports = class Ethereum extends BaseClass {
       contract: { address: contract._address }
     }
 
-    INSTANCES.set(this, Object.seal({ web3, wallet, contract, json }))
+    INSTANCES.set(this, Object.seal({ web3, wallet, contract, events, json }))
 
     Object.freeze(this)
   }
@@ -257,22 +257,21 @@ module.exports = class Ethereum extends BaseClass {
    * @returns {Promise<Ethereum>}
    */
   async disconnect () {
-    try {
-      const { web3, subscriptions } = INSTANCES.get(this)
-
-      for (const name in subscriptions) {
-        const subscription = subscriptions[name]
-        if (subscription != null) {
-          await subscription.unsubscribe()
-          subscriptions[name] = null
-        }
-      }
-
-      this.emit('disconnect', this)
-      return this
-    } catch (err) {
-      this.error('disconnect', err, this)
-      throw err
-    }
+    return new Promise((resolve, reject) => {
+      const { web3: { provider }, events } = INSTANCES.get(this)
+      events.unsubscribe()
+        .then(() => {
+          provider.once('disconnect', () => {
+            this.emit('disconnect', this)
+            resolve()
+          })
+          provider.once('error', err => {
+            this.error('disconnect', err, this)
+            reject(err)
+          })
+          provider.disconnect()
+        })
+        .catch(reject)
+    })
   }
 }
