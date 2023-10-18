@@ -14,7 +14,7 @@ const INSTANCES = new WeakMap()
  * Store implementation for the node.js
  * @type {Store}
  */
-class Store extends BaseClass {
+module.exports = class Store extends BaseClass {
   constructor (props) {
     super()
 
@@ -144,5 +144,3 @@ class Store extends BaseClass {
     return Promise.resolve()
   }
 }
-
-module.exports = { Store };

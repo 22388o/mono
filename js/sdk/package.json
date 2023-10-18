@@ -14,23 +14,21 @@
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "test": "npm run test:node",
-    "test:network": "mocha test/networks",
-    "test:browser": "mocha test/browser.spec.js",
-    "test:node": "mocha test/node.spec.js",
-    "watch": "npm run test:browser -- --watch"
+    "test": "mocha test/unit",
+    "watch": "npm test -- --watch"
   },
   "dependencies": {
     "@portaldefi/core": "file:../core",
-    "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
+    "lightning": "^6.2.6",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "url": "^0.11.1",
     "util": "^0.12.5",
+    "web3": "^4.1.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {
@@ -55,13 +53,14 @@
     "extension": [
       "spec.js"
     ],
+    "recursive": true,
     "reporter": "spec",
     "slow": 1000,
-    "timeout": 30000,
+    "timeout": 10000,
     "ui": "bdd",
     "watch-files": [
-      "**.*js",
-      "test/**/*.*js"
+      "lib/**/*.js",
+      "test/**/*.js"
     ]
   },
   "standard": {
