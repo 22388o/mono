@@ -16,7 +16,7 @@ import { Footer } from './Footer'
 import { ConnectWalletContainer } from './ConnectWalletContainer'
 import { WalletInfoContainer } from './WalletInfoContainer'
 import { IndexedDB } from '@portaldefi/sdk';
-import Sdk from '@portaldefi/sdk';
+import SDK from '@portaldefi/sdk';
 import { WalletComponent } from './Wallet/WalletComponent';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 
@@ -58,7 +58,7 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const alice = new Sdk({ network: { id: 'alice', hostname, port }, credentials: aliceCred })
+    const alice = new SDK({ network: { id: 'alice', hostname, port }, credentials: aliceCred })
     userStore.dispatch({ type: 'SIGN_IN', payload: alice })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.credentials.lightning })
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
@@ -70,7 +70,7 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const bob = new Sdk({ network: { id: 'bob', hostname, port }, credentials: bobCred })
+    const bob = new SDK({ network: { id: 'bob', hostname, port }, credentials: bobCred })
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.credentials.lightning })
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })

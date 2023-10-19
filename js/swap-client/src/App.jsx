@@ -11,6 +11,12 @@ import { SwapHome } from './components/SwapHome'
 import { AppContext } from '../context'
 import { ThemeProvider } from '@mui/material'
 import { DEFAULT_THEME } from './utils/constants'
+import { Buffer } from 'buffer';
+
+
+if(typeof window !== 'undefined') {
+  (window).Buffer = Buffer;
+}
 
 function App () {
   const [context, setContext] = useState({})

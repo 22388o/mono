@@ -1,6 +1,6 @@
 /**
  * @file Exports the Portal SDK as an ES6 module
  */
-import Sdk from './index.js'
-export default Sdk
-export { Sdk }
+import { SDK, IndexedDB } from './index.js'
+export default SDK
+export { SDK, IndexedDB }
