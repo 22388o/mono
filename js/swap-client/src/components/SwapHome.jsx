@@ -17,6 +17,7 @@ import { ConnectWalletContainer } from './ConnectWalletContainer'
 import { WalletInfoContainer } from './WalletInfoContainer'
 import { IndexedDB } from '@portaldefi/sdk';
 import SDK from '@portaldefi/sdk';
+import { config } from '../utils/constants';
 import { WalletComponent } from './Wallet/WalletComponent';
 import { SwapActivity } from './SwapActivity/SwapActivity';
 
@@ -52,15 +53,24 @@ export const SwapHome = () => {
   const aliceCred = getAlice()
   const bobCred = getBob()
 
+  const { blockchains } = config
+  
   /** Alice clicks sign in to connect with ws */
   const signInAsAlice = useCallback(() => {
     if (wallet.connected === true) { aliceCred.ethereum.public = wallet.data } else {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: aliceCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const alice = new SDK({ network: { id: 'alice', hostname, port }, credentials: aliceCred })
+    const alice = new SDK({ id: 'alice', hostname, port, credentials: aliceCred, 
+    blockchains: Object.assign({}, blockchains, {
+        bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
+        ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
+        lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
+      })
+    })
     userStore.dispatch({ type: 'SIGN_IN', payload: alice })
-    walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.credentials.lightning })
+    walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.toJSON().blockchains })
+    console.log("alice.toJSON()",alice.toJSON())
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
   }, [walletStore, aliceCred])
 
@@ -70,9 +80,15 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const bob = new SDK({ network: { id: 'bob', hostname, port }, credentials: bobCred })
+    const bob = new SDK({ id: 'bob', hostname, port, credentials: bobCred, 
+    blockchains: Object.assign({}, blockchains, {
+        bitcoin: Object.assign({}, blockchains.bitcoin, bobCred.bitcoin),
+        ethereum: Object.assign({}, blockchains.ethereum, bobCred.ethereum),
+        lightning: Object.assign({}, blockchains.lightning, bobCred.lightning)
+      })
+    })
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
-    walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.credentials.lightning })
+  walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.toJSON().blockchains })
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
   }, [bobCred, walletStore])
 
