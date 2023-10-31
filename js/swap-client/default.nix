@@ -15,8 +15,6 @@ pkgs.stdenv.mkDerivation {
 
   doCheck = false;
 
-  # outputs = ["out" "contracts"];
-
   buildInputs = [
     nodejs
     pkgs.cacert
@@ -59,17 +57,17 @@ pkgs.stdenv.mkDerivation {
     # Install local deps (see issue: https://github.com/npm/cli/issues/2339)
     for dep in $(get_local_deps); do
       pushd "$(get_dep_path "$dep")"
-      npm install
+      npm ci
       popd
     done
 
     # Include as well core (we need to recursively traverse each file: dep)
     pushd "../core"
-    npm install
+    npm ci
     popd
 
     # Install the primary library's node_modules
-    npm install
+    npm ci
 
     # Perform the build
     npm run build
