@@ -9,6 +9,7 @@
 in
   import sources.nixpkgs {
     inherit system;
+    config.allowUnfree = true;
     overlays =
       [
         ethereum-nix.overlays.default
