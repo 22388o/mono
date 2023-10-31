@@ -27,7 +27,7 @@ Helpers.PATHS = {
 Helpers.CONTRACTS = ['Swap']
 
 /**
- * Compiles the contracts
+ * Compile contracts
  * @returns {Promise<Object>}
  */
 Helpers.compile = function () {
@@ -44,19 +44,20 @@ Helpers.compile = function () {
       settings: { outputSelection: { '*': { '*': ['*'] } } }
     }
     const output = JSON.parse(Solc.compile(JSON.stringify(input)))
-    const message = (output.errors || [])
-      .filter(err => err.severity === 'error')
-      .map(err => err.formattedMessage)
-      .join('\n')
 
-    message.length
-      ? reject(Error(message))
-      : resolve(output.contracts)
+    if (output.errors == null) {
+      resolve(output.contracts)
+    } else {
+      reject(output.errors
+        .filter(err => err.severity === 'error')
+        .map(err => err.formattedMessage)
+        .join('\n'))
+    }
   })
 }
 
 /**
- * Deploy the specified contract
+ * Deploy contracts
  * @param {Object} contracts The contracts to deploy; returned by .compile()
  * @param {Web3} web3 The web3 instance used to deploy the contract
  * @returns {Promise<Contract>}

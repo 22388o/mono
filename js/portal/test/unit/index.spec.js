@@ -1,13 +1,12 @@
 /**
  * @file The Unit Test Environment builder
  */
-
+const { compile, deploy } = require('@portaldefi/evm')
 const Sdk = require('@portaldefi/sdk')
 const chai = require('chai')
 const { writeFileSync } = require('fs')
 const { inspect } = require('util')
 const { Web3 } = require('web3')
-const { compile, deploy } = require('../../../portal/test/helpers')
 const Peer = require('../../lib/core/server')
 
 /**

@@ -3,7 +3,7 @@
   system ? builtins.currentSystem,
   nodejs ? pkgs.portaldefi.nodejs,
 }:
-pkgs.stdenv.mkDerivation {
+pkgs.stdenv.mkDerivation rec {
   name = "portal";
   version = "0.0.0";
 
@@ -57,12 +57,12 @@ pkgs.stdenv.mkDerivation {
     # Install local deps (see issue: https://github.com/npm/cli/issues/2339)
     for dep in $(get_local_deps); do
       pushd "$(get_dep_path "$dep")"
-      npm install
+      npm ci
       popd
     done
 
     # Install the packages
-    npm install
+    npm ci
   '';
 
   installPhase = ''
@@ -85,11 +85,15 @@ pkgs.stdenv.mkDerivation {
     done
 
     # Copy the relevant files to the build result directory
-    cp -R {bin,contracts,lib,node_modules,package.json} $out
+    cp -R {bin,lib,node_modules,package.json} $out
 
     chmod +x $out/bin/portal
     wrapProgram $out/bin/portal \
       --set NODE_ENV production \
       --set NODE_PATH "$out/node_modules"
   '';
+
+  meta = {
+    mainProgram = name;
+  };
 }
