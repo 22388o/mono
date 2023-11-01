@@ -85,36 +85,6 @@ module.exports = class SDK extends BaseClass {
     return this.sdk.dex.cancelLimitOrder(order)
   }
 
-  /**
-   * Create the required state for an atomic swap
-   * @param {Swap|Object} swap The swap to open
-   * @param {Object} opts Options for the operation
-   * @returns {Swap}
-   */
-  swapOpen (swap, opts) {
-    return this.sdk.swaps.swapOpen(swap, opts)
-  }
-
-  /**
-   * Completes the atomic swap
-   * @param {Swap|Object} swap The swap to commit
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapCommit (swap, opts) {
-    return this.sdk.swaps.swapCommit(swap, opts)
-  }
-
-  /**
-   * Abort the atomic swap optimistically and returns funds to owners
-   * @param {Swap|Object} swap The swap to abort
-   * @param {Object} opts Options for the operation
-   * @returns {Promise<Void>}
-   */
-  swapAbort (swap, opts) {
-    return this.sdk.swaps.swapAbort(swap, opts)
-  }
-
   request (...args) {
     return this.sdk.network.request(...args)
   }
