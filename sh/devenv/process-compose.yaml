@@ -9,7 +9,6 @@ processes:
     command: bitcoind -conf=$PLAYNET_ROOT/bitcoind.portal.conf -datadir=$PLAYNET_ROOT/state/portal/bitcoind
     namespace: proc
     log_location: $PLAYNET_ROOT/log/portal/bitcoind.log
-    is_daemon: true
     availability:
       restart: always
     depends_on:
