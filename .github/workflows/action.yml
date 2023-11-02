@@ -20,12 +20,12 @@ jobs:
 
     steps:
     - name: Checkout branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Nix
-      uses: cachix/install-nix-action@v22
+      uses: aldoborrero/use-nix-action@v3
       with:
-        nix_path: nixpkgs=channel:nixos-22.05
+        nix_path: nixpkgs=channel:nixos-23.05
         extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
     - name: Setup binary cache
@@ -34,20 +34,37 @@ jobs:
         name: portaldefi-demo
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-    - name: Run tests & integration tests
-      run: nix-shell --run "chmod +x ./sh/tests.sh && ./sh/tests.sh"
-      env:
-        MATRIX_OS: ${{ matrix.os }}
+    - name: Install nix magic cache
+      uses: DeterminateSystems/magic-nix-cache-action@v2
+      with:
+        diagnostic-endpoint: ""
+
+    - name: Install Chrome for Testing
+      run: npx @puppeteer/browsers install $PUPPETEER_BROWSER
+
+    - name: Start devenv
+      run: devenv up --watch
+
+    - name: Run Tests
+      run: tests unit
+
+    - name: Run NixOS Tests
+      if: matrix.os == 'ubuntu-latest'
+      run: tests nixos
 
     - name: Build PortalDefi packages
+      if: matrix.os == 'ubuntu-latest'
       run: nix-build --option sandbox false --attr packages
 
     # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/upload-artifact@v2
-      if: matrix.os != 'macOS-latest'
+    - name: Upload playnet state
+      uses: actions/upload-artifact@v3
+      if: matrix.os == 'ubuntu-latest'
       with:
         name: playnet
-        path: playnet/
+        path: |
+          playnet/
+          !playnet/**/*.ipc
 
   deploy:
     needs: build
@@ -55,12 +72,12 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
     steps:
     - name: Checkout branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Nix
-      uses: cachix/install-nix-action@v22
+      uses: aldoborrero/use-nix-action@v3
       with:
-        nix_path: nixpkgs=channel:nixos-22.05
+        nix_path: nixpkgs=channel:nixos-23.05
         extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
     - name: Setup binary cache
@@ -69,35 +86,42 @@ jobs:
         name: portaldefi-demo
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/download-artifact@v2
+    - name: Install nix magic cache
+      uses: DeterminateSystems/magic-nix-cache-action@v2
+      with:
+        diagnostic-endpoint: ""
+
+    # TODO: In order to remove this intermediate action, we need to generate deterministically credentials.js
+    - uses: actions/download-artifact@v3
       with:
         name: playnet
         path: playnet/
 
     - name: Build PortalOS closure
+      id: build-machine-closure
       run: |
         system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
         echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
-      id: build-machine-closure
 
     - name: Setup NixOS deploy env
+      id: deploy_env
       run: |
         ssh_key=$(mktemp)
         chmod 600 $ssh_key
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > $ssh_key
         echo "SSH_KEY_PATH=$ssh_key" > $GITHUB_OUTPUT
-      id: deploy_env
 
     - name: Deploy closure on node.playnet.portaldefi.zone
-      run: |
-        echo "Copying nixos closure to machine"
-        nix copy -s --to "ssh://$DEPLOY_HOST" $SYSTEM_PATH
-        echo "Switching to new nixos closure"
-        ssh $NIX_SSHOPTS "$DEPLOY_HOST" "$SYSTEM_PATH"/bin/switch-to-configuration switch
-        echo "Removing unused packages"
-        ssh $NIX_SSHOPTS "$DEPLOY_HOST" nix-collect-garbage
       env:
         SSH_KEYFILE: ${{ steps.deploy_env.outputs.SSH_KEY_PATH }}
         SYSTEM_PATH: ${{ steps.build-machine-closure.outputs.SYSTEM_PATH }}
         NIX_SSHOPTS: "-o StrictHostKeyChecking=no -i ${{ steps.deploy_env.outputs.SSH_KEY_PATH }} -l root"
+      run: |
+        echo "Copying nixos closure to machine"
+        nix copy -s --to "ssh://$DEPLOY_HOST" $SYSTEM_PATH
+
+        echo "Switching to the new NixOS closure"
+        ssh $NIX_SSHOPTS "$DEPLOY_HOST" "$SYSTEM_PATH"/bin/switch-to-configuration switch
+
+        echo "Collecting gargabe from the system"
+        ssh $NIX_SSHOPTS "$DEPLOY_HOST" nix-collect-garbage
