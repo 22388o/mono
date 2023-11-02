@@ -118,7 +118,6 @@ module.exports = class Sdk extends BaseClass {
    * @returns {Sdk}
    */
   start () {
-    this.debug('starting', this)
     const operations = [
       this.network.connect(),
       this.store.open(),
@@ -140,7 +139,6 @@ module.exports = class Sdk extends BaseClass {
    * @returns {Sdk}
    */
   stop () {
-    this.debug('stopping', this)
     const operations = [
       this.network.disconnect(),
       this.store.close(),
