@@ -2,7 +2,7 @@ version: "0.5"
 
 processes:
   pre-init:
-    command: 'source $PORTAL_ROOT/sh/pre-init.sh'
+    command: 'source $DEVENV_ROOT/pre-init.sh'
     namespace: pre-init
 
   bitcoin:
@@ -59,7 +59,7 @@ processes:
         command: lncli --network regtest --rpcserver="127.0.0.1:10002" --lnddir=$PLAYNET_ROOT/state/bob/lnd getinfo
 
   post-init:
-    command: 'source $PORTAL_ROOT/sh/post-init.sh'
+    command: 'source $DEVENV_ROOT/post-init.sh'
     namespace: post-init
     depends_on:
       alice:

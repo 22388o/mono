@@ -46,6 +46,12 @@ in
         name = "PLAYNET_ROOT";
         value = "${toString ./.}/playnet";
       }
+
+      # Define DEVENV_ROOT
+      {
+        name = "DEVENV_ROOT";
+        value = "${toString ./sh}/devenv/";
+      }
     ];
 
     commands = [
@@ -54,7 +60,7 @@ in
         name = "tf-get";
         help = "Obtain the deployment public or private key from terraform state";
         command = let
-          script = pkgs.writeShellScriptBin "tf-get" (builtins.readFile ./sh/tf-get.sh);
+          script = pkgs.writeShellScriptBin "tf-get" (builtins.readFile ./sh/utils/tf-get.sh);
         in ''${script}/bin/tf-get $@'';
       }
       {
@@ -85,11 +91,11 @@ in
         name = "devenv";
         help = "Development Environment Control Script";
         command = let
-          script = pkgs.writeShellScriptBin "devenv" (builtins.readFile ./sh/devenv2.sh);
+          script = pkgs.writeShellScriptBin "devenv" (builtins.readFile ./sh/devenv/devenv2.sh);
         in ''${script}/bin/devenv $@'';
       }
     ];
 
     # TODO: Remove this entry once devenv2 is ready
-    devshell.startup.playnet.text = ''[ "$SKIP_OLD_DEVENV" != "true" ] && source "$PORTAL_ROOT/sh/devenv.sh"'';
+    devshell.startup.playnet.text = ''[ "$SKIP_OLD_DEVENV" != "true" ] && source "$PORTAL_ROOT/sh/devenv-old.sh"'';
   }

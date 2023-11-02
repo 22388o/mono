@@ -19,6 +19,12 @@ if [ -z "$PORTAL_ROOT" ] || [ ! -d "$PORTAL_ROOT" ]; then
   exit 1
 fi
 
+# Check for DEVENV_ROOT
+if [ -z "$DEVENV_ROOT" ] || [ ! -d "$DEVENV_ROOT" ]; then
+  log_error "DEVENV_ROOT is not set or is not a valid directory."
+  exit 1
+fi
+
 ### Helper Functions ###
 
 log_info() {
@@ -59,7 +65,7 @@ devenv_up() {
   check_port_availability
 
   log_info "Starting development environment..."
-  nohup process-compose --port=$PORT --tui=false --config $PORTAL_ROOT/sh/process-compose.yaml up >/dev/null 2>&1 &
+  nohup process-compose --port=$PORT --tui=false --config $DEVENV_ROOT/process-compose.yaml up >/dev/null 2>&1 &
   echo $! >$PID_FILE
   log_info "Started process-compose with PID $!"
 
