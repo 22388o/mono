@@ -4,6 +4,7 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const https = require('https')
+const { URL } = require('url')
 const WebSocket = require('ws')
 
 /**
@@ -57,80 +58,9 @@ module.exports = class Lightning extends BaseClass {
    */
   connect () {
     return new Promise((resolve, reject) => {
-      const state = INSTANCES.get(this)
-      const { hostname, port, sockets, macaroons: { admin } } = state
-      const url = `wss://${hostname}:${port}/v1/invoices/subscribe?method=GET`
-      const opts = {
-        // TODO: Fix this for production use
-        rejectUnauthorized: false,
-        headers: { 'Grpc-Metadata-macaroon': admin }
-      }
-
-      const ws = new WebSocket(url, opts)
-        .on('open', (...args) => {
-          sockets.add(ws)
-          this.info('connect', ...args, this)
-          this.emit('connect', this)
-          resolve(this)
-        })
-        .on('error', err => {
-          sockets.delete(ws)
-          this.error('connect', err, this)
-          this.emit('error', err, this)
-          reject(err)
-        })
-        .on('close', (...args) => {
-          sockets.delete(ws)
-          this.warn('connect', ...args, this)
-        })
-        .on('message', buf => {
-          let obj = null
-
-          // parse the message
-          try {
-            obj = JSON.parse(buf)
-          } catch (err) {
-            this.error('error', err, this)
-            this.emit('error', err, this)
-            return
-          }
-
-          // generate an invoice from the update
-          this.debug('invoice', obj, this)
-          const invoice = {
-            id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
-            ts: obj.result.creation_date * 1000,
-            swap: { id: obj.result.memo },
-            request: obj.result.payment_request,
-            amount: Number(obj.result.value)
-          }
-
-          // process the invoice event
-          switch (obj.result.state) {
-            case 'OPEN':
-              this.info('invoice.created', invoice, this)
-              this.emit('invoice.created', invoice, this)
-              break
-
-            case 'ACCEPTED':
-              this.info('invoice.paid', invoice, this)
-              this.emit('invoice.paid', invoice, this)
-              break
-
-            case 'SETTLED':
-              this.info('invoice.settled', invoice, this)
-              this.emit('invoice.settled', invoice, this)
-              break
-
-            case 'CANCELLED':
-              this.info('invoice.cancelled', invoice, this)
-              this.emit('invoice.cancelled', invoice, this)
-              break
-
-            default:
-              this.warn('invoice.unknown', obj.result, this)
-          }
-        })
+      this.info('connect', this)
+      this.emit('connect', this)
+      resolve(this)
     })
   }
 
@@ -242,6 +172,75 @@ module.exports = class Lightning extends BaseClass {
       value: quantity
     }
     const invoice = await this._request(args, data)
+
+    const state = INSTANCES.get(this)
+    const { hostname, port, sockets } = state
+    const url = new URL(`wss://${hostname}:${port}/v2/invoices/subscribe/${data.hash}?method=GET`)
+    const opts = {
+      // TODO: Fix this for production use
+      rejectUnauthorized: false,
+      headers: { 'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice }
+    }
+
+    const ws = new WebSocket(url.toString(), opts)
+      .on('open', () => sockets.add(ws))
+      .on('close', (...args) => sockets.delete(ws))
+      .on('error', err => {
+        sockets.delete(ws)
+        this.emit('error', err, this)
+      })
+      .on('message', buf => {
+        let obj = null
+
+        // parse the message
+        try {
+          obj = JSON.parse(buf)
+        } catch (err) {
+          this.error('invoice.error', err, this)
+          return
+        }
+
+        this.debug('invoice', obj, this)
+        if (obj.result == null) {
+          this.error('invoice.error', obj, this)
+          return
+        }
+
+        // generate an invoice from the update
+        const invoice = {
+          id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
+          ts: obj.result.creation_date * 1000,
+          swap: { id: obj.result.memo },
+          request: obj.result.payment_request,
+          amount: Number(obj.result.value)
+        }
+
+        // process the invoice event
+        switch (obj.result.state) {
+          case 'OPEN':
+            this.info('invoice.created', invoice, this)
+            this.emit('invoice.created', invoice, this)
+            break
+
+          case 'ACCEPTED':
+            this.info('invoice.paid', invoice, this)
+            this.emit('invoice.paid', invoice, this)
+            break
+
+          case 'SETTLED':
+            this.info('invoice.settled', invoice, this)
+            this.emit('invoice.settled', invoice, this)
+            break
+
+          case 'CANCELLED':
+            this.info('invoice.cancelled', invoice, this)
+            this.emit('invoice.cancelled', invoice, this)
+            break
+
+          default:
+            this.warn('invoice.unknown', obj.result, this)
+        }
+      })
 
     return {
       id: secretHash,
@@ -365,14 +364,15 @@ module.exports = class Lightning extends BaseClass {
    * @param {String} secret The secret to be revealed during settlement
    * @returns {Promise}
    */
-  async _settleInvoice (secret) {
+  async _settleHodlInvoice (secret) {
     const args = {
-      path: 'v2/invoices/settle',
+      path: '/v2/invoices/settle',
       method: 'POST',
       headers: {
         'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice
       }
     }
+
     await this._request(args, {
       preimage: Buffer.from(secret, 'hex').toString('base64')
     })
@@ -398,6 +398,7 @@ module.exports = class Lightning extends BaseClass {
             .once('error', err => reject(err))
             .once('end', () => {
               const str = Buffer.concat(chunks).toString('utf8')
+
               try {
                 const obj = JSON.parse(str)
 
