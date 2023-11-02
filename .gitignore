@@ -38,6 +38,3 @@ playnet
 # direnv
 /.direnv
 /.envrc.local
-
-# puppeteer
-/chrome/
