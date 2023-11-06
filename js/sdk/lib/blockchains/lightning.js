@@ -95,11 +95,14 @@ module.exports = class Lightning extends BaseClass {
    * @returns {Promise<Lightning>}
    */
   connect () {
-    return new Promise((resolve, reject) => {
-      this.info('connect', this)
-      this.emit('connect', this)
-      resolve(this)
-    })
+    return this._getInfo()
+      .then(result => {
+        INSTANCES.get(this).json.publicKey = result.publicKey
+
+        this.info('connect', this)
+        this.emit('connect', this)
+        return this
+      })
   }
 
   /**
@@ -187,6 +190,24 @@ module.exports = class Lightning extends BaseClass {
     this.info('disconnect', this)
     this.emit('disconnect', this)
     return this
+  }
+
+  /**
+   * Returns information about the LND node
+   * @returns {Promise<Object>}
+   */
+  async _getInfo () {
+    const args = {
+      path: '/v1/getinfo',
+      method: 'GET',
+      headers: {
+        'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.admin
+      }
+    }
+
+    const result = await this._request(args)
+
+    return { publicKey: result.identity_pubkey }
   }
 
   /**

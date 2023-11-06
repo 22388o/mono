@@ -47,13 +47,14 @@ describe('Blockchains - Lightning', function () {
         expect(blockchain.id).to.be.a('string').that.equals('lightning')
         expect(blockchain.hostname).to.be.a('string').that.equals('127.0.0.1')
         expect(blockchain.port).to.be.a('number').that.equals(11001)
-        // expect(blockchain.publicKey).to.be.a('string').that.equals(null)
+        expect(blockchain.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
 
         const json = blockchain.toJSON()
         expect(json['@type']).to.be.a('string').that.equals('Lightning')
         expect(json.id).to.be.a('string').that.equals('lightning')
         expect(json.hostname).to.be.a('string').that.equals('127.0.0.1')
         expect(json.port).to.be.a('number').that.equals(11001)
+        expect(json.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
       }
 
       return instance
