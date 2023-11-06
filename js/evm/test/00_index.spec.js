@@ -5,7 +5,7 @@
 const { expect } = require('chai')
 const { basename, extname } = require('path')
 const Web3 = require('web3')
-const { compile } = require('../helpers')
+const { compile } = require('../lib/')
 
 /**
  * Deploy the specified contract

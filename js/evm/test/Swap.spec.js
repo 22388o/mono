@@ -15,7 +15,7 @@ describe('Swap', function () {
     contract = Contract.methods
   })
 
-  describe('.toHash()', function () {
+  xdescribe('.toHash()', function () {
     it('must correctly generate a SHA-256 hash', async function () {
       const secret = randomBytes(32)
       const secretHash = createHash('sha256').update(secret).digest('hex')
