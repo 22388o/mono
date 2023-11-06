@@ -103,7 +103,7 @@ module.exports = class Ethereum extends BaseClass {
       events.on('data', data => {
         const { event, address, returnValues } = data
 
-        if (contract._address !== address) {
+        if (contract._address.toLowerCase() !== address) {
           const msg = `got event from ${address}; expected ${contract._address}`
           const err = Error(msg)
           this.error('invoice.event', err, this)
