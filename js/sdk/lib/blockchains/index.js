@@ -24,7 +24,7 @@ module.exports = class Blockchains extends BaseClass {
     this.lightning = new Lightning(sdk, props.lightning)
       .on('log', (level, ...args) => this[level](...args))
 
-    Object.seal(this)
+    Object.freeze(this)
   }
 
   /**
@@ -50,21 +50,25 @@ module.exports = class Blockchains extends BaseClass {
    * Initializes connections to all supported blockchains
    * @returns {Blockchain[]}
    */
-  connect () {
-    return Promise.all([
+  async connect () {
+    const blockchains = await Promise.all([
       this.ethereum.connect(),
       this.lightning.connect()
     ])
+    this.emit('connect', blockchains)
+    return blockchains
   }
 
   /**
    * Gracefully closes connections to all supported blockchains
    * @returns {Blockchain[]}
    */
-  disconnect () {
-    return Promise.all([
+  async disconnect () {
+    const blockchains = await Promise.all([
       this.ethereum.disconnect(),
       this.lightning.disconnect()
     ])
+    this.emit('disconnect', blockchains)
+    return blockchains
   }
 }

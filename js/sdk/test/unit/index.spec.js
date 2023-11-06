@@ -57,7 +57,7 @@ const USERS = ['alice', 'bob']
  * - Initializes and starts a peer
  * - Initializes and starts SDK instances for each user
  */
-before(async function () {
+before('setup the test environment', async function () {
   // override/install globals
   for (const key in GLOBALS) {
     const existing = global[key]
@@ -70,7 +70,6 @@ before(async function () {
   const contracts = this.contracts = await deploy(await compile(), web3)
   const abiFile = process.env.PORTAL_ETHEREUM_CONTRACTS
   writeFileSync(abiFile, JSON.stringify(contracts, null, 2))
-
   // load the configuration
   // NOTE: This MUST happen after the smart-contract compilation/deployment
   const config = require('../../etc/config.dev')
@@ -87,7 +86,6 @@ before(async function () {
     const creds = require(`../../../portal/test/unit/${id}`)
     const props = Object.assign({ id }, config, {
       blockchains: Object.assign({}, blockchains, {
-        bitcoin: Object.assign({}, blockchains.bitcoin, creds.bitcoin),
         ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
         lightning: Object.assign({}, blockchains.lightning, creds.lightning)
       })
@@ -106,7 +104,7 @@ before(async function () {
  * - Stops the peer
  * - Restores the global functions that were overridden during setup
  */
-after(async function () {
+after('teardown the test environment', async function () {
   // stop the SDK instance
   await Promise.all(USERS.map(id => this.test.ctx[id].stop()))
 

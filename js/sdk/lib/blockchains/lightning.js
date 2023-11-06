@@ -19,6 +19,20 @@ const INSTANCES = new WeakMap()
  */
 module.exports = class Lightning extends BaseClass {
   constructor (sdk, props) {
+    if (props == null) {
+      throw Error('no properties specified!')
+    } else if (props.hostname == null || typeof props.hostname !== 'string') {
+      throw Error('no hostname specified for lnd!')
+    } else if (props.port == null || typeof props.port !== 'number') {
+      throw Error('no port specified for lnd!')
+    } else if (props.cert == null || typeof props.cert !== 'string') {
+      throw Error('no TLS certificate specified!')
+    } else if (props.admin == null || typeof props.admin !== 'string') {
+      throw Error('no admin macaroon provided!')
+    } else if (props.invoice == null || typeof props.invoice !== 'string') {
+      throw Error('no invoice macaroon provided!')
+    }
+
     super({ id: 'lightning' })
 
     INSTANCES.set(this, Object.seal({
@@ -42,6 +56,30 @@ module.exports = class Lightning extends BaseClass {
     }))
 
     Object.freeze(this)
+  }
+
+  /**
+   * Returns the hostname of the LND instance
+   * @returns {String}
+   */
+  get hostname () {
+    return INSTANCES.get(this).json.hostname
+  }
+
+  /**
+   * Returns the port of the LND instance
+   * @returns {Number}
+   */
+  get port () {
+    return INSTANCES.get(this).json.port
+  }
+
+  /**
+   * Returns the publicKey of the LND instance
+   * @returns {String}
+   */
+  get publicKey () {
+    return INSTANCES.get(this).json.publicKey
   }
 
   /**
