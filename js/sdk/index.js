@@ -95,6 +95,6 @@ class SDK extends BaseClass {
   }
 }
 
-module.exports = {
+module.exports =  {
   SDK, IndexedDB
 }

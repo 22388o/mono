@@ -22,8 +22,6 @@ class Store extends BaseClass {
       namespaces: {}
     }))
 
-    this.db = null;
-
     Object.seal(this)
   }
 

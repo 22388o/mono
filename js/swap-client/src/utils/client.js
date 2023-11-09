@@ -6,7 +6,7 @@
 'use strict'
 
 import { Buffer } from 'buffer'
-import { SDK } from '@portaldefi/sdk';
+import SDK from '@portaldefi/sdk';
 
 /**
   * Exports an implementation of a client

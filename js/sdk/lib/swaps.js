@@ -12,7 +12,6 @@ module.exports = class Swaps extends BaseClass {
   constructor (sdk, props) {
     super()
 
-    // Wire up swap events
     this.sdk = sdk
 
     // Read swap events from the network

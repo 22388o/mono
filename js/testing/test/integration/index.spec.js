@@ -3,12 +3,12 @@
  */
 
 const Peer = require('@portaldefi/peer')
+const { SDK } = require('@portaldefi/sdk')
 const chai = require('chai')
 const { writeFileSync } = require('fs')
 const { inspect } = require('util')
 const { Web3 } = require('web3')
-const { compile, deploy } = require('../../../portal/test/helpers')
-const Sdk = require('../..')
+const { compile, deploy, generate } = require('../../lib/helpers')
 
 /**
  * Returns whether the tests are being run in debug mode
@@ -23,10 +23,10 @@ const isDebugEnabled = process.argv.includes('--debug')
 const log = !isDebugEnabled
   ? function () { }
   : (...args) => console.error(...(args.map(arg => inspect(arg, {
-      showHidden: false,
-      depth: null,
-      colors: true
-    }))))
+    showHidden: false,
+    depth: null,
+    colors: true
+  }))))
 
 /**
  * Maps globally visible keys to their values for the duration of the tests
@@ -82,16 +82,7 @@ before('setup the test environment', async function () {
 
   // start all sdk instances
   for (const id of USERS) {
-    const { blockchains } = config
-    const creds = require(`../../../portal/test/unit/${id}`)
-    const props = Object.assign({ id }, config, {
-      blockchains: Object.assign({}, blockchains, {
-        ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
-        lightning: Object.assign({}, blockchains.lightning, creds.lightning)
-      })
-    })
-
-    this[id] = new Sdk(props)
+    this[id] = new SDK(generate(id, config))
     await this[id]
       .on('log', log)
       .start()

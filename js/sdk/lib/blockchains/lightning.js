@@ -19,6 +19,20 @@ const INSTANCES = new WeakMap()
  */
 module.exports = class Lightning extends BaseClass {
   constructor (sdk, props) {
+    if (props == null) {
+      throw Error('no properties specified!')
+    } else if (props.hostname == null || typeof props.hostname !== 'string') {
+      throw Error('no hostname specified for lnd!')
+    } else if (props.port == null || typeof props.port !== 'number') {
+      throw Error('no port specified for lnd!')
+    } else if (props.cert == null || typeof props.cert !== 'string') {
+      throw Error('no TLS certificate specified!')
+    } else if (props.admin == null || typeof props.admin !== 'string') {
+      throw Error('no admin macaroon provided!')
+    } else if (props.invoice == null || typeof props.invoice !== 'string') {
+      throw Error('no invoice macaroon provided!')
+    }
+
     super({ id: 'lightning' })
 
     INSTANCES.set(this, Object.seal({
@@ -45,6 +59,30 @@ module.exports = class Lightning extends BaseClass {
   }
 
   /**
+   * Returns the hostname of the LND instance
+   * @returns {String}
+   */
+  get hostname () {
+    return INSTANCES.get(this).json.hostname
+  }
+
+  /**
+   * Returns the port of the LND instance
+   * @returns {Number}
+   */
+  get port () {
+    return INSTANCES.get(this).json.port
+  }
+
+  /**
+   * Returns the publicKey of the LND instance
+   * @returns {String}
+   */
+  get publicKey () {
+    return INSTANCES.get(this).json.publicKey
+  }
+
+  /**
    * Returns the JSON representation of the swap
    * @returns {Object}
    */
@@ -57,11 +95,14 @@ module.exports = class Lightning extends BaseClass {
    * @returns {Promise<Lightning>}
    */
   connect () {
-    return new Promise((resolve, reject) => {
-      this.info('connect', this)
-      this.emit('connect', this)
-      resolve(this)
-    })
+    return this._getInfo()
+      .then(result => {
+        INSTANCES.get(this).json.publicKey = result.publicKey
+
+        this.info('connect', this)
+        this.emit('connect', this)
+        return this
+      })
   }
 
   /**
@@ -149,6 +190,24 @@ module.exports = class Lightning extends BaseClass {
     this.info('disconnect', this)
     this.emit('disconnect', this)
     return this
+  }
+
+  /**
+   * Returns information about the LND node
+   * @returns {Promise<Object>}
+   */
+  async _getInfo () {
+    const args = {
+      path: '/v1/getinfo',
+      method: 'GET',
+      headers: {
+        'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.admin
+      }
+    }
+
+    const result = await this._request(args)
+
+    return { publicKey: result.identity_pubkey }
   }
 
   /**

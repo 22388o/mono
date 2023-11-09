@@ -1,11 +1,11 @@
 /**
- * @file Behavioral specification for the Lightning network
+ * @file Behavioral specification for the Ethereum network
  */
 
-const Blockchain = require('../../../lib/blockchains/lightning')
+const Blockchain = require('../../../lib/blockchains/ethereum')
 const config = require('../../../etc/config.dev')
 
-describe('Blockchains - Lightning', function () {
+describe('Blockchains - Ethereum', function () {
   const id = 'alice'
   const { blockchains } = config
   const creds = require(`../../../../portal/test/unit/${id}`)
@@ -16,7 +16,7 @@ describe('Blockchains - Lightning', function () {
     })
   })
   const SDK = {}
-  const PROPS = CONFIG.blockchains.lightning
+  const PROPS = CONFIG.blockchains.ethereum
 
   let instance = null
 
@@ -32,7 +32,7 @@ describe('Blockchains - Lightning', function () {
 
       expect(createInstance).to.not.throw()
       expect(instance).to.be.an.instanceof(Blockchain)
-      expect(instance.id).to.be.a('string').that.equals('lightning')
+      expect(instance.id).to.be.a('string').that.equals('ethereum')
     })
   })
 
@@ -44,17 +44,14 @@ describe('Blockchains - Lightning', function () {
     it('must correctly connect to the blockchain', function () {
       const validate = blockchain => {
         expect(blockchain).to.be.an.instanceof(Blockchain)
-        expect(blockchain.id).to.be.a('string').that.equals('lightning')
-        expect(blockchain.hostname).to.be.a('string').that.equals('127.0.0.1')
-        expect(blockchain.port).to.be.a('number').that.equals(11001)
-        expect(blockchain.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
+        expect(blockchain.id).to.be.a('string').that.equals('ethereum')
 
         const json = blockchain.toJSON()
-        expect(json['@type']).to.be.a('string').that.equals('Lightning')
-        expect(json.id).to.be.a('string').that.equals('lightning')
-        expect(json.hostname).to.be.a('string').that.equals('127.0.0.1')
-        expect(json.port).to.be.a('number').that.equals(11001)
-        expect(json.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
+        expect(json['@type']).to.be.a('string').that.equals('Ethereum')
+        expect(json.id).to.be.a('string').that.equals('ethereum')
+        expect(json.wallet).to.be.a('string').that.matches(/^0x[a-fA-F0-9]{40}$/)
+        expect(json.contract).to.be.a('object')
+        expect(json.contract.address).to.be.a('string').that.matches(/^0x[a-fA-F0-9]{40}$/)
       }
 
       return instance
@@ -66,16 +63,14 @@ describe('Blockchains - Lightning', function () {
     it('must correctly disconnect from the blockchain', function () {
       const validate = blockchain => {
         expect(blockchain).to.be.an.instanceof(Blockchain)
-        expect(blockchain.id).to.be.a('string').that.equals('lightning')
-        expect(blockchain.hostname).to.be.a('string').that.equals('127.0.0.1')
-        expect(blockchain.port).to.be.a('number').that.equals(11001)
-        // expect(blockchain.publicKey).to.be.a('string').that.equals(null)
+        expect(blockchain.id).to.be.a('string').that.equals('ethereum')
 
         const json = blockchain.toJSON()
-        expect(json['@type']).to.be.a('string').that.equals('Lightning')
-        expect(json.id).to.be.a('string').that.equals('lightning')
-        expect(json.hostname).to.be.a('string').that.equals('127.0.0.1')
-        expect(json.port).to.be.a('number').that.equals(11001)
+        expect(json['@type']).to.be.a('string').that.equals('Ethereum')
+        expect(json.id).to.be.a('string').that.equals('ethereum')
+        expect(json.wallet).to.be.a('string').that.matches(/^0x[a-fA-F0-9]{40}$/)
+        expect(json.contract).to.be.a('object')
+        expect(json.contract.address).to.be.a('string').that.matches(/^0x[a-fA-F0-9]{40}$/)
       }
 
       return instance
