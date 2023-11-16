@@ -7,12 +7,16 @@
     "clean": "rm -rf dist node_modules package-lock.json",
     "coverage": "c8 mocha",
     "credentials": "export PORTAL_ROOT=../../ && node credentials.js",
-    "dev": "npm run credentials && node --max-old-space-size=4096 test/dev.js",
+    "web3": "cd ../testing && npm run server",
+    "dev": "concurrently \"npm run web3\" \"npm run work\"",
+    "work": "npm run credentials && node --max-old-space-size=4096 test/dev.js",
     "dev:vite": "vite",
     "dev:force": "npm run credentials && vite --force",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
+    "proxy": "cd proxy-backend && npm run dev",
+    "peer": "node peer.js",
     "preview": "vite preview --port 7500",
     "test:all": "npm run dev & node test/ui/test_all.js",
     "test:ord": "node test/ui/test_btcord2btc.js",
@@ -140,6 +144,9 @@
   "dependencies": {
     "@testing-library/jest-dom": "^6.1.3",
     "@testing-library/react": "^14.0.0",
+    "concurrently": "^8.2.2",
+    "http-proxy": "^1.18.1",
+    "mixpanel-browser": "^2.47.0",
     "prettier": "^3.0.3",
     "react-device-detect": "^2.2.3"
   }

@@ -3,9 +3,15 @@ import { toast } from "react-toastify"
 export const SWAP_STATUS = [
   'Submitting order',
   'Finding match',
-  'Order matched',
-  'Pending Payment',
-  'Finalizing Order',
+  'Swap matched',
+  'Holder Invoice Created',
+  'Holder Invoice Sent',
+  'Seeker Invoice Created',
+  'Seeker Invoice Sent',
+  'Holder Invoice Paid',
+  'Seeker Invoice Paid',
+  'Holder Invoice Settled',
+  'Seeker Invoice Settled',
   'Completed'
 ]
 
@@ -76,6 +82,211 @@ export function formatNumber(num) {
   return [formattedNum, arr[1]].join('.');
 }
 
+const contracts = {
+  "Swap": {
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "payee",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "quantity",
+            "type": "uint256"
+          }
+        ],
+        "name": "InvoiceCreated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "payer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "quantity",
+            "type": "uint256"
+          }
+        ],
+        "name": "InvoicePaid",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "payer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "payee",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "quantity",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes32",
+            "name": "secret",
+            "type": "bytes32"
+          }
+        ],
+        "name": "InvoiceSettled",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quantity",
+            "type": "uint256"
+          }
+        ],
+        "name": "createInvoice",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quantity",
+            "type": "uint256"
+          }
+        ],
+        "name": "payInvoice",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "secret",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "swap",
+            "type": "bytes32"
+          }
+        ],
+        "name": "settleInvoice",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ],
+    "address": "0xbc6BBA2C03cf91D06CD63BEA79238E0eEd330766"
+  }
+};
+
 export function getConfig(id) {
   const configs = { alice: {
     network: { hostname: '127.0.0.1', port: 18080 },
@@ -84,7 +295,7 @@ export function getConfig(id) {
       ethereum: {
         url: 'ws://127.0.0.1:8545',
         chainId: '0x539',
-        contracts: [Object],
+        contracts: contracts,
         public: '0xf2428eed4b298829f7dc7630773e20b624ecc6b9',
         private: '3a02ea4a98d8c154486b1217263b7dcb78b5e6ff15e40dcd1a664d3f31ca0386'
       },
@@ -107,7 +318,7 @@ export function getConfig(id) {
       ethereum: {
         url: 'ws://127.0.0.1:8545',
         chainId: '0x539',
-        contracts: [Object],
+        contracts: contracts,
         public: '0x6df27c098c72e5cb0476218d61f56d2a470c7484',
         private: '8bd89791d14d639e8e8c844eb044c2da766a124fcdc4e6b44741b4c123958356'
       },

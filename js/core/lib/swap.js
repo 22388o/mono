@@ -257,7 +257,7 @@ class Swap extends BaseClass {
    */
   toJSON () {
     const { status, secretHash, secretHolder, secretSeeker } = this
-    return Object.assign(super.toJSON(), { status, secretHash, secretHolder, secretSeeker })
+    return Object.assign(super.toJSON(), { '@type': 'Swap', status, secretHash, secretHolder, secretSeeker })
   }
 
   /**

@@ -13,6 +13,15 @@ const WebSocket = require('ws')
  */
 const INSTANCES = new WeakMap()
 
+const wait = (ms) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
+
+
 /**
  * Interface to the Lightning network
  * @type {Lightning}
@@ -231,8 +240,10 @@ module.exports = class Lightning extends BaseClass {
       value: quantity
     }
     const invoice = await this._request(args, data)
+    await wait(5000);
 
     const state = INSTANCES.get(this)
+    
     const { hostname, port, sockets } = state
     const url = new URL(`wss://${hostname}:${port}/v2/invoices/subscribe/${data.hash}?method=GET`)
     const opts = {
@@ -240,6 +251,7 @@ module.exports = class Lightning extends BaseClass {
       rejectUnauthorized: false,
       headers: { 'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice }
     }
+    console.log('poiweurpoi', url.toString(), opts);
 
     const ws = new WebSocket(url.toString(), opts)
       .on('open', () => sockets.add(ws))
@@ -347,7 +359,7 @@ module.exports = class Lightning extends BaseClass {
         rejectUnauthorized: false,
         headers: { 'Grpc-Metadata-macaroon': admin }
       }
-
+      console.log('poiweurpoi', url, opts);
       const ws = new WebSocket(url, opts)
         .on('open', (...args) => {
           const req = {
@@ -438,15 +450,15 @@ module.exports = class Lightning extends BaseClass {
   }
 
   _request (args, data) {
+    const { hostname, port } = INSTANCES.get(this)
     return new Promise((resolve, reject) => {
-      const { hostname, port } = INSTANCES.get(this)
       const req = https.request(Object.assign(args, {
         hostname,
         port,
         // TODO: Fix this for production use
         rejectUnauthorized: false
       }))
-
+  
       req
         .once('abort', () => reject(new Error('aborted')))
         .once('error', err => reject(err))
@@ -457,10 +469,10 @@ module.exports = class Lightning extends BaseClass {
             .once('error', err => reject(err))
             .once('end', () => {
               const str = Buffer.concat(chunks).toString('utf8')
-
+  
               try {
                 const obj = JSON.parse(str)
-
+  
                 if (res.statusCode === 200) {
                   resolve(obj)
                 } else {
@@ -472,7 +484,7 @@ module.exports = class Lightning extends BaseClass {
               }
             })
         })
-
+  
       if (data != null) {
         req.end(Buffer.from(JSON.stringify(data)))
       } else {

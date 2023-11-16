@@ -28,7 +28,7 @@ export const ActivityTab = () => {
           <Stack sx={{alignItems:'flex-start'}}>
             <Typography>{ SWAP_STATUS[activity.status] }</Typography>
             <Typography sx={{fontSize: '14px', color: '#6A6A6A'}}>{ getStringFromDate(activity.createdDate) }</Typography>
-            <Typography sx={{fontSize:'12px'}}>{ activity.status === 5 && activity.hash.slice(0, 20) + '...'  }</Typography>
+            {/* <Typography sx={{fontSize:'12px'}}>{ activity.status === 5 && activity.hash.slice(0, 20) + '...'  }</Typography> */}
           </Stack>
         </Stack>
         <Stack>
@@ -40,7 +40,7 @@ export const ActivityTab = () => {
             <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
             <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset}</Typography>
           </Stack>
-          { activity.status < 5 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={styles['cancel-btn']}>
+          { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={styles['cancel-btn']}>
             Cancel
           </Button></span> }
         </Stack>

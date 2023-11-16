@@ -6,6 +6,7 @@ export const SWAP_PAIRS = [{
   process: [
     1,
     2,
+    3,
     4,
     5
   ],

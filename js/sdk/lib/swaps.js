@@ -2,6 +2,8 @@
  * @file An interface to all swaps
  */
 
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
 const { BaseClass, Swap, Util } = require('@portaldefi/core')
 
 /**
@@ -83,7 +85,9 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isSeeker) return
 
           const secret = Util.random()
-          const secretHash = Util.hash(secret)
+          let secretHash;
+          if(isBrowser()) secretHash = await Util.hash(secret)
+          else secretHash = Util.hash(secret)
           await store.put('secrets', secretHash, {
             secret: secret.toString('hex'),
             swap: swap.id

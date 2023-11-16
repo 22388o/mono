@@ -13,6 +13,7 @@
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
     "test": "mocha test/integration",
+    "server": "node web3-server.js",
     "test:contracts": "mocha test/contracts",
     "test:integration": "mocha test/integration",
     "watch": "npm test -- --watch"

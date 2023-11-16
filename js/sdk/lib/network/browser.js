@@ -9,15 +9,16 @@ const { BaseClass } = require('@portaldefi/core')
  * @type {Network}
  */
 module.exports = class Network extends BaseClass {
-  constructor (props) {
+  constructor (sdk, props) {
     props = Object.assign({
-      hostname: 'localhost',
+      hostname: '127.0.0.1',
       port: 80,
       pathname: '/api/v1/updates'
     }, props)
 
     super()
 
+    this.sdk = sdk;
     this.hostname = props.hostname
     this.port = props.port
     this.pathname = props.pathname
@@ -54,8 +55,10 @@ module.exports = class Network extends BaseClass {
    * @returns {Promise<Void>}
    */
   connect () {
+    const { id } = this.sdk
     return new Promise((resolve, reject) => {
-      const url = `ws://${this.hostname}:${this.port}${this.pathname}/${this.id}`
+      const url = `ws://${this.hostname}:${this.port}${this.pathname}/${id}`
+      console.log(this.hostname, this.port, this.pathname, url);
       const ws = new WebSocket(url) /* eslint-disable-line no-undef */
       ws.onmessage = (...args) => this._onMessage(...args)
       ws.onopen = () => { this.emit('connected'); resolve() }
@@ -72,8 +75,9 @@ module.exports = class Network extends BaseClass {
    * @returns {Promise<Object>}
    */
   request (args, data) {
+    const { id } = this.sdk
     return new Promise((resolve, reject) => {
-      const creds = `${this.id}:${this.id}`
+      const creds = `${id}:${id}`
       const buf = (data && JSON.stringify(data)) || ''
       const req = fetch(args.path, Object.assign(args, {
         headers: Object.assign(args.headers || {}, {
@@ -144,7 +148,7 @@ module.exports = class Network extends BaseClass {
   _onMessage (data) {
     let event, arg
     try {
-      arg = JSON.parse(data)
+      arg = JSON.parse(data.data)
 
       if (arg['@type'] != null && arg.status != null) {
         event = `${arg['@type'].toLowerCase()}.${arg.status}`
@@ -158,7 +162,7 @@ module.exports = class Network extends BaseClass {
       }
     } catch (err) {
       event = 'error'
-      arg = err
+      arg = [err]
     } finally {
       this.emit(event, ...arg)
     }
