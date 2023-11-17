@@ -7,19 +7,30 @@ const Ethereum = require('../../../lib/blockchains/ethereum')
 const Lightning = require('../../../lib/blockchains/lightning')
 const config = require('../../../etc/config.dev')
 
-describe('Blockchains', function () {
-  const id = 'alice'
-  const { blockchains } = config
-  const creds = require(`../../../../portal/test/unit/${id}`)
-  const CONFIG = Object.assign({ id }, config, {
-    blockchains: Object.assign({}, blockchains, {
-      ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
-      lightning: Object.assign({}, blockchains.lightning, creds.lightning)
-    })
-  })
-  const SDK = {}
-  const PROPS = CONFIG.blockchains
+before('setup test environment', function () {
+  this.sdk = {}
+  this.config = {}
 
+  const USERS = ['alice', 'bob']
+  for (const id of USERS) {
+    const { blockchains } = config
+    const creds = require(`../../../../portal/test/unit/${id}`)
+
+    this.config[id] = Object.assign({ id }, config, {
+      blockchains: Object.assign({}, blockchains, {
+        ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
+        lightning: Object.assign({}, blockchains.lightning, creds.lightning)
+      })
+    })
+  }
+})
+
+after('teardown test environment', function () {
+  this.test.ctx.sdk = null
+  this.test.ctx.config = null
+})
+
+describe('Blockchains', function () {
   let instance = null
 
   describe('instantiation', function () {
@@ -29,7 +40,8 @@ describe('Blockchains', function () {
 
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
-        instance = new Blockchains(SDK, PROPS)
+        const { sdk, config } = this.test.ctx
+        instance = new Blockchains(sdk, config.blockchains)
       }
 
       expect(createInstance).to.not.throw()
@@ -41,7 +53,8 @@ describe('Blockchains', function () {
 
   describe('operation', function () {
     before('construct instance', function () {
-      instance = new Blockchains(SDK, PROPS)
+      const { sdk, config } = this.test.ctx
+      instance = new Blockchains(sdk, config.blockchains)
     })
 
     it('must correctly connect to the blockchains', function () {
@@ -79,7 +92,8 @@ describe('Blockchains', function () {
 
   describe('error-handling', function () {
     before('construct instance', function () {
-      instance = new Blockchains(SDK, PROPS)
+      const { sdk, config } = this.test.ctx
+      instance = new Blockchains(sdk, config.blockchains)
     })
 
     after('destroy instance', function () {

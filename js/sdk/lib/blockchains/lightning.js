@@ -379,6 +379,12 @@ module.exports = class Lightning extends BaseClass {
           // parse the message
           try {
             obj = JSON.parse(buf)
+
+            if (obj.error != null) {
+              const err = Error(obj.error.message)
+              err.code = obj.error.code
+              throw err
+            }
           } catch (err) {
             this.error('payViaPaymentRequest', err, party, this)
             this.emit('error', err, party, this)
@@ -448,7 +454,7 @@ module.exports = class Lightning extends BaseClass {
       }))
 
       req
-        .once('abort', () => reject(new Error('aborted')))
+        .once('abort', () => reject(Error('aborted')))
         .once('error', err => reject(err))
         .once('response', res => {
           const chunks = []
@@ -464,11 +470,10 @@ module.exports = class Lightning extends BaseClass {
                 if (res.statusCode === 200) {
                   resolve(obj)
                 } else {
-                  console.log('lightning.request.error', obj, str)
-                  reject(new Error(obj.message))
+                  reject(Error(obj.message))
                 }
               } catch (err) {
-                reject(new Error(`malformed JSON response "${str}"`))
+                reject(Error(`malformed JSON response "${str}"`))
               }
             })
         })
