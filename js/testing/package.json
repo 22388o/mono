@@ -18,6 +18,7 @@
     "watch": "npm test -- --watch"
   },
   "devDependencies": {
+    "@portaldefi/core": "file:../core",
     "@portaldefi/peer": "file:../portal",
     "@portaldefi/sdk": "file:../sdk",
     "c8": "^7.12.0",
