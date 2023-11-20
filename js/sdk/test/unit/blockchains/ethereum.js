@@ -6,7 +6,7 @@ const Blockchain = require('../../../lib/blockchains/ethereum')
 const config = require('../../../etc/config.dev')
 const { createHash, randomBytes } = require('crypto')
 
-describe('Blockchains - Ethereum', function () {
+describe('Ethereum', function () {
   const id = 'alice'
   const { blockchains } = config
   const creds = require(`../../../../portal/test/unit/${id}`)

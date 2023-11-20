@@ -5,7 +5,7 @@
 const Blockchain = require('../../../lib/blockchains/lightning')
 const { createHash, randomBytes } = require('crypto')
 
-describe.only('Blockchains - Lightning', function () {
+describe('Lightning', function () {
   let instance = null
 
   describe('instantiation', function () {

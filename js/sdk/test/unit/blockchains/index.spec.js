@@ -31,6 +31,11 @@ after('teardown test environment', function () {
 })
 
 describe('Blockchains', function () {
+  describe('Supperted', function () {
+    require('./ethereum')
+    require('./lightning')
+  })
+
   let instance = null
 
   describe('instantiation', function () {
@@ -41,7 +46,7 @@ describe('Blockchains', function () {
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
         const { sdk, config } = this.test.ctx
-        instance = new Blockchains(sdk, config.blockchains)
+        instance = new Blockchains(sdk, config.alice.blockchains)
       }
 
       expect(createInstance).to.not.throw()
@@ -54,7 +59,7 @@ describe('Blockchains', function () {
   describe('operation', function () {
     before('construct instance', function () {
       const { sdk, config } = this.test.ctx
-      instance = new Blockchains(sdk, config.blockchains)
+      instance = new Blockchains(sdk, config.alice.blockchains)
     })
 
     it('must correctly connect to the blockchains', function () {

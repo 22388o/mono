@@ -2,14 +2,10 @@
  * @file Behavioral specification for an EVM/Lightning atomic swap
  */
 
-const { createHash, randomBytes } = require('crypto')
-
 /**
  * This is a simple test case wherein
  */
 describe('Swaps - Lightning/Ethereum', function () {
-  const SECRET = randomBytes(32)
-  const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
   const ORDER_PROPS = {
     baseAsset: 'BTC',
     baseNetwork: 'lightning.btc',
@@ -19,15 +15,60 @@ describe('Swaps - Lightning/Ethereum', function () {
     quoteQuantity: 100000
   }
 
+  let secretHash = null
+
   before('test setup', function () {
+    const { alice, bob } = this.test.ctx
     const onSwap = (user, event) => [event, swap => console.log(`${user}.${event}`, swap.status)]
+
+    function validate (user, swap) {
+      expect(swap.id).to.be.a('string').with.lengthOf(64)
+      expect(swap.secretHolder).to.be.an('object')
+      expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
+      expect(swap.secretSeeker).to.be.an('object')
+      expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
+    }
+
     this.test.ctx.alice
-      .on(...onSwap('alice', 'swap.received'))
-      .on(...onSwap('alice', 'swap.created'))
-      .on(...onSwap('alice', 'swap.holder.invoice.created'))
-      .on(...onSwap('alice', 'swap.holder.invoice.sent'))
-      .on(...onSwap('alice', 'swap.seeker.invoice.created'))
-      .on(...onSwap('alice', 'swap.seeker.invoice.sent'))
+      .on('swap.received', swap => {
+        validate('alice', swap)
+        expect(swap.secretHash).to.equal(undefined)
+        expect(swap.status).to.be.a('string').that.equals('received')
+
+        expect(swap.secretHolder.invoice).to.equal(null)
+        expect(swap.secretSeeker.invoice).to.equal(null)
+      })
+      .on('swap.created', swap => {
+        validate('alice', swap)
+        expect(swap.secretHash).to.be.a('string').with.lengthOf(64)
+        expect(swap.status).to.be.a('string').that.equals('created')
+
+        expect(swap.secretHolder.invoice).to.equal(null)
+        expect(swap.secretSeeker.invoice).to.equal(null)
+
+        secretHash = swap.secretHash
+      })
+      .on('swap.holder.invoice.created', swap => {
+        validate('alice', swap)
+        expect(swap.secretHash).to.be.a('string').to.equal(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('holder.invoice.created')
+
+        expect(swap.secretHolder.invoice).to.equal(null)
+        expect(swap.secretSeeker.invoice).to.equal(null)
+      })
+      .on('swap.holder.invoice.sent', swap => {
+        validate('alice', swap)
+        expect(swap.secretHash).to.be.a('string').to.equal(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('holder.invoice.sent')
+      })
+      .on('swap.seeker.invoice.created', swap => {
+        throw Error('alice should not create seeker invoice as the secret holder!')
+      })
+      .on('swap.seeker.invoice.sent', swap => {
+        validate('alice', swap)
+        expect(swap.secretHash).to.be.a('string').to.equal(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.sent')
+      })
       .on(...onSwap('alice', 'swap.holder.invoice.paid'))
       .on(...onSwap('alice', 'swap.seeker.invoice.paid'))
       .on(...onSwap('alice', 'swap.holder.invoice.settled'))
@@ -35,16 +76,52 @@ describe('Swaps - Lightning/Ethereum', function () {
       .on(...onSwap('alice', 'swap.completed'))
 
     this.test.ctx.bob
-      .on(...onSwap('bob', 'swap.received'))
-      .on(...onSwap('bob', 'swap.created'))
-      .on(...onSwap('bob', 'swap.holder.invoice.created'))
-      .on(...onSwap('bob', 'swap.holder.invoice.sent'))
-      .on(...onSwap('bob', 'swap.seeker.invoice.created'))
-      .on(...onSwap('bob', 'swap.seeker.invoice.sent'))
-      .on(...onSwap('bob', 'swap.holder.invoice.paid'))
-      .on(...onSwap('bob', 'swap.seeker.invoice.paid'))
-      .on(...onSwap('bob', 'swap.holder.invoice.settled'))
-      .on(...onSwap('bob', 'swap.seeker.invoice.settled'))
+      .on('swap.received', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.equal(undefined)
+        expect(swap.status).to.be.a('string').that.equals('received')
+      })
+      .on('swap.created', swap => {
+        throw Error('bob should not create the swap as the secret seeker!')
+      })
+      .on('swap.holder.invoice.created', swap => {
+        throw Error('bob should not create holder invoice as the secret seeker!')
+      })
+      .on('swap.holder.invoice.sent', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').to.equal(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('holder.invoice.sent')
+      })
+      .on('swap.seeker.invoice.created', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.created')
+      })
+      .on('swap.seeker.invoice.sent', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.sent')
+      })
+      .on('swap.holder.invoice.paid', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.created')
+      })
+      .on('swap.seeker.invoice.paid', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.created')
+      })
+      .on('swap.holder.invoice.settled', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.created')
+      })
+      .on('swap.seeker.invoice.settled', swap => {
+        validate('bob', swap)
+        expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
+        expect(swap.status).to.be.a('string').that.equals('seeker.invoice.created')
+      })
       .on(...onSwap('bob', 'swap.completed'))
   })
 
@@ -134,85 +211,7 @@ describe('Swaps - Lightning/Ethereum', function () {
       .catch(done)
   })
 
-  /**
-   * Bob's order being opened on the orderbook triggers the creation of a swap
-   * based on the two orders to be matched. The swap is sent down the open
-   * updates channel for the two parties. This test verifies that the swap is
-   * received by both alice and bob, and that the fields are as expected, esp.
-   * the secret hash.
-   */
-  it('must handle the swap between to Alice and Bob', function (done) {
-    const { alice, bob } = this.test.ctx
-    const swaps = {
-      alice: {
-        created: null,
-        opening: null,
-        opened: null,
-        committing: null,
-        committed: null
-      },
-      bob: {
-        created: null,
-        opening: null,
-        opened: null,
-        committing: null,
-        committed: null
-      }
-    }
+  it('must complete the atomic swap', function (done) {
 
-    /* eslint-disable-next-line no-unused-vars */
-    function validate (swap, user, status) {
-      console.log('validating', status, 'swap for', user, swap)
-
-      expect(swap.id).to.be.a('string').with.lengthOf(64)
-      expect(swap.secretHash).to.be.a('string').that.equals(SECRET_HASH)
-      expect(swap.secretHolder).to.be.an('object')
-      expect(swap.secretHolder.id).to.be.a('string').that.equals(alice.id)
-      expect(swap.secretSeeker).to.be.an('object')
-      expect(swap.secretSeeker.id).to.be.a('string').that.equals(bob.id)
-      expect(swap.status).to.be.a('string').that.equals(status)
-
-      swaps[user][status] = swap
-
-      if (swaps.alice[status] == null || swaps.bob[status] == null) return
-
-      expect(swaps.alice[status]).to.deep.equal(swaps.bob[status])
-
-      switch (status) {
-        case 'created': {
-          const aliceHolderInvoice = swaps.alice[status].secretHolder.invoice
-          const bobHolderInvoice = swaps.bob[status].secretHolder.invoice
-          expect(aliceHolderInvoice).to.be.a('string')
-          expect(bobHolderInvoice).to.be.a('string')
-          expect(aliceHolderInvoice).to.equal(bobHolderInvoice)
-
-          const aliceSeekerInvoice = swaps.alice[status].secretSeeker.invoice
-          const bobSeekerInvoice = swaps.bob[status].secretSeeker.invoice
-          expect(aliceSeekerInvoice).to.be.equal(null)
-          expect(bobSeekerInvoice).to.be.equal(null)
-          break
-        }
-
-        case 'opening': {
-          const aliceHolderInvoice = swaps.alice[status].secretHolder.invoice
-          const bobHolderInvoice = swaps.bob[status].secretHolder.invoice
-          expect(aliceHolderInvoice).to.be.a('string')
-          expect(bobHolderInvoice).to.be.a('string')
-          expect(aliceHolderInvoice).to.equal(bobHolderInvoice)
-
-          const aliceSeekerInvoice = swaps.alice[status].secretSeeker.invoice
-          const bobSeekerInvoice = swaps.bob[status].secretSeeker.invoice
-          expect(aliceSeekerInvoice).to.equal(null)
-          expect(bobSeekerInvoice).to.equal(null)
-          expect(aliceSeekerInvoice).to.equal(bobSeekerInvoice)
-          break
-        }
-
-        case 'opened': break
-        case 'committing': break
-        case 'committed': break
-        default: break
-      }
-    }
   })
 })
