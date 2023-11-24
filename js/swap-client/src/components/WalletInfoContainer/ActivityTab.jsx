@@ -53,7 +53,7 @@ export const ActivityTab = () => {
   return (
     <Stack className={styles['activities-container']}>
       { [...activities].reverse().map((activity, index) =>
-          <div>
+          <div key={index}>
             {index > 0 && renderDivider() }
             { renderActivity(activity) }
           </div>

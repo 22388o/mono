@@ -359,7 +359,6 @@ module.exports = class Lightning extends BaseClass {
         rejectUnauthorized: false,
         headers: { 'Grpc-Metadata-macaroon': admin }
       }
-      console.log('poiweurpoi', url, opts);
       const ws = new WebSocket(url, opts)
         .on('open', (...args) => {
           const req = {

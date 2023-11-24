@@ -44,7 +44,7 @@ module.exports = class BaseClass {
     LOG_LEVELS.forEach(level => {
       this[level] = (id == null)
         ? (event, ...args) => this.emit('log', level, event, ...args)
-        : (event, ...args) => this.emit('log', level, `${id}.${event}`, ...args)
+        : (event, ...args) => {console.log(id, level, event, args); this.emit('log', level, `${id}.${event}`, ...args)}
     })
   }
 

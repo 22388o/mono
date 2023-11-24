@@ -35,7 +35,7 @@ class SDK extends BaseClass {
       .on('swap.seeker.invoice.settled', onSwap)
       .on('swap.completed', onSwap)
       .on('message', (...args) => this.emit('message', ...args))
-      .on('log', (...args) => this.emit('log', ...args))
+      .on('log', (level, ...args) => this[level](...args))
   }
 
   get id () {

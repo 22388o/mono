@@ -125,6 +125,14 @@ export const SwapCreate = () => {
      * f means flag which is used temporarily in distinguishing variable names
      */
     let nor, base, index, nextSt;
+    if(activity.orderId !== swap.secretHolder.oid && activity.orderId !== swap.secretSeeker.oid) {
+      return {
+        fNor: false,
+        fBase: 0,
+        fIndex: 0,
+        fNext: 0
+      }
+    }
     SWAP_PAIRS.forEach((pair, idx) => {
       let fBase = -1;
       if(pair.base === activity.baseAsset && pair.quote === activity.quoteAsset) fBase = 0;
@@ -177,7 +185,15 @@ export const SwapCreate = () => {
         }
       })
     }
-
+    user.user.on("log", (level, ...args) => {
+      if(level === "error") {
+        toast.error(`Error occured! ${args[0]}`, {
+          theme: 'colored',
+          autoClose: 1000
+        })
+      }
+      console.log('log in client', level, args)
+    });
     user.user.on("swap.received", swap => swapListener(swap, 2));
     user.user.on("swap.holder.invoice.created", swap => swapListener(swap, 3));
     user.user.on("swap.holder.invoice.sent", swap => swapListener(swap, 4));

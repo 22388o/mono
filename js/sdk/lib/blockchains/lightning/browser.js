@@ -247,7 +247,7 @@ module.exports = class Lightning extends BaseClass {
       headers: { 'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice }
     }
     const url = `ws://${hostname}:${port-6001}/v2/invoices/subscribe/${data.hash}?method=GET&${INSTANCES.get(this).macaroons.invoice}`;
-    console.log(opts, url);
+    
     const ws = new WebSocket(url)
     ws.onopen = () => sockets.add(ws)
     ws.onclose = (...args) => sockets.delete(ws)
