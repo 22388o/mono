@@ -120,7 +120,7 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
-          // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoice.created'
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
 
@@ -130,7 +130,7 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
-          // NOTE: Swap mutation causes status to transition to 'seeker.invoiced'
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoice.sent'
           await swap.sendInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break

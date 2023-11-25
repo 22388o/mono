@@ -14,6 +14,18 @@ const WebSocket = require('ws')
 const INSTANCES = new WeakMap()
 
 /**
+ * Returns the base64url encoding of the specified secret hash
+ * @param {String} hash The secret hash to encode
+ * @returns {String}
+ */
+function encodeHash (hash) {
+  return Buffer.from(hash, 'hex')
+    .toString('base64')
+    .replace('+', '-')
+    .replace('/', '_')
+}
+
+/**
  * Interface to the Lightning network
  * @type {Lightning}
  */
@@ -128,7 +140,7 @@ module.exports = class Lightning extends BaseClass {
    * Pays a HODL Invoice
    * @param {Party} party The party that is paying the invoice
    * @param {Number} party.invoice The invoice to be paid
-   * @returns {Promise<Void>}
+   * @returns {Promise<Object>}
    */
   async payInvoice (party) {
     try {
@@ -163,7 +175,7 @@ module.exports = class Lightning extends BaseClass {
    * @param {Party} party The party that is settling the invoice
    * @param {Number} party.invoice The invoice to be settled
    * @param {String} secret The secret to be revealed during settlement
-   * @returns {Promise<Void>}
+   * @returns {Promise<Object>}
    */
   async settleInvoice (party, secret) {
     try {
@@ -227,7 +239,7 @@ module.exports = class Lightning extends BaseClass {
     }
     const data = {
       memo: id,
-      hash: Buffer.from(secretHash, 'hex').toString('base64'),
+      hash: encodeHash(secretHash),
       value: quantity
     }
     const invoice = await this._request(args, data)
@@ -241,65 +253,73 @@ module.exports = class Lightning extends BaseClass {
       headers: { 'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice }
     }
 
-    const ws = new WebSocket(url.toString(), opts)
-      .on('open', () => sockets.add(ws))
-      .on('close', (...args) => sockets.delete(ws))
-      .on('error', err => {
-        sockets.delete(ws)
-        this.emit('error', err, this)
-      })
-      .on('message', buf => {
-        let obj = null
+    ;(function subscribe (attempt, self) {
+      const ws = new WebSocket(url.toString(), opts)
+        .on('open', () => sockets.add(ws))
+        .on('close', (...args) => sockets.delete(ws))
+        .on('error', err => {
+          sockets.delete(ws)
+          self.emit('error', err, self)
+        })
+        .on('message', buf => {
+          let obj = null
 
-        // parse the message
-        try {
-          obj = JSON.parse(buf)
-        } catch (err) {
-          this.error('invoice.error', err, this)
-          return
-        }
+          // parse the message
+          try {
+            obj = JSON.parse(buf)
+          } catch (err) {
+            self.error('invoice.error', err, self)
+            return
+          }
 
-        this.debug('invoice', obj, this)
-        if (obj.result == null) {
-          this.error('invoice.error', obj, this)
-          return
-        }
+          self.debug('invoice', obj, self)
+          if (obj.result == null) {
+            if (obj.code === 5 && obj.message === 'Not Found') {
+              console.log('retrying...', url)
+              ws.close()
+              setTimeout(() => subscribe(++attempt, self), 100)
+            } else {
+              self.error('invoice.error', Error(obj.message), self)
+            }
+            return
+          }
 
-        // generate an invoice from the update
-        const invoice = {
-          id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
-          ts: obj.result.creation_date * 1000,
-          swap: { id: obj.result.memo },
-          request: obj.result.payment_request,
-          amount: Number(obj.result.value)
-        }
+          // generate an invoice from the update
+          const invoice = {
+            id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
+            ts: obj.result.creation_date * 1000,
+            swap: { id: obj.result.memo },
+            request: obj.result.payment_request,
+            amount: Number(obj.result.value)
+          }
 
-        // process the invoice event
-        switch (obj.result.state) {
-          case 'OPEN':
-            this.info('invoice.created', invoice, this)
-            this.emit('invoice.created', invoice, this)
-            break
+          // process the invoice event
+          switch (obj.result.state) {
+            case 'OPEN':
+              self.info('invoice.created', invoice, self)
+              self.emit('invoice.created', invoice, self)
+              break
 
-          case 'ACCEPTED':
-            this.info('invoice.paid', invoice, this)
-            this.emit('invoice.paid', invoice, this)
-            break
+            case 'ACCEPTED':
+              self.info('invoice.paid', invoice, self)
+              self.emit('invoice.paid', invoice, self)
+              break
 
-          case 'SETTLED':
-            this.info('invoice.settled', invoice, this)
-            this.emit('invoice.settled', invoice, this)
-            break
+            case 'SETTLED':
+              self.info('invoice.settled', invoice, self)
+              self.emit('invoice.settled', invoice, self)
+              break
 
-          case 'CANCELLED':
-            this.info('invoice.cancelled', invoice, this)
-            this.emit('invoice.cancelled', invoice, this)
-            break
+            case 'CANCELLED':
+              self.info('invoice.cancelled', invoice, self)
+              self.emit('invoice.cancelled', invoice, self)
+              break
 
-          default:
-            this.warn('invoice.unknown', obj.result, this)
-        }
-      })
+            default:
+              self.warn('invoice.unknown', obj.result, self)
+          }
+        })
+    }(0, this))
 
     return {
       id: secretHash,

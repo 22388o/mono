@@ -23,10 +23,10 @@ const isDebugEnabled = process.argv.includes('--debug')
 const log = !isDebugEnabled
   ? function () { }
   : (...args) => console.error(...(args.map(arg => inspect(arg, {
-      showHidden: false,
-      depth: null,
-      colors: true
-    }))))
+    showHidden: false,
+    depth: null,
+    colors: true
+  }))), '\n\n')
 
 /**
  * Maps globally visible keys to their values for the duration of the tests

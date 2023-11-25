@@ -20,8 +20,7 @@ const SWAP_STATUS = [
   'holder.invoice.paid',
   'seeker.invoice.paid',
   'holder.invoice.settled',
-  'seeker.invoice.settled',
-  'completed'
+  'seeker.invoice.settled'
 ].reduce((obj, status, index) => {
   obj[status] = index
   return obj
@@ -312,7 +311,7 @@ class Swap extends BaseClass {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
 
-    blockchain.once('invoice.paid', invoice => setImmediate(() => {
+    blockchain.once('invoice.paid', invoice => {
       if (this.party.isSeeker) {
         INSTANCES.get(this).status = 'holder.invoice.paid'
         this.emit(this.status, this)
@@ -324,17 +323,17 @@ class Swap extends BaseClass {
       } else {
         throw Error('unexpected code branch!')
       }
-    }))
+    })
 
     if (this.party.isSeeker) {
       const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      blockchain.once('invoice.settled', invoice => setImmediate(async () => {
+      blockchain.once('invoice.settled', invoice => async () => {
         await store.put('secrets', invoice.id.substr(2), {
           secret: invoice.swap.secret,
           swap: invoice.swap.id
         })
         this.settleInvoice()
-      }))
+      })
     }
 
     this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
@@ -372,7 +371,7 @@ class Swap extends BaseClass {
     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
     this.party.payment = await blockchain.payInvoice(this.party)
     INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
-    setTimeout(() => this.emit(this.status, this), 100)
+    this.emit(this.status, this)
   }
 
   /**
@@ -385,7 +384,7 @@ class Swap extends BaseClass {
     const { secret } = await store.get('secrets', this.secretHash)
     this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
     INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
-    setTimeout(() => this.emit(this.status, this), 100)
+    this.emit(this.status, this)
   }
 }
 
