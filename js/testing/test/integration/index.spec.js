@@ -26,7 +26,7 @@ const log = !isDebugEnabled
     showHidden: false,
     depth: null,
     colors: true
-  }))))
+  }))), '\n\n')
 
 /**
  * Maps globally visible keys to their values for the duration of the tests

@@ -3,21 +3,9 @@
  */
 
 const Blockchain = require('../../../lib/blockchains/lightning')
-const config = require('../../../etc/config.dev')
+const { createHash, randomBytes } = require('crypto')
 
-describe('Blockchains - Lightning', function () {
-  const id = 'alice'
-  const { blockchains } = config
-  const creds = require(`../../../../portal/test/unit/${id}`)
-  const CONFIG = Object.assign({ id }, config, {
-    blockchains: Object.assign({}, blockchains, {
-      ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
-      lightning: Object.assign({}, blockchains.lightning, creds.lightning)
-    })
-  })
-  const SDK = {}
-  const PROPS = CONFIG.blockchains.lightning
-
+describe('Lightning', function () {
   let instance = null
 
   describe('instantiation', function () {
@@ -27,7 +15,8 @@ describe('Blockchains - Lightning', function () {
 
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
-        instance = new Blockchain(SDK, PROPS)
+        const { sdk, config: { alice } } = this.test.ctx
+        instance = new Blockchain(sdk, alice.blockchains.lightning)
       }
 
       expect(createInstance).to.not.throw()
@@ -37,8 +26,21 @@ describe('Blockchains - Lightning', function () {
   })
 
   describe('operation', function () {
+    const SECRET = randomBytes(32)
+    const SECRET_HASH = createHash('sha256').update(SECRET).digest('hex')
+    const PARTY = {
+      swap: {
+        id: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        secretHash: SECRET_HASH
+      },
+      quantity: 1000,
+      invoice: null,
+      receipt: null
+    }
+
     before('construct instance', function () {
-      instance = new Blockchain(SDK, PROPS)
+      const { sdk, config: { alice } } = this.test.ctx
+      instance = new Blockchain(sdk, alice.blockchains.lightning)
     })
 
     it('must correctly connect to the blockchain', function () {
@@ -63,19 +65,49 @@ describe('Blockchains - Lightning', function () {
         .then(validate)
     })
 
+    it('must create an invoice', async function () {
+      const invoice = PARTY.invoice = await instance.createInvoice(PARTY)
+
+      expect(invoice).to.be.an('object')
+      expect(invoice.id).to.be.a('string').that.equals(SECRET_HASH)
+      expect(invoice.request).to.be.a('string').that.matches(/^lnbcrt\w{356}/)
+      expect(invoice.amount).to.be.a('number').that.equals(PARTY.quantity)
+    })
+
+    it('must pay an invoice', async function () {
+      const { sdk, config: { bob } } = this.test.ctx
+      const instance = new Blockchain(sdk, bob.blockchains.lightning)
+      const receipt = PARTY.receipt = await instance.payInvoice(PARTY)
+
+      expect(receipt).to.be.an('object')
+      expect(receipt.id).to.be.a('string').that.equals(SECRET_HASH)
+      expect(receipt.request).to.be.a('string').that.matches(/^lnbcrt\w{356}/)
+      expect(receipt.amount).to.be.a('number').that.equals(PARTY.quantity)
+    })
+
+    it('waiting for lnd to propagate the created invoice', function (done) {
+      setTimeout(done, 1000)
+    })
+
+    it('must settle an invoice', async function () {
+      const receipt = PARTY.receipt = await instance.settleInvoice(PARTY, SECRET)
+      expect(receipt).to.equal(undefined)
+    })
+
     it('must correctly disconnect from the blockchain', function () {
       const validate = blockchain => {
         expect(blockchain).to.be.an.instanceof(Blockchain)
         expect(blockchain.id).to.be.a('string').that.equals('lightning')
         expect(blockchain.hostname).to.be.a('string').that.equals('127.0.0.1')
         expect(blockchain.port).to.be.a('number').that.equals(11001)
-        // expect(blockchain.publicKey).to.be.a('string').that.equals(null)
+        expect(blockchain.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
 
         const json = blockchain.toJSON()
         expect(json['@type']).to.be.a('string').that.equals('Lightning')
         expect(json.id).to.be.a('string').that.equals('lightning')
         expect(json.hostname).to.be.a('string').that.equals('127.0.0.1')
         expect(json.port).to.be.a('number').that.equals(11001)
+        expect(json.publicKey).to.be.a('string').that.matches(/^[0-9a-f]{66}$/)
       }
 
       return instance
