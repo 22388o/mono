@@ -81,12 +81,15 @@ module.exports = class Sdk extends BaseClass {
       .on('swap.seeker.invoice.settled', onSwap)
       .on('swap.completed', onSwap)
 
-    // Bubble up the log events
-    this.network.on('log', (level, ...args) => this[level](...args))
-    this.store.on('log', (level, ...args) => this[level](...args))
-    this.blockchains.on('log', (level, ...args) => this[level](...args))
-    this.dex.on('log', (level, ...args) => this[level](...args))
-    this.swaps.on('log', (level, ...args) => this[level](...args))
+    // Bubble up the log and error events
+    const bubbleErrorsAndLogs = emitter => emitter
+      .on('error', (err, ...args) => this.emit('error', err, ...args))
+      .on('log', (level, ...args) => this[level](...args))
+    bubbleErrorsAndLogs(this.network)
+    bubbleErrorsAndLogs(this.store)
+    bubbleErrorsAndLogs(this.blockchains)
+    bubbleErrorsAndLogs(this.dex)
+    bubbleErrorsAndLogs(this.swaps)
 
     Object.freeze(this)
   }
