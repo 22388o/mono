@@ -2,7 +2,7 @@
  * @file Interface to the Ethereum network
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const { Blockchain } = require('@portaldefi/core')
 const { Web3, WebSocketProvider } = require('web3')
 
 /**
@@ -15,8 +15,10 @@ const INSTANCES = new WeakMap()
  * Interface to the Ethereum network
  * @type {Ethereum}
  */
-module.exports = class Ethereum extends BaseClass {
+module.exports = class Ethereum extends Blockchain {
   constructor (sdk, props) {
+    super({ id: 'ethereum' })
+
     if (props == null) {
       throw Error('no properties specified!')
     } else if (props.url == null || typeof props.url !== 'string') {
@@ -28,8 +30,6 @@ module.exports = class Ethereum extends BaseClass {
     } else if (props.chainId == null) {
       throw Error('no chain identifier specified!')
     }
-
-    super({ id: 'ethereum' })
 
     INSTANCES.set(this, Object.seal({
       props,
@@ -52,10 +52,16 @@ module.exports = class Ethereum extends BaseClass {
   }
 
   /**
-   * Initializes the connection to the geth daemon
+   * Connects to the geth daemon to initializes the instance
+   *
+   * This entails a few steps:
+   * - initializes the web3 instance with reasonable defaults
+   * - retrieve details of the user's wallet from the geth node
+   * - subscribe to swap contract events
+   *
    * @returns {Promise<Ethereum>}
    */
-  connect () {
+  async connect () {
     return new Promise((resolve, reject) => {
       const state = INSTANCES.get(this)
       const { props } = state
@@ -76,7 +82,7 @@ module.exports = class Ethereum extends BaseClass {
       const web3 = new Web3(provider)
 
       // account/wallet
-      const wallet = web3.eth.accounts.wallet.add(`0x${props.private}`)
+      const wallet = web3.eth.accounts.wallet.add(props.private)
 
       // default configuration
       web3.eth.defaultAccount = wallet[0].address

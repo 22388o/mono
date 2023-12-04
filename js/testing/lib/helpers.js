@@ -126,7 +126,7 @@ Helpers.generate = function (id, config) {
     blockchains: {
       ethereum: {
         public: `0x${gethKeystore.address}`,
-        private: keythereum.recover(id, gethKeystore).toString('hex')
+        private: `0x${keythereum.recover(id, gethKeystore).toString('hex')}`
       },
       lightning: {
         hostname: lndConfig.restlisten.split(':')[0],

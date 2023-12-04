@@ -19,8 +19,6 @@ describe('Swaps - Lightning/Ethereum', function () {
   let secretHash = null
 
   function validate (user, swap) {
-    console.log(user.padStart(5), swap.status)
-
     expect(swap.id).to.be.a('string').with.lengthOf(64)
     expect(swap.secretHolder).to.be.an('object')
     expect(swap.secretHolder.id).to.be.a('string').that.equals('alice')
@@ -171,7 +169,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
       })
       .on('swap.seeker.invoice.paid', swap => {
-        expect(prevState.bob).to.equal('seeker.invoice.settled', 'bob') // TODO: Fix this
+        expect(prevState.bob).to.equal('holder.invoice.paid', 'bob')
 
         validate('bob', swap)
         expect(swap.status).to.be.a('string').that.equals('seeker.invoice.paid')
@@ -185,7 +183,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
       })
       .on('swap.seeker.invoice.settled', swap => {
-        expect(prevState.bob).to.equal('holder.invoice.paid', 'bob') // TODO: Fix this
+        expect(prevState.bob).to.equal('seeker.invoice.paid', 'bob')
 
         validate('bob', swap)
         expect(swap.status).to.be.a('string').that.equals('seeker.invoice.settled')
@@ -280,9 +278,20 @@ describe('Swaps - Lightning/Ethereum', function () {
   })
 
   it('must complete the atomic swap', function (done) {
+    const timeout = this.timeout() - 1000
+    const timeStart = Date.now()
     const timer = setInterval(function () {
-      if (prevState.alice !== 'holder.invoice.settled') return
-      if (prevState.bob !== 'seeker.invoice.settled') return
+      const { alice, bob } = prevState
+      const duration = Date.now() - timeStart
+
+      if (duration > timeout) {
+        clearInterval(timer)
+        done(Error(`timed out! alice: ${alice}, bob: ${bob}`))
+        return
+      }
+      if (alice !== 'holder.invoice.settled') return
+      if (bob !== 'seeker.invoice.settled') return
+
       clearInterval(timer)
       done()
     }, 100)

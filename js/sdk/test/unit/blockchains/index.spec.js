@@ -31,7 +31,7 @@ after('teardown test environment', function () {
 })
 
 describe('Blockchains', function () {
-  describe('Supperted', function () {
+  describe('supperted', function () {
     require('./ethereum')
     require('./lightning')
   })

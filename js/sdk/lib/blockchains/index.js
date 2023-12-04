@@ -71,4 +71,16 @@ module.exports = class Blockchains extends BaseClass {
     this.emit('disconnect', blockchains)
     return blockchains
   }
+
+  /**
+   * Iterates over all the blockchains
+   * @param {Function} fn The function that operates on each blockchain
+   * @returns {Blockchain[]}
+   */
+  forEach (fn) {
+    return [
+      this.ethereum,
+      this.lightning
+    ].forEach(fn)
+  }
 }
