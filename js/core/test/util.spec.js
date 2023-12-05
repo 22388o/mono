@@ -4,14 +4,13 @@
 
 const Util = require('../lib/util')
 const { expect } = require('chai')
-const { createHash } = require('crypto')
 
 describe('Utility Functions', function () {
   describe('hash()', function () {
     it('must generate a 256-bit sha3 hash', function () {
       const arg = 'foobarbaz'
       const actual = Util.hash(arg)
-      const expected = createHash('sha256').update(arg).digest('hex')
+      const expected = '97df3588b5a3f24babc3851b372f0ba71a9dcdded43b14b9d06961bfc1707d9d'
       expect(actual).to.equal(expected)
     })
   })

@@ -44,7 +44,7 @@ module.exports = class BaseClass {
     LOG_LEVELS.forEach(level => {
       this[level] = (id == null)
         ? (event, ...args) => this.emit('log', level, event, ...args)
-        : (event, ...args) => { this.emit('log', level, `${id}.${event}`, ...args)}
+        : (event, ...args) => this.emit('log', level, `${id}.${event}`, ...args)
     })
   }
 
@@ -166,12 +166,11 @@ module.exports = class BaseClass {
 
   /**
    * Removes all listeners
+   * @param {String} eventName The name of the event
    * @returns {BaseClass}
    */
-  removeAllListeners () {
+  removeAllListeners (eventName) {
     const { events } = INSTANCES.get(this)
-    events.clear()
-    /*
 
     if (events.has(eventName)) {
       const listeners = events.get(eventName)
@@ -180,7 +179,7 @@ module.exports = class BaseClass {
       for (const listener of listeners) {
         this.emit('removeListener', eventName, listener)
       }
-    }*/
+    }
 
     return this
   }
