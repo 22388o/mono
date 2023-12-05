@@ -4,7 +4,7 @@
 
 const Assets = require('./assets')
 const BaseClass = require('./base_class')
-const { uuid } = require('./util/node')
+const { uuid } = require('./util')
 
 /**
  * A list of supported networks
