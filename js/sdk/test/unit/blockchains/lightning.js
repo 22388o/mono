@@ -91,7 +91,7 @@ describe('Lightning', function () {
 
     it('must settle an invoice', async function () {
       const receipt = PARTY.receipt = await instance.settleInvoice(PARTY, SECRET)
-      expect(receipt).to.equal(undefined)
+      expect(receipt).to.be.an('object')
     })
 
     it('must correctly disconnect from the blockchain', function () {

@@ -17,10 +17,17 @@ module.exports = class Swaps extends BaseClass {
     this.sdk = sdk
 
     // Read swap events from the network
-    this.sdk.network
+    sdk.network
       .on('swap.received', obj => this._onSwap(obj))
       .on('swap.holder.invoice.sent', obj => this._onSwap(obj))
       .on('swap.seeker.invoice.sent', obj => this._onSwap(obj))
+
+    // Read invoice events from the blockchains
+    sdk.blockchains.forEach(blockchain => blockchain
+      .on('invoice.created', (...args) => this._onInvoice(...args))
+      .on('invoice.paid', (...args) => this._onInvoice(...args))
+      .on('invoice.settled', (...args) => this._onInvoice(...args))
+      .on('invoice.cancelled', (...args) => this._onInvoice(...args)))
 
     Object.freeze(this)
   }
@@ -189,5 +196,15 @@ module.exports = class Swaps extends BaseClass {
       this.error('swap.error', err, swap)
       this.emit('error', err, swap)
     }
+  }
+
+  /**
+   * Handles invoice events coming from the blockchains
+   * @param {Invoice} invoice The invoice being handled
+   * @param {Blockchain} blockchain The blockchain that emitted the invoice event
+   * @returns {Void}
+   */
+  _onInvoice (invoice, blockchain) {
+
   }
 }

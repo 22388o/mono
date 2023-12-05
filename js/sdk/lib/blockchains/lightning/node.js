@@ -2,7 +2,7 @@
  * @file Interface to the Lightning network
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const { Blockchain } = require('@portaldefi/core')
 const https = require('https')
 const { URL } = require('url')
 const WebSocket = require('ws')
@@ -30,16 +30,18 @@ const wait = (ms) => {
 function encodeHash (hash) {
   return Buffer.from(hash, 'hex')
     .toString('base64')
-    .replace('+', '-')
-    .replace('/', '_')
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
 }
 
 /**
  * Interface to the Lightning network
  * @type {Lightning}
  */
-module.exports = class Lightning extends BaseClass {
+module.exports = class Lightning extends Blockchain {
   constructor (sdk, props) {
+    super({ id: 'lightning' })
+
     if (props == null) {
       throw Error('no properties specified!')
     } else if (props.hostname == null || typeof props.hostname !== 'string') {
@@ -53,8 +55,6 @@ module.exports = class Lightning extends BaseClass {
     } else if (props.invoice == null || typeof props.invoice !== 'string') {
       throw Error('no invoice macaroon provided!')
     }
-
-    super({ id: 'lightning' })
 
     INSTANCES.set(this, Object.seal({
       hostname: props.hostname,
@@ -112,18 +112,15 @@ module.exports = class Lightning extends BaseClass {
   }
 
   /**
-   * Initializes the network connections
-   * @returns {Promise<Lightning>}
+   * Connects to the LND daemon and retrieves basic information about the node
+   * @returns {Promise<Void>}
    */
-  connect () {
-    return this._getInfo()
-      .then(result => {
-        INSTANCES.get(this).json.publicKey = result.publicKey
-
-        this.info('connect', this)
-        this.emit('connect', this)
-        return this
-      })
+  async connect () {
+    const info = await this._getInfo()
+    INSTANCES.get(this).json.publicKey = info.publicKey
+    this.info('connect', this)
+    this.emit('connect', this)
+    return this
   }
 
   /**
@@ -218,17 +215,14 @@ module.exports = class Lightning extends BaseClass {
    * @returns {Promise<Object>}
    */
   async _getInfo () {
+    const state = INSTANCES.get(this)
     const args = {
       path: '/v1/getinfo',
       method: 'GET',
-      headers: {
-        'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.admin
-      }
+      headers: { 'Grpc-Metadata-macaroon': state.macaroons.admin }
     }
-
-    const result = await this._request(args)
-
-    return { publicKey: result.identity_pubkey }
+    const info = await this._request(args)
+    return { publicKey: info.identity_pubkey }
   }
 
   /**
@@ -236,109 +230,102 @@ module.exports = class Lightning extends BaseClass {
    * @param {Party} party The party that will pay the invoice
    * @returns {Promise<Invoice>}
    */
-  async _createHodlInvoice (party) {
-    const { swap, quantity } = party
-    const { id, secretHash } = swap
-    const args = {
-      path: '/v2/invoices/hodl',
-      method: 'POST',
-      headers: {
-        'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice
+  _createHodlInvoice (party) {
+    return new Promise((resolve, reject) => {
+      const state = INSTANCES.get(this)
+      const { hostname, port, sockets } = state
+
+      const { swap, quantity } = party
+      const { id, secretHash } = swap
+      const args = {
+        path: '/v2/invoices/hodl',
+        method: 'POST',
+        headers: { 'Grpc-Metadata-macaroon': state.macaroons.invoice }
       }
-    }
-    const data = {
-      memo: id,
-      hash: encodeHash(secretHash),
-      value: quantity
-    }
-    const invoice = await this._request(args, data)
-    await wait(5000);
+      const data = {
+        memo: id,
+        hash: encodeHash(secretHash),
+        value: quantity
+      }
 
-    const state = INSTANCES.get(this)
-    
-    const { hostname, port, sockets } = state
-    const url = new URL(`wss://${hostname}:${port}/v2/invoices/subscribe/${data.hash}?method=GET`)
-    const opts = {
-      // TODO: Fix this for production use
-      rejectUnauthorized: false,
-      headers: { 'Grpc-Metadata-macaroon': INSTANCES.get(this).macaroons.invoice }
-    }
-    console.log('poiweurpoi', url.toString(), opts);
+      this._request(args, data)
+        .then(invoice => {
+          const url = new URL(`wss://${hostname}:${port}/v2/invoices/subscribe/${data.hash}?method=GET`)
+          const opts = {
+            headers: { 'Grpc-Metadata-macaroon': state.macaroons.invoice },
+            // TODO: Fix this for production use
+            rejectUnauthorized: false
+          }
 
-    ;(function subscribe (attempt, self) {
-      const ws = new WebSocket(url.toString(), opts)
-        .on('open', () => sockets.add(ws))
-        .on('close', (...args) => sockets.delete(ws))
-        .on('error', err => {
-          sockets.delete(ws)
-          self.emit('error', err, self)
+          ;(function subscribe (attempt, self) {
+            const ws = new WebSocket(url.toString(), opts)
+              .on('open', () => sockets.add(ws))
+              .on('close', (...args) => sockets.delete(ws))
+              .on('error', err => {
+                sockets.delete(ws)
+                self.emit('error', err, self)
+              })
+              .on('message', buf => {
+                let obj = null
+
+                // parse the message
+                try {
+                  obj = JSON.parse(buf)
+                } catch (err) {
+                  self.error('invoice.error', err, self)
+                  return
+                }
+
+                self.debug('invoice', obj, self)
+                if (obj.result == null) {
+                  if (obj.code === 5 && obj.message === 'Not Found') {
+                    ws.close()
+                    setTimeout(() => subscribe(++attempt, self), 100)
+                  } else {
+                    self.error('invoice.error', Error(obj.message), self)
+                  }
+                  return
+                }
+
+                // generate an invoice from the update
+                const invoice = {
+                  id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
+                  ts: obj.result.creation_date * 1000,
+                  swap: { id: obj.result.memo },
+                  request: obj.result.payment_request,
+                  amount: Number(obj.result.value)
+                }
+
+                // process the invoice event
+                switch (obj.result.state) {
+                  case 'OPEN':
+                    self.info('invoice.created', invoice, self)
+                    self.emit('invoice.created', invoice, self)
+                    resolve(invoice)
+                    break
+
+                  case 'ACCEPTED':
+                    self.info('invoice.paid', invoice, self)
+                    self.emit('invoice.paid', invoice, self)
+                    break
+
+                  case 'SETTLED':
+                    self.info('invoice.settled', invoice, self)
+                    self.emit('invoice.settled', invoice, self)
+                    break
+
+                  case 'CANCELLED':
+                    self.info('invoice.cancelled', invoice, self)
+                    self.emit('invoice.cancelled', invoice, self)
+                    break
+
+                  default:
+                    self.warn('invoice.unknown', obj.result, self)
+                }
+              })
+          }(0, this))
         })
-        .on('message', buf => {
-          let obj = null
-
-          // parse the message
-          try {
-            obj = JSON.parse(buf)
-          } catch (err) {
-            self.error('invoice.error', err, self)
-            return
-          }
-
-          self.debug('invoice', obj, self)
-          if (obj.result == null) {
-            if (obj.code === 5 && obj.message === 'Not Found') {
-              console.log('retrying...', url)
-              ws.close()
-              setTimeout(() => subscribe(++attempt, self), 100)
-            } else {
-              self.error('invoice.error', Error(obj.message), self)
-            }
-            return
-          }
-
-          // generate an invoice from the update
-          const invoice = {
-            id: Buffer.from(obj.result.r_hash, 'base64').toString('hex'),
-            ts: obj.result.creation_date * 1000,
-            swap: { id: obj.result.memo },
-            request: obj.result.payment_request,
-            amount: Number(obj.result.value)
-          }
-
-          // process the invoice event
-          switch (obj.result.state) {
-            case 'OPEN':
-              self.info('invoice.created', invoice, self)
-              self.emit('invoice.created', invoice, self)
-              break
-
-            case 'ACCEPTED':
-              self.info('invoice.paid', invoice, self)
-              self.emit('invoice.paid', invoice, self)
-              break
-
-            case 'SETTLED':
-              self.info('invoice.settled', invoice, self)
-              self.emit('invoice.settled', invoice, self)
-              break
-
-            case 'CANCELLED':
-              self.info('invoice.cancelled', invoice, self)
-              self.emit('invoice.cancelled', invoice, self)
-              break
-
-            default:
-              self.warn('invoice.unknown', obj.result, self)
-          }
-        })
-    }(0, this))
-
-    return {
-      id: secretHash,
-      swap: { id },
-      request: invoice.payment_request,
-      amount: quantity
-    }
+    })
   }
 
   /**
@@ -469,7 +456,7 @@ module.exports = class Lightning extends BaseClass {
       }
     }
 
-    await this._request(args, {
+    return this._request(args, {
       preimage: Buffer.from(secret, 'hex').toString('base64')
     })
   }
@@ -477,13 +464,14 @@ module.exports = class Lightning extends BaseClass {
   _request (args, data) {
     const { hostname, port } = INSTANCES.get(this)
     return new Promise((resolve, reject) => {
-      const req = https.request(Object.assign(args, {
+      const { hostname, port } = INSTANCES.get(this)
+      const reqArgs = Object.assign(args, {
         hostname,
         port,
-        // TODO: Fix this for production use
-        rejectUnauthorized: false
-      }))
-  
+        rejectUnauthorized: false // TODO: Fix this for production use
+      })
+      const req = https.request(reqArgs)
+
       req
         .once('abort', () => reject(Error('aborted')))
         .once('error', err => reject(err))
@@ -501,7 +489,12 @@ module.exports = class Lightning extends BaseClass {
                 if (res.statusCode === 200) {
                   resolve(obj)
                 } else {
-                  reject(Error(obj.message))
+                  const err = Error(obj.message)
+                  this.error('_request', reqArgs, {
+                    statusCode: res.statusCode,
+                    headers: res.headers
+                  }, err)
+                  reject(err)
                 }
               } catch (err) {
                 reject(Error(`malformed JSON response "${str}"`))

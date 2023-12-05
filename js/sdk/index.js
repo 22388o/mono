@@ -20,9 +20,11 @@ class SDK extends BaseClass {
      */
     const onSwap = swap => this.emit(`swap.${swap.status}`, swap)
     this.sdk = new Sdk(props)
+      // DEX events
       .on('order.created', (...args) => this.emit('order.created', ...args))
       .on('order.opened', (...args) => this.emit('order.opened', ...args))
       .on('order.closed', (...args) => this.emit('order.closed', ...args))
+      // Swap events
       .on('swap.received', onSwap)
       .on('swap.created', onSwap)
       .on('swap.holder.invoice.created', onSwap)
@@ -34,8 +36,11 @@ class SDK extends BaseClass {
       .on('swap.holder.invoice.settled', onSwap)
       .on('swap.seeker.invoice.settled', onSwap)
       .on('swap.completed', onSwap)
+      // All other events
       .on('message', (...args) => this.emit('message', ...args))
       .on('log', (level, ...args) => this[level](...args))
+      //.on('log', (...args) => this.emit('log', ...args))
+      .on('error', (...args) => this.emit('error', ...args))
   }
 
   get id () {

@@ -170,19 +170,19 @@ class Swap extends BaseClass {
     return this.status === 'seeker.invoice.sent'
   }
 
-  get isHolderPaid () {
+  get isHolderInvoicePaid () {
     return this.status === 'holder.invoice.paid'
   }
 
-  get isSeekerPaid () {
+  get isSeekerInvoicePaid () {
     return this.status === 'seeker.invoice.paid'
   }
 
-  get isHolderSettled () {
+  get isHolderInvoiceSettled () {
     return this.status === 'holder.invoice.settled'
   }
 
-  get isSeekerSettled () {
+  get isSeekerInvoiceSettled () {
     return this.status === 'seeker.invoice.settled'
   }
 
@@ -327,7 +327,7 @@ class Swap extends BaseClass {
 
     if (this.party.isSeeker) {
       const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      blockchain.once('invoice.settled', invoice => async () => {
+      blockchain.once('invoice.settled', async invoice => {
         await store.put('secrets', invoice.id.substr(2), {
           secret: invoice.swap.secret,
           swap: invoice.swap.id
@@ -382,12 +382,26 @@ class Swap extends BaseClass {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
     const { secret } = await store.get('secrets', this.secretHash)
-    this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
-    INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
-    this.emit(this.status, this)
+
+    const settle = async () => {
+      this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
+      INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
+      this.emit(this.status, this)
+    }
+
+    // required to prevent a race condition when run in a tight loop.
+    if (this.party.isHolder || this.isSeekerInvoicePaid) {
+      settle()
+    } else {
+      this.once('seeker.invoice.paid', settle)
+    }
   }
 }
 
+/**
+ * Abstracts the notion of a party to a swap
+ * @type {Party}
+ */
 class Party {
   constructor (props, swap) {
     this.swap = swap
@@ -439,6 +453,7 @@ class Party {
     if (state.invoice != null) {
       throw Error('invoice already created!')
     }
+
     state.invoice = val
   }
 
@@ -499,7 +514,9 @@ class Party {
       asset: this.asset,
       quantity: this.quantity,
       blockchain: this.blockchain,
-      invoice: this.invoice
+      invoice: this.invoice,
+      payment: this.payment,
+      receipt: this.receipt
     }
   }
 

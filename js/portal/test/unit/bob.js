@@ -47,6 +47,6 @@ module.exports = {
   },
   ethereum: {
     public: `0x${GETH_KEYSTORE.address}`,
-    private: keythereum.recover(NAME, GETH_KEYSTORE).toString('hex')
+    private: `0x${keythereum.recover(NAME, GETH_KEYSTORE).toString('hex')}`
   }
 }
