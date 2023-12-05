@@ -4,13 +4,12 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
-const { IndexedDB } = require('./lib/store/browser');
 
 /**
  * Export the class
  * @type {SDK}
  */
-class SDK extends BaseClass {
+module.exports = class SDK extends BaseClass {
   constructor (props) {
     super()
 
@@ -35,11 +34,9 @@ class SDK extends BaseClass {
       .on('swap.seeker.invoice.paid', onSwap)
       .on('swap.holder.invoice.settled', onSwap)
       .on('swap.seeker.invoice.settled', onSwap)
-      .on('swap.completed', onSwap)
       // All other events
       .on('message', (...args) => this.emit('message', ...args))
       .on('log', (level, ...args) => this[level](...args))
-      //.on('log', (...args) => this.emit('log', ...args))
       .on('error', (...args) => this.emit('error', ...args))
   }
 
@@ -98,8 +95,4 @@ class SDK extends BaseClass {
   send (...args) {
     return this.sdk.network.send(...args)
   }
-}
-
-module.exports =  {
-  SDK, IndexedDB
 }
