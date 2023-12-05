@@ -18,7 +18,7 @@ module.exports = class Network extends BaseClass {
 
     super()
 
-    this.sdk = sdk;
+    this.sdk = sdk
     this.hostname = props.hostname
     this.port = props.port
     this.pathname = props.pathname
@@ -58,7 +58,6 @@ module.exports = class Network extends BaseClass {
     const { id } = this.sdk
     return new Promise((resolve, reject) => {
       const url = `ws://${this.hostname}:${this.port}${this.pathname}/${id}`
-      console.log(this.hostname, this.port, this.pathname, url);
       const ws = new WebSocket(url) /* eslint-disable-line no-undef */
       ws.onmessage = (...args) => this._onMessage(...args)
       ws.onopen = () => { this.emit('connected'); resolve() }

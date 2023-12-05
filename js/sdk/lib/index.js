@@ -36,13 +36,11 @@ module.exports = class Sdk extends BaseClass {
   constructor (props) {
     super({ id: props.id })
 
-    let networkInfo = props.network || {};
-    if(props.port) networkInfo.port = props.port;
     /**
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = new Network(this, networkInfo)
+    this.network = new Network(this, props.network)
       .on('order.created', forwardEvent(this, 'order.created'))
       .on('order.opened', forwardEvent(this, 'order.opened'))
       .on('order.closed', forwardEvent(this, 'order.closed'))

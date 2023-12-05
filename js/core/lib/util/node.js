@@ -23,12 +23,18 @@ Helpers.random = function (length = 32) {
 /**
  * Returns hex-formatted sha256 hash of the provided input
  * @param {String} data The data whose hash is to be calculated
- * @returns {String}
+ * @returns {Promise<String>}
  */
 Helpers.hash = function (data) {
-  return crypto.createHash('sha256')
-    .update(data)
-    .digest('hex')
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(crypto.createHash('sha256')
+        .update(data)
+        .digest('hex'))
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 /**

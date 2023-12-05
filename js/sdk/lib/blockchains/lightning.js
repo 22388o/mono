@@ -13,15 +13,6 @@ const WebSocket = require('ws')
  */
 const INSTANCES = new WeakMap()
 
-const wait = (ms) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
-  });
-}
-
-
 /**
  * Returns the base64url encoding of the specified secret hash
  * @param {String} hash The secret hash to encode
@@ -462,7 +453,6 @@ module.exports = class Lightning extends Blockchain {
   }
 
   _request (args, data) {
-    const { hostname, port } = INSTANCES.get(this)
     return new Promise((resolve, reject) => {
       const { hostname, port } = INSTANCES.get(this)
       const reqArgs = Object.assign(args, {
@@ -482,10 +472,10 @@ module.exports = class Lightning extends Blockchain {
             .once('error', err => reject(err))
             .once('end', () => {
               const str = Buffer.concat(chunks).toString('utf8')
-  
+
               try {
                 const obj = JSON.parse(str)
-  
+
                 if (res.statusCode === 200) {
                   resolve(obj)
                 } else {
@@ -501,7 +491,7 @@ module.exports = class Lightning extends Blockchain {
               }
             })
         })
-  
+
       if (data != null) {
         req.end(Buffer.from(JSON.stringify(data)))
       } else {
