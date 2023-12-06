@@ -27,7 +27,7 @@ module.exports = class Server extends BaseClass {
     Object.seal(this)
 
     const env = process.env
-    const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || 'localhost'
+    const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || '127.0.0.1'
     const port = props.port || env.PORTAL_HTTP_PORT || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
