@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material'
 import alice from './credentials/alice.json'
 import bob from './credentials/bob.json'
-import contracts from '../../contracts.json'
+import contracts from '../../../../playnet/contracts.json'
 /**
  * Fetches the chain information via dapphub github repo
  * @returns {JSON}
@@ -180,4 +180,3 @@ export const config = {
   dex: {},
   swaps: {}
 }
-

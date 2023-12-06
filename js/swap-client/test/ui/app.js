@@ -21,9 +21,8 @@ module.exports = class App extends BaseClass {
    * @constructor
    */
   constructor (props) {
-    super({ log: { prefix: props.id } })
+    super({ id: props.id })
 
-    this.id = props.id
     this.browser = null
     this.page = null
 
