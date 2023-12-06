@@ -379,7 +379,7 @@ module.exports = class Server extends BaseClass {
               // 401 Unauthorized
               res.statusCode = 401
               res.end()
-              that.emit('log', 'error', 'http.static', req, res)
+              that.error('http.static', err, req, res)
               return
 
             case 'EMFILE':
@@ -388,7 +388,7 @@ module.exports = class Server extends BaseClass {
               // please run "ulimit -n <limit>" to allow opening more files.
               res.statusCode = 500
               res.end()
-              that.emit('log', 'error', 'http.static', req, res)
+              that.error('http.static', err, req, res)
               return
 
             case 'ENOENT':
@@ -396,7 +396,7 @@ module.exports = class Server extends BaseClass {
               // 404 Not Found
               res.statusCode = 404
               res.end()
-              that.emit('log', 'error', 'http.static', req, res)
+              that.error('http.static', err, req, res)
               return
           }
         }
@@ -412,7 +412,7 @@ module.exports = class Server extends BaseClass {
           // 404 Not Found
           res.statusCode = 404
           res.end()
-          that.emit('log', 'error', 'http.static', req, res)
+          that.error('http.static', Error(`${asset} is not a file!`), req, res)
           return
         }
 
@@ -421,7 +421,9 @@ module.exports = class Server extends BaseClass {
         res.setHeader('content-type', mime.getType(asset))
         res.setHeader('content-length', stat.size)
         res.setHeader('content-encoding', 'identity')
-        // that.emit('log', 'info', 'http.static', req, res)
+        // This line fires too often during regular operation, adding noise to
+        // logs. So we drop it to debug level.
+        that.debug('http.static', req, res)
 
         const fsStream = createReadStream(asset)
           .once('error', err => res.destroyed || res.destroy(err))
