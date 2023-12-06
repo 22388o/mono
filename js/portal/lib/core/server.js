@@ -351,12 +351,20 @@ module.exports = class Server extends BaseClass {
   _handleStatic (req, res) {
     // ensure the asset to tbe served exists under the HTTP path
     const { root } = INSTANCES.get(this)
+    if (root == null) {
+      // 403 Forbidden
+      res.statusCode = 403
+      res.end()
+      this.error('http.static', Error('not found'), req, res)
+      return
+    }
+
     const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
     if (!pathToAsset.startsWith(root)) {
       // 403 Forbidden
       res.statusCode = 403
       res.end()
-      this.error('http.static', req, res)
+      this.error('http.static', Error('not found'), req, res)
       return
     }
 
