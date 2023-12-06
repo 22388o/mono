@@ -63,11 +63,12 @@ export const SwapHome = () => {
     }
     const alice = new SDK({
       id: 'alice',
-      hostname, port, credentials: aliceCred,
+      network: { hostname, port },
+      store: {},
       blockchains: Object.assign({}, blockchains, {
-          bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
-          ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
-          lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
+        bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
+        ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
+        lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
       })
     })
     userStore.dispatch({ type: 'SIGN_IN', payload: alice })
@@ -82,7 +83,10 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const bob = new SDK({ id: 'bob', hostname, port, credentials: bobCred,
+    const bob = new SDK({
+      id: 'bob',
+      network: { hostname, port },
+      store: {},
       blockchains: Object.assign({}, blockchains, {
         bitcoin: Object.assign({}, blockchains.bitcoin, bobCred.bitcoin),
         ethereum: Object.assign({}, blockchains.ethereum, bobCred.ethereum),

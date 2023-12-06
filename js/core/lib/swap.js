@@ -47,9 +47,9 @@ module.exports = {
    * @param {Order} maker The maker of the order
    * @param {Order} taker The taker of the order
    * @param {Sdk} sdk The parent Sdk instance that is managing the swap
-   * @returns {Swap}
+   * @returns {Promise<Swap>}
    */
-  fromOrders: function (maker, taker, sdk) {
+  fromOrders: async function (maker, taker, sdk) {
     if (!(maker instanceof Order)) {
       throw Error('expected maker to be an Order!')
     } else if (!(taker instanceof Order)) {
@@ -59,7 +59,7 @@ module.exports = {
     }
 
     return new Swap({
-      id: Util.hash(maker.id, taker.id),
+      id: await Util.hash(maker.id, taker.id),
       secretHolder: {
         id: maker.uid,
         oid: maker.id,

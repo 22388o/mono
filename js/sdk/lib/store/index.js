@@ -8,5 +8,5 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 /* eslint-enable no-new-func */
 
 module.exports = isBrowser()
-  ? require('./browser').Store
+  ? require('./browser')
   : require('./node')
