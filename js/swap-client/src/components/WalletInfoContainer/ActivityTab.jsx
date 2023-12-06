@@ -3,7 +3,7 @@ import { Button, Divider, Stack, Typography } from "@mui/material"
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 import styles from "../../styles/WalletInfoContainer.module.css";
-import { IndexedDB } from "@portaldefi/sdk";
+import IndexedDB from "../../utils/store";
 import { SWAP_STATUS, getStringFromDate } from "../../utils/helpers";
 import { IndexedDB_dispatch } from "../../utils/indexeddb";
 import { walletStore } from "../../syncstore/walletstore";

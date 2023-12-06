@@ -1,7 +1,7 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
 import { Box, Grid, Stack, Divider } from '@mui/material';
 
-import { IndexedDB } from '@portaldefi/sdk';
+import IndexedDB from '../../utils/store.js';
 import { ActivityItem } from './ActivityItem';
 import { useState } from 'react';
 import styles from '../../styles/SwapActivity.module.css';
