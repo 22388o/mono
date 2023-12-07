@@ -40,7 +40,7 @@ const LND_CONF = readFileSync(PATH_LND_CONF).toString('utf8')
 module.exports = {
   lightning: {
     hostname: LND_CONF.restlisten.split(':')[0],
-    port: Number(LND_CONF.restlisten.split(':')[1]),
+    port: 3001,
     cert: readFileSync(join(PATH_LND, 'tls.cert')).toString('hex'),
     admin: LND_ADMIN.toString('hex'),
     invoice: LND_INVOICE.toString('hex')

@@ -4,8 +4,6 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 //const WebSocket = require('ws');
 
-const port = 3000;
-
 const proxyMiddleware = createProxyMiddleware({
     target: 'https://127.0.0.1:11001', // Replace with the target URL of your destination server
     changeOrigin: true,
