@@ -57,9 +57,10 @@ describe('CollectiblesModal component test', () => {
     expect(container).toMatchSnapshot();
     expect(modalHeader).toBeInTheDocument(); //when cointype select button is clicked, check if modal is opened
     
-    const btcBtn = getByText('Bitcoin');
+    const btcBtn = getByText('Collectibles +');
     fireEvent.click(btcBtn);
 
-    expect(onCoinTypeChange).toHaveBeenCalled(); // when coin type is changed, check if the function is called
+    const collectiblesModalText = getByText('+ Add Custom Ordinal');
+    expect(collectiblesModalText).toBeInTheDocument();
   });
 });

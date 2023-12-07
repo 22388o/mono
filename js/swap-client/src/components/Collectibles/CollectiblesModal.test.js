@@ -6,16 +6,23 @@ import { CollectiblesModal } from './CollectiblesModal';
 describe('CollectiblesModal component test', () => {
   it('renders component', () => {
 
-    const {container, getByText} = render(
+    const {container} = render(
       <CollectiblesModal open={true} handleClose={() => {}} />
     );
 
     expect(container).toMatchSnapshot();
+  });
+
+  it('renders component', () => {
+
+    const {getByText} = render(
+      <CollectiblesModal open={true} handleClose={() => {}} />
+    );
 
     const addCustomBtn = getByText('+ Add Custom Ordinal');
     fireEvent.click(addCustomBtn);
 
-    const customHeader = getByText('Continue');
+    const customHeader = getByText('Add Custom Ordinal');
     expect(customHeader).toBeInTheDocument();
   });
 });

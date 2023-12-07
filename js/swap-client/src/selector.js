@@ -32,7 +32,9 @@ export const getMinimizedAssets = (wallet) => {
     amount: nftCount,
     isNFT: true,
     img_url: '/public/nft/1.png',
-    rate: 1
+    rate: 1,
+    short: "Collectibles +",
+    type: "Collectibles"
   })
   return arr
 }

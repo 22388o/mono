@@ -1,6 +1,7 @@
 // old test, see site-definition btcord-btc for latests, written in puppeteer
 
 const puppeteer = require('puppeteer')
+const PORT = 45543
 
 async function runTests () {
   const aliceSetup = await setupBrowser()
@@ -48,7 +49,7 @@ async function setupBrowser () {
   const browser = await puppeteer.launch({ headless: false, args: ['--window-size=1920,1096'] })
   const page = (await browser.pages())[0]
   await page.setViewport({width:1600, height: 900});
-  await page.goto('http://localhost:5173')
+  await page.goto(`http://localhost:${PORT}`)
   return { browser, page }
 }
 

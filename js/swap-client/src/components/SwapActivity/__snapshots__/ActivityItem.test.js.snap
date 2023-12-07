@@ -14,7 +14,7 @@ exports[`AccessOptionComponent should work 1`] = `
     className="MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-grid-xs-7 css-1mpjiim-MuiGrid-root"
   >
     <div
-      className="MuiStack-root css-1aehucs-MuiStack-root"
+      className="MuiStack-root css-niqf4j-MuiStack-root"
     >
       <svg
         aria-hidden={true}

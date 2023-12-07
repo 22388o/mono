@@ -11,7 +11,7 @@ exports[`AccessOptionComponent should work 1`] = `
   }
 >
   <div
-    className="MuiStack-root css-13w4gzo-MuiStack-root"
+    className="MuiStack-root css-95rbei-MuiStack-root"
   >
     <img
       height={32}
