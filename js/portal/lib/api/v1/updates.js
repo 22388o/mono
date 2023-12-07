@@ -25,18 +25,48 @@ module.exports.UPGRADE = function (ws, ctx) {
     .on('holder.invoice.sent', onSwap)
     .on('seeker.invoice.sent', onSwap)
 
-  // unregister all event handlers when the websocket closes
-  ws.on('close', () => {
-    ctx.orderbooks
-      .off('error', onError)
-      .off('created', onOrder)
-      .off('opened', onOrder)
-      .off('closed', onOrder)
+  ws
+    .on('message', msg => {
+      let obj = null
 
-    ctx.swaps
-      .off('error', onError)
-      .off('received', onSwap)
-      .off('holder.invoice.sent', onSwap)
-      .off('seeker.invoice.sent', onSwap)
-  })
+      try {
+        obj = JSON.parse(msg)
+      } catch (err) {
+        ctx.log.error(err)
+      }
+
+      switch (obj['@type']) {
+        case 'ping':
+          return onPing(obj, ws, ctx)
+
+        default:
+          ctx.log.debug(obj)
+      }
+    })
+    .on('close', () => {
+      ctx.orderbooks
+        .off('error', onError)
+        .off('created', onOrder)
+        .off('opened', onOrder)
+        .off('closed', onOrder)
+
+      ctx.swaps
+        .off('error', onError)
+        .off('received', onSwap)
+        .off('holder.invoice.sent', onSwap)
+        .off('seeker.invoice.sent', onSwap)
+    })
+}
+
+/**
+ * Responds to a ping
+ * @param {Object} ping The ping sent by the clie nt
+ * @param {Websocket} ws The underlying websocket
+ * @param {HttpContext} ctx The HTTP request context
+ * @returns {Void}
+ */
+function onPing (ping, ws, ctx) {
+  const now = Date.now()
+  const skew = now - ping.now
+  ws.send({ '@type': 'pong', now, skew }, err => ctx.log.error(err))
 }
