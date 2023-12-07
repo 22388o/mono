@@ -69,8 +69,9 @@ export const SwapHome = () => {
         bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
         ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
         lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
-      })
+      }),
     })
+    alice.on("log", (level, ...args) => console[level](...args));
     userStore.dispatch({ type: 'SIGN_IN', payload: alice })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.toJSON().blockchains })
     console.log("alice.toJSON()",alice.toJSON())
@@ -93,6 +94,7 @@ export const SwapHome = () => {
         lightning: Object.assign({}, blockchains.lightning, bobCred.lightning)
       })
     })
+    bob.on("log", (level, ...args) => console[level](...args));
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.toJSON().blockchains })
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })

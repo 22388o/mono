@@ -3,7 +3,7 @@
  */
 
 const { Blockchain } = require('@portaldefi/core')
-const { URL } = require('url')
+// const { URL } = require('url')
 
 /**
  * Holds private fields for instances of the class
@@ -239,7 +239,12 @@ module.exports = class Lightning extends Blockchain {
 
       this._request(args, data)
         .then(invoice => {
-          const url = new URL(`wss://${hostname}:${port + 2000}/v2/invoices/subscribe/${data.hash}?method=GET`)
+          // const url = new URL(`ws://${hostname}:${port + 2000}/v2/invoices/subscribe/${data.hash}?method=GET`)
+          const url = `ws://${hostname}:${port + 2000}/v2/invoices/subscribe/${encodeURIComponent(data.hash)}?method=GET&opts={
+            headers: { 'Grpc-Metadata-macaroon': ${state.macaroons.invoice} },
+            rejectUnauthorized: false
+          }`
+          console.log("passed url string", url)
           const opts = {
             headers: { 'Grpc-Metadata-macaroon': state.macaroons.invoice },
             // TODO: Fix this for production use
@@ -247,7 +252,7 @@ module.exports = class Lightning extends Blockchain {
           }
 
           ;(function subscribe (attempt, self) {
-            const ws = new WebSocket(url.toString(), opts)
+            const ws = new WebSocket(url)
             ws.onopen = () => sockets.add(ws)
             ws.onclose = (...args) => sockets.delete(ws)
             ws.onerror = err => {
@@ -349,7 +354,7 @@ module.exports = class Lightning extends Blockchain {
     return new Promise((resolve, reject) => {
       const state = INSTANCES.get(this)
       const { hostname, port, sockets, macaroons: { admin } } = state
-      const url = `wss://${hostname}:${port + 2000}/v2/router/send?method=POST`
+      const url = `ws://${hostname}:${port + 2000}/v2/router/send?method=POST`
       const opts = {
         // TODO: Fix this for production use
         rejectUnauthorized: false,
