@@ -79,7 +79,7 @@ module.exports = class Sdk extends BaseClass {
       .on('swap.seeker.invoice.paid', onSwap)
       .on('swap.holder.invoice.settled', onSwap)
       .on('swap.seeker.invoice.settled', onSwap)
-      .on('swap.completed', onSwap)
+      // .on('swap.completed', onSwap)
 
     // Bubble up the log and error events
     const bubbleErrorsAndLogs = emitter => emitter

@@ -194,16 +194,17 @@ export const SwapCreate = () => {
       }
       console.log('log in client', level, args)
     });
-    user.user.on("swap.received", swap => swapListener(swap, 2));
-    user.user.on("swap.holder.invoice.created", swap => swapListener(swap, 3));
-    user.user.on("swap.holder.invoice.sent", swap => swapListener(swap, 4));
+    user.user.on("swap.received", swap => swapListener(swap, 0));
+    user.user.on("swap.created", swap => swapListener(swap, 1));
+    user.user.on("swap.holder.invoice.created", swap => swapListener(swap, 2));
+    user.user.on("swap.holder.invoice.sent", swap => swapListener(swap, 3));
     user.user.on("swap.seeker.invoice.created", swap => swapListener(swap, 4));
     user.user.on("swap.seeker.invoice.sent", swap => swapListener(swap, 5));
     user.user.on("swap.holder.invoice.paid", swap => swapListener(swap, 6));
     user.user.on("swap.seeker.invoice.paid", swap => swapListener(swap, 7));
     user.user.on("swap.holder.invoice.settled", swap => swapListener(swap, 8));
     user.user.on("swap.seeker.invoice.settled", swap => swapListener(swap, 9));
-    user.user.on("swap.completed", swap => swapListener(swap, 9));
+    // user.user.on("swap.completed", swap => swapListener(swap, 9));
     return () => {
       user.user.removeAllListeners();
     }
