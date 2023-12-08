@@ -43,33 +43,14 @@ vite.build(config)
   .then(result => {
     watcher = result
     watcher.on('event', event => {
-      switch (event.code) {
-        case 'START':
-        case 'BUNDLE_START':
-        case 'END':
-          break
-
-        case 'BUNDLE_END':
-          if (ready) {
-            ready()
-          } else {
-            ready = true
-          }
-          break
-
-        case 'ERROR': {
-          const { message, loc, frame } = event.error
-          console.error(`Error: ${message}: ${loc.file}`)
-          console.error(frame)
-          process.exit(1)
-        }
-
-        default:
-          debug(`watcher got event ${event.code}`, event)
+      if (event.code !== 'END') return
+      if (ready) {
+        ready()
+      } else {
+        ready = true
       }
     })
   })
-  .catch(console.error)
 
 /**
  * Sets up the testing environment

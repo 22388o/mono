@@ -26,10 +26,13 @@ Helpers.random = function (length = 32) {
  */
 Helpers.hash = async function (bytes) {
   const hashBuffer = await crypto.subtle.digest('SHA-256', bytes)
+  console.log('hashBuffer', hashBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
+  console.log('hashArray', hashArray)
   const hashHex = hashArray
     .map(bytes => bytes.toString(16).padStart(2, '0'))
     .join('')
+  console.log('hashHex', hashHex)
   return hashHex
 }
 

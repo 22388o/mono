@@ -15,7 +15,7 @@ import { MobileWarningPage } from './MobileWarningPage'
 import { Footer } from './Footer'
 import { ConnectWalletContainer } from './ConnectWalletContainer'
 import { WalletInfoContainer } from './WalletInfoContainer'
-import IndexedDB from "../utils/store";
+import { IndexedDB } from '@portaldefi/sdk';
 import SDK from '@portaldefi/sdk';
 import { config } from '../utils/constants';
 
@@ -54,7 +54,7 @@ export const SwapHome = () => {
   const bobCred = getBob()
 
   const { blockchains } = config
-
+  
   /** Alice clicks sign in to connect with ws */
   const signInAsAlice = useCallback(async () => {
     if (wallet.connected === true) { aliceCred.ethereum.public = wallet.data } else {
@@ -63,15 +63,24 @@ export const SwapHome = () => {
     }
     const alice = new SDK({
       id: 'alice',
-      network: { hostname, port },
-      store: {},
+      hostname, port, credentials: aliceCred, 
       blockchains: Object.assign({}, blockchains, {
-        bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
-        ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
-        lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
-      }),
+          bitcoin: Object.assign({}, blockchains.bitcoin, aliceCred.bitcoin),
+          ethereum: Object.assign({}, blockchains.ethereum, aliceCred.ethereum),
+          lightning: Object.assign({}, blockchains.lightning, aliceCred.lightning)
+      })
     })
-    alice.on("log", (level, ...args) => console[level](...args));
+    // alice.on(...onSwap('alice', 'swap.received'))
+    //   .on(...onSwap('alice', 'swap.created'))
+    //   .on(...onSwap('alice', 'swap.holder.invoice.created'))
+    //   .on(...onSwap('alice', 'swap.holder.invoice.sent'))
+    //   .on(...onSwap('alice', 'swap.seeker.invoice.created'))
+    //   .on(...onSwap('alice', 'swap.seeker.invoice.sent'))
+    //   .on(...onSwap('alice', 'swap.holder.invoice.paid'))
+    //   .on(...onSwap('alice', 'swap.seeker.invoice.paid'))
+    //   .on(...onSwap('alice', 'swap.holder.invoice.settled'))
+    //   .on(...onSwap('alice', 'swap.seeker.invoice.settled'))
+    //   .on(...onSwap('alice', 'swap.completed'))
     userStore.dispatch({ type: 'SIGN_IN', payload: alice })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: alice.toJSON().blockchains })
     console.log("alice.toJSON()",alice.toJSON())
@@ -84,17 +93,24 @@ export const SwapHome = () => {
       walletStore.dispatch({ type: 'SET_WALLET_DATA', payload: bobCred.ethereum })
       walletStore.dispatch({ type: 'SET_WALLET_BALANCE', payload: 1000 })
     }
-    const bob = new SDK({
-      id: 'bob',
-      network: { hostname, port },
-      store: {},
-      blockchains: Object.assign({}, blockchains, {
+    const bob = new SDK({ id: 'bob', hostname, port, credentials: bobCred, 
+    blockchains: Object.assign({}, blockchains, {
         bitcoin: Object.assign({}, blockchains.bitcoin, bobCred.bitcoin),
         ethereum: Object.assign({}, blockchains.ethereum, bobCred.ethereum),
         lightning: Object.assign({}, blockchains.lightning, bobCred.lightning)
       })
     })
-    bob.on("log", (level, ...args) => console[level](...args));
+    // bob.on(...onSwap('bob', 'swap.received'))
+    //   .on(...onSwap('bob', 'swap.created'))
+    //   .on(...onSwap('bob', 'swap.holder.invoice.created'))
+    //   .on(...onSwap('bob', 'swap.holder.invoice.sent'))
+    //   .on(...onSwap('bob', 'swap.seeker.invoice.created'))
+    //   .on(...onSwap('bob', 'swap.seeker.invoice.sent'))
+    //   .on(...onSwap('bob', 'swap.holder.invoice.paid'))
+    //   .on(...onSwap('bob', 'swap.seeker.invoice.paid'))
+    //   .on(...onSwap('bob', 'swap.holder.invoice.settled'))
+    //   .on(...onSwap('bob', 'swap.seeker.invoice.settled'))
+    //   .on(...onSwap('bob', 'swap.completed'))
     userStore.dispatch({ type: 'SIGN_IN', payload: bob })
     walletStore.dispatch({ type: 'SET_NODE_DATA', payload: bob.toJSON().blockchains })
     walletStore.dispatch({ type: 'SET_NODE_BALANCE', payload: 1000 })
@@ -124,7 +140,7 @@ export const SwapHome = () => {
         <Grid item xs={3} className='flex-center'>
           {(!user.isLoggedIn && isStart)
           && <>
-            <Button
+            <Button 
               className='gradient-border-btn'
               id='connect-wallet'
               aria-controls={open ? 'connect-wallet' : undefined}
@@ -133,7 +149,7 @@ export const SwapHome = () => {
               onClick={handleClick}
               sx={{ color: 'white', marginRight: '10px' }}
             >Demo</Button>
-            <Button
+            <Button 
               className='gradient-border-btn'
               onClick={() => setIsStart(false)}
               style={{ color: 'white' }}
@@ -165,7 +181,7 @@ export const SwapHome = () => {
         </Grid>
       </Grid>
       <Grid item container justifyContent='flex-end' style={{ padding: '1em 2em' }}>
-
+        
       </Grid>
       <Grid item container direction='row'>
         <Grid item container xs={((user.isLoggedIn || !isStart) && !isMinimized) ? 10 : 12} sx={{ transition: 'all 0.5s ease-in-out' }}>
@@ -194,8 +210,8 @@ export const SwapHome = () => {
       <WalletInfoContainer show={user.isLoggedIn && !isMinimized} setIsMinimized={setIsMinimized} />
       <Footer />
       <ToastContainer />
-
-      { isMinimized
+      
+      { isMinimized 
         && <Button className='show-right-container-btn' onClick={() => setIsMinimized(false)}>
             <KeyboardDoubleArrowLeft style={{color: '#6A6A6A', marginRight: '5px'}}/>
             Wallets

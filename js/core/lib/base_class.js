@@ -166,11 +166,12 @@ module.exports = class BaseClass {
 
   /**
    * Removes all listeners
-   * @param {String} eventName The name of the event
    * @returns {BaseClass}
    */
-  removeAllListeners (eventName) {
+  removeAllListeners () {
     const { events } = INSTANCES.get(this)
+    events.clear()
+    /*
 
     if (events.has(eventName)) {
       const listeners = events.get(eventName)
@@ -179,7 +180,7 @@ module.exports = class BaseClass {
       for (const listener of listeners) {
         this.emit('removeListener', eventName, listener)
       }
-    }
+    }*/
 
     return this
   }

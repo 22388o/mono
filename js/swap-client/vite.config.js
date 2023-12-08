@@ -30,7 +30,8 @@ export default defineConfig({
           return
         }
         warn(warning)
-      }
-    }
+      },
+      external: ['@portaldefi/sdk/lib/blockchains/lightning/node.js']
+    },
   }
 })

@@ -2,6 +2,8 @@
  * @file An interface to all swaps
  */
 
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
 const { BaseClass, Swap, Util } = require('@portaldefi/core')
 
 /**
@@ -15,17 +17,10 @@ module.exports = class Swaps extends BaseClass {
     this.sdk = sdk
 
     // Read swap events from the network
-    sdk.network
+    this.sdk.network
       .on('swap.received', obj => this._onSwap(obj))
       .on('swap.holder.invoice.sent', obj => this._onSwap(obj))
       .on('swap.seeker.invoice.sent', obj => this._onSwap(obj))
-
-    // Read invoice events from the blockchains
-    sdk.blockchains.forEach(blockchain => blockchain
-      .on('invoice.created', (...args) => this._onInvoice(...args))
-      .on('invoice.paid', (...args) => this._onInvoice(...args))
-      .on('invoice.settled', (...args) => this._onInvoice(...args))
-      .on('invoice.cancelled', (...args) => this._onInvoice(...args)))
 
     Object.freeze(this)
   }
@@ -90,7 +85,9 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isSeeker) return
 
           const secret = Util.random()
-          const secretHash = await Util.hash(secret)
+          let secretHash;
+          if(isBrowser()) secretHash = await Util.hash(secret)
+          else secretHash = Util.hash(secret)
           await store.put('secrets', secretHash, {
             secret: secret.toString('hex'),
             swap: swap.id
@@ -127,7 +124,7 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
-          // NOTE: Swap mutation causes status to transition to 'seeker.invoice.created'
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoicing'
           await swap.createInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
 
@@ -137,7 +134,7 @@ module.exports = class Swaps extends BaseClass {
           if (swap.party.isHolder) return
 
           this.info(`swap.${swap.status}`, swap)
-          // NOTE: Swap mutation causes status to transition to 'seeker.invoice.sent'
+          // NOTE: Swap mutation causes status to transition to 'seeker.invoiced'
           await swap.sendInvoice()
           await store.put('swaps', swap.id, swap.toJSON())
           break
@@ -192,15 +189,5 @@ module.exports = class Swaps extends BaseClass {
       this.error('swap.error', err, swap)
       this.emit('error', err, swap)
     }
-  }
-
-  /**
-   * Handles invoice events coming from the blockchains
-   * @param {Invoice} invoice The invoice being handled
-   * @param {Blockchain} blockchain The blockchain that emitted the invoice event
-   * @returns {Void}
-   */
-  _onInvoice (invoice, blockchain) {
-
   }
 }

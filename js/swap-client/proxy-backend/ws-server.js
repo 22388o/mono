@@ -5,22 +5,16 @@ wss = new WebSocketServer({ port: 5000 });
 wss1 = new WebSocketServer({ port: 5001 });
 
 wss.on('connection', function(ws, req) {
-  console.log('wss.on connection');
-  console.log('req');
+  console.log('Ccccc');
   const url = req.url;
   const arr = url.split('&');
   let opened = false;
   console.log(arr);
-  const opt = url.split('=');
-  if(opt.length>1) {
-    console.log(encodeURIComponent(opt[1]));
-    console.log(JSON.parse(opt[1]));
-  }
   const opts = {
     rejectUnauthorized: false,
     headers: { 'Grpc-Metadata-macaroon': arr[1] }
   }
-  const server = new WebSocket(`wss://127.0.0.1:11001${arr[0]}`, (opt.length>1)?JSON.parse(opt[1]): opts)
+  const server = new WebSocket(`wss://127.0.0.1:11001${arr[0]}`, opts)
   .on('open', () => { opened = true; console.log('Lightning network connection opened') })
   .on('close', (...args) => { console.log('lightning closed'); ws.close() })
   .on('error', err => {
@@ -50,25 +44,16 @@ wss.on('connection', function(ws, req) {
 });
 
 wss1.on('connection', function(ws, req) {
-  console.log('wss1.on connection');
-  console.log('req');
+  console.log('123123');
   const url = req.url;
-  // const arrAmp = url.split('&');
-  const arr = url.split('/');
+  const arr = url.split('&');
   let opened = false;
-  console.log(url);
   console.log(arr);
-  console.log(encodeURIComponent(arr[4].split('?')[0]));
-  const opt = url.split('=');
-  if(opt.length>1) {
-    console.log(encodeURIComponent(opt[1]));
-    console.log(JSON.parse(opt[1]));
-  }
   const opts = {
     rejectUnauthorized: false,
-    headers: { 'Grpc-Metadata-macaroon': encodeURIComponent(arr[4].split('?')[0]) }
+    headers: { 'Grpc-Metadata-macaroon': arr[1] }
   }
-  const server = new WebSocket(`wss://127.0.0.1:11002${url}`, (opt.length>1)?JSON.parse(opt[1]):opts)
+  const server = new WebSocket(`wss://127.0.0.1:11002${arr[0]}`, opts)
   .on('open', () => { opened = true; console.log('Lightning network connection opened') })
   .on('close', (...args) => { console.log('lightning closed'); ws.close() })
   .on('error', err => {

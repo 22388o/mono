@@ -25,9 +25,9 @@ module.exports = class Swaps extends BaseClass {
    * @returns {Promise<Swap>}
    */
   fromOrders (maker, taker) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       try {
-        const swap = await Swap.fromOrders(maker, taker, this.ctx)
+        const swap = Swap.fromOrders(maker, taker, this.ctx)
 
         if (this.swaps.has(swap.id)) {
           reject(Error(`swap "${swap.id}" already exists!`))

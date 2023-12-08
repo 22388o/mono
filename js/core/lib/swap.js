@@ -20,7 +20,8 @@ const SWAP_STATUS = [
   'holder.invoice.paid',
   'seeker.invoice.paid',
   'holder.invoice.settled',
-  'seeker.invoice.settled'
+  'seeker.invoice.settled',
+  'completed'
 ].reduce((obj, status, index) => {
   obj[status] = index
   return obj
@@ -47,9 +48,9 @@ module.exports = {
    * @param {Order} maker The maker of the order
    * @param {Order} taker The taker of the order
    * @param {Sdk} sdk The parent Sdk instance that is managing the swap
-   * @returns {Promise<Swap>}
+   * @returns {Swap}
    */
-  fromOrders: async function (maker, taker, sdk) {
+  fromOrders: function (maker, taker, sdk) {
     if (!(maker instanceof Order)) {
       throw Error('expected maker to be an Order!')
     } else if (!(taker instanceof Order)) {
@@ -59,7 +60,7 @@ module.exports = {
     }
 
     return new Swap({
-      id: await Util.hash(maker.id, taker.id),
+      id: Util.hash(maker.id, taker.id),
       secretHolder: {
         id: maker.uid,
         oid: maker.id,
@@ -84,7 +85,7 @@ module.exports = {
    * @returns {Swap}
    */
   fromJSON (obj, sdk) {
-    if (false) {//obj['@type'] !== 'Swap') {
+    if (obj['@type'] !== 'Swap') {
       throw Error(`expected type "Swap", but got "${obj['@type']}"!`)
     } else if (sdk == null) {
       throw Error('expected second argument!')
@@ -170,19 +171,19 @@ class Swap extends BaseClass {
     return this.status === 'seeker.invoice.sent'
   }
 
-  get isHolderInvoicePaid () {
+  get isHolderPaid () {
     return this.status === 'holder.invoice.paid'
   }
 
-  get isSeekerInvoicePaid () {
+  get isSeekerPaid () {
     return this.status === 'seeker.invoice.paid'
   }
 
-  get isHolderInvoiceSettled () {
+  get isHolderSettled () {
     return this.status === 'holder.invoice.settled'
   }
 
-  get isSeekerInvoiceSettled () {
+  get isSeekerSettled () {
     return this.status === 'seeker.invoice.settled'
   }
 
@@ -256,8 +257,7 @@ class Swap extends BaseClass {
    */
   toJSON () {
     const { status, secretHash, secretHolder, secretSeeker } = this
-    const obj = { status, secretHash, secretHolder, secretSeeker }
-    return Object.assign(super.toJSON(), obj)
+    return Object.assign(super.toJSON(), { '@type': 'Swap', status, secretHash, secretHolder, secretSeeker })
   }
 
   /**
@@ -312,7 +312,7 @@ class Swap extends BaseClass {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
 
-    blockchain.once('invoice.paid', invoice => {
+    blockchain.once('invoice.paid', invoice => setImmediate(() => {
       if (this.party.isSeeker) {
         INSTANCES.get(this).status = 'holder.invoice.paid'
         this.emit(this.status, this)
@@ -324,17 +324,17 @@ class Swap extends BaseClass {
       } else {
         throw Error('unexpected code branch!')
       }
-    })
+    }))
 
     if (this.party.isSeeker) {
       const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      blockchain.once('invoice.settled', async invoice => {
+      blockchain.once('invoice.settled', invoice => setImmediate(async () => {
         await store.put('secrets', invoice.id.substr(2), {
           secret: invoice.swap.secret,
           swap: invoice.swap.id
         })
         this.settleInvoice()
-      })
+      }))
     }
 
     this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
@@ -372,7 +372,7 @@ class Swap extends BaseClass {
     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
     this.party.payment = await blockchain.payInvoice(this.party)
     INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
-    this.emit(this.status, this)
+    setTimeout(() => this.emit(this.status, this), 100)
   }
 
   /**
@@ -383,26 +383,12 @@ class Swap extends BaseClass {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
     const { secret } = await store.get('secrets', this.secretHash)
-
-    const settle = async () => {
-      this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
-      INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
-      this.emit(this.status, this)
-    }
-
-    // required to prevent a race condition when run in a tight loop.
-    if (this.party.isHolder || this.isSeekerInvoicePaid) {
-      settle()
-    } else {
-      this.once('seeker.invoice.paid', settle)
-    }
+    this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
+    INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
+    setTimeout(() => this.emit(this.status, this), 100)
   }
 }
 
-/**
- * Abstracts the notion of a party to a swap
- * @type {Party}
- */
 class Party {
   constructor (props, swap) {
     this.swap = swap
@@ -454,7 +440,6 @@ class Party {
     if (state.invoice != null) {
       throw Error('invoice already created!')
     }
-
     state.invoice = val
   }
 
@@ -515,9 +500,7 @@ class Party {
       asset: this.asset,
       quantity: this.quantity,
       blockchain: this.blockchain,
-      invoice: this.invoice,
-      payment: this.payment,
-      receipt: this.receipt
+      invoice: this.invoice
     }
   }
 

@@ -36,11 +36,13 @@ module.exports = class Sdk extends BaseClass {
   constructor (props) {
     super({ id: props.id })
 
+    let networkInfo = props.network || {};
+    if(props.port) networkInfo.port = props.port;
     /**
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = new Network(this, props.network)
+    this.network = new Network(this, networkInfo)
       .on('order.created', forwardEvent(this, 'order.created'))
       .on('order.opened', forwardEvent(this, 'order.opened'))
       .on('order.closed', forwardEvent(this, 'order.closed'))
@@ -79,17 +81,14 @@ module.exports = class Sdk extends BaseClass {
       .on('swap.seeker.invoice.paid', onSwap)
       .on('swap.holder.invoice.settled', onSwap)
       .on('swap.seeker.invoice.settled', onSwap)
-      // .on('swap.completed', onSwap)
+      .on('swap.completed', onSwap)
 
-    // Bubble up the log and error events
-    const bubbleErrorsAndLogs = emitter => emitter
-      .on('error', (err, ...args) => this.emit('error', err, ...args))
-      .on('log', (level, ...args) => this[level](...args))
-    bubbleErrorsAndLogs(this.network)
-    bubbleErrorsAndLogs(this.store)
-    bubbleErrorsAndLogs(this.blockchains)
-    bubbleErrorsAndLogs(this.dex)
-    bubbleErrorsAndLogs(this.swaps)
+    // Bubble up the log events
+    this.network.on('log', (level, ...args) => this[level](...args))
+    this.store.on('log', (level, ...args) => this[level](...args))
+    this.blockchains.on('log', (level, ...args) => this[level](...args))
+    this.dex.on('log', (level, ...args) => this[level](...args))
+    this.swaps.on('log', (level, ...args) => this[level](...args))
 
     Object.freeze(this)
   }

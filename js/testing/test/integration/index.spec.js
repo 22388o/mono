@@ -23,10 +23,10 @@ const isDebugEnabled = process.argv.includes('--debug')
 const log = !isDebugEnabled
   ? function () { }
   : (...args) => console.error(...(args.map(arg => inspect(arg, {
-      showHidden: false,
-      depth: null,
-      colors: true
-    }))), '\n\n')
+    showHidden: false,
+    depth: null,
+    colors: true
+  }))))
 
 /**
  * Maps globally visible keys to their values for the duration of the tests
@@ -78,7 +78,6 @@ before('setup the test environment', async function () {
   const props = Object.assign({ id: 'portal' }, config.network)
   this.peer = await new Peer(props)
     .on('log', log)
-    .on('error', err => console.error(err))
     .start()
 
   // start all sdk instances
@@ -86,7 +85,6 @@ before('setup the test environment', async function () {
     this[id] = new SDK(generate(id, config))
     await this[id]
       .on('log', log)
-      .on('error', err => console.error(err))
       .start()
   }
 })

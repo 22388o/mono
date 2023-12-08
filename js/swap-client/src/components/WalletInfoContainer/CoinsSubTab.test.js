@@ -9,6 +9,7 @@ global.fetch = jest.fn(() =>
   })
 );
 
+
 describe('CoinsSubTab component test', () => {
   it('renders component', async () => {
 

@@ -4,12 +4,13 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const Sdk = require('./lib')
+const { IndexedDB } = require('./lib/store/browser');
 
 /**
  * Export the class
  * @type {SDK}
  */
-module.exports = class SDK extends BaseClass {
+class SDK extends BaseClass {
   constructor (props) {
     super()
 
@@ -19,11 +20,9 @@ module.exports = class SDK extends BaseClass {
      */
     const onSwap = swap => this.emit(`swap.${swap.status}`, swap)
     this.sdk = new Sdk(props)
-      // DEX events
       .on('order.created', (...args) => this.emit('order.created', ...args))
       .on('order.opened', (...args) => this.emit('order.opened', ...args))
       .on('order.closed', (...args) => this.emit('order.closed', ...args))
-      // Swap events
       .on('swap.received', onSwap)
       .on('swap.created', onSwap)
       .on('swap.holder.invoice.created', onSwap)
@@ -34,10 +33,9 @@ module.exports = class SDK extends BaseClass {
       .on('swap.seeker.invoice.paid', onSwap)
       .on('swap.holder.invoice.settled', onSwap)
       .on('swap.seeker.invoice.settled', onSwap)
-      // All other events
+      .on('swap.completed', onSwap)
       .on('message', (...args) => this.emit('message', ...args))
-      .on('log', (level, ...args) => this[level](...args))
-      .on('error', (...args) => this.emit('error', ...args))
+      .on('log', (...args) => this.emit('log', ...args))
   }
 
   get id () {
@@ -95,4 +93,8 @@ module.exports = class SDK extends BaseClass {
   send (...args) {
     return this.sdk.network.send(...args)
   }
+}
+
+module.exports =  {
+  SDK, IndexedDB
 }

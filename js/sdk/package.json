@@ -49,7 +49,6 @@
     ]
   },
   "mocha": {
-    "bail": true,
     "diff": true,
     "extension": [
       "spec.js"

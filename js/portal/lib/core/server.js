@@ -27,7 +27,7 @@ module.exports = class Server extends BaseClass {
     Object.seal(this)
 
     const env = process.env
-    const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || '127.0.0.1'
+    const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || 'localhost'
     const port = props.port || env.PORTAL_HTTP_PORT || 0
     const api = require('./api')(props.api || env.PORTAL_HTTP_API)
     const root = props.root || env.PORTAL_HTTP_ROOT
@@ -351,20 +351,12 @@ module.exports = class Server extends BaseClass {
   _handleStatic (req, res) {
     // ensure the asset to tbe served exists under the HTTP path
     const { root } = INSTANCES.get(this)
-    if (root == null) {
-      // 403 Forbidden
-      res.statusCode = 403
-      res.end()
-      this.error('http.static', Error('not found'), req, res)
-      return
-    }
-
     const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
     if (!pathToAsset.startsWith(root)) {
       // 403 Forbidden
       res.statusCode = 403
       res.end()
-      this.error('http.static', Error('not found'), req, res)
+      this.error('http.static', req, res)
       return
     }
 
@@ -379,7 +371,7 @@ module.exports = class Server extends BaseClass {
               // 401 Unauthorized
               res.statusCode = 401
               res.end()
-              that.error('http.static', err, req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
 
             case 'EMFILE':
@@ -388,7 +380,7 @@ module.exports = class Server extends BaseClass {
               // please run "ulimit -n <limit>" to allow opening more files.
               res.statusCode = 500
               res.end()
-              that.error('http.static', err, req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
 
             case 'ENOENT':
@@ -396,7 +388,7 @@ module.exports = class Server extends BaseClass {
               // 404 Not Found
               res.statusCode = 404
               res.end()
-              that.error('http.static', err, req, res)
+              that.emit('log', 'error', 'http.static', req, res)
               return
           }
         }
@@ -412,7 +404,7 @@ module.exports = class Server extends BaseClass {
           // 404 Not Found
           res.statusCode = 404
           res.end()
-          that.error('http.static', Error(`${asset} is not a file!`), req, res)
+          that.emit('log', 'error', 'http.static', req, res)
           return
         }
 
@@ -421,9 +413,7 @@ module.exports = class Server extends BaseClass {
         res.setHeader('content-type', mime.getType(asset))
         res.setHeader('content-length', stat.size)
         res.setHeader('content-encoding', 'identity')
-        // This line fires too often during regular operation, adding noise to
-        // logs. So we drop it to debug level.
-        that.debug('http.static', req, res)
+        // that.emit('log', 'info', 'http.static', req, res)
 
         const fsStream = createReadStream(asset)
           .once('error', err => res.destroyed || res.destroy(err))

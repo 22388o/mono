@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import { userStore } from "../../syncstore/userstore";
 import { walletStore } from "../../syncstore/walletstore";
 import { SWAP_PAIRS } from "../../config/swap_pairs";
-import IndexedDB from "../../utils/store";
+import { IndexedDB } from "@portaldefi/sdk";
 import { IndexedDB_dispatch } from "../../utils/indexeddb";
 
 export const SwapCreate = () => {
@@ -52,9 +52,9 @@ export const SwapCreate = () => {
     //return name.substring(0, name.indexOf('--'));
   }, []);
   const notify = useCallback(() => toast.error(
-    "Balance Limit Exceeded!",
+    "Balance Limit Exceeded!", 
     {
-      theme: "colored",
+      theme: "colored", 
       autoClose: 1000
     }
   ), []);
@@ -125,14 +125,6 @@ export const SwapCreate = () => {
      * f means flag which is used temporarily in distinguishing variable names
      */
     let nor, base, index, nextSt;
-    if(activity.orderId !== swap.secretHolder.oid && activity.orderId !== swap.secretSeeker.oid) {
-      return {
-        fNor: false,
-        fBase: 0,
-        fIndex: 0,
-        fNext: 0
-      }
-    }
     SWAP_PAIRS.forEach((pair, idx) => {
       let fBase = -1;
       if(pair.base === activity.baseAsset && pair.quote === activity.quoteAsset) fBase = 0;
@@ -142,7 +134,7 @@ export const SwapCreate = () => {
       let fNor, curUser;
       if((fBase == 0 && pair.base === pair.seeker) || (fBase == 1 && pair.base === pair.holder)) curUser = swap.secretSeeker;
       if((fBase == 1 && pair.base === pair.seeker) || (fBase == 0 && pair.base === pair.holder)) curUser = swap.secretHolder;
-
+      
       // TODO: right now only checking activity item with the same status
       // fNor = (user.user.id === substrname(curUser.id) && activity.secretHash === swap.secretHash);
 
@@ -185,28 +177,19 @@ export const SwapCreate = () => {
         }
       })
     }
-    user.user.on("log", (level, ...args) => {
-      if(level === "error") {
-        toast.error(`Error occured! ${args[0]}`, {
-          theme: 'colored',
-          autoClose: 1000
-        })
-      }
-      console.log('log in client', level, args)
-    });
-    user.user.on("swap.received", swap => swapListener(swap, 0));
-    user.user.on("swap.created", swap => swapListener(swap, 1));
-    user.user.on("swap.holder.invoice.created", swap => swapListener(swap, 2));
-    user.user.on("swap.holder.invoice.sent", swap => swapListener(swap, 3));
+
+    user.user.on("swap.received", swap => swapListener(swap, 2));
+    user.user.on("swap.holder.invoice.created", swap => swapListener(swap, 3));
+    user.user.on("swap.holder.invoice.sent", swap => swapListener(swap, 4));
     user.user.on("swap.seeker.invoice.created", swap => swapListener(swap, 4));
     user.user.on("swap.seeker.invoice.sent", swap => swapListener(swap, 5));
     user.user.on("swap.holder.invoice.paid", swap => swapListener(swap, 6));
     user.user.on("swap.seeker.invoice.paid", swap => swapListener(swap, 7));
     user.user.on("swap.holder.invoice.settled", swap => swapListener(swap, 8));
     user.user.on("swap.seeker.invoice.settled", swap => swapListener(swap, 9));
-    // user.user.on("swap.completed", swap => swapListener(swap, 9));
+    user.user.on("swap.completed", swap => swapListener(swap, 9));
     return () => {
-      user.user.removeAllListeners();
+      user.user.removeAllListeners();      
     }
   }, [activities, user]);
 
@@ -246,15 +229,15 @@ export const SwapCreate = () => {
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('')
     const secretHash = await hashSecret(randomValues);
-
+    
     setSecret(secretHex);
     setOrderSecret(secretHash);
-
-    if(ASSET_TYPES[baseAsset].balance < baseQuantity) {
+    
+    if(ASSET_TYPES[baseAsset].balance < baseQuantity) { 
       notify();
       return;
     }
-
+    
     await thenOrderSwap(order, secretHex, secretHash);
   }, [crypto, ASSET_TYPES, baseAsset, baseQuantity, quoteQuantity, quoteAsset]);
 
@@ -265,7 +248,7 @@ export const SwapCreate = () => {
     const baseQty = order.baseQuantity ? order.baseQuantity : baseQuantity;
     const quoteQty = order.quoteQuantity ? order.quoteQuantity : quoteQuantity;
     const baseNet= order.baseNetwork, quoteNet = order.quoteNetwork;
-    const baseO = { asset: baseA, network: baseNet, quantity: baseQty },
+    const baseO = { asset: baseA, network: baseNet, quantity: baseQty }, 
         quoteO = { asset: quoteA,  network: quoteNet, quantity: quoteQty };
 
     const args = ask ?  { // if order is an ask, bitcoin as base
@@ -292,7 +275,7 @@ export const SwapCreate = () => {
         baseAsset: args.base.asset.split('-')[0],
         baseNetwork: args.base.network,
         baseQuantity: (args.base.asset.split('-')[0] === 'BTCORD' || args.quote.asset.split('-')[0] === 'BTCORD') ? 4000 : Math.round(args.base.quantity * ASSET_TYPES[bai].rate),
-        baseInfo: ASSET_TYPES[baseAsset].info,
+        baseInfo: ASSET_TYPES[baseAsset].info, 
         quoteAsset: args.quote.asset.split('-')[0],
         quoteNetwork: args.quote.network,
         quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate),
@@ -334,7 +317,7 @@ export const SwapCreate = () => {
         } : {
           base: quoteQ,
           quote: baseQ
-        };
+        };          
 
         IndexedDB_dispatch({ type: 'ADD_SWAP_ITEM', payload: {
           key: data.id,
@@ -349,11 +332,11 @@ export const SwapCreate = () => {
           baseAsset: args.base.asset.split('-')[0],
           baseQuantity: args.base.quantity,
           baseNetwork: args.base.network,
-          baseInfo: ASSET_TYPES[baseAsset].info,
+          baseInfo: ASSET_TYPES[baseAsset].info, 
           quoteAsset: args.quote.asset.split('-')[0],
           quoteNetwork: args.quote.network,
           quoteQuantity: args.quote.quantity,
-          quoteInfo: ASSET_TYPES[quoteAsset].info,
+          quoteInfo: ASSET_TYPES[quoteAsset].info, 
           ordinalLocation: args.ordinalLocation,
           status: 0,
           createdDate: date
@@ -385,7 +368,7 @@ export const SwapCreate = () => {
           <Grid item xs={4} textAlign='left' style={{display:'flex', alignItems:'center'}}><h3>Swap</h3></Grid>
           <Grid item xs={8} textAlign='right'>
             <IconButton className={classNames({"gradient-btn": settingModalOpen})} size="medium" style={{color:'grey'}} onClick={handleClickSetting} ><SettingsIcon /></IconButton>
-            <Popover
+            <Popover 
               anchorEl={anchorEl}
               open={settingModalOpen}
               onClose={() => {setAnchorEl(null);setSettingModalOpen(false)}}
@@ -398,7 +381,7 @@ export const SwapCreate = () => {
                 horizontal: 'center',
               }}
             >
-              <Grid
+              <Grid 
                 container direction='column'
                 style={{backgroundColor:'black',width:'100%',height:'100%',padding:'1em'}}
               >
@@ -410,21 +393,21 @@ export const SwapCreate = () => {
                 <FormControlLabel control={<Switch checked={useAdditionalInput} onChange={(e) => {walletStore.dispatch({type: 'SET_USE_ADDITIONAL_INPUT', payload: !useAdditionalInput})}} />} label="Use Additional Input" />
                 { (useAdditionalInput && ASSET_TYPES[baseAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[baseAsset].title}</h4> }
                 {
-                  useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option, idx) =>
-                    <FormControlLabel
+                  useAdditionalInput && ASSET_TYPES[baseAsset].options && ASSET_TYPES[baseAsset].options.map((option, idx) => 
+                    <FormControlLabel 
                       key={idx}
                       control={
-                        <input
+                        <input 
                           style={{border:'1px solid grey',
                                   borderRadius:'10px',
                                   width:'90px',
                                   marginLeft:'15px',
-                                  marginRight:'15px'}}
+                                  marginRight:'15px'}} 
                           value={option.value}
-                          onChange={(e) => walletStore.dispatch({type: 'SET_ADDITIONAL_INPUT_DATA', payload: {type: baseAsset.type, option_type: option.type, value: e.target.value}})}
+                          onChange={(e) => walletStore.dispatch({type: 'SET_ADDITIONAL_INPUT_DATA', payload: {type: baseAsset.type, option_type: option.type, value: e.target.value}})} 
                         />
                       }
-                      label={option.title}
+                      label={option.title} 
                       labelPlacement='start'
                     />
                   )
@@ -432,15 +415,15 @@ export const SwapCreate = () => {
                 { (useAdditionalInput && ASSET_TYPES[quoteAsset].options?.length>0) && <h4 style={{color:'white'}}>{ASSET_TYPES[quoteAsset].title}</h4> }
                 { useAdditionalInput && ASSET_TYPES[quoteAsset].options && <h4 style={{color:'white'}}>{quoteAsset.title}</h4> }
                 {
-                  useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option, idx) =>
-                    <FormControlLabel
+                  useAdditionalInput && ASSET_TYPES[quoteAsset].options && ASSET_TYPES[quoteAsset].options.map((option, idx) => 
+                    <FormControlLabel 
                       key={idx}
                       control={<input style={{border:'1px solid grey',
                                               borderRadius:'10px',
                                               width:'90px',
                                               marginLeft:'15px',
                                               marginRight:'15px'}} />}
-                      label={option.title}
+                      label={option.title} 
                       labelPlacement='start'
                     />
                   )
@@ -484,10 +467,10 @@ export const SwapCreate = () => {
                       baseNetwork: ASSET_TYPES[baseAsset].network,
                       quoteNetwork: ASSET_TYPES[quoteAsset].network,
                       ordinalLocation:  (
-                        (ASSET_TYPES[baseAsset].isNFT || ASSET_TYPES[quoteAsset].isNFT )?
-                          (ASSET_TYPES[baseAsset].isNFT ?
-                            ASSET_TYPES[baseAsset].info.location :
-                            ASSET_TYPES[quoteAsset].info.location) :
+                        (ASSET_TYPES[baseAsset].isNFT || ASSET_TYPES[quoteAsset].isNFT )? 
+                          (ASSET_TYPES[baseAsset].isNFT ? 
+                            ASSET_TYPES[baseAsset].info.location : 
+                            ASSET_TYPES[quoteAsset].info.location) : 
                           false )})}>Swap</Button>
                     {mock && <DemoSwap mockSwap={mockSwap} /> }
                   </>

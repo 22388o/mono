@@ -5,11 +5,11 @@ import { getStringFromDate, SWAP_STATUS } from '../../utils/helpers';
 import styles from '../../styles/ActivityItem.module.css'
 import { walletStore } from '../../syncstore/walletstore';
 import { IndexedDB_dispatch } from '../../utils/indexeddb';
-import IndexedDB from '../../utils/store';
+import { IndexedDB } from '@portaldefi/sdk';
 
 export const ActivityItem = ({ activity, index, handleClick }) => {
   const link='https://ordinals.com/tx/' + activity.hash;
-
+  
   const onCancelSwap = useCallback((e) => {
     e.stopPropagation();
     IndexedDB_dispatch({ type: 'CANCEL_SWAP', payload: index });

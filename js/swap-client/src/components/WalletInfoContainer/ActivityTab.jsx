@@ -3,7 +3,7 @@ import { Button, Divider, Stack, Typography } from "@mui/material"
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 
 import styles from "../../styles/WalletInfoContainer.module.css";
-import IndexedDB from "../../utils/store";
+import { IndexedDB } from "@portaldefi/sdk";
 import { SWAP_STATUS, getStringFromDate } from "../../utils/helpers";
 import { IndexedDB_dispatch } from "../../utils/indexeddb";
 import { walletStore } from "../../syncstore/walletstore";
@@ -53,7 +53,7 @@ export const ActivityTab = () => {
   return (
     <Stack className={styles['activities-container']}>
       { [...activities].reverse().map((activity, index) =>
-          <div key={index}>
+          <div>
             {index > 0 && renderDivider() }
             { renderActivity(activity) }
           </div>

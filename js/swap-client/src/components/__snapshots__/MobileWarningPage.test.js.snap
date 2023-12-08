@@ -52,7 +52,7 @@ exports[`MobileWarningPage component test renders component 1`] = `
         <p
           class="MuiTypography-root MuiTypography-body1 css-ohsm56-MuiTypography-root"
         >
-          Please use a desktop web browser to access the app.
+          Use a desktop web browser to access the app.
         </p>
       </div>
       <div

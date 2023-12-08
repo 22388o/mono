@@ -56,7 +56,7 @@ exports[`CollectiblesModal component test renders ordinal component 1`] = `
         src="/nft/2.png"
       />
       <div
-        class="MuiStack-root css-cuozto-MuiStack-root"
+        class="MuiStack-root css-4oo209-MuiStack-root"
       >
         <span>
           Inscription
