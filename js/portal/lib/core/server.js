@@ -38,7 +38,7 @@ module.exports = class Server extends BaseClass {
     INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
 
     // Trigger the creation of a swap whenever an order match occurs
-    ctx.orderbooks.on('match', (...args) => ctx.swaps.fromOrders(...args))
+    ctx.orderbooks.on('match', async (...args) => await ctx.swaps.fromOrders(...args))
 
     // Propagate the log events
     ctx.orderbooks.on('log', (level, ...args) => this[level](...args))

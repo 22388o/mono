@@ -6,6 +6,13 @@ const BaseClass = require('./base_class')
 const Order = require('./order')
 const Util = require('./util')
 
+const wait = (seconds) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, seconds * 1000);
+  });
+}
+
+
 /**
  * An object mapping swap status strings to the expected order of transitions
  * @type {Object}
@@ -84,7 +91,7 @@ module.exports = {
    * @returns {Swap}
    */
   fromJSON (obj, sdk) {
-    if (false) {//obj['@type'] !== 'Swap') {
+    if (obj['@type'] !== 'Swap') {
       throw Error(`expected type "Swap", but got "${obj['@type']}"!`)
     } else if (sdk == null) {
       throw Error('expected second argument!')
@@ -256,7 +263,7 @@ class Swap extends BaseClass {
    */
   toJSON () {
     const { status, secretHash, secretHolder, secretSeeker } = this
-    const obj = { status, secretHash, secretHolder, secretSeeker }
+    const obj = { '@type': 'Swap', status, secretHash, secretHolder, secretSeeker } // While bundling, class names are changed, so need to pass @type as props
     return Object.assign(super.toJSON(), obj)
   }
 
@@ -311,6 +318,8 @@ class Swap extends BaseClass {
   async createInvoice () {
     const { blockchains, store } = this.sdk
     const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
+
+    await wait(3);
 
     blockchain.once('invoice.paid', invoice => {
       if (this.party.isSeeker) {
