@@ -26,9 +26,13 @@ Helpers.random = function (length = 32) {
  * @returns {String}
  */
 Helpers.hash = function (data) {
-  return crypto.createHash('sha256')
-    .update(data)
-    .digest('hex')
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(crypto.createHash('sha256').update(data).digest('hex'))
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 /**

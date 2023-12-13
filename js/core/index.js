@@ -11,6 +11,7 @@ module.exports = {
   BaseClass: require('./lib/base_class'),
   Blockchain: require('./lib/blockchain'),
   Order: require('./lib/order'),
+  Server: require('./lib/server'),
   Swap: require('./lib/swap'),
   Util: require('./lib/util')
 }
