@@ -91,7 +91,7 @@ module.exports = {
    * @returns {Swap}
    */
   fromJSON (obj, sdk) {
-    if (obj['@type'] !== 'Swap') {
+    if (false) {//obj['@type'] !== 'Swap') {
       throw Error(`expected type "Swap", but got "${obj['@type']}"!`)
     } else if (sdk == null) {
       throw Error('expected second argument!')

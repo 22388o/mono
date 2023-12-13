@@ -24,21 +24,22 @@ module.exports = class Swaps extends BaseClass {
    * @param {Order|Object} taker The taker side of the order
    * @returns {Promise<Swap>}
    */
-  async fromOrders (maker, taker) {    
-    try {
-      const swap = await Swap.fromOrders(maker, taker, this.ctx)
+  fromOrders (maker, taker) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const swap = await Swap.fromOrders(maker, taker, this.ctx)
 
-      if (this.swaps.has(swap.id)) {
-        throw Error(`swap "${swap.id}" already exists!`)
-      } else {
-        this.swaps.set(swap.id, swap)
-        console.log(swap, swap.status);
-        this.emit(swap.status, swap)
-        return swap;
+        if (this.swaps.has(swap.id)) {
+          reject(Error(`swap "${swap.id}" already exists!`))
+        } else {
+          this.swaps.set(swap.id, swap)
+          this.emit(swap.status, swap)
+          resolve(swap)
+        }
+      } catch (err) {
+        reject(err)
       }
-    } catch (err) {
-      reject(err)
-    }
+    })
   }
 
   /**
