@@ -1,0 +1,55 @@
+{
+  "name": "@portaldefi/coordinator",
+  "version": "0.0.0",
+  "description": "The Portal Coordinator",
+  "bin": {
+    "portal": "bin/portal"
+  },
+  "main": "lib/coordinator.js",
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "clean:all": "npm run clean && npm run clean:lock",
+    "clean:lock": "rm -f package-lock.json",
+    "lint": "standard",
+    "lint-fix": "standard --fix",
+    "posttest": "npm run lint",
+    "start": "node bin/portal",
+    "test": "mocha",
+    "watch": "npm test -- --watch"
+  },
+  "dependencies": {
+    "@portaldefi/core": "file:../core"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "standard": "^17.0.0"
+  },
+  "mocha": {
+    "diff": true,
+    "extension": [
+      "spec.js"
+    ],
+    "recursive": true,
+    "reporter": "spec",
+    "slow": 1000,
+    "timeout": 2000,
+    "ui": "bdd",
+    "watch-files": [
+      "node_modules/@portaldefi/core/**/*.js",
+      "lib/**/*.js",
+      "test/**/*.js"
+    ]
+  },
+  "standard": {
+    "globals": [
+      "after",
+      "afterEach",
+      "before",
+      "beforeEach",
+      "describe",
+      "expect",
+      "it"
+    ]
+  }
+}
