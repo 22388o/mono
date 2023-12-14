@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+/**
+ * @file Starts the Portal Peer
+ */
+
+const Peer = require('../lib/peer')
+const util = require('util')
+
+/**
+ * The main() IIFE
+ * @returns {Void}
+ */
+;(function main () {
+  const peer = new Peer({ id: 'peer' })
+  const inspect = obj => util.inspect(obj, { depth: null, colors: true })
+
+  peer
+    .on('error', console.error)
+    .on('log', (level, ...args) => console.error(level, ...(args.map(inspect))))
+    .start()
+
+  process
+    .on('SIGTERM', () => peer.stop())
+    .on('uncaughtException', err => { console.error(err); process.exit(1) })
+    .on('unhandledRejection', err => { console.error(err); process.exit(1) })
+}())
