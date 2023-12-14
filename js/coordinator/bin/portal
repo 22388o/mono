@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+/**
+ * @file Starts the Portal Coordinator
+ */
+
+const Coordinator = require('../lib/coordinator')
+const util = require('util')
+
+/**
+ * The main() IIFE
+ * @returns {Void}
+ */
+;(function main () {
+  const coordinator = new Coordinator({ id: 'coordinator' })
+  const inspect = obj => util.inspect(obj, { depth: null, colors: true })
+
+  coordinator
+    .on('error', console.error)
+    .on('log', (level, ...args) => console.error(level, ...(args.map(inspect))))
+    .start()
+
+  process
+    .on('SIGTERM', () => coordinator.stop())
+    .on('uncaughtException', err => { console.error(err); process.exit(1) })
+    .on('unhandledRejection', err => { console.error(err); process.exit(1) })
+}())
