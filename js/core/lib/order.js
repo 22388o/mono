@@ -12,7 +12,7 @@ const { uuid } = require('./util')
  */
 const NETWORKS = [
   'ethereum',
-  'lightning.btc'
+  'lightning'
 ]
 
 /**
