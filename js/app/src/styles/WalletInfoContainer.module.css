@@ -1,0 +1,130 @@
+.container {
+  position:absolute;
+  right: 30px;
+  height: calc(90vh - 30px);
+  background-color: #1A1A1A;
+  margin-top: 5vh;
+  border-radius: 40px;
+  border: 5px solid #2A2A2A;
+  width: 400px !important;
+  padding: 0 !important;
+}
+.header {
+  padding: 15px 15px 20px 25px;
+  align-items: center;
+  justify-content: space-between;
+}
+.tab-item {
+  color: #6d6d6d;
+  font-size: 20px !important;
+  font-family: 'NotoBold' !important;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+.active-tab {
+  background-color: #202020;
+  border-radius: 20px;
+  color: white;
+}
+
+/** Sub Tab */
+.sub-tab-item {
+  font-size: 16px;
+  color: #b1b1b1;
+  cursor: pointer;
+  font-family: 'NotoBold' !important;
+}
+.left-sub-tab-active {
+  color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border-top: 3px solid #2A2A2A;
+  border-right: 3px solid #2A2A2A;
+  border-bottom: 3px solid #202020;
+  padding-top: 10px;
+  padding-bottom: 13px;
+  background-color: #202020;
+}
+.right-sub-tab-active {
+  color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border-top: 3px solid #2A2A2A;
+  border-left: 3px solid #2A2A2A;
+  border-bottom: 3px solid #202020;
+  padding-top: 10px;
+  padding-bottom: 13px;
+  background-color: #202020;
+}
+.sub-tab-inactive {
+  border-bottom: 3px solid #2A2A2A;
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+.item-container {
+  background-color: #202020;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.wallet-item {
+  padding: 10px;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.wallet-title {
+  color: white;
+  font-size: 16px !important;
+  font-family: NotoBold !important;
+}
+.divider {
+  border-color: #2A2A2A !important;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sub-container {
+  background-color: #202020;
+  width: 100%;
+  height: 100%;
+  border-bottom-left-radius: 35px;
+  border-bottom-right-radius: 35px;
+}
+
+/*** Sub Tab */
+.wallet-coin-item {
+  padding: 10px 0 10px 20px;
+  justify-content: space-between;
+}
+.wallet-collectible-item{
+  padding: 15px 0 15px 20px;
+  justify-content: space-between;
+}
+.wallet-item-title {
+  font-family: 'NotoBold' !important;
+  font-size: 18px !important;
+}
+
+/** Activity Tab */
+.activities-container {
+  padding: 10px;
+}
+.activity-item {
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: space-between;
+}
+.cancel-btn {
+  background: transparent;
+  color: #FF5959 !important;
+  border: 2px solid #FF5959 !important;
+  border-radius: 1em !important;
+  padding: 0 !important;
+  width: 80px;
+  margin-top:0.3em !important;
+}
+.cancel-btn:hover {
+  background: #ff4d4d31 !important;
+}

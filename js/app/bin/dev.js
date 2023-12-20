@@ -4,10 +4,11 @@
  */
 
 const pkg = require('../package.json')
-const { Parcel } = require('@parcel/core')
+const vite = require('vite')
 const Peer = require('@portaldefi/peer')
 const chokidar = require('chokidar')
 const { join } = require('path')
+const config = require('../vite.dev')
 
 /**
  * npm modules that are not tracked by the bundler's watcher
@@ -48,19 +49,6 @@ const APP_ENTRY = join(__dirname, '..', pkg.source)
 const APP_OUTPUT = join(__dirname, '..', 'dist')
 
 /**
- * Bundles the web-app
- * @type {Parcel}
- */
-const APP_BUNDLER = new Parcel({
-  entries: APP_ENTRY,
-  defaultConfig: '@parcel/config-default',
-  mode: 'development',
-  env: {
-    NODE_ENV: 'development'
-  }
-})
-
-/**
  * Tracks the Peer instance used to serve the web-app
  * @type {Peer|null}
  */
@@ -74,36 +62,33 @@ function startPeer () {
   new Peer({ root: APP_OUTPUT })
     .on('error', console.error)
     .on('log', console.error)
-    .start()
-    .then(async instance => {
-      const watcher = await APP_BUNDLER.watch((err, event) => {
-        if (err) {
-          console.error('error', 'bundler.build', {
-            '@type': 'Parcel',
-            status: 'errored',
-            error: err
-          })
-        } else if (event.type === 'buildFailure') {
-          console.error('error', 'bundler.build', {
-            '@type': 'Parcel',
-            status: 'failed',
-            error: event.diagnostics
-          })
-          process.exit(1)
-        } else if (event.type === 'buildSuccess') {
-          console.error('info', 'bundler.build', {
-            '@type': 'Parcel',
-            status: 'success',
-            buildTime: event.buildTime
-          })
-        }
-      })
+    .once('start', peerObj => vite
+      .build(config)
+      .then(watcher => {
+        peer = peerObj;
+        peerObj.once('stop', () => {
+          watcher.unsubscribe()
+          startPeer()
+        });
+        process.on('SIGTERM', () => watcher.close())
+        watcher.on('event', event => {
+          switch (event.code) {
+            case 'START':
+            case 'END':
+              console.error('info', 'vite.build', event)
+              break
 
-      peer = instance.once('stop', () => {
-        watcher.unsubscribe()
-        startPeer()
-      })
-    })
+            case 'BUNDLE_START':
+            case 'BUNDLE_END':
+              break
+
+            default:
+              console.error('error', 'vite.build', event)
+              break
+          }
+        })
+      }))
+    .start()
 }
 
 /**
