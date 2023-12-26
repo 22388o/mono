@@ -11,7 +11,7 @@ const { BaseClass } = require('@portaldefi/core')
 module.exports = class Network extends BaseClass {
   constructor (props) {
     props = Object.assign({
-      hostname: 'localhost',
+      hostname: '127.0.0.1',
       port: 80,
       pathname: '/api/v1/updates'
     }, props)

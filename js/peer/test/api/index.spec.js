@@ -6,7 +6,16 @@ const Peer = require('../..')
 const http = require('http')
 
 before('spin up the peer', async function () {
-  this.peer = new Peer()
+  this.peer = new Peer({
+    id: 'peer',
+    hostname: '127.0.0.1',
+    port: 0,
+    coordinator: {
+      hostname: '127.0.0.1',
+      port: 80,
+      pathname: '/api/v1/updates'
+    }
+  })
   await this.peer.start()
 
   // http request method for use in API tests

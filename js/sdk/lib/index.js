@@ -3,10 +3,8 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const Blockchains = require('./blockchains')
 const Dex = require('./dex')
 const Network = require('./network')
-const Store = require('./store')
 const Swaps = require('./swaps')
 
 /**
@@ -28,8 +26,6 @@ module.exports = class Sdk extends BaseClass {
    * @param {Object} props Properties of the instance
    * @param {String} props.id Unique identifier of the instance
    * @param {Object} props.network Properties of the network
-   * @param {Object} props.store Properties of the store
-   * @param {Object} props.blockchains Properties of the supported blockchains
    * @param {Object} props.dex Properties of the dex
    * @param {Object} props.swaps Properties of the swaps
    */
@@ -40,22 +36,10 @@ module.exports = class Sdk extends BaseClass {
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = new Network(this, props.network)
+    this.network = new Network(this, props)
       .on('order.created', forwardEvent(this, 'order.created'))
       .on('order.opened', forwardEvent(this, 'order.opened'))
       .on('order.closed', forwardEvent(this, 'order.closed'))
-
-    /**
-     * Interface to the underlying data store (browser/node.js)
-     * @type {Store}
-     */
-    this.store = new Store(this, props.store)
-
-    /**
-     * Interface to all the blockchain networks
-     * @type {Blockchains}
-     */
-    this.blockchains = new Blockchains(this, props.blockchains)
 
     /**
      * Interface to the decentralized exchange
@@ -86,8 +70,6 @@ module.exports = class Sdk extends BaseClass {
       .on('error', (err, ...args) => this.emit('error', err, ...args))
       .on('log', (level, ...args) => this[level](...args))
     bubbleErrorsAndLogs(this.network)
-    bubbleErrorsAndLogs(this.store)
-    bubbleErrorsAndLogs(this.blockchains)
     bubbleErrorsAndLogs(this.dex)
     bubbleErrorsAndLogs(this.swaps)
 
@@ -123,14 +105,12 @@ module.exports = class Sdk extends BaseClass {
   start () {
     const operations = [
       this.network.connect(),
-      this.store.open(),
-      this.blockchains.connect(),
       this.dex.open(),
       this.swaps.sync()
     ]
 
     return Promise.all(operations)
-      .then(([network, store, blockchains, dex, swaps]) => {
+      .then(([network, dex, swaps]) => {
         this.info('start', this)
         this.emit('start')
         return this
@@ -144,14 +124,12 @@ module.exports = class Sdk extends BaseClass {
   stop () {
     const operations = [
       this.network.disconnect(),
-      this.store.close(),
-      this.blockchains.disconnect(),
       this.dex.close(),
       this.swaps.sync()
     ]
 
     return Promise.all(operations)
-      .then(([network, store, blockchains, dex, swaps]) => {
+      .then(([network, dex, swaps]) => {
         this.info('stop', this)
         this.emit('stop')
         return this

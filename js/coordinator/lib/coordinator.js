@@ -38,4 +38,22 @@ module.exports = class Coordinator extends Server {
 
     Object.freeze(this)
   }
+
+  /**
+   * Returns the JSON representation of the instance
+   * @returns {Object}
+   */
+  toJSON () {
+    return Object.assign(super.toJSON(), {
+      pathname: this.pathname
+    })
+  }
+
+  /**
+   * Returns the path to the default websocket for receiving updates
+   * @returns {String}
+   */
+  get pathname () {
+    return '/api/v1'
+  }
 }

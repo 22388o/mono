@@ -18,7 +18,8 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
-    "@portaldefi/core": "file:../core"
+    "@portaldefi/core": "file:../core",
+    "ws": "^8.15.1"
   },
   "devDependencies": {
     "chai": "^4.3.7",

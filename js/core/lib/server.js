@@ -17,6 +17,15 @@ const { WebSocketServer } = require('ws')
 const INSTANCES = new WeakMap()
 
 /**
+ * The default options for API handlers; these can be overridden by the endpoint
+ * @type {Object}
+ */
+const DEFAULT_HANDLER_OPTS = {
+  autoParse: true,
+  isUnauthenticated: false
+}
+
+/**
  * Exports an implementation of a server
  * @type {Server}
  */
@@ -35,8 +44,6 @@ module.exports = class Server extends BaseClass {
     }
 
     super({ id: props.id })
-
-    Object.seal(this)
 
     const hostname = props.hostname || '127.0.0.1'
     const port = props.port || 0
@@ -199,17 +206,17 @@ module.exports = class Server extends BaseClass {
 
     if (routed) {
       const handler = api[route]
-      if (typeof handler === 'function') {
-        req.handler = handler
-      } else if (typeof handler[req.method] === 'function') {
+      if (typeof handler[req.method] === 'function') {
         req.handler = handler[req.method]
+      } else if (typeof handler === 'function') {
+        req.handler = handler
       } else {
         res.statusCode = (typeof handler.UPGRADE === 'function') ? 404 : 405
         res.end()
         return
       }
 
-      this._handleApi(req, res)
+      this._handleApi(req, res, req.handler.opts)
     } else {
       this._handleStatic(req, res)
     }
@@ -299,44 +306,52 @@ module.exports = class Server extends BaseClass {
    * @returns {Void}
    */
   _handleApi (req, res) {
-    // Parse the client identifier and stash it for later use
-    // The authorization header is "Basic <base-64 encoded username:password>"
-    // We split out the username and stash it on req.user
-    const auth = req.headers.authorization
-    if (auth != null) {
-      /* eslint-disable-next-line no-unused-vars */
-      const [algorithm, base64] = auth.split(' ')
-      /* eslint-disable-next-line no-unused-vars */
-      const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
-      req.user = user
+    const { ctx } = INSTANCES.get(this)
+    const opts = Object.assign({}, DEFAULT_HANDLER_OPTS, req.handler.opts)
+
+    if (!opts.isUnauthenticated) {
+      // Parse the client identifier and stash it for later use
+      // The authorization header is "Basic <base-64 encoded username:password>"
+      // We split out the username and stash it on req.user
+      const auth = req.headers.authorization
+      if (auth != null) {
+        /* eslint-disable-next-line no-unused-vars */
+        const [algorithm, base64] = auth.split(' ')
+        /* eslint-disable-next-line no-unused-vars */
+        const [user, pass] = Buffer.from(base64, 'base64').toString().split(':')
+        req.user = user
+      }
     }
 
-    // Collect the incoming HTTP body
-    const chunks = []
-    req
-      .on('data', chunk => chunks.push(chunk))
-      .once('end', () => {
-        // Parse any incoming JSON object and stash it at req.json for later use
-        const str = Buffer.concat(chunks).toString('utf8')
+    if (opts.autoParse) {
+      // Collect the incoming HTTP body
+      const chunks = []
+      req
+        .on('data', chunk => chunks.push(chunk))
+        .once('end', () => {
+          // Parse any incoming JSON object and stash it at req.json for later use
+          const str = Buffer.concat(chunks).toString('utf8')
 
-        if (str === '') {
-          req.json = {}
-        } else {
-          try {
-            req.json = JSON.parse(str)
-          } catch (e) {
-            const err = new Error(`unexpected non-JSON response ${str}`)
-            res.send(err)
-            this.error('http.api', err, req, res)
-            return
+          if (str === '') {
+            req.json = {}
+          } else {
+            try {
+              req.json = JSON.parse(str)
+            } catch (e) {
+              const err = new Error(`unexpected non-JSON response ${str}`)
+              res.send(err)
+              this.error('http.api', err, req, res)
+              return
+            }
           }
-        }
 
-        this.info('http.api', req)
-
-        const { ctx } = INSTANCES.get(this)
-        req.handler(req, res, ctx)
-      })
+          this.info('http.api', req)
+          req.handler(req, res, ctx)
+        })
+    } else {
+      this.info('http.api', req)
+      req.handler(req, res, ctx)
+    }
   }
 
   /**
