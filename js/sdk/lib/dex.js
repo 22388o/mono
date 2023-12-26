@@ -46,7 +46,7 @@ module.exports = class Dex extends BaseClass {
   submitLimitOrder (order) {
     return this.sdk.network.request({
       method: 'PUT',
-      path: '/api/v1/orderbook/limit'
+      path: '/api/v1/dex/limit'
     }, {
       id: uuid(),
       uid: this.sdk.id,
@@ -68,7 +68,7 @@ module.exports = class Dex extends BaseClass {
   cancelLimitOrder (order) {
     return this.sdk.network.request({
       method: 'DELETE',
-      path: '/api/v1/orderbook/limit'
+      path: '/api/v1/dex/limit'
     }, {
       id: order.id,
       baseAsset: order.baseAsset,

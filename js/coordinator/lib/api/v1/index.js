@@ -10,10 +10,10 @@
  */
 module.exports.UPGRADE = function (ws, ctx) {
   const onError = err => err != null && ctx.log.error(err)
-  const onOrder = order => order.uid === ws.user && ws.send(order, onError)
+  const onOrder = order => ws.send(order, onError)
   const onSwap = swap => swap.isParty({ id: ws.user }) && ws.send(swap)
 
-  ctx.orderbooks
+  ctx.dex
     .on('error', onError)
     .on('created', onOrder)
     .on('opened', onOrder)
@@ -26,8 +26,8 @@ module.exports.UPGRADE = function (ws, ctx) {
     .on('seeker.invoice.sent', onSwap)
 
   // unregister all event handlers when the websocket closes
-  ws.on('close', () => {
-    ctx.orderbooks
+  ws.once('close', () => {
+    ctx.dex
       .off('error', onError)
       .off('created', onOrder)
       .off('opened', onOrder)

@@ -50,6 +50,14 @@ module.exports = class SDK extends BaseClass {
   }
 
   /**
+   * The interface to the DEX
+   * @returns {Dex}
+   */
+  get dex () {
+    return this.sdk.dex
+  }
+
+  /**
    * Returns the JSON representation of the instance
    * @returns {Object}
    */
