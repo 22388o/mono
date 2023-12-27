@@ -62,24 +62,32 @@ Helpers.compile = function () {
  * @returns {Promise<Contract>}
  */
 Helpers.deploy = async function (contracts, web3) {
-  const accounts = await web3.eth.getAccounts()
-  const deployed = {}
+  try {
+    const accounts = await web3.eth.getAccounts()
+    const from = accounts.length
+      ? accounts[0]
+      : web3.eth.accounts.wallet.get(0).address
+    const deployed = {}
 
-  for (const name in contracts) {
-    const contractName = basename(name, extname(name, '.sol'))
-    if (!Helpers.CONTRACTS.includes(contractName)) continue
+    for (const name in contracts) {
+      const contractName = basename(name, extname(name, '.sol'))
+      if (!Helpers.CONTRACTS.includes(contractName)) continue
 
-    const compiled = contracts[name][contractName]
-    const contract = new web3.eth.Contract(compiled.abi)
-    const transaction = await contract
-      .deploy({ data: compiled.evm.bytecode.object })
-      .send({ from: accounts[0] })
+      const compiled = contracts[name][contractName]
+      const contract = new web3.eth.Contract(compiled.abi)
+      const transaction = await contract
+        .deploy({ data: compiled.evm.bytecode.object })
+        .send({ from })
 
-    deployed[contractName] = {
-      abi: compiled.abi,
-      address: transaction._address
+      deployed[contractName] = {
+        abi: compiled.abi,
+        address: transaction._address
+      }
     }
-  }
 
-  return deployed
+    return deployed
+  } catch (err) {
+    console.error(err)
+    process.exit(1)
+  }
 }
