@@ -11,7 +11,7 @@ describe('Order', function () {
     type: 'limit',
     side: 'bid',
     baseAsset: 'BTC',
-    baseNetwork: 'lightning.btc',
+    baseNetwork: 'lightning',
     baseQuantity: 1,
     quoteAsset: 'ETH',
     quoteNetwork: 'ethereum',

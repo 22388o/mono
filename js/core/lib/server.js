@@ -22,7 +22,15 @@ const INSTANCES = new WeakMap()
  */
 module.exports = class Server extends BaseClass {
   constructor (props = {}) {
-    if (props.api == null || typeof props.api !== 'string') {
+    if (props == null) {
+      throw Error('expected props to be provided!')
+    } else if (props.id == null || typeof props.id !== 'string') {
+      throw Error('expected props.id to be a string!')
+    } else if (props.hostname != null && typeof props.hostname !== 'string') {
+      throw Error('expected props.hostname to be a valid hostname/IP address!')
+    } else if (props.port != null && typeof props.port !== 'number') {
+      throw Error('expected props.port to be a number between 0 and 65535!')
+    } else if (props.api == null || typeof props.api !== 'string') {
       throw Error('expected props.api to a valid path!')
     }
 
@@ -30,11 +38,10 @@ module.exports = class Server extends BaseClass {
 
     Object.seal(this)
 
-    const env = process.env
-    const hostname = props.hostname || env.PORTAL_HTTP_HOSTNAME || '127.0.0.1'
-    const port = props.port || env.PORTAL_HTTP_PORT || 0
-    const root = props.root || env.PORTAL_HTTP_ROOT
-    const api = buildApi(props.api || env.PORTAL_HTTP_API)
+    const hostname = props.hostname || '127.0.0.1'
+    const port = props.port || 0
+    const api = buildApi(props.api)
+    const root = props.root
     const ctx = props.ctx || {}
 
     const server = http.createServer({ IncomingMessage, ServerResponse })
