@@ -10,6 +10,9 @@ import { activitiesStore } from "../../syncstore/activitiesstore";
 export const ActivityTab = () => {
   const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
 
+  /**
+   * Handler to cancel swap
+   */
   const onCancelSwap = useCallback((e, activity) => {
     e.stopPropagation();
     if(activity.baseAsset === 'BTC') walletStore.dispatch({ type: 'ADD_NODE_BALANCE', payload: activity.baseQuantity });
@@ -18,6 +21,11 @@ export const ActivityTab = () => {
     activitiesStore.dispatch({ type: 'CANCEL_SWAP', payload: { secretHash: activity.hash } });
   }, [walletStore, activities]);
 
+  /**
+   * Component Render Function
+   * @param {object} activity 
+   * @returns Component for activity
+   */
   const renderActivity = (activity) => {
     return (
       <Stack className={`${styles['activity-item']} activity-item`} direction='row'>
@@ -46,6 +54,9 @@ export const ActivityTab = () => {
     )
   }
 
+  /**
+   * Divider Render
+   */
   const renderDivider = () => <Divider sx={{borderColor: '#2A2A2A!important', margin: '15px 0px'}} />
 
   return (
