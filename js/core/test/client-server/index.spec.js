@@ -4,8 +4,7 @@
 
 /* eslint-disable no-unused-expressions */
 
-const Server = require('../../lib/server')
-const Client = require('../../lib/client')
+const { Client, Server } = require('../..')
 const { expect } = require('chai')
 const { basename, join } = require('path')
 

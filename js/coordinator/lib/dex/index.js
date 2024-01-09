@@ -22,18 +22,18 @@ const PROPS = [
  */
 function handleOrderbookEvent (self, orderbook, event) {
   return function (...args) {
-    self.emit('log', 'info', `order.${event}`, ...args, orderbook)
+    self.info(`order.${event}`, ...args, orderbook)
     self.emit(event, ...args, orderbook)
   }
 }
 
 /**
  * Exposes all supported orderbooks under a single class
- * @type {Orderbooks}
+ * @type {Dex}
  */
-module.exports = class Orderbooks extends BaseClass {
+module.exports = class Dex extends BaseClass {
   constructor () {
-    super()
+    super({ id: 'dex' })
 
     for (const obj of PROPS) {
       const orderbook = new Orderbook(obj)

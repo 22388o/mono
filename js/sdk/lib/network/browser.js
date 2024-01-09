@@ -13,7 +13,7 @@ module.exports = class Network extends BaseClass {
     props = Object.assign({
       hostname: '127.0.0.1',
       port: 80,
-      pathname: '/api/v1/updates'
+      pathname: '/api/v1'
     }, props)
 
     super()

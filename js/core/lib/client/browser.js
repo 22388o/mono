@@ -9,16 +9,24 @@ const { BaseClass } = require('@portaldefi/core')
  * @type {Client}
  */
 module.exports = class Client extends BaseClass {
-  constructor (sdk, props) {
-    props = Object.assign({
-      hostname: '127.0.0.1',
-      port: 80,
-      pathname: '/api/v1/updates'
-    }, props)
+  constructor (props) {
+    if (props == null) {
+      throw Error('expected props to be provided!')
+    } else if (props.id == null || typeof props.id !== 'string') {
+      throw Error('expected props.id to be a valid identifier!')
+    } else if (props.uid == null || typeof props.uid !== 'string') {
+      throw Error('expected props.uid to be a valid identifier!')
+    } else if (props.hostname != null && typeof props.hostname !== 'string') {
+      throw Error('expected props.hostname to be a valid hostname/IP address!')
+    } else if (props.port != null && typeof props.port !== 'number') {
+      throw Error('expected props.port to be a number between 0 and 65535!')
+    } else if (props.pathname == null || typeof props.pathname !== 'string') {
+      throw Error('expected props.pathname to a valid API path!')
+    }
 
     super({ id: props.id })
 
-    this.sdk = sdk
+    this.uid = props.uid
     this.hostname = props.hostname
     this.port = props.port
     this.pathname = props.pathname
@@ -48,23 +56,31 @@ module.exports = class Client extends BaseClass {
   }
 
   /**
-   * Connects to the peer network.
-   *
-   * A websocket connection is established with the remote peer. The connection
-   * is currently authenticated by an identifier of the user.
+   * Opens a connection to the remote end
    * @returns {Promise<Void>}
    */
   connect () {
     return new Promise((resolve, reject) => {
-      const { id } = this.sdk
-      const { hostname, port, pathname } = this
-      const url = `ws://${hostname}:${port}${pathname}/${id}`
+      const { hostname, port, pathname, uid } = this
+      const url = `ws://${hostname}:${port}${pathname}/${uid}`
       const ws = new WebSocket(url) /* eslint-disable-line no-undef */
-      ws.onmessage = (...args) => this._onMessage(...args)
-      ws.onopen = () => { this.emit('connected'); resolve() }
-      ws.onclose = () => { this.websocket = null; this.emit('disconnected') }
+
       ws.onerror = reject
-      this.websocket = ws
+
+      ws.onopen = () => {
+        this.websocket = ws
+        this.info('connected', this)
+        this.emit('connected', this)
+        resolve(this)
+      }
+
+      ws.onclose = () => {
+        this.websocket = null
+        this.info('disconnected', this)
+        this.emit('disconnected', this)
+      }
+
+      ws.onmessage = (...args) => this._onMessage(...args)
     })
   }
 
@@ -76,10 +92,9 @@ module.exports = class Client extends BaseClass {
    */
   request (args, data) {
     return new Promise((resolve, reject) => {
-      const { id } = this.sdk
-      const creds = `${id}:${id}`
+      const creds = `${this.uid}:${this.uid}`
       const buf = (data && JSON.stringify(data)) || ''
-      const req = fetch(args.path, Object.assign(args, {
+      const opts = Object.assign(args, {
         headers: Object.assign(args.headers || {}, {
           /* eslint-disable quote-props */
           'accept': 'application/json',
@@ -91,7 +106,8 @@ module.exports = class Client extends BaseClass {
           /* eslint-enable quote-props */
         }),
         body: buf
-      }))
+      })
+      const req = fetch(args.path, opts) /* eslint-disable-line no-undef */
 
       req
         .then(res => {
@@ -99,18 +115,38 @@ module.exports = class Client extends BaseClass {
           const contentType = res.headers.get('Content-Type')
 
           if (status !== 200 && status !== 400) {
-            reject(new Error(`unexpected status code ${status}`))
+            const err = new Error(`unexpected status code ${status}`)
+            this.error('http.error', err, req, this)
+            this.emit('error', err, req, this)
+            return reject(err)
           } else if (!contentType.startsWith('application/json')) {
-            reject(new Error(`unexpected content-type ${contentType}`))
+            const err = new Error(`unexpected content-type ${contentType}`)
+            this.error('http.error', err, req, this)
+            this.emit('error', err, req, this)
+            return reject(err)
           } else {
             res.json()
-              .then(obj => status === 200
-                ? resolve(obj)
-                : reject(Error(obj.message)))
-              .catch(reject)
+              .then(obj => {
+                if (status === 200) {
+                  this.info('http.end', req, res, this)
+                  resolve(res.json)
+                } else {
+                  const err = new Error(res.json.message)
+                  this.error('http.error', err, req, res, this)
+                  this.emit('error', err, req, res, this)
+                  reject(err)
+                }
+              })
+              .catch(err => {
+                this.error('http.error', err, req, res, this)
+                this.emit('error', err, req, res, this)
+                reject(err)
+              })
           }
         })
         .catch(reject)
+
+      this.info('http.start', req, this)
     })
   }
 
@@ -148,7 +184,7 @@ module.exports = class Client extends BaseClass {
   _onMessage (data) {
     let event, arg
     try {
-      arg = JSON.parse(data.data)
+      arg = JSON.parse(data)
 
       if (arg['@type'] != null && arg.status != null) {
         event = `${arg['@type'].toLowerCase()}.${arg.status}`
@@ -162,8 +198,9 @@ module.exports = class Client extends BaseClass {
       }
     } catch (err) {
       event = 'error'
-      arg = [err]
+      arg = err
     } finally {
+      this.info('message', event, ...arg)
       this.emit(event, ...arg)
     }
   }

@@ -16,7 +16,7 @@ const INSTANCES = new WeakMap()
  * @type {Ethereum}
  */
 module.exports = class Ethereum extends Blockchain {
-  constructor (sdk, props) {
+  constructor (props) {
     super({ id: 'ethereum' })
 
     if (props == null) {
@@ -105,7 +105,7 @@ module.exports = class Ethereum extends Blockchain {
 
       // swap contract events
       const events = contract.events.allEvents()
-      events.on('connected', id => this.debug('contract.events', { id }))
+      // events.on('connected', id => this.debug('contract.events', { id }))
       events.on('data', data => {
         const { event, address, returnValues } = data
 

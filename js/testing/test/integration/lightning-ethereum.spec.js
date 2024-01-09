@@ -8,7 +8,7 @@
 describe('Swaps - Lightning/Ethereum', function () {
   const ORDER_PROPS = {
     baseAsset: 'BTC',
-    baseNetwork: 'lightning.btc',
+    baseNetwork: 'lightning',
     baseQuantity: 10000,
     quoteAsset: 'ETH',
     quoteNetwork: 'ethereum',
@@ -44,7 +44,7 @@ describe('Swaps - Lightning/Ethereum', function () {
   }
 
   before('test setup', function () {
-    this.test.ctx.alice
+    this.test.ctx.playnet.sdks.alice
       .on('swap.received', swap => {
         expect(prevState.alice).to.equal(null, 'alice')
 
@@ -122,7 +122,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(swap.secretHash).to.be.a('string').that.equals(secretHash)
       })
 
-    this.test.ctx.bob
+    this.test.ctx.playnet.sdks.bob
       .on('swap.received', swap => {
         expect(prevState.bob).to.equal(null, 'bob')
 
@@ -196,7 +196,9 @@ describe('Swaps - Lightning/Ethereum', function () {
    * to be opened on the orderbook.
    */
   it('must allow Alice to place an order', function (done) {
-    this.test.ctx.alice
+    const { alice } = this.test.ctx.playnet.sdks
+
+    alice
       .once('order.created', order => {
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
@@ -206,7 +208,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(order.side).to.be.a('string').that.equals('ask')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
-        expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
         expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
         expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
         expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
@@ -221,7 +223,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(order.side).to.be.a('string').that.equals('ask')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
-        expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
         expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
         expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
         expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
@@ -230,8 +232,25 @@ describe('Swaps - Lightning/Ethereum', function () {
         done()
       })
       .once('order.closed', order => done(Error('order unexpected closed!')))
+
+    alice.dex
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'ask' }))
-      .catch(done)
+      .then(order => {
+        expect(order).to.be.an('object')
+        expect(order.id).to.be.a('string')
+        expect(order.ts).to.be.a('number')
+        expect(order.uid).to.be.a('string').that.equals('alice')
+        expect(order.type).to.be.a('string').that.equals('limit')
+        expect(order.side).to.be.a('string').that.equals('ask')
+        expect(order.baseAsset).to.be.a('string').that.equals('BTC')
+        expect(order.baseQuantity).to.be.a('number').that.equals(10000)
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
+        expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
+        expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
+        expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
+        expect(order.status).to.be.a('string').that.equals('created')
+      })
+      .catch(err => done(err))
   })
 
   /**
@@ -239,7 +258,9 @@ describe('Swaps - Lightning/Ethereum', function () {
    * for the order to be opened on the orderbook.
    */
   it('must allow Bob to place an order', function (done) {
-    this.test.ctx.bob
+    const { bob } = this.test.ctx.playnet.sdks
+
+    bob
       .once('order.created', order => {
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
@@ -249,7 +270,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(order.side).to.be.a('string').that.equals('bid')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
-        expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
         expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
         expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
         expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
@@ -264,7 +285,7 @@ describe('Swaps - Lightning/Ethereum', function () {
         expect(order.side).to.be.a('string').that.equals('bid')
         expect(order.baseAsset).to.be.a('string').that.equals('BTC')
         expect(order.baseQuantity).to.be.a('number').that.equals(10000)
-        expect(order.baseNetwork).to.be.a('string').that.equals('lightning.btc')
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
         expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
         expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
         expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
@@ -273,7 +294,24 @@ describe('Swaps - Lightning/Ethereum', function () {
         done()
       })
       .once('order.closed', order => done(Error('order unexpected closed!')))
+
+    bob.dex
       .submitLimitOrder(Object.assign({}, ORDER_PROPS, { side: 'bid' }))
+      .then(order => {
+        expect(order).to.be.an('object')
+        expect(order.id).to.be.a('string')
+        expect(order.ts).to.be.a('number')
+        expect(order.uid).to.be.a('string').that.equals('bob')
+        expect(order.type).to.be.a('string').that.equals('limit')
+        expect(order.side).to.be.a('string').that.equals('bid')
+        expect(order.baseAsset).to.be.a('string').that.equals('BTC')
+        expect(order.baseQuantity).to.be.a('number').that.equals(10000)
+        expect(order.baseNetwork).to.be.a('string').that.equals('lightning')
+        expect(order.quoteAsset).to.be.a('string').that.equals('ETH')
+        expect(order.quoteQuantity).to.be.a('number').that.equals(100000)
+        expect(order.quoteNetwork).to.be.a('string').that.equals('ethereum')
+        expect(order.status).to.be.a('string').that.equals('created')
+      })
       .catch(done)
   })
 

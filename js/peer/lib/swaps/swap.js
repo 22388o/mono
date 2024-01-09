@@ -2,9 +2,7 @@
  * @file Defines a swap and other related classes
  */
 
-const BaseClass = require('./base_class')
-const Order = require('./order')
-const Util = require('./util')
+const { BaseClass, Order, Util } = require('@portaldefi/core')
 
 /**
  * An object mapping swap status strings to the expected order of transitions
@@ -37,47 +35,6 @@ const INSTANCES = new WeakMap()
  */
 module.exports = {
   /**
-   * Creates a swap from a pair of orders that were matched
-   *
-   * The protocol followed here is as follows:
-   * - The ID of the swap is the hash of the IDs of the orders
-   * - The maker becomes the secret holder
-   * - The taker becomes the secret seeker
-   *
-   * @param {Order} maker The maker of the order
-   * @param {Order} taker The taker of the order
-   * @param {Sdk} sdk The parent Sdk instance that is managing the swap
-   * @returns {Promise<Swap>}
-   */
-  fromOrders: async function (maker, taker, sdk) {
-    if (!(maker instanceof Order)) {
-      throw Error('expected maker to be an Order!')
-    } else if (!(taker instanceof Order)) {
-      throw Error('expected taker to be an Order!')
-    } else if (sdk == null) {
-      throw Error('expected third argument!')
-    }
-
-    return new Swap({
-      id: await Util.hash(maker.id, taker.id),
-      secretHolder: {
-        id: maker.uid,
-        oid: maker.id,
-        asset: maker.isAsk ? maker.baseAsset : maker.quoteAsset,
-        blockchain: maker.isAsk ? maker.baseNetwork : maker.quoteNetwork,
-        quantity: maker.isAsk ? maker.baseQuantity : maker.quoteQuantity
-      },
-      secretSeeker: {
-        id: taker.uid,
-        oid: taker.id,
-        asset: taker.isAsk ? taker.baseAsset : taker.quoteAsset,
-        blockchain: taker.isAsk ? taker.baseNetwork : taker.quoteNetwork,
-        quantity: taker.isAsk ? taker.baseQuantity : taker.quoteQuantity
-      }
-    }, sdk)
-  },
-
-  /**
    * Creates a Swap instance from a JSON object
    * @param {Object} obj The JSON representation of the swap
    * @param {Sdk} sdk The parent Sdk instance that is managing the swap
@@ -102,9 +59,10 @@ class Swap extends BaseClass {
   /**
    * Creates a new instance of a swap
    * @param {Object} props Properties of the instance
-   * @param {Sdk} sdk
+   * @param {Object} party Properties of the instance
+   * @param {String} party.id The unique identifier of party
    */
-  constructor (props, sdk) {
+  constructor (props, party) {
     if (props == null) {
       throw Error('no properties provided for swap!')
     } else if (props.id != null && typeof props.id !== 'string') {
@@ -125,7 +83,6 @@ class Swap extends BaseClass {
 
     super({ id: props.id || Util.uuid() })
 
-    this.sdk = sdk
     this.secretHolder = new Party(props.secretHolder, this)
     this.secretSeeker = new Party(props.secretSeeker, this)
 

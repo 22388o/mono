@@ -17,6 +17,7 @@ module.exports.UPGRADE = function (ws, ctx) {
     .on('error', onError)
     .on('created', onOrder)
     .on('opened', onOrder)
+    .on('match', onOrder)
     .on('closed', onOrder)
 
   ctx.swaps
@@ -31,6 +32,7 @@ module.exports.UPGRADE = function (ws, ctx) {
       .off('error', onError)
       .off('created', onOrder)
       .off('opened', onOrder)
+      .off('match', onOrder)
       .off('closed', onOrder)
 
     ctx.swaps

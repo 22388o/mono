@@ -14,15 +14,16 @@ const Lightning = require('./lightning')
  * @type {Blockchains}
  */
 module.exports = class Blockchains extends BaseClass {
-  constructor (sdk, props) {
+  constructor (props) {
     super({ id: 'blockchains' })
 
-    this.sdk = sdk
+    this.ethereum = new Ethereum(props.ethereum)
+      .on('log', (level, ...args) => this[level](...args))
+      .on('error', (err, ...args) => this.emit('error', err, ...args))
 
-    this.ethereum = new Ethereum(sdk, props.ethereum)
+    this.lightning = new Lightning(props.lightning)
       .on('log', (level, ...args) => this[level](...args))
-    this.lightning = new Lightning(sdk, props.lightning)
-      .on('log', (level, ...args) => this[level](...args))
+      .on('error', (err, ...args) => this.emit('error', err, ...args))
 
     Object.freeze(this)
   }
@@ -51,12 +52,10 @@ module.exports = class Blockchains extends BaseClass {
    * @returns {Blockchain[]}
    */
   async connect () {
-    const blockchains = await Promise.all([
-      this.ethereum.connect(),
-      this.lightning.connect()
-    ])
-    this.emit('connect', blockchains)
-    return blockchains
+    await this.ethereum.connect()
+    await this.lightning.connect()
+    this.emit('connect', this)
+    return this
   }
 
   /**
@@ -64,23 +63,9 @@ module.exports = class Blockchains extends BaseClass {
    * @returns {Blockchain[]}
    */
   async disconnect () {
-    const blockchains = await Promise.all([
-      this.ethereum.disconnect(),
-      this.lightning.disconnect()
-    ])
-    this.emit('disconnect', blockchains)
-    return blockchains
-  }
-
-  /**
-   * Iterates over all the blockchains
-   * @param {Function} fn The function that operates on each blockchain
-   * @returns {Blockchain[]}
-   */
-  forEach (fn) {
-    return [
-      this.ethereum,
-      this.lightning
-    ].forEach(fn)
+    await this.ethereum.disconnect(),
+    await this.lightning.disconnect()
+    this.emit('disconnect', this)
+    return this
   }
 }

@@ -14,8 +14,6 @@ module.exports = class Coordinator extends BaseClass {
   constructor (props, peer) {
     if (props == null) {
       throw Error('expected props to be provided!')
-    } else if (props.id == null || typeof props.id !== 'string') {
-      throw Error('expected props.id to be a string!')
     } else if (props.hostname != null && typeof props.hostname !== 'string') {
       throw Error('expected props.hostname to be a valid hostname/IP address!')
     } else if (props.port != null && typeof props.port !== 'number') {
@@ -31,13 +29,54 @@ module.exports = class Coordinator extends BaseClass {
     this.pathname = props.pathname
 
     this.peer = peer
-    this.websockets = new Set()
+    this.websocket = null
 
-    Object.freeze(this)
+    Object.seal(this)
   }
 
+  /**
+   * Connects to the coordinator
+   * @returns {Promise<Void>}
+   */
   connect () {
+    const { hostname, port, pathname } = this
+    const url = `ws://${hostname}:${port}${pathname}/${this.peer.id}`
 
+    this.websocket = new WebSocket(url)
+
+    return new Promise((resolve, reject) => this.websocket
+      .once('error', reject)
+      .once('open', () => {
+        this.info('connected', this)
+        this.emit('connected', this)
+        resolve()
+      })
+      .once('close', () => {
+        this.info('disconnected', this)
+        this.emit('disconnected', this)
+      })
+      .on('message', data => {
+        let event, arg
+        try {
+          arg = JSON.parse(data)
+
+          if (arg['@type'] != null && arg.status != null) {
+            event = `${arg['@type'].toLowerCase()}.${arg.status}`
+            arg = [arg]
+          } else if (arg['@event'] != null && arg['@data'] != null) {
+            event = arg['@event']
+            arg = arg['@data']
+          } else {
+            event = 'message'
+            arg = [arg]
+          }
+        } catch (err) {
+          event = 'error'
+          arg = err
+        } finally {
+          this.emit(event, ...arg)
+        }
+      }))
   }
 
   proxyHttp (req, res) {
@@ -94,11 +133,7 @@ module.exports = class Coordinator extends BaseClass {
 
     return new Promise((resolve, reject) => websocket
       .once('error', reject)
-      .once('open', () => {
-        this.websockets.add(websocket)
-        resolve()
-      })
-      .once('close', () => this.websockets.delete(websocket))
+      .once('open', resolve)
       .on('message', data => {
         let arg
         try {
@@ -111,12 +146,13 @@ module.exports = class Coordinator extends BaseClass {
       }))
   }
 
-  async disconnect () {
-    const promises = []
-    for (const websocket of this.websockets) {
-      promises.push(websocket.close())
-    }
-    await Promise.all(promises)
-    this.emit('disconnected')
+  /**
+   * Disconnects from the coordinator
+   * @returns {Promise<Void>}
+   */
+  disconnect () {
+    return new Promise((resolve, reject) => this.websocket
+      .once('close', resolve)
+      .once('error', reject))
   }
 }

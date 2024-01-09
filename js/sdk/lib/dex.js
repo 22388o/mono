@@ -9,17 +9,19 @@ const { BaseClass, Util: { uuid } } = require('@portaldefi/core')
  * @type {Dex}
  */
 module.exports = class Dex extends BaseClass {
-  constructor (sdk) {
-    super()
+  constructor (props) {
+    if (props.network == null) {
+      throw Error('expected props.network to be a valid network client!')
+    } else if (props.store == null) {
+      throw Error('expected props.store to be a valid store!')
+    }
 
-    this.sdk = sdk
-    // .on('order.created', (...args) => this.onOrderCreated(...args))
-    // .on('order.opened', (...args) => this.onOrderOpened(...args))
-    // .on('order.closed', (...args) => this.onOrderClosed(...args))
-    // .on('order.match', (...args) => this.onOrderMatch(...args))
-    // .on('order.error', (...args) => this.onOrderError(...args))
+    super({ id: 'dex' })
 
-    Object.seal(this)
+    this.network = props.network
+    this.store = props.store
+
+    Object.freeze(this)
   }
 
   /**
@@ -44,12 +46,12 @@ module.exports = class Dex extends BaseClass {
    * @returns {Promise<Object>}
    */
   submitLimitOrder (order) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'PUT',
       path: '/api/v1/dex/limit'
     }, {
       id: uuid(),
-      uid: this.sdk.id,
+      uid: this.network.uid,
       side: order.side,
       baseAsset: order.baseAsset,
       baseNetwork: order.baseNetwork,
@@ -66,7 +68,7 @@ module.exports = class Dex extends BaseClass {
    * @returns {Promise<Object>}
    */
   cancelLimitOrder (order) {
-    return this.sdk.network.request({
+    return this.network.request({
       method: 'DELETE',
       path: '/api/v1/dex/limit'
     }, {

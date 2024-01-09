@@ -2,19 +2,9 @@
  * @file The Portal SDK
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const { BaseClass, Client, Store } = require('@portaldefi/core')
 const Dex = require('./dex')
-const Network = require('./network')
 const Swaps = require('./swaps')
-
-/**
- * Creates and returns an event-handler that forwards the specified event
- * @param {String} event The name of the event
- * @returns {Function}
- */
-function forwardEvent (self, event) {
-  return function (...args) { self.emit(event, ...args) }
-}
 
 /**
  * The Portal SDK
@@ -25,53 +15,72 @@ module.exports = class Sdk extends BaseClass {
    * Creates a new instance of the Portal SDK
    * @param {Object} props Properties of the instance
    * @param {String} props.id Unique identifier of the instance
-   * @param {Object} props.network Properties of the network
    * @param {Object} props.dex Properties of the dex
    * @param {Object} props.swaps Properties of the swaps
    */
   constructor (props) {
     super({ id: props.id })
 
+    const bubbleEvents = emitter => emitter
+      .on('log', (level, ...args) => this[level](...args))
+      .on('error', (err, ...args) => this.emit('error', err, ...args))
+
     /**
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = new Network(this, props)
-      .on('order.created', forwardEvent(this, 'order.created'))
-      .on('order.opened', forwardEvent(this, 'order.opened'))
-      .on('order.closed', forwardEvent(this, 'order.closed'))
+    this.network = bubbleEvents(new Client({
+      id: 'network',
+      uid: props.id,
+      hostname: props.hostname,
+      port: props.port,
+      pathname: props.pathname
+    }))
+
+    // Forward network events
+    const forward = event => [event, (...args) => this.emit(event, ...args)]
+    this.network
+      // DEX events
+      .on(...forward('order.created'))
+      .on(...forward('order.opened'))
+      .on(...forward('order.closed'))
+      // Swap events
+      .on(...forward('swap.received'))
+      .on(...forward('swap.created'))
+      .on(...forward('swap.holder.invoice.created'))
+      .on(...forward('swap.holder.invoice.sent'))
+      .on(...forward('swap.seeker.invoice.created'))
+      .on(...forward('swap.seeker.invoice.sent'))
+      .on(...forward('swap.holder.invoice.paid'))
+      .on(...forward('swap.seeker.invoice.paid'))
+      .on(...forward('swap.holder.invoice.settled'))
+      .on(...forward('swap.seeker.invoice.settled'))
+
+    /**
+     * Interface to the store
+     * @type {Store}
+     */
+    this.store = bubbleEvents(new Store(props.store))
 
     /**
      * Interface to the decentralized exchange
      * @type {Dex}
      */
-    this.dex = new Dex(this, props.dex)
+    this.dex = bubbleEvents(new Dex({
+      id: 'dex',
+      network: this.network,
+      store: this.store
+    }))
 
     /**
      * Interface to atomic swaps
      * @type {Swaps}
      */
-    const onSwap = swap => this.emit(`swap.${swap.status}`, swap)
-    this.swaps = new Swaps(this, props.swaps)
-      .on('swap.received', onSwap)
-      .on('swap.created', onSwap)
-      .on('swap.holder.invoice.created', onSwap)
-      .on('swap.holder.invoice.sent', onSwap)
-      .on('swap.seeker.invoice.created', onSwap)
-      .on('swap.seeker.invoice.sent', onSwap)
-      .on('swap.holder.invoice.paid', onSwap)
-      .on('swap.seeker.invoice.paid', onSwap)
-      .on('swap.holder.invoice.settled', onSwap)
-      .on('swap.seeker.invoice.settled', onSwap)
-      .on('swap.completed', onSwap)
-
-    // Bubble up the log and error events
-    const bubbleErrorsAndLogs = emitter => emitter
-      .on('error', (err, ...args) => this.emit('error', err, ...args))
-      .on('log', (level, ...args) => this[level](...args))
-    bubbleErrorsAndLogs(this.network)
-    bubbleErrorsAndLogs(this.dex)
-    bubbleErrorsAndLogs(this.swaps)
+    this.swaps = bubbleEvents(new Swaps({
+      id: 'swaps',
+      network: this.network,
+      store: this.store
+    }))
 
     Object.freeze(this)
   }
@@ -92,7 +101,6 @@ module.exports = class Sdk extends BaseClass {
     return Object.assign(super.toJSON(), {
       network: this.network,
       store: this.store,
-      blockchains: this.blockchains,
       dex: this.dex,
       swaps: this.swaps
     })
@@ -100,39 +108,31 @@ module.exports = class Sdk extends BaseClass {
 
   /**
    * Starts the Portal SDK
-   * @returns {Sdk}
+   * @returns {Promise<Sdk>}
    */
-  start () {
-    const operations = [
-      this.network.connect(),
-      this.dex.open(),
-      this.swaps.sync()
-    ]
+  async start () {
+    this.info('starting', this)
+    await this.network.connect()
+    await this.dex.open()
+    await this.swaps.sync()
+    this.info('start', this)
 
-    return Promise.all(operations)
-      .then(([network, dex, swaps]) => {
-        this.info('start', this)
-        this.emit('start')
-        return this
-      })
+    this.emit('start')
+    return this
   }
 
   /**
    * Gracefully closes the Portal SDK.
-   * @returns {Sdk}
+   * @returns {Promise<Sdk>}
    */
-  stop () {
-    const operations = [
-      this.network.disconnect(),
-      this.dex.close(),
-      this.swaps.sync()
-    ]
+  async stop () {
+    this.info('stopping', this)
+    await this.network.disconnect(),
+    await this.dex.close(),
+    await this.swaps.sync()
+    this.info('stop', this)
 
-    return Promise.all(operations)
-      .then(([network, dex, swaps]) => {
-        this.info('stop', this)
-        this.emit('stop')
-        return this
-      })
+    this.emit('stop')
+    return this
   }
 }
