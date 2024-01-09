@@ -8,6 +8,9 @@ import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import { walletStore } from "../../syncstore/walletstore";
 import { activitiesStore } from "../../syncstore/activitiesstore";
 
+/**
+ * Swap Form Component which handles swap
+ */
 export const SwapCreate = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const ASSET_TYPES = globalWallet.assets;
@@ -40,16 +43,25 @@ export const SwapCreate = () => {
     core();
   }, []);
 
+  /**
+   * Handler for input base quantity
+   */
   const onInputBaseQuantity = useCallback((e) => {
     if(e.target.value < 0) return;
     setBaseQuantity(e.target.value);
   }, [curPrices, ASSET_TYPES, baseAsset, quoteAsset]);
 
+  /**
+   * Handler for input quote quantity
+   */
   const onInputQuoteQuantity = useCallback((e) => {
     if(e.target.value < 0) return;
     setQuoteQuantity(e.target.value);
   }, [curPrices, ASSET_TYPES, quoteAsset, baseAsset]);
 
+  /**
+   * Handles swap order
+   */
   const onOrderSwap = useCallback(async (order) => {
     const randomValues = crypto.getRandomValues(new Uint8Array(32))
     const secretHex = [...randomValues]
@@ -65,6 +77,12 @@ export const SwapCreate = () => {
     await thenOrderSwap(order, secretHex, secretHash);
   }, [crypto, ASSET_TYPES, baseAsset, baseQuantity, quoteQuantity, quoteAsset]);
 
+  /**
+   * Process Order
+   * @param {Object} order 
+   * @param {string} secret 
+   * @param {string} secretHash 
+   */
   const thenOrderSwap = async (order, secret, secretHash) => {
     const ask = order.side=='ask';
     const baseA = order.baseAsset ? order.baseAsset : ASSET_TYPES[baseAsset].type;
@@ -153,6 +171,9 @@ export const SwapCreate = () => {
     setQuoteQuantity(ASSET_TYPES[quoteAsset].isNFT ? 1 : 0);
   }
 
+  /**
+   * Handler to exchange base & quote coin type
+   */
   const onExchangeCoinType = useCallback(() => {
     const tBase = baseQuantity, tQuote = quoteQuantity;
     const aBase = baseAsset, aQuote = quoteAsset;

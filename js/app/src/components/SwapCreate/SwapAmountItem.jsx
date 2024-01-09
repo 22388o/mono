@@ -3,6 +3,15 @@ import styles from '../../styles/SwapCreate.module.css'
 import { Grid, Button } from '@mui/material'
 import { walletStore } from '../../syncstore/walletstore'
 
+/**
+ * Component for swap form with input, coin type
+ * @param {string} assetId
+ * @param {number} amount
+ * @param {string} className
+ * @param {function} onAmountChange
+ * @param {number} unitPrice
+ * @param {number} availQty
+ */
 export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, unitPrice, availQty }) => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState)
   const asset = globalWallet.assets[assetId]

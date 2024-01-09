@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ActivityTab component test renders component 1`] = `
+<div>
+  <div
+    class="MuiStack-root css-nen11g-MuiStack-root"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-1603n5b-MuiTypography-root"
+    >
+      No Activities
+    </p>
+  </div>
+</div>
+`;

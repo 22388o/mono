@@ -6,6 +6,9 @@ import styles from '../styles/SwapHome.module.css'
 import { SwapCreate } from './SwapCreate/SwapCreate'
 import { WalletInfoContainer } from './WalletInfoContainer'
 
+/**
+ * Swap Page Component
+ */
 export const SwapHome = () => {
   return (
     <Grid container direction='column' sx={{backgroundColor:'#101010'}}>
