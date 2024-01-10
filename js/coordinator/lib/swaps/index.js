@@ -2,16 +2,29 @@
  * @file Exposes all in-progress atomic swaps
  */
 
-const { BaseClass, Swap } = require('@portaldefi/core')
+const { BaseClass } = require('@portaldefi/core')
+const Swap = require('./swap')
 
 /**
  * Exposes all in-progress atomic swaps
  * @type {Swaps}
  */
 module.exports = class Swaps extends BaseClass {
-  constructor () {
+  constructor (props) {
+    if (props == null) {
+      throw Error('no properties specified!')
+    } else if (props.dex == null) {
+      throw Error('expect props.dex to be a DEX instance!')
+    } else if (props.store == null) {
+      throw Error('expect props.store to be a Store instance!')
+    }
+
     super()
 
+    // Listen for matched orders from the dex to create swaps
+    props.dex.on('match', (...args) => this.fromOrders(...args))
+
+    this.store = props.store
     this.swaps = new Map()
 
     Object.freeze(this)
@@ -23,22 +36,21 @@ module.exports = class Swaps extends BaseClass {
    * @param {Order|Object} taker The taker side of the order
    * @returns {Promise<Swap>}
    */
-  fromOrders (maker, taker) {
-    return new Promise((resolve, reject) => {
-      try {
-        const swap = Swap.fromOrders(maker, taker, this.ctx)
+  async fromOrders (maker, taker) {
+    try {
+      const swap = await Swap.fromOrders(maker, taker)
 
-        if (this.swaps.has(swap.id)) {
-          reject(Error(`swap "${swap.id}" already exists!`))
-        } else {
-          this.swaps.set(swap.id, swap)
-          this.emit(swap.status, swap)
-          resolve(swap)
-        }
-      } catch (err) {
-        reject(err)
+      if (this.swaps.has(swap.id)) {
+        throw Error(`swap "${swap.id}" already exists!`)
       }
-    })
+
+      this.swaps.set(swap.id, swap)
+      this.emit(swap.status, swap)
+      return swap
+    } catch (err) {
+      this.error('fromOrders', err, maker, taker, this)
+      this.emit('error', err, maker, taker, this)
+    }
   }
 
   /**

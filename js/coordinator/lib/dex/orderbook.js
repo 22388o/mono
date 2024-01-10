@@ -139,9 +139,11 @@ module.exports = class Orderbook extends BaseClass {
    * @returns {Promise<Order>}
    */
   _trigger (order) {
-    this._id = this._id || setImmediate(() => this._execute())
-    this.emit('created', order)
-    return Promise.resolve(order)
+    return new Promise((resolve, reject) => {
+      this._id = this._id || setImmediate(() => this._execute())
+      resolve(order)
+      this.emit('created', order)
+    })
   }
 
   /**

@@ -30,7 +30,7 @@ function encodeHash (hash) {
  * @type {Lightning}
  */
 module.exports = class Lightning extends Blockchain {
-  constructor (sdk, props) {
+  constructor (props) {
     super({ id: 'lightning' })
 
     if (props == null) {

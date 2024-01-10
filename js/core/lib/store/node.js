@@ -2,7 +2,7 @@
  * @file Store implementation for node.js
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const BaseClass = require('../base_class')
 
 /**
  * A weak-map storing private data for each instance of the class
@@ -38,7 +38,7 @@ module.exports = class Store extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    return Object.assign(super.toJSON(), {})
+    return Object.assign(super.toJSON(), { })
   }
 
   /**

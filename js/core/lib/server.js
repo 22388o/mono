@@ -49,12 +49,11 @@ module.exports = class Server extends BaseClass {
     const port = props.port || 0
     const api = buildApi(props.api)
     const root = props.root
-    const ctx = props.ctx || {}
 
     const server = http.createServer({ IncomingMessage, ServerResponse })
     const websocket = new WebSocketServer({ noServer: true })
 
-    INSTANCES.set(this, { hostname, port, api, root, ctx, server, websocket })
+    INSTANCES.set(this, { hostname, port, api, root, server, websocket })
   }
 
   /**
@@ -245,7 +244,7 @@ module.exports = class Server extends BaseClass {
     req.user = pathname.substr(pathname.lastIndexOf('/') + 1)
 
     // Route the request
-    const { api, ctx, websocket } = INSTANCES.get(this)
+    const { api, websocket } = INSTANCES.get(this)
 
     // Parse the path components in reverse order until a match is obtained
     let route = req.parsedUrl.pathname
@@ -278,21 +277,27 @@ module.exports = class Server extends BaseClass {
           return new Promise((resolve, reject) => {
             const buf = Buffer.from(JSON.stringify(obj))
             const opts = { binary: false }
-
-            this.info('ws.send', ws, obj)
-            return ws._send(buf, opts, err => err ? reject(err) : resolve())
+            ws._send(buf, opts, err => {
+              if (err != null) {
+                this.error('ws.send', err, obj, ws)
+                reject(err)
+              } else {
+                this.info('ws.send', obj, ws)
+                resolve()
+              }
+            })
           })
         }
 
         ws.toJSON = function () {
-          return { '@type': 'websocket', user: ws.user, route }
+          return { '@type': 'WebSocket', user: ws.user, route }
         }
         ws[Symbol.for('nodejs.util.inspect.custom')] = function () {
           return this.toJSON()
         }
 
         this.info('ws.open', ws)
-        handler.UPGRADE(ws, ctx)
+        handler.UPGRADE(ws, this)
       })
     } else {
       socket.destroy(Error(`route ${route} does not support UPGRADE!`))
@@ -306,7 +311,6 @@ module.exports = class Server extends BaseClass {
    * @returns {Void}
    */
   _handleApi (req, res) {
-    const { ctx } = INSTANCES.get(this)
     const opts = Object.assign({}, DEFAULT_HANDLER_OPTS, req.handler.opts)
 
     if (!opts.isUnauthenticated) {
@@ -323,35 +327,36 @@ module.exports = class Server extends BaseClass {
       }
     }
 
-    if (opts.autoParse) {
-      // Collect the incoming HTTP body
-      const chunks = []
-      req
-        .on('data', chunk => chunks.push(chunk))
-        .once('end', () => {
-          // Parse any incoming JSON object and stash it at req.json for later use
-          const str = Buffer.concat(chunks).toString('utf8')
-
-          if (str === '') {
-            req.json = {}
-          } else {
-            try {
-              req.json = JSON.parse(str)
-            } catch (e) {
-              const err = new Error(`unexpected non-JSON response ${str}`)
-              res.send(err)
-              this.error('http.api', err, req, res)
-              return
-            }
-          }
-
-          this.info('http.api', req)
-          req.handler(req, res, ctx)
-        })
-    } else {
+    if (!opts.autoParse) {
       this.info('http.api', req)
-      req.handler(req, res, ctx)
+      req.handler(req, res, this)
+      return
     }
+
+    // Collect the incoming HTTP body
+    const chunks = []
+    req
+      .on('data', chunk => chunks.push(chunk))
+      .once('end', () => {
+        // Parse any incoming JSON object and stash it at req.json for later use
+        const str = Buffer.concat(chunks).toString('utf8')
+
+        if (str === '') {
+          req.json = {}
+        } else {
+          try {
+            req.json = JSON.parse(str)
+          } catch (e) {
+            const err = new Error(`unexpected non-JSON response ${str}`)
+            res.send(err)
+            this.error('http.api', err, req, res)
+            return
+          }
+        }
+
+        this.info('http.api', req)
+        req.handler(req, res, this)
+      })
   }
 
   /**
@@ -561,12 +566,12 @@ class ServerResponse extends http.ServerResponse {
  * @example
  * {
  *   '/api/v1/orderbook': {
- *     PUT: function (req, res, ctx) { ... },
- *     GET: function (req, res, ctx) { ... },
- *     DELETE: function (req, res, ctx) { ... }
+ *     PUT: function (req, res, server) { ... },
+ *     GET: function (req, res, server) { ... },
+ *     DELETE: function (req, res, server) { ... }
  *   },
- *   '/api/v1/marketdata': function (req, res, ctx) { ... }
- *   '/api/v1/btc': function (req, res, ctx) { ... }
+ *   '/api/v1/marketdata': function (req, res, server) { ... }
+ *   '/api/v1/btc': function (req, res, server) { ... }
  * }
  *
  * @param {String} path Path to the API directory

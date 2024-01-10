@@ -2,8 +2,9 @@
  * @file A peer node
  */
 
-const Coordinator = require('./coordinator')
-const { Server } = require('@portaldefi/core')
+const Blockchains = require('./blockchains')
+const Swaps = require('./swaps')
+const { Client, Server, Store } = require('@portaldefi/core')
 const { join } = require('path')
 
 /**
@@ -28,33 +29,82 @@ module.exports = class Peer extends Server {
       throw Error('expect props.coordinator to be a object!')
     }
 
-    const serverProps = {
+    super({
       id: props.id,
       hostname: props.hostname,
       port: props.port,
       root: props.root,
-      api: join(__dirname, 'api'),
-      ctx: {}
-    }
+      api: join(__dirname, 'api')
+    })
 
-    super(serverProps)
-
-    // initialize the coordinator client
-    const coordinatorProps = {
-      id: 'coordinator',
-      hostname: props.coordinator.hostname,
-      port: props.coordinator.port,
-      pathname: props.coordinator.pathname
-    }
-    this.coordinator = serverProps.ctx.coordinator = new Coordinator(coordinatorProps, this)
+    const bubbleEvents = emitter => emitter
       .on('log', (level, ...args) => this[level](...args))
       .on('error', (err, ...args) => this.emit('error', err, ...args))
 
-    Object.seal(this)
+    // initialize the client
+    this.network = bubbleEvents(new Client({
+      id: 'network',
+      uid: props.id,
+      hostname: props.coordinator.hostname,
+      port: props.coordinator.port,
+      pathname: props.coordinator.pathname
+    }))
+
+    // initialize the store
+    this.store = bubbleEvents(new Store(props.store))
+
+    // initialize the blockchains
+    this.blockchains = bubbleEvents(new Blockchains({
+      ethereum: props.blockchains.ethereum,
+      lightning: props.blockchains.lightning,
+      network: this.network
+    }))
+
+    // initialize the swaps
+    this.swaps = bubbleEvents(new Swaps({
+      network: this.network,
+      store: this.store,
+      blockchains: this.blockchains
+    }))
+
+    Object.freeze(this)
   }
 
-  stop () {
-    return this.coordinator.disconnect()
-      .then(() => super.stop())
+  /**
+   * Returns the path to the default websocket for receiving updates
+   * @returns {String}
+   */
+  get pathname () {
+    return '/api/v1'
+  }
+
+  /**
+   * Returns the JSON representation of the instance
+   * @returns {Object}
+   */
+  toJSON () {
+    return Object.assign(super.toJSON(), { pathname: this.pathname })
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async start () {
+    await this.store.open()
+    await this.swaps.sync()
+    await this.blockchains.connect()
+    await this.network.connect()
+    return super.start()
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async stop () {
+    await this.network.disconnect()
+    await this.blockchains.disconnect()
+    await this.swaps.sync()
+    await this.store.close()
+    return super.stop()
   }
 }

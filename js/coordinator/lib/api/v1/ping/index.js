@@ -12,10 +12,10 @@ const Handlers = module.exports
 * Responds to an incoming ping
 * @param {HttpRequest} req The incoming HTTP request
 * @param {HttpResponse} res The outgoing HTTP response
-* @param {HttpContext} ctx The HTTP request context
+* @param {HttpServer} server The HTTP Server that received the request
 * @returns {Void}
 */
-Handlers.GET = function (req, res, ctx) {
+Handlers.GET = function (req, res, server) {
   const now = Date.now()
   res.send({ '@type': 'Pong', now })
 }
@@ -25,10 +25,10 @@ Handlers.GET.opts = { isUnauthenticated: true }
  * Responds to an incoming ping
  * @param {HttpRequest} req The incoming HTTP request
  * @param {HttpResponse} res The outgoing HTTP response
- * @param {HttpContext} ctx The HTTP request context
+ * @param {HttpServer} server The HTTP Server that received the request
  * @returns {Void}
  */
-Handlers.POST = function (req, res, ctx) {
+Handlers.POST = function (req, res, server) {
   const ping = req.json
   const now = Date.now()
   const skew = now - ping.now

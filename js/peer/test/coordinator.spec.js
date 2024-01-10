@@ -4,7 +4,7 @@
 
 const Client = require('../lib/coordinator')
 
-describe('Client', function () {
+describe('Coordinator', function () {
   describe('instantiation', function () {
     it('must throw when instantiated without required arguments', function () {
       expect(() => new Client()).to.throw()

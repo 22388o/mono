@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@portaldefi/core": "file:../core",
+    "web3": "^4.3.0",
     "ws": "^8.15.1"
   },
   "devDependencies": {

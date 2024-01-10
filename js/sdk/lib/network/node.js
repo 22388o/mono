@@ -17,7 +17,7 @@ module.exports = class Network extends BaseClass {
     this.sdk = sdk
     this.hostname = props.hostname
     this.port = props.port
-    this.pathname = props.pathname || '/api/v1/updates'
+    this.pathname = props.pathname || '/api/v1'
     this.websocket = null
 
     Object.seal(this)

@@ -12,18 +12,23 @@ const WebSocket = require('ws')
  */
 module.exports = class Client extends BaseClass {
   constructor (props) {
-    props = Object.assign({
-      hostname: '127.0.0.1',
-      port: 80,
-      pathname: '/api/v1/updates'
-    }, props)
-
-    if (props.id == null || typeof props.id !== 'string') {
-      throw Error('expected props.id to be a string!')
+    if (props == null) {
+      throw Error('expected props to be provided!')
+    } else if (props.id == null || typeof props.id !== 'string') {
+      throw Error('expected props.id to be a valid identifier!')
+    } else if (props.uid == null || typeof props.uid !== 'string') {
+      throw Error('expected props.uid to be a valid identifier!')
+    } else if (props.hostname != null && typeof props.hostname !== 'string') {
+      throw Error('expected props.hostname to be a valid hostname/IP address!')
+    } else if (props.port != null && typeof props.port !== 'number') {
+      throw Error('expected props.port to be a number between 0 and 65535!')
+    } else if (props.pathname == null || typeof props.pathname !== 'string') {
+      throw Error('expected props.pathname to a valid API path!')
     }
 
     super({ id: props.id })
 
+    this.uid = props.uid
     this.hostname = props.hostname
     this.port = props.port
     this.pathname = props.pathname
@@ -53,43 +58,44 @@ module.exports = class Client extends BaseClass {
   }
 
   /**
-   * Connects to the peer network.
-   *
-   * A websocket connection is established with the remote peer. The connection
-   * is currently authenticated by an identifier of the user.
+   * Opens a connection to the remote end
    * @returns {Promise<Void>}
    */
   connect () {
     return new Promise((resolve, reject) => {
-      const { hostname, port, pathname } = this
-      const url = `ws://${hostname}:${port}${pathname}/${this.id}`
+      const { hostname, port, pathname, uid } = this
+      const url = `ws://${hostname}:${port}${pathname}/${uid}`
+      const ws = new WebSocket(url)
 
-      this.websocket = new WebSocket(url)
-        .on('open', () => {
-          this.info('connected', this)
-          this.emit('connected', this)
-          resolve(this)
-        })
-        .on('error', reject)
-        .on('message', (...args) => this._onMessage(...args))
-        .on('close', () => {
-          this.websocket = null
-          this.info('disconnected', this)
-          this.emit('disconnected', this)
-        })
+      ws.once('error', reject)
+
+      ws.once('open', () => {
+        this.websocket = ws
+        this.info('connected', this)
+        this.emit('connected', this)
+        resolve(this)
+      })
+
+      ws.once('close', () => {
+        this.websocket = null
+        this.info('disconnected', this)
+        this.emit('disconnected', this)
+      })
+
+      ws.on('message', (...args) => this._onMessage(...args))
     })
   }
 
   /**
    * Performs an HTTP request and returns the response
    * @param {Object} args Arguments for the operation
-   * @param {Object} [data] Data to be sent as part of the request
+   * @param {Object} [json] Data to be sent as part of the request
    * @returns {Promise<Object>}
    */
-  request (args, data) {
+  request (args, json) {
     return new Promise((resolve, reject) => {
-      const creds = `${this.id}:${this.id}`
-      const buf = (data && JSON.stringify(data)) || ''
+      const creds = `${this.uid}:${this.uid}`
+      const buf = (json && JSON.stringify(json)) || ''
       const opts = Object.assign(args, {
         hostname: this.hostname,
         port: this.port,
@@ -104,40 +110,128 @@ module.exports = class Client extends BaseClass {
           /* eslint-enable quote-props */
         })
       })
+      const req = this._request(opts, json)
 
-      http.request(opts)
-        .once('abort', () => reject(new Error('aborted')))
-        .once('error', err => reject(err))
+      req
+        .once('abort', () => {
+          const err = new Error('aborted')
+          this.error('http.error', err, req, this)
+          this.emit('error', err, req, this)
+          reject(err)
+        })
+        .once('error', err => {
+          this.error('http.error', err, req, this)
+          this.emit('error', err, req, this)
+          reject(err)
+        })
         .once('response', res => {
           const { statusCode } = res
           const contentType = res.headers['content-type']
 
           if (statusCode !== 200 && statusCode !== 400) {
-            return reject(new Error(`unexpected status code ${statusCode}`))
+            const err = new Error(`unexpected status code ${statusCode}`)
+            this.error('http.error', err, req, this)
+            this.emit('error', err, req, this)
+            return reject(err)
           } else if (!contentType.startsWith('application/json')) {
-            return reject(new Error(`unexpected content-type ${contentType}`))
+            const err = new Error(`unexpected content-type ${contentType}`)
+            this.error('http.error', err, req, this)
+            this.emit('error', err, req, this)
+            return reject(err)
           } else {
             const chunks = []
             res
               .on('data', chunk => chunks.push(chunk))
-              .once('error', err => reject(err))
+              .once('error', err => {
+                this.error('http.error', err, req, res, this)
+                this.emit('error', err, req, res, this)
+                reject(err)
+              })
               .once('end', () => {
                 const str = Buffer.concat(chunks).toString('utf8')
-                let obj = null
 
                 try {
-                  obj = JSON.parse(str)
+                  res.json = JSON.parse(str)
+                  if (statusCode === 200) {
+                    this.info('http.end', req, res, this)
+                    resolve(res.json)
+                  } else {
+                    const err = new Error(res.json.message)
+                    this.error('http.error', err, req, res, this)
+                    this.emit('error', err, req, res, this)
+                    reject(err)
+                  }
                 } catch (err) {
-                  return reject(new Error(`malformed JSON response "${str}"`))
+                  this.error('http.error', str, req, res, this)
+                  this.emit('error', err, str, req, res, this)
+                  reject(new Error(`malformed JSON response "${str}"`))
                 }
-
-                statusCode === 200
-                  ? resolve(obj)
-                  : reject(new Error(obj.message))
               })
           }
         })
         .end(buf)
+
+      this.info('http.start', req, this)
+    })
+  }
+
+  /**
+   * Proxies HTTP requests to the remote end
+   * @param {IncomingMessage} req The HTTP request to be proxied
+   * @param {ServerResponse} res The HTTP response to be proxied
+   * @returns {Promise<Void>}
+   */
+  proxy (req, res) {
+    return new Promise((resolve, reject) => {
+      req.once('error', err => {
+        this.error('proxy.error', err, req, res, this)
+        this.emit('error', err, req, res, this)
+        reject(err)
+      })
+      res.once('error', err => {
+        this.error('proxy.error', err, req, res, this)
+        this.emit('error', err, req, res, this)
+        reject(err)
+      })
+
+      res.once('finish', () => {
+        this.info('proxy.end', req, res, this)
+        resolve()
+      })
+
+      const creds = `${this.uid}:${this.uid}`
+      const opts = {
+        hostname: this.hostname,
+        port: this.port,
+        method: req.method,
+        path: req.url,
+        headers: Object.assign({}, req.headers, {
+          authorization: `Basic ${Buffer.from(creds).toString('base64')}`
+        })
+      }
+      const proxyReq = this._request(opts)
+        .once('abort', () => res.destroy(Error('proxy aborted!')))
+        .once('error', err => res.destroy(err))
+        .once('response', proxyRes => {
+          // proxy the incoming response
+          res.statusCode = proxyRes.statusCode
+          for (const header in proxyRes.headers) {
+            res.setHeader(header, proxyRes.headers[header])
+          }
+
+          proxyRes
+            .once('error', err => res.destroyed || res.destroy(err))
+            .pipe(res)
+            .once('error', err => proxyRes.destroyed || proxyRes.destroy(err))
+        })
+
+      // proxy the incoming request
+      req
+        .once('error', err => proxyReq.destroyed || proxyReq.destroy(err))
+        .pipe(proxyReq)
+        .once('error', err => req.destroyed || req.destroy(err))
+
+      this.info('proxy.start', req, proxyReq, this)
     })
   }
 
@@ -160,13 +254,39 @@ module.exports = class Client extends BaseClass {
    */
   disconnect () {
     return new Promise((resolve, reject) => this.websocket
-      .once('error', reject)
-      .once('close', () => {
-        this.info('disconnected', this)
-        this.emit('disconnected', this)
-        resolve(this)
-      })
+      .once('error', err => reject(err))
+      .once('close', () => resolve(this))
       .close())
+  }
+
+  /**
+   * Returns a ClientRequest augmented for debugging/logging
+   * @param {Object} args The arguments for the http request
+   * @param {Object} [json] JSON to be sent as part of the request
+   * @returns {ClientRequest}
+   */
+  _request (args, json) {
+    const req = http.request(args)
+      .once('response', res => {
+        res.toJSON = function () {
+          const { statusCode, headers, json } = res
+          return { '@type': 'HttpResponse', statusCode, headers, json }
+        }
+
+        res[Symbol.for('nodejs.util.inspect.custom')] = function () {
+          return this.toJSON()
+        }
+      })
+
+    req.toJSON = function () {
+      return { '@type': 'HttpRequest', req: { ...args, json } }
+    }
+
+    req[Symbol.for('nodejs.util.inspect.custom')] = function () {
+      return this.toJSON()
+    }
+
+    return req
   }
 
   /**
@@ -182,9 +302,6 @@ module.exports = class Client extends BaseClass {
       if (arg['@type'] != null && arg.status != null) {
         event = `${arg['@type'].toLowerCase()}.${arg.status}`
         arg = [arg]
-      } else if (arg['@event'] != null && arg['@data'] != null) {
-        event = arg['@event']
-        arg = arg['@data']
       } else {
         event = 'message'
         arg = [arg]
@@ -193,6 +310,7 @@ module.exports = class Client extends BaseClass {
       event = 'error'
       arg = err
     } finally {
+      this.info('message', event, ...arg)
       this.emit(event, ...arg)
     }
   }
