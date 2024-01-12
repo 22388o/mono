@@ -46,7 +46,7 @@ export const ActivityTab = () => {
             <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
             <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset}</Typography>
           </Stack>
-          { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={styles['cancel-btn']}>
+          { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={`${styles['cancel-btn']} cancel-btn`}>
             Cancel
           </Button></span> }
         </Stack>
