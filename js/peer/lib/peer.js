@@ -62,6 +62,7 @@ module.exports = class Peer extends Server {
 
     // initialize the swaps
     this.swaps = bubbleEvents(new Swaps({
+      uid: props.id,
       network: this.network,
       store: this.store,
       blockchains: this.blockchains

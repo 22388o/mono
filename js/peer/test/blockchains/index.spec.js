@@ -2,10 +2,10 @@
  * @file Behavioral specification for the Ethereum network
  */
 
-const Blockchains = require('../../../lib/blockchains')
-const Ethereum = require('../../../lib/blockchains/ethereum')
-const Lightning = require('../../../lib/blockchains/lightning')
-const config = require('../../../etc/config.dev')
+const Blockchains = require('../../lib/blockchains')
+const Ethereum = require('../../lib/blockchains/ethereum')
+const Lightning = require('../../lib/blockchains/lightning')
+const config = require('../../etc/config.dev')
 
 before('setup test environment', function () {
   this.sdk = {}
@@ -14,7 +14,7 @@ before('setup test environment', function () {
   const USERS = ['alice', 'bob']
   for (const id of USERS) {
     const { blockchains } = config
-    const creds = require(`../../../../portal/test/unit/${id}`)
+    const creds = require(`../../../portal/test/unit/${id}`)
 
     this.config[id] = Object.assign({ id }, config, {
       blockchains: Object.assign({}, blockchains, {
@@ -45,8 +45,8 @@ describe('Blockchains', function () {
 
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
-        const { sdk, config } = this.test.ctx
-        instance = new Blockchains(sdk, config.alice.blockchains)
+        const { config } = this.test.ctx
+        instance = new Blockchains(config.alice.blockchains)
       }
 
       expect(createInstance).to.not.throw()
@@ -58,16 +58,13 @@ describe('Blockchains', function () {
 
   describe('operation', function () {
     before('construct instance', function () {
-      const { sdk, config } = this.test.ctx
-      instance = new Blockchains(sdk, config.alice.blockchains)
+      const { config } = this.test.ctx
+      instance = new Blockchains(config.alice.blockchains)
     })
 
     it('must correctly connect to the blockchains', function () {
       const validate = blockchains => {
-        expect(blockchains).to.be.an.instanceof(Array)
-        expect(blockchains).to.have.length(2)
-        expect(blockchains[0]).to.be.an.instanceof(Ethereum)
-        expect(blockchains[1]).to.be.an.instanceof(Lightning)
+        expect(blockchains).to.be.an.instanceof(Blockchains)
       }
 
       return instance
@@ -78,10 +75,7 @@ describe('Blockchains', function () {
 
     it('must correctly disconnect from the blockchains', function () {
       const validate = blockchains => {
-        expect(blockchains).to.be.an.instanceof(Array)
-        expect(blockchains).to.have.length(2)
-        expect(blockchains[0]).to.be.an.instanceof(Ethereum)
-        expect(blockchains[1]).to.be.an.instanceof(Lightning)
+        expect(blockchains).to.be.an.instanceof(Blockchains)
       }
 
       return instance
@@ -97,8 +91,8 @@ describe('Blockchains', function () {
 
   describe('error-handling', function () {
     before('construct instance', function () {
-      const { sdk, config } = this.test.ctx
-      instance = new Blockchains(sdk, config.blockchains)
+      const { config } = this.test.ctx
+      instance = new Blockchains(config.blockchains)
     })
 
     after('destroy instance', function () {

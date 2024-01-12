@@ -279,7 +279,7 @@ module.exports = class Client extends BaseClass {
       })
 
     req.toJSON = function () {
-      return { '@type': 'HttpRequest', req: { ...args, json } }
+      return { '@type': 'HttpRequest', ...args, json }
     }
 
     req[Symbol.for('nodejs.util.inspect.custom')] = function () {

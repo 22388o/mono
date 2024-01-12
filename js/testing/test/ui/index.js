@@ -64,6 +64,7 @@ vite.build(config)
           process.exit(1)
         }
 
+        /* eslint-disable-next-line no-fallthrough */
         default:
           debug(`watcher got event ${event.code}`, event)
       }

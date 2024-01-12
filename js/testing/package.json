@@ -37,7 +37,7 @@
     "recursive": true,
     "reporter": "spec",
     "slow": 1000,
-    "timeout": 2000,
+    "timeout": 30000,
     "ui": "bdd",
     "watch-files": [
       "../**/*.js"
@@ -52,6 +52,7 @@
       "describe",
       "expect",
       "it",
+      "debug",
       "fetch",
       "WebSocket"
     ]

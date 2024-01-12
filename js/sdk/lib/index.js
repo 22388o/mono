@@ -127,8 +127,8 @@ module.exports = class Sdk extends BaseClass {
    */
   async stop () {
     this.info('stopping', this)
-    await this.network.disconnect(),
-    await this.dex.close(),
+    await this.network.disconnect()
+    await this.dex.close()
     await this.swaps.sync()
     this.info('stop', this)
 

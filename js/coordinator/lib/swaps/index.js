@@ -19,7 +19,7 @@ module.exports = class Swaps extends BaseClass {
       throw Error('expect props.store to be a Store instance!')
     }
 
-    super()
+    super({ id: 'swaps' })
 
     // Listen for matched orders from the dex to create swaps
     props.dex.on('match', (...args) => this.fromOrders(...args))
@@ -75,7 +75,7 @@ module.exports = class Swaps extends BaseClass {
       try {
         swap.update(swapObj)
       } catch (err) {
-        reject(err)
+        return reject(err)
       }
 
       resolve(swap)

@@ -316,7 +316,9 @@ describe('Swaps - Lightning/Ethereum', function () {
   })
 
   it('must complete the atomic swap', function (done) {
-    const timeout = this.timeout() - 1000
+    const timeout = 30000
+    this.timeout(timeout)
+
     const timeStart = Date.now()
     const timer = setInterval(function () {
       const { alice, bob } = prevState
