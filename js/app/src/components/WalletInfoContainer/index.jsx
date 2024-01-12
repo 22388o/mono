@@ -27,7 +27,7 @@ export const WalletInfoContainer = ({ show, setIsMinimized }) => {
             <KeyboardDoubleArrowRightIcon className={styles["tab-item"]} />
           </IconButton>
         </Stack>
-        { activeTab !== 'assets' && <ActivityTab /> }
+        <ActivityTab />
       </Stack>
     </Container>
   );

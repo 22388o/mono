@@ -7,6 +7,7 @@ import { hashSecret, log } from "../../utils/helpers";
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import { walletStore } from "../../syncstore/walletstore";
 import { activitiesStore } from "../../syncstore/activitiesstore";
+import { toast } from "react-toastify";
 
 /**
  * Swap Form Component which handles swap
@@ -25,10 +26,8 @@ export const SwapCreate = () => {
     fetching: true
   });
 
-
   const node = globalWallet.assets[0];
   const wallet = globalWallet.assets[1];
-
 
   useEffect(() => {
     const core = async () => {
@@ -70,7 +69,13 @@ export const SwapCreate = () => {
     const secretHash = await hashSecret(randomValues);
 
     if(ASSET_TYPES[baseAsset].balance < baseQuantity) {
-      alert("Error");
+      toast.error(
+        "Error",
+        {
+          theme: 'colored',
+          autoClose: 1000
+        }
+      )
       return;
     }
 
