@@ -6,7 +6,7 @@ const Coordinator = require('../..')
 const http = require('http')
 
 before('spin up the coordinator', async function () {
-  this.coordinator = new Coordinator()
+  this.coordinator = new Coordinator({ id: 'coordinator' })
   await this.coordinator.start()
 
   // http request method for use in API tests

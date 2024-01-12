@@ -2,14 +2,17 @@
  * @file Behavioral specification for the Swaps module
  */
 
+const Dex = require('../../lib/dex')
 const Swaps = require('../../lib/swaps')
 const Swap = require('../../lib/swaps/swap')
 
 describe('Swaps', function () {
+  const PROPS = { dex: new Dex({}), store: {} }
+  
   describe('instantiation', function () {
-    it('must instantiate correctly without arguments', function () {
+    it('must instantiate correctly with required arguments', function () {
       let swaps = null
-      expect(() => { swaps = new Swaps() }).to.not.throw()
+      expect(() => { swaps = new Swaps(PROPS) }).to.not.throw()
       expect(swaps).to.be.an.instanceof(Swaps)
       expect(swaps).to.respondTo('fromOrders')
       expect(swaps).to.respondTo('onSwap')
@@ -43,7 +46,7 @@ describe('Swaps', function () {
     }
 
     before(function () {
-      swaps = new Swaps()
+      swaps = new Swaps(PROPS)
     })
 
     after(function () {
