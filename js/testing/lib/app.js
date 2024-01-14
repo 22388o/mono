@@ -6,6 +6,12 @@ const { BaseClass } = require('@portaldefi/core')
 const puppeteer = require('puppeteer')
 
 /**
+ * A weak-map storing private data for each instance of the class
+ * @type {WeakMap}
+ */
+const INSTANCES = new WeakMap()
+
+/**
  * Export the App page-object model
  * @type {App}
  */
@@ -23,88 +29,45 @@ module.exports = class App extends BaseClass {
   constructor (props) {
     super({ id: props.id })
 
-    this.browser = null
-    this.page = null
+    this.hostname = props.hostname
+    this.port = props.port
+    this.browser = props.browser
 
-    Object.seal(this)
+    INSTANCES.set(this, {
+      browser: null,
+      page: null
+    })
+
+    Object.freeze(this)
   }
 
   /**
    * Opens a new browser tab and navigates to the specified url
-   * @param {String} url The URL to navigate to
-   * @param {Object} opts Launch options for puppeteer
    * @returns {Promise<Void>}
    */
-  async open (url, opts) {
+  async start () {
     try {
+      const state = INSTANCES.get(this)
+
       // launch a browser window
-      this.browser = await puppeteer.launch(opts)
+      state.browser = await puppeteer.launch(this.browser)
 
       // create a new page/tab, if needed
-      const pages = await this.browser.pages()
-      this.page = pages.length === 0
-        ? await this.browser.newPage()
+      const pages = await state.browser.pages()
+      state.page = pages.length === 0
+        ? await state.browser.newPage()
         : pages[pages.length - 1]
 
-      // navigate to the specified url
+      // navigate to the peer's entry point
+      const url = `http://${this.hostname}:${this.port}/`
       this.info(`${this.id}.open`, { url })
-      await this.page.goto(url)
+      await state.page.goto(url)
+
+      return this
     } catch (err) {
       this.error(err)
       this.emit('error', err)
     }
-  }
-
-  /**
-   * Closes the browser
-   * @returns {Promise<Void>}
-   */
-  async close () {
-    return this.browser.close()
-  }
-
-  /**
-   * Causes the user to be logged in
-   * @param {Number} index The index of the user in the login drop-down list
-   * @returns {Promise<Void>}
-   */
-  async login (index) {
-    const { page } = this
-
-    // Click the login button
-    await page.click('#connect-wallet')
-
-    // Wait for the dropdown to be rendered
-    try {
-      await page.waitForSelector('.MuiList-root')
-    } catch (err) {
-      this.error(err)
-      this.emit('error', err)
-      return
-    }
-
-    // Wait for the list items to be rendered and click the item
-    const list = await page.$$('.MuiList-root li')
-    if (list[index] == null) {
-      const listLength = Object.keys(list).length
-      this.error(`${this.id}.login`, { index, list })
-      this.emit('error', Error(`invalid index ${index} of ${listLength}!`))
-      return
-    }
-
-    // Click the name of the user
-    await list[index].click()
-
-    // Wait for the logout button to be rendered
-    try {
-      await page.waitForSelector('#logout')
-    } catch (err) {
-      this.error(err)
-      this.emit('error', err)
-      return
-    }
-
-    this.info(`${this.id}.login`, { index })
   }
 
   /**
@@ -124,14 +87,13 @@ module.exports = class App extends BaseClass {
   }
 
   /**
-   * Logs the user out
+   * Closes the browser
    * @returns {Promise<Void>}
    */
-  async logout () {
-    const { page } = this
+  async stop () {
+    const state = INSTANCES.get(this)
+    await state.browser.close()
 
-    // Click the logout button
-    await page.click('#logout')
-    this.info(`${this.id}.logout`)
+    return this
   }
 }

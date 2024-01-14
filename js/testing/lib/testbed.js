@@ -6,7 +6,9 @@ const Playnet = require('./playnet')
 const { compile, deploy } = require('./helpers')
 const { expect } = require('chai')
 const { writeFileSync } = require('fs')
+const { join, resolve } = require('path')
 const { inspect } = require('util')
+const vite = require('vite')
 const { Web3 } = require('web3')
 
 /**
@@ -14,6 +16,12 @@ const { Web3 } = require('web3')
  * @type {Boolean}
  */
 const isDebugEnabled = process.argv.includes('--debug')
+
+/**
+ * Returns whether the tests are being run in watch mode
+ * @type {Boolean}
+ */
+const isWatchEnabled = process.argv.includes('--watch')
 
 /**
  * Prints logs to the console, when debug mode is enabled
@@ -38,7 +46,7 @@ const GLOBALS = { debug, expect }
  * The configuration for the testbed
  * @type {Array}
  */
-const PLAYNET_PROPS = require('../etc/config.devnet')
+const PLAYNET_PROPS = require('../etc/config.playnet')
 
 /**
  * Export the Testbed functions
@@ -65,11 +73,14 @@ Testbed.beforeAll = async function () {
   const abiFile = process.env.PORTAL_ETHEREUM_CONTRACTS
   writeFileSync(abiFile, abiData)
 
+  // build the UI assets
+  this.watcher = await buildApp()
+
   // start the playnet
   this.playnet = new Playnet(PLAYNET_PROPS)
   await this.playnet
     .on('log', (level, ...args) => debug(level, ...args))
-    .on('error', err => debug(err))
+    .on('error', err => { console.error(err); process.exit(1) })
     .start()
 }
 
@@ -78,7 +89,14 @@ Testbed.beforeAll = async function () {
  * @returns {Void}
  */
 Testbed.afterAll = async function () {
-  const { playnet, web3 } = this.test.ctx
+  const { playnet, watcher, web3 } = this.test.ctx
+
+  // stop the watcher
+  try {
+    await watcher.close()
+  } catch (err) {
+    console.error(err)
+  }
 
   // stop the playnet
   try {
@@ -100,4 +118,62 @@ Testbed.afterAll = async function () {
     global[key] = GLOBALS[key]
     GLOBALS[key] = existing
   }
+}
+
+/**
+ * Watch the vite builder until it builds the assets
+ * @returns {Promise<Void>}
+ */
+function buildApp () {
+  const pathJs = resolve(__dirname, '..', '..')
+  const pathApp = join(pathJs, 'app')
+  const pathDist = join(pathJs, 'testing', 'dist')
+  const config = {
+    root: pathApp,
+    mode: 'development',
+      resolve: {
+      alias: {
+        $fonts: join(pathApp, 'public'),
+      }
+    },
+    build: {
+      outDir: pathDist,
+      rollupOptions: {
+        onwarn (obj, warn) {
+          if (obj.code === 'MODULE_LEVEL_DIRECTIVE' &&
+              obj.message.includes('\'use client\'')) return
+          warn(obj)
+        }
+      },
+      sourcemap: true,
+      watch: {}
+    },
+    clearScreen: false,
+    logLevel: 'silent'
+  }
+
+  return vite.build(config)
+    .then(watcher => new Promise((resolve, reject) => watcher.on('event', e => {
+      switch (e.code) {
+        case 'START':
+        case 'BUNDLE_START':
+        case 'END':
+          break
+  
+        case 'BUNDLE_END':
+          debug('info', 'vite.bundle', { ready: true })
+          return resolve(watcher)
+  
+        case 'ERROR': {
+          const { message, loc, frame } = e.error
+          const err = Error(`${message}: ${loc.file}`)
+          debug('error', 'vite.error', err, frame)
+          return reject(err)
+        }
+  
+        /* eslint-disable-next-line no-fallthrough */
+        default:
+          debug('debug', `vite.${e.code}`, e)
+      }
+    })))
 }

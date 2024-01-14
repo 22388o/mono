@@ -6,9 +6,10 @@ const { BaseClass } = require('@portaldefi/core')
 const Coordinator = require('@portaldefi/coordinator')
 const Peer = require('@portaldefi/peer')
 const Sdk = require('@portaldefi/sdk')
+const App = require('../lib/app')
 
 /**
- * Defines a playnet
+ * Defines a playnet setup used for testing
  * @type {Playnet}
  */
 module.exports = class Playnet extends BaseClass {
@@ -27,8 +28,8 @@ module.exports = class Playnet extends BaseClass {
 
     this.coordinator = new Coordinator(props.coordinator)
     this.peers = props.peers
-    this.sdks = {}
-    this.browsers = {}
+    this.sdks = props.sdks
+    this.apps = props.apps
 
     Object.freeze(this)
   }
@@ -63,6 +64,19 @@ module.exports = class Playnet extends BaseClass {
           .on('error', (err, ...args) => this.emit('error', err, ...args))
         this.sdks[id] = await sdk.start()
       }
+
+      // then start the Apps
+      for (const id in this.peers) {
+        const peer = this.peers[id]
+        const props = Object.assign({}, this.apps[id], {
+          hostname: peer.hostname,
+          port: peer.port
+        })
+        const app = new App(props)
+          .on('log', (level, id, ...args) => this[level](`apps.${id}`, ...args))
+          .on('error', (err, ...args) => this.emit('error', err, ...args))
+        this.apps[id] = await app.start()
+      }
     } catch (err) {
       this.error('start', err, this)
       throw err
@@ -75,6 +89,11 @@ module.exports = class Playnet extends BaseClass {
    */
   async stop () {
     try {
+      for (const id in this.apps) {
+        const app = this.apps[id]
+        await app.stop()
+      }
+
       for (const id in this.sdks) {
         const sdk = this.sdks[id]
         await sdk.stop()
