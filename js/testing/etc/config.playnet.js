@@ -34,6 +34,22 @@ Config.peers = {
 }
 
 /**
+ * Configuration for each of the SDKs
+ */
+Config.sdks = {
+  alice: sdkConfig('alice'),
+  bob: sdkConfig('bob'),
+}
+
+/**
+ * Configuration for each of the apps
+ */
+Config.apps = {
+  alice: appConfig('alice'),
+  bob: appConfig('bob'),
+}
+
+/**
  * Generates configuration for the coordinator
  * @param {String} id The unique identifier of the coordinator node
  * @returns {Object}
@@ -58,11 +74,41 @@ function peerConfig (id, coordinator) {
   return {
     id,
     hostname: '127.0.0.1',
+    root: resolve(__dirname, '..', 'dist'),
 
     blockchains: { ethereum: gethConfig(id), lightning: lndConfig(id) },
     coordinator,
     dex: undefined,
     swaps: undefined
+  }
+}
+
+/**
+ * Generates configuration for the specified sdk
+ * @param {String} id The unique identifier of the coordinator node
+ * @returns {Object}
+ */
+function sdkConfig(id) {
+  return {
+    id
+  }
+}
+
+/**
+ * Generates configuration for the specified app
+ * @param {String} id The unique identifier of the coordinator node
+ * @returns {Object}
+ */
+function appConfig(id) {
+  return {
+    id,
+    browser: {
+      args: [`--window-size=800,600`],
+      defaultViewport: { width: 800, height: 600 },
+      headless: false,
+      slowMo: 50,
+      timeout: 10000
+    }
   }
 }
 

@@ -25,6 +25,8 @@
     "@mui/material": "^5.11.13",
     "@portaldefi/peer": "file:../portal",
     "@portaldefi/sdk": "file:../sdk",
+    "@testing-library/jest-dom": "^6.2.0",
+    "@testing-library/react": "^14.1.2",
     "@vitejs/plugin-react": "^2.2.0",
     "babel": "^6.23.0",
     "babel-jest": "^29.5.0",
@@ -35,10 +37,12 @@
     "chokidar": "^3.5.3",
     "classnames": "^2.3.2",
     "fs": "^0.0.1-security",
+    "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.5.0",
     "mocha": "^10.2.0",
     "path": "^0.12.7",
     "postcss": "8.4.19",
+    "puppeteer": "^21.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.6.1",
@@ -59,15 +63,8 @@
     },
     "testEnvironment": "jest-environment-jsdom"
   },
-  "c8": {
-    "check-coverage": true,
-    "report-dir": "coverage",
-    "reporter": [
-      "html",
-      "text"
-    ]
-  },
   "mocha": {
+    "bail": true,
     "diff": true,
     "extension": [
       "spec.js"
@@ -96,11 +93,5 @@
     "ignore": [
       "dist"
     ]
-  },
-  "dependencies": {
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^14.1.2",
-    "jest": "^29.7.0",
-    "puppeteer": "^21.7.0"
   }
 }
