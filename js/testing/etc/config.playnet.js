@@ -38,7 +38,7 @@ Config.peers = {
  */
 Config.sdks = {
   alice: sdkConfig('alice'),
-  bob: sdkConfig('bob'),
+  bob: sdkConfig('bob')
 }
 
 /**
@@ -46,7 +46,7 @@ Config.sdks = {
  */
 Config.apps = {
   alice: appConfig('alice'),
-  bob: appConfig('bob'),
+  bob: appConfig('bob')
 }
 
 /**
@@ -88,7 +88,7 @@ function peerConfig (id, coordinator) {
  * @param {String} id The unique identifier of the coordinator node
  * @returns {Object}
  */
-function sdkConfig(id) {
+function sdkConfig (id) {
   return {
     id
   }
@@ -99,11 +99,11 @@ function sdkConfig(id) {
  * @param {String} id The unique identifier of the coordinator node
  * @returns {Object}
  */
-function appConfig(id) {
+function appConfig (id) {
   return {
     id,
     browser: {
-      args: [`--window-size=800,600`],
+      args: ['--window-size=800,600'],
       defaultViewport: { width: 800, height: 600 },
       headless: false,
       slowMo: 50,

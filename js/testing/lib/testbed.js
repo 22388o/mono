@@ -131,9 +131,9 @@ function buildApp () {
   const config = {
     root: pathApp,
     mode: 'development',
-      resolve: {
+    resolve: {
       alias: {
-        $fonts: join(pathApp, 'public'),
+        $fonts: join(pathApp, 'public')
       }
     },
     build: {
@@ -159,18 +159,18 @@ function buildApp () {
         case 'BUNDLE_START':
         case 'END':
           break
-  
+
         case 'BUNDLE_END':
           debug('info', 'vite.bundle', { ready: true })
           return resolve(watcher)
-  
+
         case 'ERROR': {
           const { message, loc, frame } = e.error
           const err = Error(`${message}: ${loc.file}`)
           debug('error', 'vite.error', err, frame)
           return reject(err)
         }
-  
+
         /* eslint-disable-next-line no-fallthrough */
         default:
           debug('debug', `vite.${e.code}`, e)
