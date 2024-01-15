@@ -194,6 +194,7 @@ export const SwapCreate = () => {
         </Grid>
         <Grid className={styles.swapExCont}>
           <SwapAmountItem
+            className='base'
             assetId={baseAsset}
             unitPrice={curPrices[ASSET_TYPES[baseAsset].type]}
             amount={baseQuantity}
@@ -202,9 +203,9 @@ export const SwapCreate = () => {
             onCoinTypeChange={(asset) => {coinTypeChanged(true, asset);}}
           />
           <Divider style={{borderColor:'#202020',margin: '0.5em -1em 0 -1em'}} />
-          <IconButton className={`${styles.exchange} exchange`} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
+          <IconButton className={`${styles.exchange} exchange switchBaseQuoteAsset`} onClick={onExchangeCoinType}><SettingsEthernetIcon /></IconButton>
           <SwapAmountItem
-            className='mt-m1 mb-0'
+            className='mt-m1 mb-0 quote'
             assetId={quoteAsset}
             unitPrice={curPrices[ASSET_TYPES[quoteAsset].type]}
             amount={quoteQuantity}
