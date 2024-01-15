@@ -9,13 +9,11 @@ const { BaseClass } = require('@portaldefi/core')
  * @type {Client}
  */
 module.exports = class Client extends BaseClass {
-  constructor (props) {
+  constructor(props) {
     if (props == null) {
       throw Error('expected props to be provided!')
     } else if (props.id == null || typeof props.id !== 'string') {
       throw Error('expected props.id to be a valid identifier!')
-    } else if (props.uid == null || typeof props.uid !== 'string') {
-      throw Error('expected props.uid to be a valid identifier!')
     } else if (props.hostname != null && typeof props.hostname !== 'string') {
       throw Error('expected props.hostname to be a valid hostname/IP address!')
     } else if (props.port != null && typeof props.port !== 'number') {
@@ -26,7 +24,6 @@ module.exports = class Client extends BaseClass {
 
     super({ id: props.id })
 
-    this.uid = props.uid
     this.hostname = props.hostname
     this.port = props.port
     this.pathname = props.pathname
@@ -39,7 +36,7 @@ module.exports = class Client extends BaseClass {
    * Returns whether or not the SDK instance is connected to the server
    * @returns {Boolean}
    */
-  get isConnected () {
+  get isConnected() {
     return (this.websocket != null) && (this.websocket.readyState === 1)
   }
 
@@ -47,7 +44,7 @@ module.exports = class Client extends BaseClass {
    * Returns the JSON representation of this instance
    * @returns {Object}
    */
-  toJSON () {
+  toJSON() {
     return Object.assign(super.toJSON(), {
       hostname: this.hostname,
       port: this.port,
@@ -59,10 +56,10 @@ module.exports = class Client extends BaseClass {
    * Opens a connection to the remote end
    * @returns {Promise<Void>}
    */
-  connect () {
+  connect() {
     return new Promise((resolve, reject) => {
       const { hostname, port, pathname, uid } = this
-      const url = `ws://${hostname}:${port}${pathname}/${uid}`
+      const url = `ws://${hostname}:${port}${pathname}`
       const ws = new WebSocket(url) /* eslint-disable-line no-undef */
 
       ws.onerror = reject
@@ -90,16 +87,14 @@ module.exports = class Client extends BaseClass {
    * @param {Object} [data] Data to be sent as part of the request
    * @returns {Promise<Object>}
    */
-  request (args, data) {
+  request(args, data) {
     return new Promise((resolve, reject) => {
-      const creds = `${this.uid}:${this.uid}`
       const buf = (data && JSON.stringify(data)) || ''
       const opts = Object.assign(args, {
         headers: Object.assign(args.headers || {}, {
           /* eslint-disable quote-props */
           'accept': 'application/json',
           'accept-encoding': 'application/json',
-          'authorization': `Basic ${Buffer.from(creds).toString('base64')}`,
           'content-type': 'application/json',
           'content-length': Buffer.byteLength(buf),
           'content-encoding': 'identity'
@@ -155,7 +150,7 @@ module.exports = class Client extends BaseClass {
    * @param {Object} obj The object to send
    * @returns {Promise<Void>}
    */
-  send (obj) {
+  send(obj) {
     return new Promise((resolve, reject) => {
       const buf = Buffer.from(JSON.stringify(obj))
       const opts = { binary: false }
@@ -167,7 +162,7 @@ module.exports = class Client extends BaseClass {
    * Closes the connection to the server
    * @returns {Promise<Void>}
    */
-  disconnect () {
+  disconnect() {
     return new Promise((resolve, reject) => {
       const ws = this.websocket
       ws.onerror = reject
@@ -181,7 +176,7 @@ module.exports = class Client extends BaseClass {
    * @param {Buffer|Object} data The data received over the websocket
    * @returns {Void}
    */
-  _onMessage (data) {
+  _onMessage(data) {
     let event, arg
     try {
       arg = JSON.parse(data)
