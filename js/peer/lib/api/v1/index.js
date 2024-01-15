@@ -23,12 +23,14 @@ Handlers.opts = { autoParse: false }
 Handlers.UPGRADE = function (ws, server) {
   const forward = event => [event, obj => ws.send(obj)]
 
+  // DEX events
   server.network
-    // DEX events
     .on(...forward('order.created'))
     .on(...forward('order.opened'))
     .on(...forward('order.closed'))
-    // Swap events
+
+  // Swap events
+  server.swaps
     .on(...forward('swap.received'))
     .on(...forward('swap.created'))
     .on(...forward('swap.holder.invoice.created'))
@@ -39,6 +41,4 @@ Handlers.UPGRADE = function (ws, server) {
     .on(...forward('swap.seeker.invoice.paid'))
     .on(...forward('swap.holder.invoice.settled'))
     .on(...forward('swap.seeker.invoice.settled'))
-    // Misc. events
-    .on(...forward('message'))
 }

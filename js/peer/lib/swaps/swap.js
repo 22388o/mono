@@ -2,7 +2,7 @@
  * @file Defines a swap and other related classes
  */
 
-const { BaseClass, Order, Util } = require('@portaldefi/core')
+const { BaseClass, Util } = require('@portaldefi/core')
 
 /**
  * An object mapping swap status strings to the expected order of transitions
@@ -260,99 +260,99 @@ class Swap extends BaseClass {
     state.secretHash = swap.secretHash
   }
 
-  /**
-   * Creates an invoice to send to the counterparty
-   * @returns {Promise<Swap>}
-   */
-  async createInvoice () {
-    const { blockchains, store } = this.sdk
-    const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
-
-    blockchain.once('invoice.paid', invoice => {
-      if (this.party.isSeeker) {
-        INSTANCES.get(this).status = 'holder.invoice.paid'
-        this.emit(this.status, this)
-        this.payInvoice()
-      } else if (this.party.isHolder) {
-        INSTANCES.get(this).status = 'seeker.invoice.paid'
-        this.emit(this.status, this)
-        this.settleInvoice()
-      } else {
-        throw Error('unexpected code branch!')
-      }
-    })
-
-    if (this.party.isSeeker) {
-      const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-      blockchain.once('invoice.settled', async invoice => {
-        await store.put('secrets', invoice.id.substr(2), {
-          secret: invoice.swap.secret,
-          swap: invoice.swap.id
-        })
-        this.settleInvoice()
-      })
-    }
-
-    this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
-
-    INSTANCES.get(this).status = `${this.partyType}.invoice.created`
-    this.emit(this.status, this)
-  }
-
-  /**
-   * Sends the invoice to the counterparty
-   * @return {Promise<Void>}
-   */
-  async sendInvoice () {
-    const { network } = this.sdk
-
-    try {
-      const args = { method: 'PATCH', path: '/api/v1/swap' }
-      INSTANCES.get(this).status = `${this.partyType}.invoice.sent`
-      await network.request(args, { swap: this })
-      // We do not emit this event here; instead we wait for the server
-      // websocket message to trigger the event.
-      // this.emit(this.status, this)
-    } catch (err) {
-      INSTANCES.get(this).status = `${this.partyType}.invoice.created`
-      throw err
-    }
-  }
-
-  /**
-   * Causes the party to pay the invoice
-   * @return {Promise<Void>}
-   */
-  async payInvoice () {
-    const { blockchains } = this.sdk
-    const blockchain = blockchains[this.party.blockchain.split('.')[0]]
-    this.party.payment = await blockchain.payInvoice(this.party)
-    INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
-    this.emit(this.status, this)
-  }
-
-  /**
-   * Settles an invoice previously to send to the counterparty
-   * @returns {Promise<Swap>}
-   */
-  async settleInvoice () {
-    const { blockchains, store } = this.sdk
-    const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
-    const { secret } = await store.get('secrets', this.secretHash)
-
-    const settle = async () => {
-      this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
-      INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
-      this.emit(this.status, this)
-    }
-
-    // required to prevent a race condition when run in a tight loop.
-    if (this.party.isHolder || this.isSeekerInvoicePaid) {
-      settle()
-    } else {
-      this.once('seeker.invoice.paid', settle)
-    }
-  }
+  // /**
+  //  * Creates an invoice to send to the counterparty
+  //  * @returns {Promise<Swap>}
+  //  */
+  // async createInvoice () {
+  //   const { blockchains, store } = this.sdk
+  //   const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
+  //
+  //   blockchain.once('invoice.paid', invoice => {
+  //     if (this.party.isSeeker) {
+  //       INSTANCES.get(this).status = 'holder.invoice.paid'
+  //       this.emit(this.status, this)
+  //       this.payInvoice()
+  //     } else if (this.party.isHolder) {
+  //       INSTANCES.get(this).status = 'seeker.invoice.paid'
+  //       this.emit(this.status, this)
+  //       this.settleInvoice()
+  //     } else {
+  //       throw Error('unexpected code branch!')
+  //     }
+  //   })
+  //
+  //   if (this.party.isSeeker) {
+  //     const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+  //     blockchain.once('invoice.settled', async invoice => {
+  //       await store.put('secrets', invoice.id.substr(2), {
+  //         secret: invoice.swap.secret,
+  //         swap: invoice.swap.id
+  //       })
+  //       this.settleInvoice()
+  //     })
+  //   }
+  //
+  //   this.counterparty.invoice = await blockchain.createInvoice(this.counterparty)
+  //
+  //   INSTANCES.get(this).status = `${this.partyType}.invoice.created`
+  //   this.emit(this.status, this)
+  // }
+  //
+  // /**
+  //  * Sends the invoice to the counterparty
+  //  * @return {Promise<Void>}
+  //  */
+  // async sendInvoice () {
+  //   const { network } = this.sdk
+  //
+  //   try {
+  //     const args = { method: 'PATCH', path: '/api/v1/swap' }
+  //     INSTANCES.get(this).status = `${this.partyType}.invoice.sent`
+  //     await network.request(args, { swap: this })
+  //     // We do not emit this event here; instead we wait for the server
+  //     // websocket message to trigger the event.
+  //     // this.emit(this.status, this)
+  //   } catch (err) {
+  //     INSTANCES.get(this).status = `${this.partyType}.invoice.created`
+  //     throw err
+  //   }
+  // }
+  //
+  // /**
+  //  * Causes the party to pay the invoice
+  //  * @return {Promise<Void>}
+  //  */
+  // async payInvoice () {
+  //   const { blockchains } = this.sdk
+  //   const blockchain = blockchains[this.party.blockchain.split('.')[0]]
+  //   this.party.payment = await blockchain.payInvoice(this.party)
+  //   INSTANCES.get(this).status = `${this.partyType}.invoice.paid`
+  //   this.emit(this.status, this)
+  // }
+  //
+  // /**
+  //  * Settles an invoice previously to send to the counterparty
+  //  * @returns {Promise<Swap>}
+  //  */
+  // async settleInvoice () {
+  //   const { blockchains, store } = this.sdk
+  //   const blockchain = blockchains[this.counterparty.blockchain.split('.')[0]]
+  //   const { secret } = await store.get('secrets', this.secretHash)
+  //
+  //   const settle = async () => {
+  //     this.party.receipt = await blockchain.settleInvoice(this.counterparty, secret)
+  //     INSTANCES.get(this).status = `${this.partyType}.invoice.settled`
+  //     this.emit(this.status, this)
+  //   }
+  //
+  //   // required to prevent a race condition when run in a tight loop.
+  //   if (this.party.isHolder || this.isSeekerInvoicePaid) {
+  //     settle()
+  //   } else {
+  //     this.once('seeker.invoice.paid', settle)
+  //   }
+  // }
 }
 
 /**

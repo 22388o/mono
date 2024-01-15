@@ -5,6 +5,26 @@
 const { BaseClass, Util } = require('@portaldefi/core')
 
 /**
+ * An object mapping swap status strings to the expected order of transitions
+ * @type {Object}
+ */
+const SWAP_STATUS = [
+  'received',
+  'created',
+  'holder.invoice.created',
+  'holder.invoice.sent',
+  'seeker.invoice.created',
+  'seeker.invoice.sent',
+  'holder.invoice.paid',
+  'seeker.invoice.paid',
+  'holder.invoice.settled',
+  'seeker.invoice.settled'
+].reduce((obj, status, index) => {
+  obj[status] = index
+  return obj
+}, {})
+
+/**
  * Holds the private data of instances of classes
  * @type {WeakMap}
  */
@@ -18,8 +38,10 @@ module.exports = class Swap extends BaseClass {
   /**
    * Creates a new instance of a swap
    * @param {Object} props Properties of the instance
+   * @param {Object} [opts] Options for the operation
+   * @param {String} [opts.id] The unique identifier of the party
    */
-  constructor (props) {
+  constructor (props, opts) {
     if (props == null) {
       throw Error('no properties provided for swap!')
     } else if (props.id != null && typeof props.id !== 'string') {
@@ -45,6 +67,7 @@ module.exports = class Swap extends BaseClass {
 
     //  the fields that may be updated, but never by any code outside this class
     INSTANCES.set(this, Object.seal({
+      uid: opts && opts.id,
       status: props.status || 'received',
       secretHash: props.secretHash
     }))
@@ -61,6 +84,20 @@ module.exports = class Swap extends BaseClass {
   }
 
   /**
+   * Sets the secret hash for the swap and transitions to the 'created' state
+   */
+  set secretHash (val) {
+    const state = INSTANCES.get(this)
+
+    // TODO: Ensure only secret holder can set the secret hash
+    if (state.secretHash == null) {
+      state.secretHash = val
+    } else {
+      throw Error('cannot set secret hash anymore!')
+    }
+  }
+
+  /**
    * Returns the current status of the swap
    * @returns {String}
    */
@@ -68,42 +105,127 @@ module.exports = class Swap extends BaseClass {
     return INSTANCES.get(this).status
   }
 
+  /**
+   * Sets the status of the swap
+   * @param {String} val The new status of the swap
+   * @returns {Void}
+   */
+  set status (val) {
+    INSTANCES.get(this).status = val
+  }
+
+  /**
+   * The owner of the SDK instance
+   * @returns {Party}
+   */
+  get party () {
+    return INSTANCES.get(this).uid === this.secretHolder.id
+      ? this.secretHolder
+      : this.secretSeeker
+  }
+
+  /**
+   * Returns whether the party is the "holder" or "seeker"
+   * @returns {String}
+   */
+  get partyType () {
+    return this.party === this.secretHolder ? 'holder' : 'seeker'
+  }
+
+  /**
+   * The party at the other end of the swap
+   * @returns {Party}
+   */
+  get counterparty () {
+    return INSTANCES.get(this).uid === this.secretSeeker.id
+      ? this.secretHolder
+      : this.secretSeeker
+  }
+
+  /**
+   * Returns whether the counterparty is the "holder" or "seeker"
+   * @returns {String}
+   */
+  get counterpartyType () {
+    return this.party === this.secretSeeker ? 'holder' : 'seeker'
+  }
+
+  /**
+   * Returns whether or not the swap is in the received state
+   * @returns {Boolean}
+   */
   get isReceived () {
     return this.status === 'received'
   }
 
+  /**
+   * Returns whether or not the swap is in the created state
+   * @returns {Boolean}
+   */
   get isCreated () {
     return this.status === 'created'
   }
 
+  /**
+   * Returns whether or not the swap is in the holder.invoice.created state
+   * @returns {Boolean}
+   */
   get isHolderInvoiceCreated () {
     return this.status === 'holder.invoice.created'
   }
 
+  /**
+   * Returns whether or not the swap is in the holder.invoice.sent state
+   * @returns {Boolean}
+   */
   get isHolderInvoiceSent () {
     return this.status === 'holder.invoice.sent'
   }
 
+  /**
+   * Returns whether or not the swap is in the seeker.invoice.created state
+   * @returns {Boolean}
+   */
   get isSeekerInvoiceCreated () {
     return this.status === 'seeker.invoice.created'
   }
 
+  /**
+   * Returns whether or not the swap is in the seeker.invoice.sent state
+   * @returns {Boolean}
+   */
   get isSeekerInvoiceSent () {
     return this.status === 'seeker.invoice.sent'
   }
 
+  /**
+   * Returns whether or not the swap is in the holder.invoice.paid state
+   * @returns {Boolean}
+   */
   get isHolderInvoicePaid () {
     return this.status === 'holder.invoice.paid'
   }
 
+  /**
+   * Returns whether or not the swap is in the seeker.invoice.paid state
+   * @returns {Boolean}
+   */
   get isSeekerInvoicePaid () {
     return this.status === 'seeker.invoice.paid'
   }
 
+  /**
+   * Returns whether or not the swap is in the holder.invoice.settled state
+   * @returns {Boolean}
+   */
   get isHolderInvoiceSettled () {
     return this.status === 'holder.invoice.settled'
   }
 
+  /**
+   * Returns whether or not the swap is in the seeker.invoice.settled state
+   * @returns {Boolean}
+   */
   get isSeekerInvoiceSettled () {
     return this.status === 'seeker.invoice.settled'
   }
@@ -129,12 +251,48 @@ module.exports = class Swap extends BaseClass {
   }
 
   /**
+   * Updates the swap instance
+   *
+   * This method is used when a JSON version of a swap is received from the
+   * counterparty to update local state.
+   *
+   * @param {Object} swap The updated swap instance
+   * @returns {Void}
+   * @throws {Error}
+   */
+  update (swap) {
+    // the unique identifier of the swap must not ever change!
+    if (this.id !== swap.id) {
+      throw Error('swap id mismatch!')
+    }
+
+    if (swap.secretHash == null) {
+      throw Error('expected updated swap to have a secret-hash!')
+    } else if (this.secretHash != null && this.secretHash !== swap.secretHash) {
+      throw Error('secret-hash must not be changed once set!')
+    }
+
+    if (SWAP_STATUS[this.status] >= SWAP_STATUS[swap.status]) {
+      throw Error(`cannot transition from ${this.status} to ${swap.status}!`)
+    }
+
+    this.secretHolder.update(swap.secretHolder)
+    this.secretSeeker.update(swap.secretSeeker)
+
+    const state = INSTANCES.get(this)
+    state.status = swap.status
+    state.secretHash = swap.secretHash
+  }
+
+  /**
    * Creates a Swap instance from a JSON object
    * @param {Object} obj The JSON representation of the swap
+   * @param {Object} opts Configuration options for the operation
+   * @param {String} opts.id The unique identifier of the party
    * @returns {Swap}
    */
-  static fromJSON (obj) {
-    return new Swap(obj)
+  static fromJSON (obj, opts) {
+    return new Swap(obj, opts)
   }
 
   /**
@@ -289,6 +447,37 @@ class Party {
       invoice: this.invoice,
       payment: this.payment,
       receipt: this.receipt
+    }
+  }
+
+  /**
+   * Updates the party instance
+   * @param {Party} party
+   */
+  update (party) {
+    if (this.id !== party.id) {
+      throw Error('cannot modify party id anymore!')
+    }
+
+    if (this.asset !== party.asset) {
+      throw Error('cannot modify party asset anymore!')
+    }
+
+    if (this.quantity !== party.quantity) {
+      throw Error('cannot modify party quantity anymore!')
+    }
+
+    if (this.blockchain !== party.blockchain) {
+      throw Error('cannot modify party blockchain anymore!')
+    }
+
+    // TODO: Fix this check to be more rigorous
+    if (this.invoice == null && party.invoice != null) {
+      this.invoice = party.invoice
+    }
+
+    if (this.payment == null && party.payment != null) {
+      this.payment = party.payment
     }
   }
 }

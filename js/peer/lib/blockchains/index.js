@@ -63,7 +63,7 @@ module.exports = class Blockchains extends BaseClass {
    * @returns {Blockchain[]}
    */
   async disconnect () {
-    await this.ethereum.disconnect(),
+    await this.ethereum.disconnect()
     await this.lightning.disconnect()
     this.emit('disconnect', this)
     return this

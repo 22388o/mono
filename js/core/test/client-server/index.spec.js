@@ -8,8 +8,16 @@ const { Client, Server } = require('../..')
 const { expect } = require('chai')
 const { basename, join } = require('path')
 
-const SERVER_PROPS = { id: 'server', api: join(__dirname, 'api') }
-const CLIENT_PROPS = { id: 'client', pathname: `/${basename(SERVER_PROPS.api)}` }
+const SERVER_PROPS = {
+  id: 'server',
+  api: join(__dirname, 'api')
+}
+
+const CLIENT_PROPS = {
+  id: 'client',
+  uid: 'alice',
+  pathname: `/${basename(SERVER_PROPS.api)}`
+}
 
 describe('Server', function () {
   const ENDPOINTS = [

@@ -8,7 +8,7 @@ const Swap = require('../../lib/swaps/swap')
 
 describe('Swaps', function () {
   const PROPS = { dex: new Dex({}), store: {} }
-  
+
   describe('instantiation', function () {
     it('must instantiate correctly with required arguments', function () {
       let swaps = null

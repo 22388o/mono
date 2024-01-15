@@ -2,7 +2,7 @@
  * @file Behavioral specification for the Lightning network
  */
 
-const Blockchain = require('../../../lib/blockchains/lightning')
+const Blockchain = require('../../lib/blockchains/lightning')
 const { createHash, randomBytes } = require('crypto')
 
 describe('Lightning', function () {
@@ -15,8 +15,8 @@ describe('Lightning', function () {
 
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
-        const { sdk, config: { alice } } = this.test.ctx
-        instance = new Blockchain(sdk, alice.blockchains.lightning)
+        const { config: { alice } } = this.test.ctx
+        instance = new Blockchain(alice.blockchains.lightning)
       }
 
       expect(createInstance).to.not.throw()
@@ -39,8 +39,8 @@ describe('Lightning', function () {
     }
 
     before('construct instance', function () {
-      const { sdk, config: { alice } } = this.test.ctx
-      instance = new Blockchain(sdk, alice.blockchains.lightning)
+      const { config: { alice } } = this.test.ctx
+      instance = new Blockchain(alice.blockchains.lightning)
     })
 
     it('must correctly connect to the blockchain', function () {
@@ -75,8 +75,8 @@ describe('Lightning', function () {
     })
 
     it('must pay an invoice', async function () {
-      const { sdk, config: { bob } } = this.test.ctx
-      const instance = new Blockchain(sdk, bob.blockchains.lightning)
+      const { config: { bob } } = this.test.ctx
+      const instance = new Blockchain(bob.blockchains.lightning)
       const receipt = PARTY.receipt = await instance.payInvoice(PARTY)
 
       expect(receipt).to.be.an('object')

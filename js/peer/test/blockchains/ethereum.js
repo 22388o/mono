@@ -2,21 +2,20 @@
  * @file Behavioral specification for the Ethereum network
  */
 
-const Blockchain = require('../../../lib/blockchains/ethereum')
-const config = require('../../../etc/config.dev')
+const Blockchain = require('../../lib/blockchains/ethereum')
+const config = require('../../etc/config.dev')
 const { createHash, randomBytes } = require('crypto')
 
 describe('Ethereum', function () {
   const id = 'alice'
   const { blockchains } = config
-  const creds = require(`../../../../portal/test/unit/${id}`)
+  const creds = require(`../../../portal/test/unit/${id}`)
   const CONFIG = Object.assign({ id }, config, {
     blockchains: Object.assign({}, blockchains, {
       ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
       lightning: Object.assign({}, blockchains.lightning, creds.lightning)
     })
   })
-  const SDK = {}
   const PROPS = CONFIG.blockchains.ethereum
 
   /**
@@ -37,7 +36,7 @@ describe('Ethereum', function () {
 
     it('must not throw when instantiated with required arguments', function () {
       const createInstance = () => {
-        instance = new Blockchain(SDK, PROPS)
+        instance = new Blockchain(PROPS)
       }
 
       expect(createInstance).to.not.throw()
@@ -60,7 +59,7 @@ describe('Ethereum', function () {
     }
 
     before('construct instance', function () {
-      instance = new Blockchain(SDK, PROPS)
+      instance = new Blockchain(PROPS)
     })
 
     it('must correctly connect to the blockchain', function () {

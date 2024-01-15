@@ -40,7 +40,7 @@ Config.peers = {
  */
 function coordinatorConfig (id) {
   return {
-    id: id,
+    id,
     hostname: '127.0.0.1',
 
     dex: undefined,
@@ -56,11 +56,11 @@ function coordinatorConfig (id) {
  */
 function peerConfig (id, coordinator) {
   return {
-    id: id,
+    id,
     hostname: '127.0.0.1',
 
     blockchains: { ethereum: gethConfig(id), lightning: lndConfig(id) },
-    coordinator: coordinator,
+    coordinator,
     dex: undefined,
     swaps: undefined
   }
