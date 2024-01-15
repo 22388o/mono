@@ -220,7 +220,7 @@ export const SwapCreate = () => {
                 ? <>
                     { (ASSET_TYPES[baseAsset].isNFT==false && ASSET_TYPES[quoteAsset].isNFT==false) ?  <p className={styles.prices}>{ curPrices.fetching ? 'Loading' : `1 ${ASSET_TYPES[baseAsset].type} = ${Number(curPrices[ASSET_TYPES[baseAsset].type] / curPrices[ASSET_TYPES[quoteAsset].type]).toFixed(6)} ${ASSET_TYPES[quoteAsset].type}` }</p> :
                     <p></p>}
-                    <Button circular="true" secondary="true" className='gradient-btn w-100 h-3' onClick={e => onOrderSwap({
+                    <Button circular="true" secondary="true" className='gradient-btn w-100 h-3 buttonSwapSubmit' onClick={e => onOrderSwap({
                       side: (
                       (ASSET_TYPES[quoteAsset].type.split('-')[0] !== 'BTCORD' && (ASSET_TYPES[baseAsset].type == 'BTC' || ASSET_TYPES[baseAsset].type.split('-')[0] == 'BTCORD' || ASSET_TYPES[baseAsset].isNFT)) ? 'ask' : 'bid'),
                       baseNetwork: ASSET_TYPES[baseAsset].network,
