@@ -106,7 +106,7 @@ function appConfig (id) {
       args: ['--window-size=1200,600'],
       defaultViewport: { width: 1200, height: 600 },
       headless: false,
-      slowMo: 50,
+      slowMo: 60000,
       timeout: 10000
     }
   }

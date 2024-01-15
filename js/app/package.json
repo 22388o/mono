@@ -23,7 +23,6 @@
     "@cucumber/cucumber": "^9.3.0",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.13",
-    "@portaldefi/peer": "file:../portal",
     "@portaldefi/sdk": "file:../sdk",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",

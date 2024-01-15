@@ -1,15 +1,29 @@
-import React from 'react'
-
+import React, { useState, useEffect } from 'react';
 import { Grid } from '@mui/material'
-
 import styles from '../styles/SwapHome.module.css'
 import { SwapCreate } from './SwapCreate/SwapCreate'
 import { WalletInfoContainer } from './WalletInfoContainer'
+import Sdk from '@portaldefi/sdk'
+
+
+/**
+ * Sdk initialize
+ */
+const initializeSdk = () => {
+  const hostname = window.location.hostname
+  const port = window.location.port
+  const SDK = new Sdk({ hostname, port, pathname: "/api/v1" })
+}
 
 /**
  * Swap Page Component
  */
 export const SwapHome = () => {
+  useEffect(() => {
+    console.log("SwapHome loaded")
+    SDK.start();
+  })
+
   return (
     <Grid container direction='column' sx={{backgroundColor:'#101010'}}>
       <Grid direction='row' container className={styles['page-header']}>

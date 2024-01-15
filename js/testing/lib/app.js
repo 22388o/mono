@@ -167,7 +167,7 @@ module.exports = class App extends BaseClass {
       const observer = new MutationObserver(callback)
 
       // Start observing the target node for configured mutations
-      observer.observe(targetNode, config)
+      // observer.observe(targetNode, config)
 
       // Later, you can stop observing
       // observer.disconnect()
