@@ -13,7 +13,7 @@ export const WalletInfoContainer = ({ show, setIsMinimized }) => {
 
   return (
     <Container
-      className={styles.container}
+      className={`${styles.container} panelActivity`}
       style={{ display: show ? "block" : "none" }}
     >
       <Stack sx={{height:'100%'}}>

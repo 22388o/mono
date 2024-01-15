@@ -28,7 +28,7 @@ export const ActivityTab = () => {
    */
   const renderActivity = (activity) => {
     return (
-      <Stack className={`${styles['activity-item']} activity-item panelActivity`} direction='row'>
+      <Stack className={`${styles['activity-item']} activity-item`} direction='row'>
         <Stack direction='row' gap={2}>
           <ArrowOutwardIcon sx={{color:'#6A6A6A', borderRadius: '50%', backgroundColor:'#101010', fontSize: '15px', padding: '5px' }} />
           <Stack sx={{alignItems:'flex-start'}}>
