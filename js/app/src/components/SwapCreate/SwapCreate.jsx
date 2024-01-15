@@ -187,7 +187,7 @@ export const SwapCreate = () => {
   }, [baseQuantity, quoteQuantity, baseAsset, quoteAsset]);
 
   return (
-    <Box className={styles.SwapCreateContainer}>
+    <Box className={`${styles.SwapCreateContainer} panelSwap`}>
       <Stack sx={{alignItems: 'center'}}>
         <Grid container height={35} sx={{marginBottom:'1em'}}>
           <Grid item xs={4} textAlign='left' style={{display:'flex', alignItems:'center'}}><h3>Swap</h3></Grid>
