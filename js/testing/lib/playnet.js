@@ -28,7 +28,7 @@ module.exports = class Playnet extends BaseClass {
 
     this.coordinator = new Coordinator(props.coordinator)
     this.peers = props.peers
-    this.sdks = props.sdks
+    // this.sdks = props.sdks
     this.apps = props.apps
 
     Object.freeze(this)
@@ -57,13 +57,13 @@ module.exports = class Playnet extends BaseClass {
       }
 
       // then start the SDKs
-      for (const id in this.peers) {
-        const peer = this.peers[id]
-        const sdk = new Sdk(peer)
-          .on('log', (level, id, ...args) => this[level](`sdks.${id}`, ...args))
-          .on('error', (err, ...args) => this.emit('error', err, ...args))
-        this.sdks[id] = await sdk.start()
-      }
+      // for (const id in this.peers) {
+      //   const peer = this.peers[id]
+      //   const sdk = new Sdk(peer)
+      //     .on('log', (level, id, ...args) => this[level](`sdks.${id}`, ...args))
+      //     .on('error', (err, ...args) => this.emit('error', err, ...args))
+      //   this.sdks[id] = await sdk.start()
+      // }
 
       // then start the Apps
       for (const id in this.peers) {
@@ -94,10 +94,10 @@ module.exports = class Playnet extends BaseClass {
         await app.stop()
       }
 
-      for (const id in this.sdks) {
-        const sdk = this.sdks[id]
-        await sdk.stop()
-      }
+      // for (const id in this.sdks) {
+      //   const sdk = this.sdks[id]
+      //   await sdk.stop()
+      // }
 
       for (const id in this.peers) {
         const peer = this.peers[id]

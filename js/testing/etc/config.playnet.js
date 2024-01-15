@@ -103,8 +103,8 @@ function appConfig (id) {
   return {
     id,
     browser: {
-      args: ['--window-size=800,600'],
-      defaultViewport: { width: 800, height: 600 },
+      args: ['--window-size=1200,600'],
+      defaultViewport: { width: 1200, height: 600 },
       headless: false,
       slowMo: 50,
       timeout: 10000
