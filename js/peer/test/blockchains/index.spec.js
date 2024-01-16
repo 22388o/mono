@@ -14,7 +14,7 @@ before('setup test environment', function () {
   const USERS = ['alice', 'bob']
   for (const id of USERS) {
     const { blockchains } = config
-    const creds = require(`../../../portal/test/unit/${id}`)
+    const creds = require(`../../../testing/etc/${id}`)
 
     this.config[id] = Object.assign({ id }, config, {
       blockchains: Object.assign({}, blockchains, {

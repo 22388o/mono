@@ -55,6 +55,9 @@
       "debug",
       "fetch",
       "WebSocket"
+    ],
+    "ignore": [
+      "dist"
     ]
   }
 }

@@ -18,7 +18,7 @@ const Helpers = module.exports
  * @type {Object}
  */
 Helpers.PATHS = {
-  contracts: resolve(__dirname, '..', '..', 'portal', 'contracts')
+  contracts: resolve(__dirname, '..', '..', 'evm', 'contracts')
 }
 
 /**
@@ -37,6 +37,8 @@ Helpers.compile = function () {
       language: 'Solidity',
       sources: readdirSync(Helpers.PATHS.contracts)
         .filter(file => extname(file) === '.sol')
+        // TODO: Fix this after upgrading solidity compiler
+        .filter(file => file !== 'PortalToken.sol')
         .map(file => join(Helpers.PATHS.contracts, file))
         .reduce((sources, file) => {
           sources[basename(file)] = { content: readFileSync(file, 'utf-8') }
@@ -119,7 +121,7 @@ Helpers.generate = function (id, config) {
 
       return conf
     }, {})
-    /* eslint-enable no-multi-spaces */
+  /* eslint-enable no-multi-spaces */
 
   return merge({}, config, {
     id,

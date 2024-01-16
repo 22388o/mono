@@ -9,7 +9,7 @@ const { createHash, randomBytes } = require('crypto')
 describe('Ethereum', function () {
   const id = 'alice'
   const { blockchains } = config
-  const creds = require(`../../../portal/test/unit/${id}`)
+  const creds = require(`../../../testing/etc/${id}`)
   const CONFIG = Object.assign({ id }, config, {
     blockchains: Object.assign({}, blockchains, {
       ethereum: Object.assign({}, blockchains.ethereum, creds.ethereum),
