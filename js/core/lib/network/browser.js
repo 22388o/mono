@@ -1,14 +1,14 @@
 /**
- * @file Client implementation for the browser
+ * @file P2P network implementation for the browser
  */
 
-const { BaseClass } = require('@portaldefi/core')
+const { BaseClass } = require('../base_class')
 
 /**
- * Client implementation for the browser
- * @type {Client}
+ * P2P network implementation for the browser
+ * @type {Network}
  */
-module.exports = class Client extends BaseClass {
+class Network extends BaseClass {
   constructor (props) {
     if (props == null) {
       throw Error('expected props to be provided!')
@@ -205,3 +205,8 @@ module.exports = class Client extends BaseClass {
     }
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Network }

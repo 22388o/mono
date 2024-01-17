@@ -2,9 +2,9 @@
  * @file Defines a swap and other related classes
  */
 
-const BaseClass = require('./base_class')
-const Order = require('./order')
-const Util = require('./util')
+const { BaseClass } = require('./base_class')
+const { Order } = require('./order')
+const { Util } = require('..')
 
 /**
  * An object mapping swap status strings to the expected order of transitions

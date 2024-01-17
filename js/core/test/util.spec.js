@@ -2,8 +2,8 @@
  * @file Behavioral specification for utility functions
  */
 
-const Util = require('../lib/util')
 const { expect } = require('chai')
+const { Util } = require('..')
 
 describe('Utility Functions', function () {
   describe('hash()', function () {

@@ -1,16 +1,16 @@
 /**
- * @file Client implementation for node.js
+ * @file P2P network implementation for node.js
  */
 
-const BaseClass = require('../base_class')
 const http = require('http')
-const WebSocket = require('ws')
+const { WebSocket } = require('ws')
+const { BaseClass } = require('../base_class')
 
 /**
- * Client implementation for node.js
- * @type {Client}
+ * P2P network implementation for node.js
+ * @type {Network}
  */
-module.exports = class Client extends BaseClass {
+class Network extends BaseClass {
   constructor (props) {
     if (props == null) {
       throw Error('expected props to be provided!')
@@ -18,9 +18,9 @@ module.exports = class Client extends BaseClass {
       throw Error('expected props.id to be a valid identifier!')
     } else if (props.uid == null || typeof props.uid !== 'string') {
       throw Error('expected props.uid to be a valid identifier!')
-    } else if (props.hostname != null && typeof props.hostname !== 'string') {
+    } else if (props.hostname == null || typeof props.hostname !== 'string') {
       throw Error('expected props.hostname to be a valid hostname/IP address!')
-    } else if (props.port != null && typeof props.port !== 'number') {
+    } else if (props.port == null || typeof props.port !== 'number') {
       throw Error('expected props.port to be a number between 0 and 65535!')
     } else if (props.pathname == null || typeof props.pathname !== 'string') {
       throw Error('expected props.pathname to a valid API path!')
@@ -315,3 +315,8 @@ module.exports = class Client extends BaseClass {
     }
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Network }

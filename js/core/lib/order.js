@@ -2,9 +2,9 @@
  * @file Defines an order
  */
 
-const Assets = require('./assets')
-const BaseClass = require('./base_class')
-const { uuid } = require('./util')
+const { Assets } = require('./assets')
+const { BaseClass } = require('./base_class')
+const { Util } = require('..')
 
 /**
  * A list of supported networks
@@ -36,7 +36,7 @@ const ORDER_STATUS = ['created', 'opened', 'closed']
 /**
  * Defines an order
  */
-module.exports = class Order extends BaseClass {
+class Order extends BaseClass {
   /**
    * Creates a new instance of an order
    * @param {Object} props Properties of the order
@@ -81,7 +81,7 @@ module.exports = class Order extends BaseClass {
       throw new Error(`"${props.quoteQuantity}" is not a valid quantity!`)
     }
 
-    super({ id: props.id || uuid() })
+    super({ id: props.id || Util.uuid() })
 
     Object.seal(Object.assign(this, {
       ts: props.ts || Date.now(),
@@ -250,3 +250,8 @@ module.exports = class Order extends BaseClass {
     }
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Order }

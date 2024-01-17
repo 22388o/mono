@@ -2,7 +2,7 @@
  * @file Store implementation for node.js
  */
 
-const BaseClass = require('../base_class')
+const { BaseClass } = require('../base_class')
 
 /**
  * A weak-map storing private data for each instance of the class
@@ -14,7 +14,7 @@ const INSTANCES = new WeakMap()
  * Store implementation for the node.js
  * @type {Store}
  */
-module.exports = class Store extends BaseClass {
+class Store extends BaseClass {
   constructor (props) {
     super()
 
@@ -38,7 +38,7 @@ module.exports = class Store extends BaseClass {
    * @returns {Object}
    */
   toJSON () {
-    return Object.assign(super.toJSON(), { })
+    return Object.assign(super.toJSON(), {})
   }
 
   /**
@@ -144,3 +144,8 @@ module.exports = class Store extends BaseClass {
     return Promise.resolve()
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Store }

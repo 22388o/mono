@@ -2,13 +2,13 @@
  * @file A base class for all supported blockchains
  */
 
-const BaseClass = require('./base_class')
+const { BaseClass } = require('./base_class')
 
 /**
  * A base class for all blockchains
  * @type {Blockchain}
  */
-module.exports = class Blockchain extends BaseClass {
+class Blockchain extends BaseClass {
   constructor (props) {
     if (props == null) {
       throw Error('no properties specified!')
@@ -59,3 +59,8 @@ module.exports = class Blockchain extends BaseClass {
     throw Error('not implemented!')
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Blockchain }

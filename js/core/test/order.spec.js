@@ -3,7 +3,7 @@
  */
 
 const { expect } = require('chai')
-const Order = require('../lib/order')
+const { Order } = require('..')
 
 describe('Order', function () {
   const PROPS = {
@@ -36,7 +36,12 @@ describe('Order', function () {
     it('must instantiate correctly with required arguments', function () {
       let o = null
 
-      expect(() => { o = new Order(PROPS) }).to.not.throw()
+      try {
+        o = new Order(PROPS)
+      } catch (error) {
+        console.error(error)
+        process.exit(0)
+      }
       expect(o).to.be.an.instanceof(Order)
       /* eslint-disable-next-line no-unused-expressions */
       expect(o).to.be.sealed

@@ -2,8 +2,8 @@
  * @file Behavioral specification for the base class
  */
 
-const BaseClass = require('../lib/base_class')
 const { expect } = require('chai')
+const { BaseClass } = require('..')
 
 describe('Base Class', function () {
   describe('Instantiation', function () {

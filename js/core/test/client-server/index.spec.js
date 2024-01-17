@@ -4,9 +4,10 @@
 
 /* eslint-disable no-unused-expressions */
 
-const { Client, Server } = require('../..')
 const { expect } = require('chai')
 const { basename, join } = require('path')
+const { Network } = require('../..')
+const Server = require('../../../peer/lib/http')
 
 const SERVER_PROPS = {
   id: 'server',
@@ -85,8 +86,8 @@ describe('Client - node.js', function () {
   })
 
   it('must instantiate a client correctly', function () {
-    expect(() => { client = new Client(CLIENT_PROPS) }).to.not.throw()
-    expect(client).to.be.an.instanceof(Client)
+    expect(() => { client = new Network(CLIENT_PROPS) }).to.not.throw()
+    expect(client).to.be.an.instanceof(Network)
     expect(client.isConnected).to.be.false
   })
 
@@ -94,7 +95,7 @@ describe('Client - node.js', function () {
     let isConnected = false
     await client
       .once('connected', instance => {
-        expect(instance).to.be.an.instanceof(Client)
+        expect(instance).to.be.an.instanceof(Network)
         expect(instance.isConnected).to.be.true
         isConnected = true
       })
@@ -157,13 +158,13 @@ describe('Client - node.js', function () {
     let isConnected = client.isConnected
     const returnValue = await client
       .on('disconnected', instance => {
-        expect(instance).to.be.an.instanceof(Client)
+        expect(instance).to.be.an.instanceof(Network)
         expect(instance.isConnected).to.be.false
         isConnected = instance.isConnected
       })
       .disconnect()
 
-    expect(returnValue).to.be.an.instanceof(Client)
+    expect(returnValue).to.be.an.instanceof(Network)
     expect(returnValue.isConnected).to.equal(isConnected)
   })
 })

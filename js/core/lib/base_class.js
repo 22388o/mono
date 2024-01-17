@@ -26,7 +26,7 @@ const LOG_LEVELS = ['debug', 'info', 'warn', 'error']
  *
  * @type {BaseClass}
  */
-module.exports = class BaseClass {
+class BaseClass {
   /**
    * Constructs a new instance of the class
    */
@@ -217,3 +217,8 @@ module.exports = class BaseClass {
       : []
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { BaseClass }

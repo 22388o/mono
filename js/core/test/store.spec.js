@@ -3,7 +3,7 @@
  */
 
 const { expect } = require('chai')
-const Store = require('../lib/store')
+const { Store } = require('..')
 
 describe('Store', function () {
   describe('Instantiation', function () {

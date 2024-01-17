@@ -2,18 +2,16 @@
  * @file The core types used by the Portal code-bases
  */
 
-/**
- * Export the core types
- * @type {Object}
- */
-module.exports = {
-  Assets: require('./lib/assets'),
-  BaseClass: require('./lib/base_class'),
-  Blockchain: require('./lib/blockchain'),
-  Client: require('./lib/client'),
-  Order: require('./lib/order'),
-  Server: require('./lib/server'),
-  Store: require('./lib/store'),
-  Swap: require('./lib/swap'),
-  Util: require('./lib/util')
-}
+const { BaseClass } = require('./lib/base_class')
+Object.assign(module.exports, { BaseClass })
+
+const { Network } = require('./lib/network/node')
+const { Store } = require('./lib/store/node')
+const { Util } = require('./lib/util/node')
+Object.assign(module.exports, { Network, Store, Util })
+
+const { Assets } = require('./lib/assets')
+const { Blockchain } = require('./lib/blockchain')
+const { Order } = require('./lib/order')
+const { Swap } = require('./lib/swap')
+Object.assign(module.exports, { Assets, BaseClass, Blockchain, Order, Swap })
