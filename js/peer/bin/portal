@@ -3,24 +3,24 @@
  * @file Starts the Portal Peer
  */
 
-const Peer = require('../lib/peer')
-const util = require('util')
+const { Peer } = require('../lib/peer')
+const { inspect } = require('util')
 
-/**
- * The main() IIFE
- * @returns {Void}
- */
-;(function main () {
-  const peer = new Peer({ id: 'peer' })
-  const inspect = obj => util.inspect(obj, { depth: null, colors: true })
+  /**
+   * The main() IIFE
+   * @returns {Void}
+   */
+  ; (function main () {
+    const peer = new Peer({ id: 'peer' })
+    const log = obj => inspect(obj, { depth: null, colors: true })
 
-  peer
-    .on('error', console.error)
-    .on('log', (level, ...args) => console.error(level, ...(args.map(inspect))))
-    .start()
+    peer
+      .on('error', console.error)
+      .on('log', (level, ...args) => console.error(level, ...(args.map(log))))
+      .start()
 
-  process
-    .on('SIGTERM', () => peer.stop())
-    .on('uncaughtException', err => { console.error(err); process.exit(1) })
-    .on('unhandledRejection', err => { console.error(err); process.exit(1) })
-}())
+    process
+      .on('SIGTERM', () => peer.stop())
+      .on('uncaughtException', err => { console.error(err); process.exit(1) })
+      .on('unhandledRejection', err => { console.error(err); process.exit(1) })
+  }())
