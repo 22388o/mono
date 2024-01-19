@@ -7,7 +7,7 @@
 describe('Ping', function () {
   it('must handle GET requests', async function () {
     const args = { method: 'GET', path: '/api/v1/ping' }
-    const pong = await this.test.ctx.request(args)
+    const pong = await this.test.ctx.network.request(args)
 
     expect(pong).to.be.an('object')
     expect(pong['@type']).to.be.a('string').that.equals('Pong')
@@ -18,7 +18,7 @@ describe('Ping', function () {
   it('must handle POST requests sent without local-time', async function () {
     const args = { method: 'POST', path: '/api/v1/ping' }
     const data = {}
-    const pong = await this.test.ctx.request(args, data)
+    const pong = await this.test.ctx.network.request(args, data)
 
     expect(pong).to.be.an('object')
     expect(pong['@type']).to.be.a('string').that.equals('Pong')
@@ -29,7 +29,7 @@ describe('Ping', function () {
   it('must handle POST requests sent without local-time', async function () {
     const args = { method: 'POST', path: '/api/v1/ping' }
     const data = { now: Date.now() }
-    const pong = await this.test.ctx.request(args, data)
+    const pong = await this.test.ctx.network.request(args, data)
 
     expect(pong).to.be.an('object')
     expect(pong['@type']).to.be.a('string').that.equals('Pong')

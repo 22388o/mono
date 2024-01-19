@@ -15,7 +15,7 @@ describe('DEX - Limit orders', function () {
       expect(o).to.be.an('object')
       expect(o.id).to.be.a('string')
       expect(o.ts).to.be.a('number')
-      expect(o.uid).to.be.a('string').that.equals('foo')
+      expect(o.uid).to.be.a('string').that.equals('alice')
       expect(o.type).to.be.a('string').that.equals('limit')
       expect(o.side).to.be.a('string').that.equals('bid')
       expect(o.baseAsset).to.be.a('string').that.equals('BTC')
@@ -39,7 +39,7 @@ describe('DEX - Limit orders', function () {
         quoteQuantity: 10
       })
 
-      return this.test.ctx.request(args, data)
+      return this.test.ctx.network.request(args, data)
         .then(validate)
         .then(o => { order = o })
     })
@@ -52,7 +52,7 @@ describe('DEX - Limit orders', function () {
         quoteAsset: order.quoteAsset
       }
 
-      return this.test.ctx.request(args, data)
+      return this.test.ctx.network.request(args, data)
         .then(validate)
     })
   })

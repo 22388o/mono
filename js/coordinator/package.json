@@ -18,7 +18,9 @@
     "watch": "npm test -- --watch"
   },
   "dependencies": {
-    "@portaldefi/core": "file:../core"
+    "@portaldefi/core": "file:../core",
+    "mime": "^3.0.0",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "chai": "^4.3.7",
@@ -37,9 +39,10 @@
     "timeout": 2000,
     "ui": "bdd",
     "watch-files": [
-      "node_modules/@portaldefi/core/**/*.js",
-      "lib/**/*.js",
-      "test/**/*.js"
+      "../core/**/*.js",
+      "../peer/**/*.js",
+      "./lib/**/*.js",
+      "./test/**/*.js"
     ]
   },
   "standard": {
