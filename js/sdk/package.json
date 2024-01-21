@@ -2,31 +2,54 @@
   "name": "@portaldefi/sdk",
   "version": "0.0.0",
   "description": "The Portal-Defi SDK",
-  "main": "index.js",
-  "exports": {
-    "import": "./index.mjs",
-    "require": "./index.js"
+  "source": "lib/index.js",
+  "main": "lib/index.js",
+  "module": "dist/module.js",
+  "targets": {
+    "main": false,
+    "module": {
+      "optimize": true,
+      "includeNodeModules": true
+    },
+    "test": {
+      "source": "test/index.html",
+      "distDir": "dist/test",
+      "includeNodeModules": true,
+      "publicUrl": "/"
+    }
   },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "build": "parcel build",
-    "clean": "rm -rf .parcel-cache dist node_modules package-lock.json test/dist",
-    "coverage": "c8 mocha",
+    "clean": "rm -rf .parcel-cache dist node_modules package-lock.json",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "test": "mocha test/unit",
-    "watch": "npm test -- --watch"
+    "test": "mocha",
+    "watch": "parcel watch"
   },
   "dependencies": {
     "@portaldefi/core": "file:../core",
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "chai": "^4.3.7",
+    "@parcel/config-default": "^2.11.0",
+    "@portaldefi/coordinator": "file:../coordinator",
+    "@portaldefi/peer": "file:../peer",
+    "chai": "^4.4.1",
+    "crypto-browserify": "^3.12.0",
+    "events": "^3.3.0",
     "mocha": "^10.2.0",
-    "parcel": "^2.9.3",
-    "puppeteer": "^20.9.0",
-    "standard": "^17.0.0"
+    "parcel": "latest",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "punycode": "^1.4.1",
+    "puppeteer": "^21.7.0",
+    "standard": "^17.1.0",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.3",
+    "web3": "^4.3.0"
   },
   "mocha": {
     "bail": true,
@@ -56,7 +79,8 @@
       "it"
     ],
     "ignore": [
-      "dist"
+      "dist",
+      "test/mocha.js"
     ]
   }
 }

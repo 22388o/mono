@@ -9,7 +9,7 @@ const Swap = require('../../coordinator/lib/swaps/swap')
  * Expose the interface to all swaps
  * @type {Swaps}
  */
-module.exports = class Swaps extends BaseClass {
+class Swaps extends BaseClass {
   constructor (props) {
     if (props.network == null) {
       throw Error('expected props.network to be a valid network client!')
@@ -58,3 +58,8 @@ module.exports = class Swaps extends BaseClass {
     return Promise.resolve(this)
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Swaps }

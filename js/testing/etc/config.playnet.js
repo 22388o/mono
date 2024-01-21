@@ -59,8 +59,10 @@ function peerConfig (id, coordinator) {
     id,
     hostname: '127.0.0.1',
 
+    network: coordinator,
+    store: undefined,
+
     blockchains: { ethereum: gethConfig(id), lightning: lndConfig(id) },
-    coordinator,
     dex: undefined,
     swaps: undefined
   }

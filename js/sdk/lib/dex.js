@@ -2,13 +2,13 @@
  * @file The interface to the decentralized exchange
  */
 
-const { BaseClass, Util: { uuid } } = require('@portaldefi/core')
+const { BaseClass, Util } = require('@portaldefi/core')
 
 /**
  * The interface to the decentralized exchange
  * @type {Dex}
  */
-module.exports = class Dex extends BaseClass {
+class Dex extends BaseClass {
   constructor (props) {
     if (props.network == null) {
       throw Error('expected props.network to be a valid network client!')
@@ -50,7 +50,7 @@ module.exports = class Dex extends BaseClass {
       method: 'PUT',
       path: '/api/v1/dex/limit'
     }, {
-      id: uuid(),
+      id: Util.uuid(),
       uid: this.network.uid,
       side: order.side,
       baseAsset: order.baseAsset,
@@ -78,3 +78,8 @@ module.exports = class Dex extends BaseClass {
     })
   }
 }
+
+/**
+ * Define the named exports of the module
+ */
+module.exports = { Dex }

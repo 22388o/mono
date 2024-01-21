@@ -2,15 +2,15 @@
  * @file The Portal SDK
  */
 
-const { BaseClass, Client, Store } = require('@portaldefi/core')
-const Dex = require('./dex')
-const Swaps = require('./swaps')
+const { BaseClass, Network, Store } = require('@portaldefi/core')
+const { Dex } = require('./dex')
+const { Swaps } = require('./swaps')
 
 /**
  * The Portal SDK
  * @type {Sdk}
  */
-module.exports = class Sdk extends BaseClass {
+class Sdk extends BaseClass {
   /**
    * Creates a new instance of the Portal SDK
    * @param {Object} props Properties of the instance
@@ -19,6 +19,10 @@ module.exports = class Sdk extends BaseClass {
    * @param {Object} props.swaps Properties of the swaps
    */
   constructor (props) {
+    if (props == null) {
+      throw Error('expected props to be provided!')
+    }
+
     super({ id: props.id })
 
     const bubbleEvents = emitter => emitter
@@ -29,7 +33,7 @@ module.exports = class Sdk extends BaseClass {
      * Interface to the underlying network (browser/node.js)
      * @type {Network}
      */
-    this.network = bubbleEvents(new Client({
+    this.network = bubbleEvents(new Network({
       id: 'network',
       uid: props.id,
       hostname: props.hostname,
@@ -136,3 +140,9 @@ module.exports = class Sdk extends BaseClass {
     return this
   }
 }
+
+/**
+ * Export the SDK class
+ * @type {Sdk}
+ */
+module.exports = { Sdk }
