@@ -2,8 +2,15 @@
  * @file Behavioral specification for the SDK
  */
 
-import { Sdk } from '..'
+import { expect } from 'chai'
+import mocha from 'mocha'
+import SDK from '..'
+const { Sdk } = SDK
 
+// initialize mocha
+mocha.setup('bdd')
+
+// define the test suite
 describe('SDK - browser', function () {
   describe('initialization', function () {
     it('must throw when initialized without required arguments', function () {
@@ -36,3 +43,6 @@ describe('SDK - browser', function () {
     })
   })
 })
+
+// run the tests
+mocha.run()

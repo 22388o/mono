@@ -3,7 +3,7 @@
  */
 
 const { Parcel } = require('@parcel/core')
-const { writeFileSync } = require('fs')
+const { mkdirSync, writeFileSync } = require('fs')
 const { join } = require('path')
 const puppeteer = require('puppeteer')
 const { inspect } = require('util')
@@ -14,11 +14,36 @@ describe.only('SDK - browser', function () {
 
   before('spin up puppeteer', async function () {
     try {
+      // write out the index.html to load in the browser
+      mkdirSync(join(__dirname, 'dist'), { recursive: true })
+      writeFileSync(join(__dirname, 'dist', 'index.html'), `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>PortalDefi SDK Tests</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link rel="stylesheet" href="https://unpkg.com/mocha@10.2.0/mocha.css" />
+        </head>
+        <body>
+          <div id="mocha"></div>
+          <script>
+            var sdkProps = {
+              id: "${this.test.ctx.peer.id}",
+              hostname: "${this.test.ctx.peer.hostname}",
+              port: ${this.test.ctx.peer.port},
+              pathname: "${this.test.ctx.peer.pathname}"
+            }
+          </script>
+          <script type="module" src="../browser.js"></script>
+        </body>
+        </html>
+      `)
+
       // bundle the test driver
       const bundler = new Parcel({
         defaultConfig: '@parcel/config-default',
-        entries: join(__dirname, 'tests.js'),
-        logLevel: 'verbose',
+        entries: join(__dirname, 'dist', 'index.html'),
         targets: {
           main: {
             includeNodeModules: true,
@@ -31,32 +56,6 @@ describe.only('SDK - browser', function () {
         }]
       })
       await bundler.run()
-
-      // write out the index.html to loadin the browser
-      writeFileSync(join(__dirname, 'dist', 'index.html'), `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-          <title>PortalDefi SDK Tests</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <link rel="stylesheet" href="https://unpkg.com/mocha@10.2.0/mocha.css" />
-        </head>
-        <body>
-          <div id="mocha"></div>
-          <script src="https://unpkg.com/mocha@10.2.0/mocha.js"></script>
-          <script src="https://unpkg.com/chai@4.4.1/chai.js"></script>
-          <script>
-            var expect = chai.expect
-            mocha.setup('bdd')
-          </script>
-          <script src="tests.js"></script>
-          <script>
-            mocha.run()
-          </script>
-        </body>
-        </html>
-      `)
 
       // spin up the browser and load the test page
       this.browser = await puppeteer.launch({
