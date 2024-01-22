@@ -4,24 +4,22 @@
   "description": "The Portal-Defi SDK",
   "source": "lib/index.js",
   "main": "dist/index.js",
-  "module": "dist/module.js",
+  "browser": "dist/browser.js",
   "targets": {
     "main": {
       "context": "node",
-      "outputFormat": "commonjs",
       "optimize": false,
       "includeNodeModules": true
     },
-    "module": {
+    "browser": {
       "context": "browser",
-      "outputFormat": "esmodule",
       "optimize": false,
       "includeNodeModules": true
     }
   },
   "scripts": {
     "build": "parcel build",
-    "clean": "rm -rf .parcel-cache dist node_modules package-lock.json",
+    "clean": "rm -rf .parcel-cache dist node_modules package-lock.json test/dist",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",

@@ -38,7 +38,7 @@ const GLOBALS = { debug, expect }
  * The configuration for the testbed
  * @type {Array}
  */
-const PLAYNET_PROPS = require('../etc/config.devnet')
+const PLAYNET_PROPS = require('../etc/config.playnet')
 
 /**
  * Export the Testbed functions

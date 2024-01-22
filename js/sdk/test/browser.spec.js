@@ -9,7 +9,7 @@ const puppeteer = require('puppeteer')
 const { inspect } = require('util')
 const pkg = require('../package.json')
 
-describe.only('SDK - browser', function () {
+describe('SDK - browser', function () {
   let browser
 
   before('spin up puppeteer', async function () {

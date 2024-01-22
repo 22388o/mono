@@ -3,9 +3,9 @@
  */
 
 const { BaseClass } = require('@portaldefi/core')
-const Coordinator = require('@portaldefi/coordinator')
-const Peer = require('@portaldefi/peer')
-const Sdk = require('@portaldefi/sdk')
+const { Coordinator } = require('@portaldefi/coordinator')
+const { Peer } = require('@portaldefi/peer')
+const { Sdk } = require('@portaldefi/sdk')
 
 /**
  * Defines a playnet

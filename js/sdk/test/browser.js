@@ -4,8 +4,7 @@
 
 import { expect } from 'chai'
 import mocha from 'mocha'
-import SDK from '..'
-const { Sdk } = SDK
+import { Sdk } from '..'
 
 // initialize mocha
 mocha.setup('bdd')
