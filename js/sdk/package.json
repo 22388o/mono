@@ -3,19 +3,16 @@
   "version": "0.0.0",
   "description": "The Portal-Defi SDK",
   "source": "lib/index.js",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "module": "dist/module.js",
   "targets": {
-    "main": false,
-    "module": {
+    "main": {
       "optimize": true,
       "includeNodeModules": true
     },
-    "test": {
-      "source": "test/index.html",
-      "distDir": "dist/test",
-      "includeNodeModules": true,
-      "publicUrl": "/"
+    "module": {
+      "optimize": true,
+      "includeNodeModules": true
     }
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",

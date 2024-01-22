@@ -13,7 +13,7 @@ describe.only('SDK - browser', function () {
         args: ['--window-size=1200,800'],
         defaultViewport: { width: 1200, height: 800 },
         headless: false,
-        timeout: 10000
+        timeout: 5000
       })
 
       const pages = await browser.pages()

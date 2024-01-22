@@ -7,15 +7,12 @@
   },
   "main": "lib/peer.js",
   "scripts": {
-    "clean": "rm -rf node_modules",
-    "clean:all": "npm run clean && npm run clean:lock",
-    "clean:lock": "rm -f package-lock.json",
+    "clean": "rm -rf node_modules package-lock.json",
     "lint": "standard",
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
-    "start": "node bin/portal",
     "test": "mocha",
-    "watch": "npm test -- --watch"
+    "watch": "mocha --watch"
   },
   "dependencies": {
     "@portaldefi/core": "file:../core",

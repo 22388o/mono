@@ -6,6 +6,7 @@ const { Parcel } = require('@parcel/core')
 const { Coordinator } = require('@portaldefi/coordinator')
 const { Peer } = require('@portaldefi/peer')
 const { expect } = require('chai')
+const { writeFileSync } = require('fs')
 const { join } = require('path')
 const { inspect } = require('util')
 const pkg = require('../package.json')
@@ -16,6 +17,34 @@ const playnet = require('../../testing/etc/config.playnet')
  * @type {Boolean}
  */
 const isDebugEnabled = process.argv.includes('--debug')
+
+const HTML = `
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Mocha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/mocha@10.2.0/mocha.css" />
+</head>
+
+<body>
+  <div id="mocha"></div>
+  <script src="https://unpkg.com/mocha@10.2.0/mocha.js"></script>
+  <script src="https://unpkg.com/chai@4.4.1/chai.js"></script>
+  <script>
+    var expect = chai.expect
+    mocha.setup('bdd')
+  </script>
+  <script src="tests.js"></script>
+  <script>
+    mocha.run()
+  </script>
+</body>
+
+</html>
+`
 
 /**
  * Prints logs to the console, when debug mode is enabled
@@ -37,15 +66,30 @@ const debug = isDebugEnabled
 const GLOBALS = { debug, expect }
 
 /**
+ * The root directory to serve the HTML assets from
+ * @type {String}
+ */
+const root = join(__dirname, 'dist')
+
+/**
  * Start the build
  */
 let watcher = null
 let ready = false
 new Parcel({
   defaultConfig: '@parcel/config-default',
-  source: join(__dirname, '..', pkg.source),
-  distDir: join(__dirname, '..', 'dist'),
-  targets: { module: pkg.targets.module, test: pkg.targets.test }
+  entries: join(__dirname, 'tests.js'),
+  logLevel: 'verbose',
+  targets: {
+    main: {
+      includeNodeModules: true,
+      distDir: root
+    }
+  },
+  additionalReporters: [{
+    packageName: '@parcel/reporter-cli',
+    resolveFrom: join(__dirname, '..')
+  }]
 }).watch((err, event) => {
   if (err) {
     console.error('error', 'parcel.error', {
@@ -75,6 +119,7 @@ new Parcel({
   }
 }).then(result => {
   watcher = result
+  writeFileSync(join(root, 'index.html'), HTML)
 })
 
 /**
@@ -92,11 +137,7 @@ before('spin up the test environment', function (done) {
   new Coordinator(playnet.coordinator)
     .on('log', (level, ...args) => debug(level, ...args))
     .on('error', err => { console.error(err); process.exit(-1) })
-    .once('start', network => new Peer({
-      ...playnet.peers.alice,
-      root: join(__dirname, '..', 'dist', 'test'),
-      network
-    })
+    .once('start', network => new Peer({ ...playnet.peers.alice, root, network })
       .on('log', (level, ...args) => debug(level, ...args))
       .on('error', err => { console.error(err); process.exit(-1) })
       .once('start', () => {
