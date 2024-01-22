@@ -2,9 +2,9 @@
  * @file The core types used by the Portal code-bases
  */
 
-import { Network } from './lib/client/browser'
+import { Network } from './lib/network/browser'
 import { Store } from './lib/store/browser'
-import Util from './lib/util/browser'
+import { Util } from './lib/util/browser'
 
 import { Assets } from './lib/assets'
 import { BaseClass } from './lib/base_class'

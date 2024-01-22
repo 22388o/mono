@@ -8,16 +8,17 @@
   "targets": {
     "main": {
       "context": "node",
+      "outputFormat": "commonjs",
       "optimize": false,
       "includeNodeModules": true
     },
     "module": {
       "context": "browser",
+      "outputFormat": "esmodule",
       "optimize": false,
       "includeNodeModules": true
     }
   },
-  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "build": "parcel build",
     "clean": "rm -rf .parcel-cache dist node_modules package-lock.json",
