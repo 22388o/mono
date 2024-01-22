@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WalletInfoContainer component test renders component 1`] = `
+<div>
+  <div
+    class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+    style="display: block;"
+  >
+    <div
+      class="MuiStack-root css-1rzuxdl-MuiStack-root"
+    >
+      <div
+        class="MuiStack-root css-m69qwo-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-313u06-MuiStack-root"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 undefined undefined css-ahj2mt-MuiTypography-root"
+          >
+            Activity
+          </p>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+            data-testid="KeyboardDoubleArrowRightIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6.41 6 5 7.41 9.58 12 5 16.59 6.41 18l6-6z"
+            />
+            <path
+              d="m13 6-1.41 1.41L16.17 12l-4.58 4.59L13 18l6-6z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
+        class="MuiStack-root css-nen11g-MuiStack-root"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1603n5b-MuiTypography-root"
+        >
+          No Activities
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
