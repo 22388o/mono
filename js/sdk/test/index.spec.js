@@ -148,7 +148,16 @@ before('spin up the test environment', function (done) {
         }
       })
       .start()
-      .then(peer => { this.peer = peer })
+      .then(peer => {
+        this.peer = peer
+
+        global.sdkProps = {
+          id: 'sdk',
+          hostname: this.peer.hostname,
+          port: this.peer.port,
+          pathname: this.peer.pathname
+        }
+      })
       .catch(done))
     .start()
     .then(coordinator => { this.coordinator = coordinator })
