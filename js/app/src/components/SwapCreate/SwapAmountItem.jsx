@@ -3,7 +3,6 @@ import styles from '../../styles/SwapCreate.module.css'
 import { Grid, Button, IconButton, Divider } from '@mui/material'
 import { walletStore } from '../../syncstore/walletstore'
 import { MyModal } from '../../MyModal/MyModal'
-import { getMinimizedAssets } from '../../../../swap-client/src/selector'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace'
 import { AssetItem } from './AssetItem'
 import { Close } from '@mui/icons-material'
@@ -39,6 +38,35 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
     }
   }, [])
 
+  const getMinimizedAssets = (wallet) => {
+    let nftCount = 0
+    wallet.assets.forEach(asset => {
+      if (asset.isNFT && asset.balance > 0) nftCount++
+    })
+  
+    const arr = []; const assets = wallet.assets
+    assets.forEach(asset => {
+      if (asset.isNFT === false) {
+        arr.push({
+          title: asset.title,
+          type: asset.type,
+          amount: 0.53,
+          isNFT: false,
+          img_url: asset.img_url,
+          rate: asset.rate
+        })
+      }
+    })
+    arr.push({
+      title: 'Collectibles',
+      type: null,
+      amount: nftCount,
+      isNFT: true,
+      img_url: '/public/nft/1.png',
+      rate: 1
+    })
+    return arr
+  }
   return (
     <>
       <Grid container direction='row' className={className} sx={{ height:'48px' }}>
