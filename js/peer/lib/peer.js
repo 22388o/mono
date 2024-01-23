@@ -93,11 +93,17 @@ class Peer extends Http {
    * @inheritdoc
    */
   async start () {
+    console.log("peer.js starting")
     await this.store.open()
+    console.log("store.open()")
     await this.swaps.sync()
+    console.log("swaps.sync()")
     await this.blockchains.connect()
+    console.log("blockchains.connect()")
     await this.network.connect()
+    console.log("network.connect()")
     return super.start()
+    console.log("super.start()")
   }
 
   /**
