@@ -13,7 +13,7 @@ const App = require('../lib/app')
  * @type {Playnet}
  */
 module.exports = class Playnet extends BaseClass {
-  constructor(props) {
+  constructor (props) {
     if (props == null) {
       throw Error('no props specified!')
     } else if (props.id != null && typeof props.id !== 'string') {

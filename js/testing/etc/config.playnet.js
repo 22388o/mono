@@ -39,7 +39,7 @@ Config.peers = {
  */
 Config.sdks = {
   alice: sdkConfig('alice', Config.peers.alice),
-  bob: sdkConfig('bob', Config.peers.bob),
+  bob: sdkConfig('bob', Config.peers.bob)
 }
 
 /**
@@ -48,7 +48,7 @@ Config.sdks = {
  */
 Config.apps = {
   alice: sdkConfig('alice', Config.peers.alice),
-  bob: sdkConfig('bob', Config.peers.bob),
+  bob: sdkConfig('bob', Config.peers.bob)
 }
 
 /**
@@ -90,14 +90,14 @@ function peerConfig (id, coordinator) {
  * Generates configuration for the specified sdk
  * @param {String} id The unique identifier of the sdk instance
  * @param {Object}} peer The peer to connect to
- * @returns 
+ * @returns
  */
 function sdkConfig (id, peer) {
   return {
     id,
     hostname: peer.hostname,
     port: peer.port,
-    pathname: peer.pathname,
+    pathname: peer.pathname
   }
 }
 
@@ -105,14 +105,14 @@ function sdkConfig (id, peer) {
  * Generates configuration for the specified app
  * @param {String} id The unique identifier of the app instance
  * @param {Object}} peer The peer to connect to
- * @returns 
+ * @returns
  */
 function appConfig (id, peer) {
   return {
     id,
     hostname: peer.hostname,
     port: peer.port,
-    pathname: peer.pathname,
+    pathname: peer.pathname
   }
 }
 
