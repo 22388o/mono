@@ -123,7 +123,7 @@ Testbed.afterAll = async function () {
  * @returns {Promise<void>}
  */
 async function buildApp () {
-  const entryFile = join(__dirname, '..', '..', 'app', 'src', 'index.jsx')
+  const entryFile = join(__dirname, '..', '..', 'app', 'src', 'index.html')
   const options = {
     entries: entryFile,
     defaultConfig: '@parcel/config-default'
