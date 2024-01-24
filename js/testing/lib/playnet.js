@@ -5,7 +5,7 @@
  const { BaseClass } = require('@portaldefi/core')
  const Coordinator = require('@portaldefi/coordinator')
  const Peer = require('@portaldefi/peer')
- const Sdk = require('@portaldefi/sdk')
+//  const Sdk = require('@portaldefi/sdk')
  const App = require('../lib/app')
  
  /**
