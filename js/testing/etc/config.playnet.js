@@ -19,18 +19,36 @@ const PATH_PLAYNET = resolve(process.env.PORTAL_ROOT, 'playnet')
 const Config = module.exports = {}
 
 /**
- * Configuration for the coordinator node
+ * Configuration for the coordinator instance
  * @type {Object}
  */
 Config.coordinator = coordinatorConfig('coordinator')
 
 /**
- * Configuration for each of the peer nodes
+ * Configuration for each of the peer instances
  * @type {Object}
  */
 Config.peers = {
   alice: peerConfig('alice', Config.coordinator),
   bob: peerConfig('bob', Config.coordinator)
+}
+
+/**
+ * Configuration for each of the sdk instances
+ * @type {Object}
+ */
+Config.sdks = {
+  alice: sdkConfig('alice', Config.peers.alice),
+  bob: sdkConfig('bob', Config.peers.bob),
+}
+
+/**
+ * Configuration for each of the app instances
+ * @type {Object}
+ */
+Config.apps = {
+  alice: sdkConfig('alice', Config.peers.alice),
+  bob: sdkConfig('bob', Config.peers.bob),
 }
 
 /**
@@ -50,7 +68,7 @@ function coordinatorConfig (id) {
 
 /**
  * Generates configuration for the specified peer
- * @param {String} id The unique identifier of the coordinator node
+ * @param {String} id The unique identifier of the peer node
  * @param {Object} coordinator The configuration to connect to the coordinator
  * @returns {Object}
  */
@@ -65,6 +83,36 @@ function peerConfig (id, coordinator) {
     blockchains: { ethereum: gethConfig(id), lightning: lndConfig(id) },
     dex: undefined,
     swaps: undefined
+  }
+}
+
+/**
+ * Generates configuration for the specified sdk
+ * @param {String} id The unique identifier of the sdk instance
+ * @param {Object}} peer The peer to connect to
+ * @returns 
+ */
+function sdkConfig (id, peer) {
+  return {
+    id,
+    hostname: peer.hostname,
+    port: peer.port,
+    pathname: peer.pathname,
+  }
+}
+
+/**
+ * Generates configuration for the specified app
+ * @param {String} id The unique identifier of the app instance
+ * @param {Object}} peer The peer to connect to
+ * @returns 
+ */
+function appConfig (id, peer) {
+  return {
+    id,
+    hostname: peer.hostname,
+    port: peer.port,
+    pathname: peer.pathname,
   }
 }
 
