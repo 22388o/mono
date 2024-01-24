@@ -3,8 +3,8 @@
  */
 
  const { BaseClass } = require('@portaldefi/core')
- const Coordinator = require('@portaldefi/coordinator')
- const Peer = require('@portaldefi/peer')
+ const { Coordinator } = require('@portaldefi/coordinator')
+ const { Peer } = require('@portaldefi/peer')
 //  const Sdk = require('@portaldefi/sdk')
  const App = require('../lib/app')
  
@@ -70,7 +70,7 @@
          const peer = this.peers[id]
          const props = Object.assign({}, this.apps[id], {
            hostname: peer.hostname,
-           port: peer.port
+           port: Number(peer.port)
          })
          const app = new App(props)
            .on('log', (level, id, ...args) => this[level](`apps.${id}`, ...args))

@@ -48,8 +48,8 @@ class Peer extends Http {
       id: 'network',
       uid: props.id,
       hostname: props.network.hostname,
-      port: props.network.port,
-      pathname: props.network.pathname
+      port: Number(props.network.port),
+      pathname: props.network.pathname || '/api/v1'
     }))
 
     // initialize the store
