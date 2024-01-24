@@ -3,18 +3,21 @@ import { Box, Grid, Stack, Button, IconButton, Divider } from "@mui/material";
 import { getBTCPrice, getETHPrice } from "../../utils/apis";
 import styles from '../../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
-import { hashSecret, log } from "../../utils/helpers";
+import { hashSecret } from "../../utils/helpers";
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import { walletStore } from "../../syncstore/walletstore";
 import { activitiesStore } from "../../syncstore/activitiesstore";
 import { toast } from "react-toastify";
+import { WALLET_COINS } from '../../utils/constants';
+
 
 /**
  * Swap Form Component which handles swap
  */
 export const SwapCreate = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
-  const ASSET_TYPES = globalWallet.assets;
+  const ASSET_TYPES = WALLET_COINS; 
+
 
   const [baseQuantity, setBaseQuantity] = useState(0);
   const [quoteQuantity, setQuoteQuantity] = useState(0);
@@ -43,18 +46,23 @@ export const SwapCreate = () => {
   }, []);
 
   const coinTypeChanged = useCallback((isBase, asset) => {
-    let another = isBase ? quoteAsset : baseAsset;
-
-    if(!ASSET_TYPES[baseAsset].isNFT && !ASSET_TYPES[quoteAsset].isNFT) another = ASSET_TYPES[asset].type === 'BTC' ? 1 : 0;
-    if(isBase) {
-      setBaseAsset(asset);
-      setQuoteAsset(another);
+    let anotherAssetIndex = isBase ? quoteAsset : baseAsset;
+    let currentAssetIndex = ASSET_TYPES.findIndex(a => a.title === asset.title);
+  
+    if (currentAssetIndex !== -1) {
+      if (!ASSET_TYPES[baseAsset].isNFT && !ASSET_TYPES[quoteAsset].isNFT) {
+        anotherAssetIndex = ASSET_TYPES[currentAssetIndex].type === 'BTC' ? 1 : 0;
+      }
+      if (isBase) {
+        setBaseAsset(currentAssetIndex);
+        setQuoteAsset(anotherAssetIndex);
+      } else {
+        setQuoteAsset(currentAssetIndex);
+        setBaseAsset(anotherAssetIndex);
+      }
     }
-    else {
-      setQuoteAsset(asset);
-      setBaseAsset(another);
-    }
-  }, [ASSET_TYPES, baseAsset, quoteAsset, curPrices, baseQuantity, quoteQuantity]);
+  }, [ASSET_TYPES, baseAsset, quoteAsset]);
+  
 
 
   /**
