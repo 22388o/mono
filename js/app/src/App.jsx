@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
   Route,
   BrowserRouter as Router,
@@ -21,19 +21,22 @@ if(typeof window !== 'undefined') {
 function App () {
   const SDK = useSyncExternalStore(sdkStore.subscribe, () => sdkStore.currentState);
   const [context, setContext] = useState({})
-  const url = new URL(window.location);
-  const sdkProps = {
-    id: 'bob',
-    hostname: url.hostname,
-    port: Number(url.port),
-    pathname: '/api/v1'
-  }
-  const sdk = new Sdk(sdkProps)
-    .on("log", (level, ...args) => console[level](...args))
-    .on("error", (err, ...args) => console.error(err, ...args))
-  sdk.start().then(()=>{
-    await sdkStore.dispatch({ type: 'SIGN_IN', payload: sdk })
-  })
+
+  useEffect(() => {
+    const url = new URL(window.location);
+    const sdkProps = {
+      id: 'bob',
+      hostname: url.hostname,
+      port: Number(url.port),
+      pathname: '/api/v1'
+    }
+    const sdk = new Sdk(sdkProps)
+      .on("log", (level, ...args) => console[level](...args))
+      .on("error", (err, ...args) => console.error(err, ...args))
+    sdk.start().then(async ()=>{
+      await sdkStore.dispatch({ type: 'SIGN_IN', payload: sdk })
+    })
+  }, []);
   
   return (
     <ThemeProvider theme={DEFAULT_THEME}>
