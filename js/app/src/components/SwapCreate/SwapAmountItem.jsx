@@ -27,7 +27,7 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
         <Grid item xs={5} textAlign='right' sx={{display:'flex',alignItems:'center',justifyContent:'flex-end'}}>
           <select value={WALLET_COINS[assetId].title} onChange={handleAssetChange} className={`${styles['coin-select']} coin-select asset`}>
             {WALLET_COINS.map((asset, index) => (
-              <option key={index} value={asset.title}>{asset.title}</option>
+              <option key={index} value={asset.type}>{asset.title}</option>
             ))}
           </select>
         </Grid>
