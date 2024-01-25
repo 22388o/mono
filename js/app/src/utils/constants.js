@@ -16,7 +16,7 @@ export const WALLET_COINS = [{
   type: 'BTC',
   rate: 10000,
   connected: false,
-  network: 'lightning.btc',
+  network: 'lightning',
   img_url: 'https://github.com/dapphub/trustwallet-assets/blob/master/blockchains/bitcoin/info/logo.png?raw=true',
   isNFT: false,
   data: null,

@@ -51,7 +51,6 @@ module.exports = class Playnet extends BaseClass {
       // deploy dist
       const root = join(__dirname, '..', 'dist')
       console.log("root", root)
-      console.log("network", network)
 
       // then start the peers
       for (const id in this.peers) {

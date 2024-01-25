@@ -184,7 +184,7 @@ class Network extends BaseClass {
   _onMessage (data) {
     let event, arg
     try {
-      arg = JSON.parse(data)
+      arg = JSON.parse(data.data)
 
       if (arg['@type'] != null && arg.status != null) {
         event = `${arg['@type'].toLowerCase()}.${arg.status}`

@@ -20,7 +20,6 @@ export const SwapCreate = () => {
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const ASSET_TYPES = WALLET_COINS; 
 
-
   const [baseQuantity, setBaseQuantity] = useState(0);
   const [quoteQuantity, setQuoteQuantity] = useState(0);
   const [baseAsset, setBaseAsset] = useState(0);
@@ -148,7 +147,7 @@ export const SwapCreate = () => {
       quoteInfo: ASSET_TYPES[quoteAsset].info
     };
     
-    await SDK.submitLimitOrder(request).then(data => {
+    await SDK.sdk.dex.submitLimitOrder(request).then(data => {
       console.log("submitLimitOrder response", data)
     
       const curDate = new Date();

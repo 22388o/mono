@@ -19,7 +19,6 @@ if(typeof window !== 'undefined') {
 }
 
 function App () {
-  const SDK = useSyncExternalStore(sdkStore.subscribe, () => sdkStore.currentState);
   const [context, setContext] = useState({})
 
   useEffect(() => {
