@@ -7,7 +7,13 @@ import mocha from 'mocha'
 import { Sdk } from '..'
 
 // initialize mocha
-mocha.setup('bdd')
+try {
+  mocha
+    .setup('bdd')
+    .reporter('html')
+} catch (err) {
+  console.error(err)
+}
 
 // define the test suite
 describe('SDK - browser', function () {

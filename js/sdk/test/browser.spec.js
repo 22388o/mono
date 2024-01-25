@@ -4,19 +4,22 @@
 
 const { Parcel } = require('@parcel/core')
 const { mkdirSync, writeFileSync } = require('fs')
-const { join } = require('path')
+const { dirname, join } = require('path')
 const puppeteer = require('puppeteer')
 const { inspect } = require('util')
 const pkg = require('../package.json')
 
-describe('SDK - browser', function () {
+describe.only('SDK - browser', function () {
   let browser
 
   before('spin up puppeteer', async function () {
     try {
+      const { peer } = this.test.ctx
+      const testDriver = join(__dirname, 'dist', 'index.html')
+
       // write out the index.html to load in the browser
-      mkdirSync(join(__dirname, 'dist'), { recursive: true })
-      writeFileSync(join(__dirname, 'dist', 'index.html'), `
+      mkdirSync(dirname(testDriver), { recursive: true })
+      writeFileSync(testDriver, `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -29,10 +32,10 @@ describe('SDK - browser', function () {
           <div id="mocha"></div>
           <script>
             var sdkProps = {
-              id: "${this.test.ctx.peer.id}",
-              hostname: "${this.test.ctx.peer.hostname}",
-              port: ${this.test.ctx.peer.port},
-              pathname: "${this.test.ctx.peer.pathname}"
+              id: "${peer.id}",
+              hostname: "${peer.hostname}",
+              port: ${peer.port},
+              pathname: "${peer.pathname}"
             }
           </script>
           <script type="module" src="../browser.js"></script>
@@ -43,11 +46,12 @@ describe('SDK - browser', function () {
       // bundle the test driver
       const bundler = new Parcel({
         defaultConfig: '@parcel/config-default',
-        entries: join(__dirname, 'dist', 'index.html'),
+        entries: testDriver,
+        logLevel: 'verbose',
         targets: {
           main: {
-            includeNodeModules: true,
-            distDir: this.test.ctx.peer.root
+            distDir: peer.root,
+            includeNodeModules: true
           }
         },
         additionalReporters: [{
@@ -68,7 +72,7 @@ describe('SDK - browser', function () {
       const page = pages.length === 0
         ? await browser.newPage()
         : pages[pages.length - 1]
-      await page.goto(this.test.ctx.peer.url)
+      await page.goto(peer.url)
     } catch (err) {
       console.error(inspect(err, { depth: null }))
       process.exit(-1)
