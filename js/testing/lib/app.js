@@ -86,20 +86,25 @@ module.exports = class App extends BaseClass {
     const { page } = INSTANCES.get(this)
 
     // fill out the base quantity and asset
+    this.debug('submitLimitOrder', { baseQuantity: order.baseQuantity })
     const txtBaseQuantity = await page.$('.panelSwap .base .quantity')
     await txtBaseQuantity.type(order.baseQuantity.toString())
 
+    this.debug('submitLimitOrder', { baseAsset: order.baseAsset })
     const selectBaseAsset = await page.$('.panelSwap .base .asset')
     await selectBaseAsset.select(order.baseAsset)
 
     // fill out the quote quantity and asset
+    this.debug('submitLimitOrder', { quoteQuantity: order.quoteQuantity })
     const txtQuoteQuantity = await page.$('.panelSwap .quote .quantity')
     await txtQuoteQuantity.type(order.quoteQuantity.toString())
 
+    this.debug('submitLimitOrder', { quoteAsset: order.quoteAsset })
     const selectQuoteAsset = await page.$('.panelSwap .quote .asset')
     await selectQuoteAsset.select(order.quoteAsset)
 
     // click exchange to submit the order
+    this.debug('submitLimitOrder', { submitted: true })
     const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
     await btnExchange.click()
   }

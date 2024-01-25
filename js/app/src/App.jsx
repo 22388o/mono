@@ -24,7 +24,7 @@ function App () {
   useEffect(() => {
     const url = new URL(window.location);
     const sdkProps = {
-      id: 'alice',
+      id: 'sdk',
       hostname: url.hostname,
       port: Number(url.port),
       pathname: '/api/v1'
