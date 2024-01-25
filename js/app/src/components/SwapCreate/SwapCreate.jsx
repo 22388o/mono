@@ -5,6 +5,7 @@ import styles from '../../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
 import { hashSecret } from "../../utils/helpers";
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
+import { sdkStore } from "../../syncstore/sdkstore";
 import { walletStore } from "../../syncstore/walletstore";
 import { activitiesStore } from "../../syncstore/activitiesstore";
 import { toast } from "react-toastify";
@@ -15,6 +16,7 @@ import { WALLET_COINS } from '../../utils/constants';
  * Swap Form Component which handles swap
  */
 export const SwapCreate = () => {
+  const SDK = useSyncExternalStore(sdkStore.subscribe, () => sdkStore.currentState);
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const ASSET_TYPES = WALLET_COINS; 
 
@@ -146,57 +148,61 @@ export const SwapCreate = () => {
       quoteInfo: ASSET_TYPES[quoteAsset].info
     };
     
-    const curDate = new Date();
-    const date = {
-      year: curDate.getFullYear(),
-      month: curDate.getMonth(),
-      day: curDate.getDate()
-    };
+    await SDK.submitLimitOrder(request).then(data => {
+      console.log("submitLimitOrder response", data)
+    
+      const curDate = new Date();
+      const date = {
+        year: curDate.getFullYear(),
+        month: curDate.getMonth(),
+        day: curDate.getDate()
+      };
+      const baseQ = {
+            asset: request.baseAsset,
+            network: order.baseNetwork,
+            quantity: request.baseQuantity / ASSET_TYPES[bai].rate
+          }, quoteQ = {
+            asset: request.quoteAsset,
+            network: order.quoteNetwork,
+            quantity: request.quoteQuantity / ASSET_TYPES[qai].rate
+          };
+  
+      args = ask ?  { // if order is an ask, bitcoin as base
+        base: baseQ,
+        quote: quoteQ
+      } : {
+        base: quoteQ,
+        quote: baseQ
+      };
 
-    const baseQ = {
-          asset: request.baseAsset,
-          network: order.baseNetwork,
-          quantity: request.baseQuantity / ASSET_TYPES[bai].rate
-        }, quoteQ = {
-          asset: request.quoteAsset,
-          network: order.quoteNetwork,
-          quantity: request.quoteQuantity / ASSET_TYPES[qai].rate
-        };
 
-    args = ask ?  { // if order is an ask, bitcoin as base
-      base: baseQ,
-      quote: quoteQ
-    } : {
-      base: quoteQ,
-      quote: baseQ
-    };
+      activitiesStore.dispatch({ type: 'ADD_SWAP_ITEM', payload: {
+        key: data.id,
+        orderId: data.id,
+        ts: data.ts,
+        uid: data.uid,
+        type: data.type,
+        side: data.side,
+        secret: secret,
+        secretHash,
+        hash: data.hash,
+        baseAsset: args.base.asset.split('-')[0],
+        baseQuantity: args.base.quantity,
+        baseNetwork: args.base.network,
+        baseInfo: ASSET_TYPES[baseAsset].info,
+        quoteAsset: args.quote.asset.split('-')[0],
+        quoteNetwork: args.quote.network,
+        quoteQuantity: args.quote.quantity,
+        quoteInfo: ASSET_TYPES[quoteAsset].info,
+        ordinalLocation: args.ordinalLocation,
+        status: 0,
+        createdDate: date
+      } })
 
-    activitiesStore.dispatch({ type: 'ADD_SWAP_ITEM', payload: {
-      key: request.id,
-      orderId: request.id,
-      ts: request.ts,
-      uid: request.uid,
-      type: request.type,
-      side: request.side,
-      secret: secret,
-      secretHash,
-      hash: request.hash,
-      baseAsset: args.base.asset.split('-')[0],
-      baseQuantity: args.base.quantity,
-      baseNetwork: args.base.network,
-      baseInfo: ASSET_TYPES[baseAsset].info,
-      quoteAsset: args.quote.asset.split('-')[0],
-      quoteNetwork: args.quote.network,
-      quoteQuantity: args.quote.quantity,
-      quoteInfo: ASSET_TYPES[quoteAsset].info,
-      ordinalLocation: args.ordinalLocation,
-      status: 0,
-      createdDate: date
-    } })
-
-    walletStore.dispatch({ type: 'REMOVE_BALANCE_ON_SWAP_ORDER', payload: {asset: baseAsset, qty: baseQuantity} })
-    setBaseQuantity(ASSET_TYPES[baseAsset].isNFT ? 1 : 0);
-    setQuoteQuantity(ASSET_TYPES[quoteAsset].isNFT ? 1 : 0);
+      walletStore.dispatch({ type: 'REMOVE_BALANCE_ON_SWAP_ORDER', payload: {asset: baseAsset, qty: baseQuantity} })
+      setBaseQuantity(ASSET_TYPES[baseAsset].isNFT ? 1 : 0);
+      setQuoteQuantity(ASSET_TYPES[quoteAsset].isNFT ? 1 : 0);
+    });
   }
 
   /**
