@@ -7,7 +7,7 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
   // Use WALLET_COINS for the initial assets state
 
   const handleAssetChange = (event) => {
-    const selAsset = WALLET_COINS.find(asset => asset.title === event.target.value);
+    const selAsset = WALLET_COINS.find(asset => asset.type === event.target.value);
     onCoinTypeChange(selAsset);
   };
 
@@ -25,7 +25,7 @@ export const SwapAmountItem = ({ assetId, amount, className, onAmountChange, uni
           {unitPrice * amount > 0 ? <span className={styles.prices}>${unitPrice * amount}</span> : ''}
         </Grid>
         <Grid item xs={5} textAlign='right' sx={{display:'flex',alignItems:'center',justifyContent:'flex-end'}}>
-          <select value={WALLET_COINS[assetId].title} onChange={handleAssetChange} className={`${styles['coin-select']} coin-select asset`}>
+          <select value={WALLET_COINS[assetId].type} onChange={handleAssetChange} className={`${styles['coin-select']} coin-select asset`}>
             {WALLET_COINS.map((asset, index) => (
               <option key={index} value={asset.type}>{asset.title}</option>
             ))}
