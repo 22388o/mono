@@ -11,9 +11,9 @@ describe.only('App: Swap: BTC-ETH', function () {
       })
       .submitLimitOrder({
         baseAsset: 'BTC',
-        baseQuantity: 10000,
+        baseQuantity: .0001, //10000,
         quoteAsset: 'ETH',
-        quoteQuantity: 100000
+        quoteQuantity: .0001 //100000,
       })
   })
 
@@ -25,9 +25,9 @@ describe.only('App: Swap: BTC-ETH', function () {
       })
       .submitLimitOrder({
         baseAsset: 'ETH',
-        baseQuantity: 100000,
+        baseQuantity: .0001, //100000,
         quoteAsset: 'BTC',
-        quoteQuantity: 10000
+        quoteQuantity: .0001 //10000,
       })
   })
 
