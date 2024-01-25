@@ -73,6 +73,9 @@ describe.only('SDK - browser', function () {
         ? await browser.newPage()
         : pages[pages.length - 1]
       await page.goto(peer.url)
+
+      // capture the mocha output
+      page.on('console', msg => console.log(msg.text()))
     } catch (err) {
       console.error(inspect(err, { depth: null }))
       process.exit(-1)
