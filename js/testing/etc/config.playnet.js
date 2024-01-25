@@ -47,8 +47,8 @@ Config.sdks = {
  * @type {Object}
  */
 Config.apps = {
-  alice: sdkConfig('alice', Config.peers.alice),
-  bob: sdkConfig('bob', Config.peers.bob)
+  alice: appConfig('alice', Config.peers.alice),
+  bob: appConfig('bob', Config.peers.bob)
 }
 
 /**
@@ -112,7 +112,13 @@ function appConfig (id, peer) {
     id,
     hostname: peer.hostname,
     port: peer.port,
-    pathname: peer.pathname
+    pathname: peer.pathname,
+    browser: {
+      args: ['--window-size=1200,800'],
+      defaultViewport: { width: 1200, height: 800 },
+      headless: false,
+      timeout: 30000
+    }
   }
 }
 

@@ -2,7 +2,7 @@
  * @file Behavioral specification for the Portal SDK
  */
 
-const { beforeAll, afterAll } = require('../lib/testbed')
+const { beforeAll, afterAll } = require('../../lib/testbed')
 
 /**
  * Sets up the testing environment

@@ -6,7 +6,7 @@ const Playnet = require('./playnet')
 const { compile, deploy } = require('./helpers')
 const { expect } = require('chai')
 const { writeFileSync } = require('fs')
-const { join, resolve } = require('path')
+const { join } = require('path')
 const { inspect } = require('util')
 const { Web3 } = require('web3')
 const { Parcel } = require('@parcel/core')
@@ -27,12 +27,10 @@ const isWatchEnabled = process.argv.includes('--watch')
 * Prints logs to the console with different log levels
 * @type {Function}
 */
-const logLevels = ['error', 'warn', 'info', 'verbose', 'debug', 'silly']
-const log = (level, ...args) => {
-  if (logLevels.includes(level) && (isDebugEnabled || level === 'error')) {
-    console.log(`[${level.toUpperCase()}]`, ...args.map(arg => inspect(arg, { showHidden: false, depth: null, colors: true })))
-  }
-}
+const opts = { showHidden: false, depth: null, colors: true }
+const log = isDebugEnabled
+  ? (...args) => console.error(...(args.map(arg => inspect(arg, opts))), '\n\n')
+  : function () { }
 
 /**
 * Maps globally visible keys to their values for the duration of the tests
@@ -72,7 +70,7 @@ Testbed.beforeAll = async function () {
   writeFileSync(abiFile, abiData)
 
   // build the UI assets
-  this.watcher = await buildApp()
+  await buildApp()
 
   // start the playnet
   this.playnet = new Playnet(PLAYNET_PROPS)
@@ -88,13 +86,6 @@ Testbed.beforeAll = async function () {
 */
 Testbed.afterAll = async function () {
   const { playnet, watcher, web3 } = this.test.ctx
-
-  // stop the watcher
-  try {
-    await watcher.stop()
-  } catch (err) {
-    console.error(err)
-  }
 
   // stop the playnet
   try {
@@ -123,15 +114,14 @@ Testbed.afterAll = async function () {
  * @returns {Promise<void>}
  */
 async function buildApp () {
-  const entryFile = join(__dirname, '..', '..', 'app', 'src', 'index.html')
-  const options = {
-    entries: entryFile,
-    defaultConfig: '@parcel/config-default'
-  }
-
-  const bundler = new Parcel(options)
-
   try {
+    const bundler = new Parcel({
+      entries: join(__dirname, '..', '..', 'app', 'src', 'index.html'),
+      defaultConfig: '@parcel/config-default',
+      targets: {
+        browser: { distDir: join(__dirname, '..', 'dist') }
+      }
+    })
     const { bundleGraph, buildTime } = await bundler.run()
     const bundles = bundleGraph.getBundles()
     log('info', `✨ Built ${bundles.length} bundles in ${buildTime}ms!`)

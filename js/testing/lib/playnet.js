@@ -5,7 +5,8 @@
 const { BaseClass } = require('@portaldefi/core')
 const { Coordinator } = require('@portaldefi/coordinator')
 const { Peer } = require('@portaldefi/peer')
-//  const Sdk = require('@portaldefi/sdk')
+// const Sdk = require('@portaldefi/sdk')
+const { join } = require('path')
 const App = require('../lib/app')
 
 /**
@@ -49,8 +50,9 @@ module.exports = class Playnet extends BaseClass {
 
       // then start the peers
       for (const id in this.peers) {
+        const root = join(__dirname, '..', 'dist')
         const network = coordinator.toJSON()
-        const props = Object.assign({}, this.peers[id], { id, network })
+        const props = Object.assign({}, this.peers[id], { id, root, network })
         const peer = new Peer(props)
           .on('log', (level, id, ...args) => this[level](`peers.${id}`, ...args))
           .on('error', (err, ...args) => this.emit('error', err, ...args))
@@ -69,12 +71,11 @@ module.exports = class Playnet extends BaseClass {
       // then start the Apps
       for (const id in this.peers) {
         const peer = this.peers[id]
-        const props = {
-          id,
+        const props = Object.assign({}, this.apps[id], {
           hostname: peer.hostname,
           port: peer.port,
           pathname: peer.pathname
-        }
+        })
         const app = new App(props)
           .on('log', (level, id, ...args) => this[level](`apps.${id}`, ...args))
           .on('error', (err, ...args) => this.emit('error', err, ...args))

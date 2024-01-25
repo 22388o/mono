@@ -109,7 +109,7 @@ module.exports = class Lightning extends Blockchain {
   async connect () {
     const info = await this._getInfo()
     INSTANCES.get(this).json.publicKey = info.publicKey
-    this.info('connect', this)
+    this.debug('connect', this)
     this.emit('connect', this)
     return this
   }
@@ -196,7 +196,7 @@ module.exports = class Lightning extends Blockchain {
       await socket.close()
     }
 
-    this.info('disconnect', this)
+    this.debug('disconnect', this)
     this.emit('disconnect', this)
     return this
   }

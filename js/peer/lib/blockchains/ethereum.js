@@ -69,7 +69,7 @@ module.exports = class Ethereum extends Blockchain {
       // web3-provider: use the WebSocketProvider to enable event streaming
       const provider = new WebSocketProvider(props.url)
       provider.once('connect', () => {
-        this.info('connect', this)
+        this.debug('connect', this)
         this.emit('connect', this)
         resolve(this)
       })
@@ -278,6 +278,7 @@ module.exports = class Ethereum extends Blockchain {
       events.unsubscribe()
         .then(() => {
           provider.once('disconnect', () => {
+            this.debug('disconnect', this)
             this.emit('disconnect', this)
             resolve(this)
           })

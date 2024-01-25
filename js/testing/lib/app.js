@@ -24,6 +24,10 @@ module.exports = class App extends BaseClass {
     *
     * @param {Object} props Properties of the instance
     * @param {String} props.id The unique identifier of the user
+    * @param {String} props.hostname The HTTP hostname of the peer
+    * @param {Number} props.port The HTTP port of the peer
+    * @param {String} props.pathname The HTTP path to the websocket of the peer
+    * @param {Object} props.browser Properties of the puppeteer instance
     * @constructor
     */
   constructor (props) {
@@ -60,7 +64,7 @@ module.exports = class App extends BaseClass {
 
       // navigate to the peer's entry point
       const url = `http://${this.hostname}:${this.port}/`
-      this.info(`${this.id}.open`, { url })
+      this.info('start', { url })
       await state.page.goto(url)
 
       // subscribe to activity events
@@ -79,29 +83,23 @@ module.exports = class App extends BaseClass {
     * @returns {Promise<Void>}
     */
   async submitLimitOrder (order) {
-    console.log('submitting order', order)
-
     const { page } = INSTANCES.get(this)
 
-    // fill out the base and quote quantity
+    // fill out the base quantity and asset
     const txtBaseQuantity = await page.$('.panelSwap .base .quantity')
     await txtBaseQuantity.type(order.baseQuantity.toString())
 
+    const selectBaseAsset = await page.$('.panelSwap .base .asset')
+    await selectBaseAsset.select(order.baseAsset)
+
+    // fill out the quote quantity and asset
     const txtQuoteQuantity = await page.$('.panelSwap .quote .quantity')
     await txtQuoteQuantity.type(order.quoteQuantity.toString())
 
-    // TODO: Fix this to use a select/dropdown
-    // const selectBaseAsset = await page.$('.panelSwap .base .asset')
-    // await selectBaseAsset.select(order.baseAsset)
-    // const selectQuoteAsset = await page.$('.panelSwap .quote .asset')
-    // await selectQuoteAsset.select(order.quoteAsset)
-    const selectedAsset = await page.$eval('.panelSwap .base .asset', element => element.innerText)
-    if (selectedAsset !== order.baseAsset) {
-      console.log('selectedAsset', selectedAsset)
-      await page.$('.panelSwap .switchBaseQuoteAsset').click()
-    }
+    const selectQuoteAsset = await page.$('.panelSwap .quote .asset')
+    await selectQuoteAsset.select(order.quoteAsset)
 
-    // click submit
+    // click exchange to submit the order
     const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
     await btnExchange.click()
   }
