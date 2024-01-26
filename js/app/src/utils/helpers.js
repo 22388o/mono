@@ -1,5 +1,5 @@
 export const SWAP_STATUS = [
-  'Submitting order',
+  'Swap Submitted',
   'Finding match',
   'Swap matched',
   'Holder Invoice Created',

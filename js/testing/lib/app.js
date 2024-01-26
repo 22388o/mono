@@ -91,7 +91,7 @@ module.exports = class App extends BaseClass {
     await txtBaseQuantity.type(order.baseQuantity.toString())
 
     this.debug('submitLimitOrder', { baseAsset: order.baseAsset })
-    const selectBaseAsset = await page.$('.panelSwap .base .asset')
+    const selectBaseAsset = await page.$('.panelSwap .base .coin-select')
     await selectBaseAsset.select(order.baseAsset)
 
     // fill out the quote quantity and asset
@@ -100,8 +100,44 @@ module.exports = class App extends BaseClass {
     await txtQuoteQuantity.type(order.quoteQuantity.toString())
 
     this.debug('submitLimitOrder', { quoteAsset: order.quoteAsset })
-    const selectQuoteAsset = await page.$('.panelSwap .quote .asset')
+    const selectQuoteAsset = await page.$('.panelSwap .quote .coin-select')
     await selectQuoteAsset.select(order.quoteAsset)
+
+    // click exchange to submit the order
+    this.debug('submitLimitOrder', { submitted: true })
+    const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
+    await btnExchange.click()
+  }
+  /**
+    * Submits a limit order
+    * @param {Object} The order to be placed
+    * @returns {Promise<Void>}
+    */
+  async submitLimitOrder2 (order) {
+    const { page } = INSTANCES.get(this)
+
+    // fill out the base quantity and asset
+    this.debug('submitLimitOrder', { baseQuantity: order.baseQuantity })
+    const txtBaseQuantity = await page.$('.panelSwap .base .quantity')
+    await txtBaseQuantity.type(order.baseQuantity.toString())
+
+    // this.debug('submitLimitOrder', { baseAsset: order.baseAsset })
+    // const selectBaseAsset = await page.$('.panelSwap .base .coin-select')
+    // await selectBaseAsset.select(order.baseAsset)
+
+    // fill out the quote quantity and asset
+    this.debug('submitLimitOrder', { quoteQuantity: order.quoteQuantity })
+    const txtQuoteQuantity = await page.$('.panelSwap .quote .quantity')
+    await txtQuoteQuantity.type(order.quoteQuantity.toString())
+
+    // this.debug('submitLimitOrder', { quoteAsset: order.quoteAsset })
+    // const selectQuoteAsset = await page.$('.panelSwap .quote .coin-select')
+    // await selectQuoteAsset.select(order.quoteAsset)
+
+    // click switch base and quote assets
+    this.debug('submitLimitOrder', { submitted: true })
+    const btnSwitchSides = await page.$('.panelSwap .switchBaseQuoteAsset')
+    await btnSwitchSides.click()
 
     // click exchange to submit the order
     this.debug('submitLimitOrder', { submitted: true })

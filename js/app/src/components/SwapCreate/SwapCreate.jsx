@@ -96,6 +96,7 @@ export const SwapCreate = () => {
       return;
     }
 
+    console.log("onorderswap here")
     await thenOrderSwap(order);
   }, [crypto, ASSET_TYPES, baseAsset, baseQuantity, quoteQuantity, quoteAsset]);
 
@@ -134,6 +135,7 @@ export const SwapCreate = () => {
       quoteQuantity: Math.round(args.quote.quantity * ASSET_TYPES[qai].rate)
     };
 
+    console.log("submitting limit order")
     await SDK.sdk.dex.submitLimitOrder(request).then(data => {
       console.log("submitLimitOrder response", data)
 
