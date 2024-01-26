@@ -10,7 +10,7 @@ import { Sdk } from '..'
 try {
   mocha
     .setup('bdd')
-    .reporter('spec')
+    .reporter('json')
 } catch (err) {
   console.error(err)
 }

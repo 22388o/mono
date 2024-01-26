@@ -74,7 +74,8 @@
       "beforeEach",
       "describe",
       "expect",
-      "it"
+      "it",
+      "sdkProps"
     ],
     "ignore": [
       "dist",

@@ -6,11 +6,14 @@ const { Parcel } = require('@parcel/core')
 const { mkdirSync, writeFileSync } = require('fs')
 const { dirname, join } = require('path')
 const puppeteer = require('puppeteer')
-const { inspect } = require('util')
-const pkg = require('../package.json')
 
-describe.only('SDK - browser', function () {
-  let browser
+describe('SDK - browser', function () {
+  const launchOpts = {
+    args: ['--window-size=1200,800'],
+    defaultViewport: { width: 1200, height: 800 },
+    headless: false,
+    timeout: 5000
+  }
 
   before('spin up puppeteer', async function () {
     try {
@@ -26,6 +29,7 @@ describe.only('SDK - browser', function () {
           <meta charset="utf-8" />
           <title>PortalDefi SDK Tests</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link rel="icon" type="image/x-icon" href="../favicon.ico">
           <link rel="stylesheet" href="https://unpkg.com/mocha@10.2.0/mocha.css" />
         </head>
         <body>
@@ -47,7 +51,8 @@ describe.only('SDK - browser', function () {
       const bundler = new Parcel({
         defaultConfig: '@parcel/config-default',
         entries: testDriver,
-        logLevel: 'verbose',
+        shouldDisableCache: true,
+        logLevel: 'info',
         targets: {
           main: {
             distDir: peer.root,
@@ -60,33 +65,48 @@ describe.only('SDK - browser', function () {
         }]
       })
       await bundler.run()
-
-      // spin up the browser and load the test page
-      this.browser = await puppeteer.launch({
-        args: ['--window-size=1200,800'],
-        defaultViewport: { width: 1200, height: 800 },
-        headless: false,
-        timeout: 5000
-      })
-      const pages = await this.browser.pages()
-      const page = pages.length === 0
-        ? await browser.newPage()
-        : pages[pages.length - 1]
-      await page.goto(peer.url)
-
-      // capture the mocha output
-      page.on('console', msg => console.log(msg.text()))
     } catch (err) {
-      console.error(inspect(err, { depth: null }))
+      console.error(err)
       process.exit(-1)
     }
   })
 
-  it('must run tests in the browser', function (done) {
+  it('must pass all browser tests', function (done) {
+    let browser = null
 
-  })
+    puppeteer.launch(launchOpts)
+      .then(instance => {
+        browser = instance
+        return browser.pages()
+      })
+      .then(async pages => pages.length === 0
+        ? await browser.newPage()
+        : pages[pages.length - 1])
+      .then(page => page
+        .on('console', msg => {
+          try {
+            const text = msg.text()
+            const json = JSON.parse(text)
+            const { stats } = json
 
-  after('spin down puppeteer', async function () {
-    await this.test.ctx.browser.close()
+            if (stats.failures !== 0) {
+              console.error('Failed Tests:')
+              console.error(json.failures)
+            }
+
+            if (stats.pending !== 0) {
+              console.error('Pending Tests:')
+              console.error(json.pending)
+            }
+
+            page.browser().close()
+            done()
+          } catch (err) {
+            console.error(err)
+            process.exit(-1)
+          }
+        })
+        .goto(this.test.ctx.peer.url))
+      .catch(done)
   })
 })
