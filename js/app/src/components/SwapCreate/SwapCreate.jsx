@@ -3,6 +3,7 @@ import { Box, Grid, Stack, Button, IconButton, Divider } from "@mui/material";
 import { getBTCPrice, getETHPrice } from "../../utils/apis";
 import styles from '../../styles/SwapCreate.module.css';
 import { SwapAmountItem } from "./SwapAmountItem";
+import { log } from '../../utils/helpers'
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import { sdkStore } from "../../syncstore/sdkstore";
 import { walletStore } from "../../syncstore/walletstore";
@@ -16,6 +17,7 @@ import { WALLET_COINS } from '../../utils/constants';
  */
 export const SwapCreate = () => {
   const SDK = useSyncExternalStore(sdkStore.subscribe, () => sdkStore.currentState);
+  const activities = useSyncExternalStore(activitiesStore.subscribe, () => activitiesStore.currentState);
   const globalWallet = useSyncExternalStore(walletStore.subscribe, () => walletStore.currentState);
   const ASSET_TYPES = WALLET_COINS;
 
@@ -204,6 +206,339 @@ export const SwapCreate = () => {
     setBaseAsset(aQuote); setQuoteAsset(aBase);
     setBaseQuantity(tQuote); setQuoteQuantity(tBase);
   }, [baseQuantity, quoteQuantity, baseAsset, quoteAsset]);
+
+
+  const getSwapPairId = (activity, swap) => {
+    const SWAP_PAIRS = [{
+      base: 'BTC',
+      quote: 'ETH',
+      seeker: 'ETH',
+      holder: 'BTC',
+      process: [
+        1,
+        2,
+        4,
+        5
+      ],
+      required_chains: [
+        'bitcoin',
+        'ethereum'
+      ]
+    }]
+    
+    /**
+     * Function to match swap pair with activity item
+     * -----------------------------------------
+     * base: 0 if current activity is from base, 1 if current activity is from quote, otherwise -1
+     * curUser: user object of current user in this swap
+     * nor: normal swap, true if the curUser is this user and orderId matches activity orderId
+     * index: index of swap pair
+     * next: next step id of swap process
+     * f means flag which is used temporarily in distinguishing variable names
+     */
+    let nor, base, index, nextSt
+    SWAP_PAIRS.forEach((pair, idx) => {
+      let fBase = -1
+      if (pair.base === activity.baseAsset && pair.quote === activity.quoteAsset) fBase = 0
+      else if (pair.base === activity.quoteAsset && pair.quote === activity.baseAsset) fBase = 1
+      if (fBase == -1) return
+
+      let fNor, curUser
+      if ((fBase == 0 && pair.base === pair.seeker) || (fBase == 1 && pair.base === pair.holder)) curUser = swap.secretSeeker
+      if ((fBase == 1 && pair.base === pair.seeker) || (fBase == 0 && pair.base === pair.holder)) curUser = swap.secretHolder
+
+      // TODO: right now only checking activity item with the same status
+      // fNor = (user.user.id === substrname(curUser.id) && activity.secretHash === swap.secretHash);
+
+      nextSt = pair.process[pair.process.indexOf(activity.status) + 1]
+      // nor = fNor;
+      nor = true
+      base = fBase
+      index = idx
+    })
+    return {
+      fNor: nor,
+      fBase: base,
+      fIndex: index,
+      fNext: nextSt
+    }
+  }
+  const substrname = useCallback((name) => {
+    return name
+    // return name.substring(0, name.indexOf('--'));
+  }, [])
+  /**
+   * Event watchers to update swap progress
+   */
+   useEffect(() => {
+    if (!SDK.sdk) return
+    // log("SDK.sdk", SDK.sdk);
+    activities.forEach(activity => {
+      if (activity.status === 0) {
+        log('swapState: swap begins ', activity.status)
+        // setTimeout(() => {
+        activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: activity.id, status: 1 } })
+        log('swapState: swap iter: activity.secretHash  ', activity.secretHash)
+        log('swapState: swap iter: activity.status  ', activity.status)
+        // }, 50);
+      }
+    })
+    SDK.sdk.on('swap.received', swap => {
+      log('swap.created event', swap)
+      console.log('swap.created event', activities, swap)
+      activities.forEach(activity => {
+        const { fNor, fBase, fIndex, fNext } = getSwapPairId(activity, swap)
+        if (activity.status !== 1 || !fNor) return
+        // log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
+
+        log('activity.secret', activity)
+
+        if (fIndex === 0) { // Check if BTC-ETH swap
+          // TODO: temp fix for single swap / order in orderbook at any given moment
+
+          if (SDK.sdk.id === swap.secretSeeker.id) {
+            log('swap.created event received', swap)
+            const network = swap.secretSeeker.blockchain.toLowerCase()
+
+            const credentials = SDK.sdk.credentials
+
+            log('swapOpen (secretSeeker) requested, sent settingSwapState to 2')
+            SDK.sdk.swapOpen(swap, { ...credentials })
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: fNext } })
+          }
+        } else {
+          if (SDK.sdk.id == substrname(swap.secretHolder.id) && orderSecret != null) {
+            log('swapOpen (secretHolder) requested, sent settingSwapState to 2', swap.id)
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 2 } })
+          } else {
+          // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 2 } })
+          }
+        }
+      })
+    })
+    SDK.sdk.on('swap.created', swap => {
+      log('swap.created event', swap)
+      console.log('swap.created event', activities, swap)
+      activities.forEach(activity => {
+        const { fNor, fBase, fIndex, fNext } = getSwapPairId(activity, swap)
+        if (activity.status !== 1 || !fNor) return
+        // log("orderSecret in swap.opening !!!!!!!!!!!!!!!!!!!!!!!!!!! shouldn't be null", orderSecret)
+
+        log('activity.secret', activity)
+
+        if (fIndex === 0) { // Check if BTC-ETH swap
+          // TODO: temp fix for single swap / order in orderbook at any given moment
+
+          if (SDK.sdk.id === swap.secretSeeker.id) {
+            log('swap.created event received', swap)
+            const network = swap.secretSeeker.blockchain.toLowerCase()
+
+            const credentials = SDK.sdk.credentials
+
+            log('swapOpen (secretSeeker) requested, sent settingSwapState to 2')
+            SDK.sdk.swapOpen(swap, { ...credentials })
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 3 } })
+          }
+        } else {
+          if (SDK.sdk.id == substrname(swap.secretHolder.id) && orderSecret != null) {
+            log('swapOpen (secretHolder) requested, sent settingSwapState to 2', swap.id)
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 3 } })
+          } else {
+          // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 3 } })
+          }
+        }
+      })
+    })
+    SDK.sdk.on('swap.holder.invoice.created', swap => {
+      activities.forEach(activity => {
+        const { fNor, fBase, fIndex, fNext } = getSwapPairId(activity, swap)
+
+        console.log(fNor, fIndex, fNext)
+        if (!fNor) return
+        log('swapState: swap order request sent ', swap.status)
+
+        if (fIndex === 0) {
+          const network = swap.secretSeeker.blockchain.toLowerCase()
+          const credentials = SDK.sdk.credentials
+          log('swapOpen (secretHolder) requested, settingSwapState to 2')
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 4 } })
+        } else {
+          if (activity.status !== 2 || SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+            log('swap.opening event received', swap)
+            log('swapOpen (secretSeeker) requested, sent settingSwapState to 3')
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 4 } })
+          } else {
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 4 } })
+          }
+        }
+      })
+    })
+    SDK.sdk.on('swap.holder.invoice.sent', swap => {
+      log('swap.opened event received', swap)
+      // alert(1);
+      activities.forEach(activity => {
+        const { fNor, fBase, fIndex, fNext } = getSwapPairId(activity, swap)
+        log('swap.opened event received', swap)
+        const network = swap.secretHolder.blockchain.toLowerCase()
+        const credentials = SDK.sdk.credentials
+
+        if (fIndex === 0) {
+          if (SDK.sdk.id === swap.secretSeeker.id) {
+            // SDK.sdk.swapCommit(swap, credentials)
+            log('swapCommit by secretSeeker', swap)
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 5 } })
+          }
+        }
+      })
+    })
+    SDK.sdk.on('swap.seeker.invoice.created', swap => {
+      activities.forEach(activity => {
+        if (activity.status !== 3 || (
+          activity.orderId !== swap.secretHolder.orderId &&
+          activity.orderId !== swap.secretSeeker.orderId)) return
+        log('swap.opened event received', swap)
+        if (SDK.sdk.id == substrname(swap.secretHolder.id)) {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 6 } })
+          // activitiesStore.dispatch({
+          //   type: 'UPDATE_SWAP_STATUS',
+          //   payload: {
+          //     orderId: swap.secretHolder.orderId,
+          //     paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]
+          //   }
+          // })
+        } else {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 6 } })
+          // activitiesStore.dispatch({
+          //   type: 'UPDATE_SWAP_STATUS',
+          //   payload: {
+          //     orderId: swap.secretSeeker.orderId,
+          //     paymentAddress: swap.secretSeeker.state.shared.swapinfo.descriptor.match(/\(([^)]+)\)/)[1]
+          //   }
+          // })
+        }
+      })
+    })
+    SDK.sdk.on('swap.seeker.invoice.sent', swap => {
+      activities.forEach(activity => {
+        if (activity.status !== 3 || activity.orderId !== swap.secretSeeker.orderId) return
+
+        if (SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+          const network = swap.secretSeeker.blockchain.toLowerCase()
+          const credentials = SDK.sdk.credentials
+          // SDK.sdk.swapCommitV2({
+          //   swap: {
+          //     id: swap.id
+          //   },
+          //   party: {
+          //     id: swap.secretSeeker.id,
+          //     state: {
+          //       secret: activity.secret
+          //     }
+          //   },
+          //   opts: {
+
+          //   }
+          // })
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 7 } })
+        } else {
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 7 } })
+        }
+      })
+    })
+    SDK.sdk.on('swap.holder.invoice.paid', swap => {
+      log('swap.commiting event received', swap)
+      activities.forEach(activity => {
+        const { fNor, fBase, fIndex, fNext } = getSwapPairId(activity, swap)
+
+        if (!fNor) return
+        if (fIndex === 0) {
+          const network = swap.secretSeeker.blockchain.toLowerCase()
+          const credentials = SDK.sdk.credentials
+          if (SDK.sdk.id === swap.secretHolder.id) {
+            // SDK.sdk.swapCommit(swap, credentials)
+            log('swapCommit by secretHolder', swap)
+            log('secretHolder credentials', credentials)
+
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 8 } })
+          }
+        } else {
+          if (SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 8 } })
+          } else {
+            // TODO: right now only checking activity item with the same status
+            activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 8 } })
+          }
+        }
+      })
+    })
+    SDK.sdk.on('swap.seeker.invoice.paid', swap => {
+      activities.forEach(activity => {
+        let ethBal, btcBal
+
+        if (SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 9 } })
+        } else {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 9 } })
+        }
+      })
+    })
+    SDK.sdk.on('swap.holder.invoice.settled', swap => {
+      activities.forEach(activity => {
+        let ethBal, btcBal
+
+        if (SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 10 } })
+        } else {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 10 } })
+        }
+      })
+    })
+    SDK.sdk.on('swap.seeker.invoice.settled', swap => {
+      activities.forEach(activity => {
+        let ethBal, btcBal
+
+        if (SDK.sdk.id == substrname(swap.secretSeeker.id)) {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretSeeker.oid, status: 11 } })
+        } else {
+
+          // TODO: right now only checking activity item with the same status
+          activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: swap.secretHolder.oid, status: 11 } })
+        }
+      })
+    })
+    return () => {
+      SDK.sdk.removeAllListeners()
+    }
+  }, [activities, SDK])
 
   return (
     <Box className={`${styles.SwapCreateContainer} panelSwap`}>

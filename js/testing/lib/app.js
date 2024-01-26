@@ -117,30 +117,30 @@ module.exports = class App extends BaseClass {
     const { page } = INSTANCES.get(this)
 
     // fill out the base quantity and asset
-    this.debug('submitLimitOrder', { baseQuantity: order.baseQuantity })
-    const txtBaseQuantity = await page.$('.panelSwap .base .quantity')
+    this.debug('submitLimitOrder2', { baseQuantity: order.baseQuantity })
+    const txtBaseQuantity = await page.$('.panelSwap .base input.quantity')
     await txtBaseQuantity.type(order.baseQuantity.toString())
 
-    // this.debug('submitLimitOrder', { baseAsset: order.baseAsset })
-    // const selectBaseAsset = await page.$('.panelSwap .base .coin-select')
+    // this.debug('submitLimitOrder2', { baseAsset: order.baseAsset })
+    // const selectBaseAsset = await page.$('.panelSwap .base select.coin-select')
     // await selectBaseAsset.select(order.baseAsset)
 
     // fill out the quote quantity and asset
-    this.debug('submitLimitOrder', { quoteQuantity: order.quoteQuantity })
-    const txtQuoteQuantity = await page.$('.panelSwap .quote .quantity')
+    this.debug('submitLimitOrder2', { quoteQuantity: order.quoteQuantity })
+    const txtQuoteQuantity = await page.$('.panelSwap .quote input.quantity')
     await txtQuoteQuantity.type(order.quoteQuantity.toString())
 
-    // this.debug('submitLimitOrder', { quoteAsset: order.quoteAsset })
-    // const selectQuoteAsset = await page.$('.panelSwap .quote .coin-select')
+    // this.debug('submitLimitOrder2', { quoteAsset: order.quoteAsset })
+    // const selectQuoteAsset = await page.$('.panelSwap .quote select.coin-select')
     // await selectQuoteAsset.select(order.quoteAsset)
 
     // click switch base and quote assets
-    this.debug('submitLimitOrder', { submitted: true })
-    const btnSwitchSides = await page.$('.panelSwap .switchBaseQuoteAsset')
+    this.debug('submitLimitOrder2', { submitted: true })
+    const btnSwitchSides = await page.$('.panelSwap button.switchBaseQuoteAsset')
     await btnSwitchSides.click()
 
     // click exchange to submit the order
-    this.debug('submitLimitOrder', { submitted: true })
+    this.debug('submitLimitOrder2', { submitted: true })
     const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
     await btnExchange.click()
   }
