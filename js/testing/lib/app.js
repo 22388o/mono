@@ -108,42 +108,6 @@ module.exports = class App extends BaseClass {
     const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
     await btnExchange.click()
   }
-  /**
-    * Submits a limit order
-    * @param {Object} The order to be placed
-    * @returns {Promise<Void>}
-    */
-  async submitLimitOrder2 (order) {
-    const { page } = INSTANCES.get(this)
-
-    // fill out the base quantity and asset
-    this.debug('submitLimitOrder2', { baseQuantity: order.baseQuantity })
-    const txtBaseQuantity = await page.$('.panelSwap .base input.quantity')
-    await txtBaseQuantity.type(order.baseQuantity.toString())
-
-    // this.debug('submitLimitOrder2', { baseAsset: order.baseAsset })
-    // const selectBaseAsset = await page.$('.panelSwap .base select.coin-select')
-    // await selectBaseAsset.select(order.baseAsset)
-
-    // fill out the quote quantity and asset
-    this.debug('submitLimitOrder2', { quoteQuantity: order.quoteQuantity })
-    const txtQuoteQuantity = await page.$('.panelSwap .quote input.quantity')
-    await txtQuoteQuantity.type(order.quoteQuantity.toString())
-
-    // this.debug('submitLimitOrder2', { quoteAsset: order.quoteAsset })
-    // const selectQuoteAsset = await page.$('.panelSwap .quote select.coin-select')
-    // await selectQuoteAsset.select(order.quoteAsset)
-
-    // click switch base and quote assets
-    this.debug('submitLimitOrder2', { submitted: true })
-    const btnSwitchSides = await page.$('.panelSwap button.switchBaseQuoteAsset')
-    await btnSwitchSides.click()
-
-    // click exchange to submit the order
-    this.debug('submitLimitOrder2', { submitted: true })
-    const btnExchange = await page.$('.panelSwap .buttonSwapSubmit')
-    await btnExchange.click()
-  }
 
   /**
     * Cancels a limit order
@@ -161,6 +125,7 @@ module.exports = class App extends BaseClass {
     */
   async stop () {
     const state = INSTANCES.get(this)
+    await state.observer.disconnect()
     await state.browser.close()
 
     return this
@@ -172,44 +137,52 @@ module.exports = class App extends BaseClass {
   async _subscribeActivities () {
     const { page } = INSTANCES.get(this)
 
-    // Exposes an onActivity function to the page that is called by the
+    // Exposes an onEvent function to the page that is called by the
     // MutationObserver setup below. This allows the page to emit mutation
     // events, which can then be emitted upstream to the test code.
-    await page.exposeFunction('onActivity', (...args) => {
-      console.log('got activity', ...args)
-      this.emit('...', ...args)
+    await page.exposeFunction('onEvent', event => {
+      console.log('got mutation object', obj)
+      const { event, args } = mutationObjectToEvent(event)
+      this.emit(event, ...args)
     })
 
     // Runs within the context of the page and hooks into the Activities panel
     // to observe any mutations to its DOM tree. Every update is then passed
-    // to the `onActivity` function exposed above.
+    // to the `onEvent` function exposed above.
     await page.evaluate(function observe () {
-      // Select the node that will be observed for mutations
-      const targetNode = document.getElementsByClassName('panelActivity')[0]
+      /**
+       * Returns a JSON object for the specified mutation
+       * @param {MutationRecord} mutation The mutation that occurred
+       * @returns 
+       */
+      function mutationRecordToObject (mutation) {
+        const obj = Object.seal({ event: null, args: [] })
 
-      // Options for the observer (which mutations to observe)
-      const config = { attributes: true, childList: true, subtree: true }
+        throw Error('not implemented!')
 
-      // Callback function to execute when mutations are observed
-      const callback = (mutationList, observer) => {
-        for (const mutation of mutationList) {
-          onActivity(mutation)
-          // if (mutation.type === "childList") {
-          //   console.log("A child node has been added or removed.");
-          // } else if (mutation.type === "attributes") {
-          //   console.log(`The ${mutation.attributeName} attribute was modified.`);
-          // }
-        }
+        return obj
       }
 
       // Create an observer instance linked to the callback function
-      const observer = new MutationObserver(callback)
+      const observer = new MutationObserver((mutationList, observer) => {
+        console.log('mutation observed', mutationList, observer)
+        for (const mutation of mutationList) {
+          console.log('mutation', mutation)
+
+          const obj = mutationRecordToObject(mutation)
+          console.log('event', event)
+
+          onEvent(obj)
+        }
+      })
+      console.log('observer', observer)
 
       // Start observing the target node for configured mutations
-      // observer.observe(targetNode, config)
-
-      // Later, you can stop observing
-      // observer.disconnect()
+      observer.observe(document.querySelector('.panelActivity'), {
+        attributes: true,
+        childList: true,
+        subtree: true
+      })
     })
   }
 }
