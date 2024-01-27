@@ -137,12 +137,49 @@ module.exports = class App extends BaseClass {
   async _subscribeActivities () {
     const { page } = INSTANCES.get(this)
 
+      /**
+       * Returns a JSON object for the specified mutation
+       * @param {MutationRecord} mutation The mutation that occurred
+       * @returns 
+       */
+       function mutationRecordToObject(mutation) {
+        const obj = { event: 'mutation', details: {} };
+      
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          Array.from(mutation.addedNodes).forEach(node => {
+            if (node.classList.contains('activity-item')) {
+              const activityInfo = node.querySelector('.activity-info');
+              if (activityInfo) {
+                obj.details = {
+                  id: activityInfo.querySelector('.activity-id')?.textContent || null,
+                  orderId: activityInfo.querySelector('.activity-orderId')?.textContent || null,
+                  ts: activityInfo.querySelector('.activity-ts')?.textContent || null,
+                  uid: activityInfo.querySelector('.activity-uid')?.textContent || null,
+                  type: activityInfo.querySelector('.activity-type')?.textContent || null,
+                  side: activityInfo.querySelector('.activity-side')?.textContent || null,
+                  hash: activityInfo.querySelector('.activity-hash')?.textContent || null,
+                  baseNetwork: activityInfo.querySelector('.activity-baseNetwork')?.textContent || null,
+                  quoteNetwork: activityInfo.querySelector('.activity-quoteNetwork')?.textContent || null,
+                  status: node.querySelector('.activity-status')?.textContent || null,
+                  baseAsset: node.querySelector('.base-asset')?.textContent || null,
+                  baseQuantity: node.querySelector('.base-quantity')?.textContent || null,
+                  quoteAsset: node.querySelector('.quote-asset')?.textContent || null,
+                  quoteQuantity: node.querySelector('.quote-quantity')?.textContent || null,
+                  createdDate: node.querySelector('.activity-date')?.textContent || null
+                };
+              }
+            }
+          });
+        }
+      
+        return obj;
+      }
     // Exposes an onEvent function to the page that is called by the
     // MutationObserver setup below. This allows the page to emit mutation
     // events, which can then be emitted upstream to the test code.
     await page.exposeFunction('onEvent', event => {
-      console.log('got mutation object', obj)
-      const { event, args } = mutationObjectToEvent(event)
+      console.log('got mutation object', event)
+      const { args } = mutationObjectToEvent(event)
       this.emit(event, ...args)
     })
 
@@ -150,18 +187,6 @@ module.exports = class App extends BaseClass {
     // to observe any mutations to its DOM tree. Every update is then passed
     // to the `onEvent` function exposed above.
     await page.evaluate(function observe () {
-      /**
-       * Returns a JSON object for the specified mutation
-       * @param {MutationRecord} mutation The mutation that occurred
-       * @returns 
-       */
-      function mutationRecordToObject (mutation) {
-        const obj = Object.seal({ event: null, args: [] })
-
-        throw Error('not implemented!')
-
-        return obj
-      }
 
       // Create an observer instance linked to the callback function
       const observer = new MutationObserver((mutationList, observer) => {
@@ -169,7 +194,10 @@ module.exports = class App extends BaseClass {
         for (const mutation of mutationList) {
           console.log('mutation', mutation)
 
-          const obj = mutationRecordToObject(mutation)
+          const obj = mutationRecordToObject(mutation);
+          if (obj.details.id) {  // Checking if there's meaningful data
+            onEvent(obj);
+          }
           console.log('event', event)
 
           onEvent(obj)

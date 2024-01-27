@@ -32,27 +32,40 @@ export const ActivityTab = () => {
         <Stack direction='row' gap={2}>
           <ArrowOutwardIcon sx={{color:'#6A6A6A', borderRadius: '50%', backgroundColor:'#101010', fontSize: '15px', padding: '5px' }} />
           <Stack sx={{alignItems:'flex-start'}}>
-            <Typography>{ SWAP_STATUS[activity.status] }</Typography>
-            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}}>{ getStringFromDate(activity.createdDate) }</Typography>
-            {/* <Typography sx={{fontSize:'12px'}}>{ activity.status === 5 && activity.hash.slice(0, 20) + '...'  }</Typography> */}
+            <Typography className={styles['activity-status']}>{ SWAP_STATUS[activity.status] }</Typography>
+            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}} className={styles['activity-date']}>{ getStringFromDate(activity.createdDate) }</Typography>
           </Stack>
         </Stack>
         <Stack>
           <Stack direction='row' gap={1}>
-            <Typography>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>{activity.baseAsset}</Typography>
+            <Typography className={styles['base-quantity']}>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={styles['base-asset']}>{activity.baseAsset}</Typography>
           </Stack>
           <Stack direction='row' gap={1}>
-            <Typography sx={{color: '#6A6A6A'}}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}}>{activity.quoteAsset}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={styles['quote-quantity']}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={styles['quote-asset']}>{activity.quoteAsset}</Typography>
           </Stack>
           { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={`${styles['cancel-btn']} cancel-btn`}>
             Cancel
           </Button></span> }
         </Stack>
+        {/* Hidden Information for Mutation Observer */}
+        <div className="activity-info" style={{ display: 'none' }}>
+          <span className="activity-id">{activity.key}</span>
+          <span className="activity-orderId">{activity.orderId}</span>
+          <span className="activity-ts">{activity.ts}</span>
+          <span className="activity-uid">{activity.uid}</span>
+          <span className="activity-type">{activity.type}</span>
+          <span className="activity-side">{activity.side}</span>
+          <span className="activity-hash">{activity.hash}</span>
+          <span className="activity-baseNetwork">{activity.baseNetwork}</span>
+          <span className="activity-quoteNetwork">{activity.quoteNetwork}</span>
+          <span className="activity-ordinalLocation">{activity.ordinalLocation}</span>
+        </div>
       </Stack>
     )
   }
+  
 
   /**
    * Divider Render
