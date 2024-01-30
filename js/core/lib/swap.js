@@ -110,7 +110,7 @@ class Swap extends BaseClass {
     } else if (props.id != null && typeof props.id !== 'string') {
       throw Error(`expected id to be a string; got ${typeof props.id}!`)
     } else if (props.secretHash != null) {
-      if (typeof props.id !== 'string') {
+      if (typeof props.secretHash !== 'string') {
         throw Error(`expected secretHash to be a string; got ${typeof props.id}!`)
       } else if (props.secretHash.startsWith('0x')) {
         throw Error('expected secretHash to not include the leading "0x"')
