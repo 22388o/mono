@@ -19,85 +19,88 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v3
+      - name: Checkout branch
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
-    - name: Install Nix
-      uses: cachix/install-nix-action@v22
-      with:
-        nix_path: nixpkgs=channel:nixos-22.05
-        extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
+      - name: Install Nix
+        uses: cachix/install-nix-action@6ed004b9ccb68dbc28e7c85bee15fa93dbd214ac # v22
+        with:
+          nix_path: "nixpkgs=${{ github.workspace }}/nix"
+          extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
-    - name: Setup binary cache
-      uses: cachix/cachix-action@v12
-      with:
-        name: portaldefi-demo
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Setup binary cache
+        uses: cachix/cachix-action@6a9a34cdd93d0ae4b4b59fd678660efb08109f2f # v12
+        with:
+          name: portaldefi-demo
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-    - name: Run tests & integration tests
-      run: nix-shell --run "chmod +x ./sh/tests.sh && ./sh/tests.sh"
-      env:
-        MATRIX_OS: ${{ matrix.os }}
+      - name: Run tests & integration tests
+        run: nix-shell --run "chmod +x ./sh/tests.sh && ./sh/tests.sh"
+        env:
+          MATRIX_OS: ${{ matrix.os }}
 
-    - name: Build PortalDefi packages
-      run: nix-build --option sandbox false --attr packages
+      - name: Build PortalDefi packages
+        run: nix-build --option sandbox false --attr packages
 
-    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/upload-artifact@v2
-      if: matrix.os != 'macOS-latest'
-      with:
-        name: playnet
-        path: playnet/
+      # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
+      - uses: actions/upload-artifact@v2
+        if: matrix.os != 'macOS-latest'
+        with:
+          name: playnet
+          path: playnet/
 
   deploy:
     needs: build
+
     runs-on: [ubuntu-latest]
+
     if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+
     steps:
-    - name: Checkout branch
-      uses: actions/checkout@v3
+      - name: Checkout branch
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
-    - name: Install Nix
-      uses: cachix/install-nix-action@v22
-      with:
-        nix_path: nixpkgs=channel:nixos-22.05
-        extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
+      - name: Install Nix
+        uses: cachix/install-nix-action@6ed004b9ccb68dbc28e7c85bee15fa93dbd214ac # v22
+        with:
+          nix_path: "nixpkgs=${{ github.workspace }}/nix"
+          extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
 
-    - name: Setup binary cache
-      uses: cachix/cachix-action@v12
-      with:
-        name: portaldefi-demo
-        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Setup binary cache
+        uses: cachix/cachix-action@6a9a34cdd93d0ae4b4b59fd678660efb08109f2f # v12
+        with:
+          name: portaldefi-demo
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-    # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
-    - uses: actions/download-artifact@v2
-      with:
-        name: playnet
-        path: playnet/
+      # TODO: Find a proper way of packaging properly playnet state directly inside a nix derivation (that means contracts.json needs to be produced outside)
+      - uses: actions/download-artifact@v2
+        with:
+          name: playnet
+          path: playnet/
 
-    - name: Build PortalOS closure
-      run: |
-        system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
-        echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
-      id: build-machine-closure
+      - name: Build PortalOS closure
+        run: |
+          system_path=$(nix-build --option sandbox false --attr nixosConfigurations.portalos)
+          echo "SYSTEM_PATH=$system_path" > $GITHUB_OUTPUT
+        id: build-machine-closure
 
-    - name: Setup NixOS deploy env
-      run: |
-        ssh_key=$(mktemp)
-        chmod 600 $ssh_key
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > $ssh_key
-        echo "SSH_KEY_PATH=$ssh_key" > $GITHUB_OUTPUT
-      id: deploy_env
+      - name: Setup NixOS deploy env
+        run: |
+          ssh_key=$(mktemp)
+          chmod 600 $ssh_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $ssh_key
+          echo "SSH_KEY_PATH=$ssh_key" > $GITHUB_OUTPUT
+        id: deploy_env
 
-    - name: Deploy closure on node.playnet.portaldefi.zone
-      run: |
-        echo "Copying nixos closure to machine"
-        nix copy -s --to "ssh://$DEPLOY_HOST" $SYSTEM_PATH
-        echo "Switching to new nixos closure"
-        ssh $NIX_SSHOPTS "$DEPLOY_HOST" "$SYSTEM_PATH"/bin/switch-to-configuration switch
-        echo "Removing unused packages"
-        ssh $NIX_SSHOPTS "$DEPLOY_HOST" nix-collect-garbage
-      env:
-        SSH_KEYFILE: ${{ steps.deploy_env.outputs.SSH_KEY_PATH }}
-        SYSTEM_PATH: ${{ steps.build-machine-closure.outputs.SYSTEM_PATH }}
-        NIX_SSHOPTS: "-o StrictHostKeyChecking=no -i ${{ steps.deploy_env.outputs.SSH_KEY_PATH }} -l root"
+      - name: Deploy closure on node.playnet.portaldefi.zone
+        run: |
+          echo "Copying nixos closure to machine"
+          nix copy -s --to "ssh://$DEPLOY_HOST" $SYSTEM_PATH
+          echo "Switching to new nixos closure"
+          ssh $NIX_SSHOPTS "$DEPLOY_HOST" "$SYSTEM_PATH"/bin/switch-to-configuration switch
+          echo "Removing unused packages"
+          ssh $NIX_SSHOPTS "$DEPLOY_HOST" nix-collect-garbage
+        env:
+          SSH_KEYFILE: ${{ steps.deploy_env.outputs.SSH_KEY_PATH }}
+          SYSTEM_PATH: ${{ steps.build-machine-closure.outputs.SYSTEM_PATH }}
+          NIX_SSHOPTS: "-o StrictHostKeyChecking=no -i ${{ steps.deploy_env.outputs.SSH_KEY_PATH }} -l root"
