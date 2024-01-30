@@ -4,11 +4,11 @@
   nodejs ? pkgs.portaldefi.nodejs,
 }:
 pkgs.stdenv.mkDerivation {
-  name = "sdk";
+  name = "coordinator";
   version = "0.0.0";
 
   src = pkgs.nix-gitignore.gitignoreSourcePure [../../.gitignore] ./..;
-  sourceRoot = "js/sdk";
+  sourceRoot = "js/coordinator";
 
   __noChroot = true;
 
@@ -34,21 +34,20 @@ pkgs.stdenv.mkDerivation {
   preBuild = ''
     # Extract local dependencies from package.json
     function get_local_deps() {
-      jq -r '.dependencies | to_entries[] | select(.value | startswith("file:")) | .key' package.json
+      jq -r '[.dependencies, .devDependencies] | map(select(. != null) | to_entries[] | select(.value | startswith("file:")) | .key)[]' package.json
     }
 
     # Function to get the path of a given local dependency from package.json.
     function get_dep_path() {
-      jq -r ".dependencies.\"$1\"" package.json | cut -c 6-
+      jq -r "[.dependencies.\"$1\", .devDependencies.\"$1\"] | select(. != null) | .[]" package.json | cut -c 6- | tr -d '\n'
     }
 
-    # Update permissions to be writable on parent folders.
-    # This is required when working with npm link.
+    # Update permissions to be writable on parent folders (required when working with npm link)
     for dir in ../*/; do
       chmod -R u+w "$dir"
     done
 
-    # Define a temporary home directory for npm so it won't complain.
+    # npm needs a user HOME.
     export HOME=$(mktemp -d)
   '';
 
@@ -62,7 +61,7 @@ pkgs.stdenv.mkDerivation {
       popd
     done
 
-    # Install the primary library's node_modules
+    # Install the packages
     npm ci
   '';
 
@@ -86,6 +85,11 @@ pkgs.stdenv.mkDerivation {
     done
 
     # Copy the relevant files to the build result directory
-    cp -R {node_modules,package.json,etc,lib,index.js,index.mjs} "$out"
+    cp -R {bin,contracts,lib,node_modules,package.json} $out
+
+    chmod +x $out/bin/portal
+    wrapProgram $out/bin/portal \
+      --set NODE_ENV production \
+      --set NODE_PATH "$out/node_modules"
   '';
 }

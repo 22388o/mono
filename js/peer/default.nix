@@ -57,12 +57,12 @@ pkgs.stdenv.mkDerivation {
     # Install local deps (see issue: https://github.com/npm/cli/issues/2339)
     for dep in $(get_local_deps); do
       pushd "$(get_dep_path "$dep")"
-      npm install
+      npm ci
       popd
     done
 
     # Install the packages
-    npm install
+    npm ci
   '';
 
   installPhase = ''

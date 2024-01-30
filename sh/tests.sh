@@ -7,7 +7,7 @@ for dir in "${directories[@]}"; do
   echo "-------------------------"
   cd "$PORTAL_ROOT/js/$dir"
   echo "Installing deps in $dir..."
-  npm install
+  npm ci
   echo "Deps installed in $dir completed."
   echo "-------------------------"
 done
