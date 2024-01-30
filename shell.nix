@@ -35,6 +35,12 @@ in
         value = "nixpkgs=${toString pkgs.path}";
       }
 
+      # Set the node environment to development
+      {
+        name = "NODE_ENV";
+        value = "development";
+      }
+
       # Define PORTAL_ROOT (used by some scripts, although we can use $PRJ_ROOT as well)
       {
         name = "PORTAL_ROOT";

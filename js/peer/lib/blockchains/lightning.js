@@ -244,11 +244,10 @@ module.exports = class Lightning extends Blockchain {
           const url = new URL(`wss://${hostname}:${port}/v2/invoices/subscribe/${data.hash}?method=GET`)
           const opts = {
             headers: { 'Grpc-Metadata-macaroon': state.macaroons.invoice },
-            // TODO: Fix this for production use
-            rejectUnauthorized: false
+            rejectUnauthorized: process.env.NODE_ENV !== 'development'
           }
 
-          ;(function subscribe (attempt, self) {
+            ; (function subscribe (attempt, self) {
             const ws = new WebSocket(url.toString(), opts)
               .on('open', () => sockets.add(ws))
               .on('close', (...args) => sockets.delete(ws))
@@ -353,8 +352,7 @@ module.exports = class Lightning extends Blockchain {
       const { hostname, port, sockets, macaroons: { admin } } = state
       const url = `wss://${hostname}:${port}/v2/router/send?method=POST`
       const opts = {
-        // TODO: Fix this for production use
-        rejectUnauthorized: false,
+        rejectUnauthorized: process.env.NODE_ENV !== 'development',
         headers: { 'Grpc-Metadata-macaroon': admin }
       }
 
@@ -459,7 +457,7 @@ module.exports = class Lightning extends Blockchain {
       const reqArgs = Object.assign(args, {
         hostname,
         port,
-        rejectUnauthorized: false // TODO: Fix this for production use
+        rejectUnauthorized: process.env.NODE_ENV !== 'development'
       })
       const req = https.request(reqArgs)
 
