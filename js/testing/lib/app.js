@@ -137,12 +137,28 @@ module.exports = class App extends BaseClass {
   async _subscribeActivities () {
     const { page } = INSTANCES.get(this)
 
+    // Exposes an onEvent function to the page that is called by the
+    // MutationObserver setup below. This allows the page to emit mutation
+    // events, which can then be emitted upstream to the test code.
+    await page.exposeFunction('onEvent', (...args) => {
+      console.log('got mutation object', ...args)
+      // const { args } = mutationRecordToObject(...args)
+      this.emit(args[0].event, ...args)
+    })
+
+    // Runs within the context of the page and hooks into the Activities panel
+    // to observe any mutations to its DOM tree. Every update is then passed
+    // to the `onEvent` function exposed above.
+    await page.evaluate(function observe () {
+      console.log('page.evaluate Activities')
       /**
        * Returns a JSON object for the specified mutation
        * @param {MutationRecord} mutation The mutation that occurred
        * @returns 
        */
        function mutationRecordToObject(mutation) {
+
+        // console.log('mutationRecordToObject(mutation)', mutation)
         const obj = { event: 'mutation', details: {} };
       
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -174,28 +190,15 @@ module.exports = class App extends BaseClass {
       
         return obj;
       }
-    // Exposes an onEvent function to the page that is called by the
-    // MutationObserver setup below. This allows the page to emit mutation
-    // events, which can then be emitted upstream to the test code.
-    await page.exposeFunction('onEvent', event => {
-      console.log('got mutation object', event)
-      const { args } = mutationObjectToEvent(event)
-      this.emit(event, ...args)
-    })
-
-    // Runs within the context of the page and hooks into the Activities panel
-    // to observe any mutations to its DOM tree. Every update is then passed
-    // to the `onEvent` function exposed above.
-    await page.evaluate(function observe () {
 
       // Create an observer instance linked to the callback function
-      const observer = new MutationObserver((mutationList, observer) => {
-        console.log('mutation observed', mutationList, observer)
+      const observer = new MutationObserver((mutationList) => {
+        console.log('mutation observed', mutationList)
         for (const mutation of mutationList) {
           console.log('mutation', mutation)
 
           const obj = mutationRecordToObject(mutation);
-          if (obj.details.id) {  // Checking if there's meaningful data
+          if (obj && obj.details &&  obj.details.id) {  // Checking if there's meaningful data
             onEvent(obj);
           }
           console.log('event', event)
