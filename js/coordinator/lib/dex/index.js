@@ -66,7 +66,7 @@ module.exports = class Dex extends BaseClass {
   add (obj) {
     let order
     try {
-      order = new Order(obj)
+      order = new Order({ ...obj, ts: Date.now() })
     } catch (err) {
       return Promise.reject(err)
     }
