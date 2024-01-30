@@ -3,7 +3,8 @@
  */
 
 const BaseClass = require('./base_class')
-const { createReadStream, readdirSync, stat, statSync } = require('fs')
+const { constants, createReadStream, lstat } = require('fs')
+const { readdirSync, statSync } = require('fs')
 const http = require('http')
 const mime = require('mime')
 const { basename, dirname, extname, join, normalize } = require('path')
@@ -394,7 +395,7 @@ module.exports = class Server extends BaseClass {
     // recursive IIFE to serve the actual asset
     const that = this
     ;(function serveAsset (asset) {
-      stat(asset, (err, stat) => {
+      lstat(asset, (err, stat) => {
         if (err != null) {
           switch (err.code) {
             case 'EACCES':
@@ -463,7 +464,7 @@ module.exports = class Server extends BaseClass {
         // logs. So we drop it to debug level.
         that.debug('http.static', req, res)
 
-        const fsStream = createReadStream(asset)
+        const fsStream = createReadStream(asset, { flags: constants.O_NOFOLLOW })
           .once('error', err => res.destroyed || res.destroy(err))
           .pipe(res)
           .once('error', err => fsStream.destroyed || fsStream.destroy(err))
