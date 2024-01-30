@@ -6,7 +6,7 @@ const BaseClass = require('./base_class')
 const { createReadStream, readdirSync, stat, statSync } = require('fs')
 const http = require('http')
 const mime = require('mime')
-const { basename, dirname, extname, join, normalize } = require('path')
+const { basename, dirname, extname, join, resolve, sep } = require('path')
 const { URL } = require('url')
 const { WebSocketServer } = require('ws')
 
@@ -23,6 +23,23 @@ const INSTANCES = new WeakMap()
 const DEFAULT_HANDLER_OPTS = {
   autoParse: true,
   isUnauthenticated: false
+}
+
+/**
+ * Returns whether the base-path is the parent of the sub-path
+ * @param {String} subPath The path to check
+ * @param {String} basePath The parent path to check for
+ * @returns {Boolean}
+ */
+function isSubPath (subPath, basePath) {
+  // Convert paths to arrays of components
+  const subPathComponents = subPath.split(sep)
+  const basePathComponents = basePath.split(sep)
+
+  // Check if basePathComponents is a prefix of subPathComponents
+  return basePathComponents.every((component, index) =>
+    component === subPathComponents[index]
+  )
 }
 
 /**
@@ -379,8 +396,8 @@ module.exports = class Server extends BaseClass {
       return
     }
 
-    const pathToAsset = normalize(join(root, req.parsedUrl.pathname))
-    if (!pathToAsset.startsWith(root)) {
+    const pathToAsset = resolve(join(root, req.parsedUrl.pathname))
+    if (!isSubPath(pathToAsset, root)) {
       // 403 Forbidden
       res.statusCode = 403
       res.end()
