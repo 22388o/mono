@@ -4,23 +4,23 @@
 
 /**
  * Handles a bidirectional websocket channel for each client
- * @param {Websocket} ws The underlying websocket
- * @param {HttpContext} ctx The HTTP request context
+ * @param {WebSocket} ws The underlying websocket
+ * @param {HttpServer} server The HTTP Server that received the request
  * @returns {Void}
  */
-module.exports.UPGRADE = function (ws, ctx) {
-  const onError = err => err != null && ctx.log.error(err)
+module.exports.UPGRADE = function (ws, server) {
+  const onError = err => err != null && server.error(err)
   const onOrder = order => ws.send(order, onError)
   const onSwap = swap => swap.isParty({ id: ws.user }) && ws.send(swap)
 
-  ctx.dex
+  server.dex
     .on('error', onError)
     .on('created', onOrder)
     .on('opened', onOrder)
     .on('match', onOrder)
     .on('closed', onOrder)
 
-  ctx.swaps
+  server.swaps
     .on('error', onError)
     .on('received', onSwap)
     .on('holder.invoice.sent', onSwap)
@@ -28,14 +28,14 @@ module.exports.UPGRADE = function (ws, ctx) {
 
   // unregister all event handlers when the websocket closes
   ws.once('close', () => {
-    ctx.dex
+    server.dex
       .off('error', onError)
       .off('created', onOrder)
       .off('opened', onOrder)
       .off('match', onOrder)
       .off('closed', onOrder)
 
-    ctx.swaps
+    server.swaps
       .off('error', onError)
       .off('received', onSwap)
       .off('holder.invoice.sent', onSwap)

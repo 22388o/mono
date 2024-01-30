@@ -224,14 +224,8 @@ module.exports = class Orderbook extends BaseClass {
             bids.delete(bid)
             this.orders.delete(ask.id)
             this.orders.delete(bid.id)
-          } else if (ask.baseQuantity > bid.baseQuantity) {
-            ask.match(bid)
-            bids.delete(bid)
-            this.orders.delete(bid.id)
-          } else if (ask.baseQuantity < bid.baseQuantity) {
-            asks.delete(ask)
-            bid.match(ask)
-            this.orders.delete(ask.id)
+          } else {
+            throw Error('partial order matching has not yet been implemented!')
           }
 
           // if we're out of asks for the current limit price, then update it
