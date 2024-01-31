@@ -125,7 +125,6 @@ module.exports = class App extends BaseClass {
     */
   async stop () {
     const state = INSTANCES.get(this)
-    await state.observer.disconnect()
     await state.browser.close()
 
     return this
