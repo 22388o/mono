@@ -117,7 +117,7 @@ function appConfig (id, peer) {
       args: ['--window-size=1200,800'],
       defaultViewport: { width: 1200, height: 800 },
       headless: false,
-      sloMo: 100,
+      slowMo: 100,
       timeout: 30000
     }
   }

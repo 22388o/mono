@@ -10,7 +10,7 @@
     "lint-fix": "standard --fix",
     "posttest": "npm run lint",
     "start": "node bin/portal",
-    "test": "npm run test:browser",
+    "test": "mocha test/browser",
     "test:browser": "mocha test/browser",
     "test:node": "mocha test/node",
     "watch": "npm test -- --watch"
