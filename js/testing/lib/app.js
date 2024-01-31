@@ -136,61 +136,104 @@ module.exports = class App extends BaseClass {
     */
   async _subscribeActivities () {
     const { page } = INSTANCES.get(this)
-
-    // Exposes an onEvent function to the page that is called by the
-    // MutationObserver setup below. This allows the page to emit mutation
-    // events, which can then be emitted upstream to the test code.
-    await page.exposeFunction('onEvent', (...args) => {
-      console.log('got mutation object', ...args)
-      // const { args } = mutationRecordToObject(...args)
-      this.emit(args[0].event, ...args)
-    })
+    
+    // // Exposes an onEvent function to the page that is called by the
+    // // MutationObserver setup below. This allows the page to emit mutation
+    // // events, which can then be emitted upstream to the test code.
+    // await page.exposeFunction('onEvent', (eventObject) => {
+    //   console.log('Event received: ', eventObject.event, 
+    //               'Details: ', eventObject.details)
+    //   console.log(eventObject);
+    //   // const { args } = mutationRecordToObject(eventObject)
+    //   if(eventObject && eventObject.event)
+    //     this.emit(eventObject.event, eventObject.details)
+    // })
+    // Expose the function to handle the events from the page
+    await page.exposeFunction('onActivityEvent', (eventName, details) => {
+      this.emit(eventName, details);
+    });
 
     // Runs within the context of the page and hooks into the Activities panel
     // to observe any mutations to its DOM tree. Every update is then passed
     // to the `onEvent` function exposed above.
     await page.evaluate(function observe () {
       console.log('page.evaluate Activities')
+
+      function buildEventName(details) {
+        // Construct the event name based on the type and status of the activity
+        return `${details.type.toLowerCase()}.${details.status.replace(/\s+/g, '.').toLowerCase()}`;
+      }
       /**
        * Returns a JSON object for the specified mutation
        * @param {MutationRecord} mutation The mutation that occurred
        * @returns 
        */
-       function mutationRecordToObject(mutation) {
-
-        // console.log('mutationRecordToObject(mutation)', mutation)
+      function mutationRecordToObject(mutation) {
+        console.log('mutationRecordToObject(mutation)', mutation)
         const obj = { event: 'mutation', details: {} };
       
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          console.log('Added Nodes:', mutation.addedNodes);
           Array.from(mutation.addedNodes).forEach(node => {
+            console.log('Processed Node:', node.outerHTML);
             if (node.classList.contains('activity-item')) {
               const activityInfo = node.querySelector('.activity-info');
               if (activityInfo) {
                 obj.details = {
-                  id: activityInfo.querySelector('.activity-id')?.textContent || null,
-                  orderId: activityInfo.querySelector('.activity-orderId')?.textContent || null,
-                  ts: activityInfo.querySelector('.activity-ts')?.textContent || null,
-                  uid: activityInfo.querySelector('.activity-uid')?.textContent || null,
-                  type: activityInfo.querySelector('.activity-type')?.textContent || null,
-                  side: activityInfo.querySelector('.activity-side')?.textContent || null,
-                  hash: activityInfo.querySelector('.activity-hash')?.textContent || null,
-                  baseNetwork: activityInfo.querySelector('.activity-baseNetwork')?.textContent || null,
-                  quoteNetwork: activityInfo.querySelector('.activity-quoteNetwork')?.textContent || null,
-                  status: node.querySelector('.activity-status')?.textContent || null,
-                  baseAsset: node.querySelector('.base-asset')?.textContent || null,
-                  baseQuantity: node.querySelector('.base-quantity')?.textContent || null,
-                  quoteAsset: node.querySelector('.quote-asset')?.textContent || null,
-                  quoteQuantity: node.querySelector('.quote-quantity')?.textContent || null,
-                  createdDate: node.querySelector('.activity-date')?.textContent || null
+                  id: activityInfo.querySelector('.activity-id')?.textContent.trim() || null,
+                  orderId: activityInfo.querySelector('.activity-orderId')?.textContent.trim() || null,
+                  ts: activityInfo.querySelector('.activity-ts')?.textContent.trim() || null,
+                  uid: activityInfo.querySelector('.activity-uid')?.textContent.trim() || null,
+                  type: activityInfo.querySelector('.activity-type')?.textContent.trim() || null,
+                  side: activityInfo.querySelector('.activity-side')?.textContent.trim() || null,
+                  hash: activityInfo.querySelector('.activity-hash')?.textContent.trim() || null,
+                  baseNetwork: activityInfo.querySelector('.activity-baseNetwork')?.textContent.trim() || null,
+                  quoteNetwork: activityInfo.querySelector('.activity-quoteNetwork')?.textContent.trim() || null,
+                  ordinalLocation: activityInfo.querySelector('.activity-ordinalLocation')?.textContent.trim() || null,
+                  status: node.querySelector('.MuiTypography-root.MuiTypography-body1')?.textContent.trim() || null,
+                  baseAsset: node.querySelector('.base-asset')?.textContent.trim() || null,
+                  baseQuantity: node.querySelector('.base-quantity')?.textContent.trim() || null,
+                  quoteAsset: node.querySelector('.quote-asset')?.textContent.trim() || null,
+                  quoteQuantity: node.querySelector('.quote-quantity')?.textContent.trim() || null,
+                  createdDate: node.querySelector('.activity-date')?.textContent.trim() || null
                 };
+                console.log('Extracted Details:', obj.details);
+
+                // // if (obj.details.type === 'Order') {
+                // //   if(obj.details.status === 'opened') {
+                // //     obj.event = 'order.opened';
+                // //   } 
+                // //   else if (obj.details.status === 'created') {
+                // //       obj.event = 'order.created';
+                // //   }
+                // // }
+                // // if (obj.details.type === 'Swap') {
+                // //   obj.event = 'swap.' + obj.details.status;
+                // //   // if(obj.details.status === 'opened') {
+                // //   //   obj.event = 'swap.opened';
+                // //   // } 
+                // //   // else if (obj.details.status === 'created') {
+                // //   //     obj.event = 'order.created';
+                // //   // }
+                // // }
+                // if (obj.details.type === 'Order') {
+                //   obj.event = 'order.' + obj.details.status.toLowerCase().replace(/\s/g, '.');
+                // }
+
+                obj.event = buildEventName(obj.details);
+              } else {
+                console.log('Activity info not found in node:', node.outerHTML)
               }
+            } else {
+              console.log('Processed node does not have class activity-item:', node.outerHTML);
             }
           });
+        } else {
+          console.log('No added nodes to process in this mutation:', mutation);
         }
       
         return obj;
       }
-
       // Create an observer instance linked to the callback function
       const observer = new MutationObserver((mutationList) => {
         console.log('mutation observed', mutationList)
@@ -198,22 +241,38 @@ module.exports = class App extends BaseClass {
           console.log('mutation', mutation)
 
           const obj = mutationRecordToObject(mutation);
-          if (obj && obj.details &&  obj.details.id) {  // Checking if there's meaningful data
-            onEvent(obj);
+          // if (obj && obj.details &&  obj.details.id) {  // Checking if there's meaningful data
+          //   onEvent(obj);
+          // }
+
+          if (obj.event && obj.details.id) {
+            window.onActivityEvent(obj.event, obj.details);
           }
           console.log('event', event)
 
-          onEvent(obj)
+          // onEvent(obj)
         }
       })
-      console.log('observer', observer)
+      // console.log('observer', observer)
+
+      // // Start observing the target node for configured mutations
+      // observer.observe(document.querySelector('.panelActivity'), {
+      //   attributes: true,
+      //   childList: true,
+      //   subtree: true
+      // })
 
       // Start observing the target node for configured mutations
-      observer.observe(document.querySelector('.panelActivity'), {
-        attributes: true,
+      const targetNode = document.querySelector('.MuiGrid-root');
+      if (!targetNode) {
+        console.error('Target node for observer not found');
+        return;
+      }
+
+      observer.observe(targetNode, {
         childList: true,
         subtree: true
-      })
+      });
     })
   }
 }

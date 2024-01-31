@@ -6,8 +6,8 @@ describe.only('App: Swap: BTC-ETH', function () {
 
   it.only('must allow Alice to place an order', async function (done) {
     await this.test.ctx.playnet.apps.alice
-      .on('order.opened', order => {
-        console.log("alice order.opened event received")
+      .once('order.opened', order => {
+        console.log("alice order.opened event received", order)
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
         expect(order.ts).to.be.a('number')
@@ -19,8 +19,8 @@ describe.only('App: Swap: BTC-ETH', function () {
         expect(order.status).to.be.a('string').that.equals('opened')
         done();
       })
-      .on('order.created', order => {
-        console.log("alice order.created event received")
+      .once('order.created', order => {
+        console.log("alice order.created event received", order)
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
         expect(order.ts).to.be.a('number')
@@ -48,7 +48,7 @@ describe.only('App: Swap: BTC-ETH', function () {
 
   it('must allow Bob to place an order', async function (done) {
     await this.test.ctx.playnet.apps.bob
-      .on('order.opened', order => {
+      .once('order.opened', order => {
         console.log("bob order.opened event received")
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
@@ -62,7 +62,7 @@ describe.only('App: Swap: BTC-ETH', function () {
 
         done()
       })
-      .on('order.created', order => {
+      .once('order.created', order => {
         console.log("bob order.created event received")
         expect(order).to.be.an('object')
         expect(order.id).to.be.a('string')
@@ -76,9 +76,9 @@ describe.only('App: Swap: BTC-ETH', function () {
         done()
       })
       .submitLimitOrder({
-        baseAsset: 'ETH',
+        baseAsset: 'BTC',
         baseQuantity: 0.0001,
-        quoteAsset: 'BTC',
+        quoteAsset: 'ETH',
         quoteQuantity: 0.0001
       })
       .catch(err => {
