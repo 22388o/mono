@@ -50,7 +50,7 @@ export const ActivityTab = () => {
           </Button></span> }
         </Stack>
         {/* Hidden Information for Mutation Observer */}
-        <div className="activity-info" style={{ visibility: "hidden" }}>
+        <div className="activity-info" style={{ visibility: 'hidden' }}>
           <span className="activity-id">{activity.key}</span>
           <span className="activity-orderId">{activity.orderId}</span>
           <span className="activity-ts">{activity.ts}</span>

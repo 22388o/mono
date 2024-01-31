@@ -163,6 +163,15 @@ module.exports = class App extends BaseClass {
         // Construct the event name based on the type and status of the activity
         return `${details.type.toLowerCase()}.${details.status.replace(/\s+/g, '.').toLowerCase()}`;
       }
+
+      /**
+       * Returns the text contents of the specified element
+       * @param {HTMLElement} e The element whose text content is to be retrieved
+       * @param {String} s The selector used to identify the span with the element
+       * @returns {String}
+       */
+      const getText = (e, s) => e.querySelector(s)?.textContent
+
       /**
        * Returns a JSON object for the specified mutation
        * @param {MutationRecord} mutation The mutation that occurred
@@ -170,69 +179,42 @@ module.exports = class App extends BaseClass {
        */
       function mutationRecordToObject(mutation) {
         console.log('mutationRecordToObject(mutation)', mutation)
-        const obj = { event: 'mutation', details: {} };
+        const obj = { event: 'mutation', details: {} }
       
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          console.log('Added Nodes:', mutation.addedNodes);
+          console.log('Added Nodes:', mutation.addedNodes)
           Array.from(mutation.addedNodes).forEach(node => {
-            console.log('Processed Node:', node.outerHTML);
-            if (node.classList.contains('activity-item')) {
-              const activityInfo = node.querySelector('.activity-info');
-              if (activityInfo) {
-                obj.details = {
-                  id: activityInfo.querySelector('.activity-id')?.textContent.trim() || null,
-                  orderId: activityInfo.querySelector('.activity-orderId')?.textContent.trim() || null,
-                  ts: activityInfo.querySelector('.activity-ts')?.textContent.trim() || null,
-                  uid: activityInfo.querySelector('.activity-uid')?.textContent.trim() || null,
-                  type: activityInfo.querySelector('.activity-type')?.textContent.trim() || null,
-                  side: activityInfo.querySelector('.activity-side')?.textContent.trim() || null,
-                  hash: activityInfo.querySelector('.activity-hash')?.textContent.trim() || null,
-                  baseNetwork: activityInfo.querySelector('.activity-baseNetwork')?.textContent.trim() || null,
-                  quoteNetwork: activityInfo.querySelector('.activity-quoteNetwork')?.textContent.trim() || null,
-                  ordinalLocation: activityInfo.querySelector('.activity-ordinalLocation')?.textContent.trim() || null,
-                  status: node.querySelector('.MuiTypography-root.MuiTypography-body1')?.textContent.trim() || null,
-                  baseAsset: node.querySelector('.base-asset')?.textContent.trim() || null,
-                  baseQuantity: node.querySelector('.base-quantity')?.textContent.trim() || null,
-                  quoteAsset: node.querySelector('.quote-asset')?.textContent.trim() || null,
-                  quoteQuantity: node.querySelector('.quote-quantity')?.textContent.trim() || null,
-                  createdDate: node.querySelector('.activity-date')?.textContent.trim() || null
-                };
-                console.log('Extracted Details:', obj.details);
+            // node is a plain div. The `Stack` component renders in a div under it.
+            node = node.querySelector('.activity-item')
+            console.log('child node', node)
+            if (node == null) return
 
-                // // if (obj.details.type === 'Order') {
-                // //   if(obj.details.status === 'opened') {
-                // //     obj.event = 'order.opened';
-                // //   } 
-                // //   else if (obj.details.status === 'created') {
-                // //       obj.event = 'order.created';
-                // //   }
-                // // }
-                // // if (obj.details.type === 'Swap') {
-                // //   obj.event = 'swap.' + obj.details.status;
-                // //   // if(obj.details.status === 'opened') {
-                // //   //   obj.event = 'swap.opened';
-                // //   // } 
-                // //   // else if (obj.details.status === 'created') {
-                // //   //     obj.event = 'order.created';
-                // //   // }
-                // // }
-                // if (obj.details.type === 'Order') {
-                //   obj.event = 'order.' + obj.details.status.toLowerCase().replace(/\s/g, '.');
-                // }
+            const activityInfo = node.querySelector('.activity-info')
+            console.log('activityInfo', activityInfo)
+            if (activityInfo == null) return
 
-                obj.event = buildEventName(obj.details);
-              } else {
-                console.log('Activity info not found in node:', node.outerHTML)
-              }
-            } else {
-              console.log('Processed node does not have class activity-item:', node.outerHTML);
+            obj.details = {
+              id: getText(activityInfo, '.activity-id'),
+              orderId: getText(activityInfo, '.activity-orderId'),
+              ts: getText(activityInfo, '.activity-ts'),
+              uid: getText(activityInfo, '.activity-uid'),
+              type: getText(activityInfo, '.activity-type'),
+              side: getText(activityInfo, '.activity-side'),
+              hash: getText(activityInfo, '.activity-hash'),
+              baseNetwork: getText(activityInfo, '.activity-baseNetwork'),
+              quoteNetwork: getText(activityInfo, '.activity-quoteNetwork'),
+              status: getText(node, '.activity-status'),
+              baseAsset: getText(node, '.base-asset'),
+              baseQuantity: getText(node, '.base-quantity'),
+              quoteAsset: getText(node, '.quote-asset'),
+              quoteQuantity: getText(node, '.quote-quantity'),
+              createdDate: getText(node, '.activity-date'),
             }
-          });
-        } else {
-          console.log('No added nodes to process in this mutation:', mutation);
+            obj.event = buildEventName(obj.details)
+          })
         }
-      
-        return obj;
+
+        return obj
       }
       // Create an observer instance linked to the callback function
       const observer = new MutationObserver((mutationList) => {
