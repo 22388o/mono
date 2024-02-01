@@ -191,9 +191,8 @@ module.exports = class App extends BaseClass {
        * @returns 
        */
       function mutationRecordToObject(mutation) {
-        console.log('mutationRecordToObject(mutation)', mutation)
-        const obj = { event: 'mutation', details: {} }
         // console.log('mutationRecordToObject(mutation)', mutation)
+        let obj = { event: 'mutation', details: {} }
       
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           // console.log('Added Nodes:', mutation.addedNodes)
