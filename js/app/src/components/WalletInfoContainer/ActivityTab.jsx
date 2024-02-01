@@ -32,20 +32,20 @@ export const ActivityTab = () => {
         <Stack direction='row' gap={2}>
           <ArrowOutwardIcon sx={{color:'#6A6A6A', borderRadius: '50%', backgroundColor:'#101010', fontSize: '15px', padding: '5px' }} />
           <Stack sx={{alignItems:'flex-start'}}>
-            <Typography className={styles['activity-status']}>{ SWAP_STATUS[activity.status] }</Typography>
-            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}} className={styles['activity-date']}>{ getStringFromDate(activity.createdDate) }</Typography>
+            <Typography className={`${styles['activity-status']} activity-status`}>{ SWAP_STATUS[activity.status] }</Typography>
+            <Typography sx={{fontSize: '14px', color: '#6A6A6A'}} className={`${styles['activity-date']} activity-date`}>{ getStringFromDate(activity.createdDate) }</Typography>
           </Stack>
         </Stack>
         <Stack>
           <Stack direction='row' gap={1}>
-            <Typography className={styles['base-quantity']}>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}} className={styles['base-asset']}>{activity.baseAsset}</Typography>
+            <Typography className={`${styles['base-quantity']} base-quantity`}>- {activity.baseQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={`${styles['base-asset']} base-asset`}>{activity.baseAsset}</Typography>
           </Stack>
           <Stack direction='row' gap={1}>
-            <Typography sx={{color: '#6A6A6A'}} className={styles['quote-quantity']}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
-            <Typography sx={{color: '#6A6A6A'}} className={styles['quote-asset']}>{activity.quoteAsset}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={`${styles['quote-quantity']} quote-quantity`}>+ {activity.quoteQuantity.toFixed(5).replace(/[.,]0+$/ , "")}</Typography>
+            <Typography sx={{color: '#6A6A6A'}} className={`${styles['quote-asset']} quote-asset`}>{activity.quoteAsset}</Typography>
           </Stack>
-          { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={`${styles['cancel-btn']} cancel-btn`}>
+          { activity.status < 11 && <span><Button onClick={(e) => onCancelSwap(e, activity)} className={`${styles['cancel-btn']} cancel-btn cancel-btn`}>
             Cancel
           </Button></span> }
         </Stack>
@@ -58,6 +58,7 @@ export const ActivityTab = () => {
           <span className="activity-type">{activity.type}</span>
           <span className="activity-side">{activity.side}</span>
           <span className="activity-hash">{activity.hash}</span>
+          <span className="activity-statusNumber">{activity.status}</span>
           <span className="activity-baseNetwork">{activity.baseNetwork}</span>
           <span className="activity-quoteNetwork">{activity.quoteNetwork}</span>
           <span className="activity-ordinalLocation">{activity.ordinalLocation}</span>
@@ -73,7 +74,7 @@ export const ActivityTab = () => {
   const renderDivider = () => <Divider sx={{borderColor: '#2A2A2A!important', margin: '15px 0px'}} />
 
   return (
-    <Stack className={styles['activities-container']}>
+    <Stack className={`${styles['activities-container']} activities-container`}>
       { [...activities].reverse().map((activity, index) =>
           <div key={index}>
             {index > 0 && renderDivider() }

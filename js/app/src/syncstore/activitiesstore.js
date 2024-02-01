@@ -6,6 +6,7 @@ const activitiesStore = {
     switch (action.type) {
       case 'ADD_SWAP_ITEM':
         newState.push(action.payload)
+        console.log("stored swap item", newState)
         return newState
       case 'UPDATE_SWAP_STATUS':
         // TODO: right now only checking activity item with the same status

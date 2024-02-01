@@ -4,6 +4,20 @@
 
 const { BaseClass } = require('@portaldefi/core')
 const puppeteer = require('puppeteer')
+const SWAP_STATUS_NAME = [
+  'Submitting order',
+  'Finding match',
+  'Swap matched',
+  'Holder Invoice Created',
+  'Holder Invoice Sent',
+  'Seeker Invoice Created',
+  'Seeker Invoice Sent',
+  'Holder Invoice Paid',
+  'Seeker Invoice Paid',
+  'Holder Invoice Settled',
+  'Seeker Invoice Settled',
+  'Completed'
+];
 
 /**
   * A weak-map storing private data for each instance of the class
@@ -203,13 +217,32 @@ module.exports = class App extends BaseClass {
               baseNetwork: getText(activityInfo, '.activity-baseNetwork'),
               quoteNetwork: getText(activityInfo, '.activity-quoteNetwork'),
               status: getText(node, '.activity-status'),
+              statusNumber: getText(node, '.activity-statusNumber'),
               baseAsset: getText(node, '.base-asset'),
               baseQuantity: getText(node, '.base-quantity'),
               quoteAsset: getText(node, '.quote-asset'),
               quoteQuantity: getText(node, '.quote-quantity'),
               createdDate: getText(node, '.activity-date'),
             }
-            obj.event = buildEventName(obj.details)
+            // obj.event = buildEventName(obj.details)
+            const SWAP_STATUS = [
+              'created',
+              'opened',
+              '',
+              '',
+              '',
+              '',
+              '',
+              '',
+              '',
+              '',
+              '',
+              ''];
+            obj.event = "order." + SWAP_STATUS[obj.details.statusNumber]
+
+            console.log("mutationRecordToObject return obj", obj)
+            console.log("mutationRecordToObject obj.details", obj.details)
+            console.log("mutationRecordToObject obj.event", obj.event)
           })
         }
 
