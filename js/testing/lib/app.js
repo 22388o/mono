@@ -170,7 +170,7 @@ module.exports = class App extends BaseClass {
     // to observe any mutations to its DOM tree. Every update is then passed
     // to the `onEvent` function exposed above.
     await page.evaluate(function observe () {
-      console.log('page.evaluate Activities')
+      // console.log('page.evaluate Activities')
 
       function buildEventName(details) {
         // Construct the event name based on the type and status of the activity
@@ -193,9 +193,10 @@ module.exports = class App extends BaseClass {
       function mutationRecordToObject(mutation) {
         console.log('mutationRecordToObject(mutation)', mutation)
         const obj = { event: 'mutation', details: {} }
+        // console.log('mutationRecordToObject(mutation)', mutation)
       
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          console.log('Added Nodes:', mutation.addedNodes)
+          // console.log('Added Nodes:', mutation.addedNodes)
           Array.from(mutation.addedNodes).forEach(node => {
             // node is a plain div. The `Stack` component renders in a div under it.
             node = node.querySelector('.activity-item')
@@ -203,7 +204,7 @@ module.exports = class App extends BaseClass {
             if (node == null) return
 
             const activityInfo = node.querySelector('.activity-info')
-            console.log('activityInfo', activityInfo)
+            // console.log('activityInfo', activityInfo)
             if (activityInfo == null) return
 
             obj.details = {
@@ -250,9 +251,9 @@ module.exports = class App extends BaseClass {
       }
       // Create an observer instance linked to the callback function
       const observer = new MutationObserver((mutationList) => {
-        console.log('mutation observed', mutationList)
+        // console.log('mutation observed', mutationList)
         for (const mutation of mutationList) {
-          console.log('mutation', mutation)
+          // console.log('mutation', mutation)
 
           const obj = mutationRecordToObject(mutation);
           // if (obj && obj.details &&  obj.details.id) {  // Checking if there's meaningful data
@@ -262,7 +263,7 @@ module.exports = class App extends BaseClass {
           if (obj.event && obj.details.id) {
             window.onActivityEvent(obj.event, obj.details);
           }
-          console.log('event', event)
+          // console.log('event', event)
 
           // onEvent(obj)
         }

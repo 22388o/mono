@@ -140,6 +140,7 @@ export const SwapCreate = () => {
     console.log("submitting limit order")
     await SDK.sdk.dex.submitLimitOrder(request).then(data => {
       console.log("submitLimitOrder response", data)
+      console.log(JSON.stringify(data))
 
       const curDate = new Date();
       const date = {
@@ -164,7 +165,6 @@ export const SwapCreate = () => {
         base: quoteQ,
         quote: baseQ
       };
-
 
       activitiesStore.dispatch({
         type: 'ADD_SWAP_ITEM', payload: {
@@ -275,11 +275,11 @@ export const SwapCreate = () => {
     // log("SDK.sdk", SDK.sdk);
     activities.forEach(activity => {
       if (activity.status === 0) {
-        log('swapState: swap begins ', activity.status)
+        // log('swapState: swap begins ', activity.status)
         // setTimeout(() => {
         activitiesStore.dispatch({ type: 'UPDATE_SWAP_STATUS', payload: { orderId: activity.id, status: 1 } })
-        log('swapState: swap iter: activity.secretHash  ', activity.secretHash)
-        log('swapState: swap iter: activity.status  ', activity.status)
+        // log('swapState: swap iter: activity.secretHash  ', activity.secretHash)
+        // log('swapState: swap iter: activity.status  ', activity.status)
         // }, 50);
       }
     })
